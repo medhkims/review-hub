@@ -1,0 +1,43 @@
+{
+  "common": {
+    "loading": "Loading...",
+    "error": "Something went wrong",
+    "retry": "Retry",
+    "save": "Save",
+    "cancel": "Cancel",
+    "offline": "You are offline"
+  },
+  "tabs": {
+    "feed": "Feed",
+    "chat": "Chat",
+    "profile": "Profile",
+    "settings": "Settings"
+  },
+  "auth": {
+    "signIn": {
+      "title": "Sign In",
+      "email": "Email",
+      "password": "Password",
+      "button": "Sign In",
+      "noAccount": "Don't have an account?"
+    },
+    "signUp": {
+      "title": "Sign Up",
+      "button": "Create Account"
+    }
+  },
+  "feed": {
+    "title": "Feed",
+    "empty": "No posts yet"
+  },
+  "chat": {
+    "title": "Chat",
+    "empty": "No conversations yet"
+  },
+  "profile": {
+    "title": "Profile"
+  },
+  "settings": {
+    "title": "Settings"
+  }
+}
