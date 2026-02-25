@@ -1,0 +1,191 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Helper functions
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    function isOwner(userId) {
+      return request.auth.uid == userId;
+    }
+
+    function isValidString(value, minLength, maxLength) {
+      return value is string
+        && value.size() >= minLength
+        && value.size() <= maxLength;
+    }
+
+    function isValidEmail(email) {
+      return email is string && email.matches('.*@.*\\..*');
+    }
+
+    function isValidPhoneNumber(phone) {
+      return phone == null || (phone is string && phone.size() >= 8 && phone.size() <= 20);
+    }
+
+    // Role helper functions
+    function getUserRole(userId) {
+      return get(/databases/$(database)/documents/profiles/$(userId)).data.role;
+    }
+
+    function isAdmin() {
+      return getUserRole(request.auth.uid) == 'admin';
+    }
+
+    function isModerator() {
+      return getUserRole(request.auth.uid) == 'moderator';
+    }
+
+    function isAdminOrModerator() {
+      return isAdmin() || isModerator();
+    }
+
+    function isValidRole(role) {
+      return role == 'simple_user' || role == 'business_owner';
+    }
+
+    // ========================================
+    // PROFILES COLLECTION
+    // ========================================
+    match /profiles/{userId} {
+      // Allow users to read their own profile, admins can read any profile
+      allow read: if isAuthenticated()
+        && (isOwner(userId) || isAdmin());
+
+      // Allow users to create their own profile (simple_user or business_owner)
+      allow create: if isAuthenticated()
+        && isOwner(userId)
+        && request.resource.data.user_id == request.auth.uid
+        && isValidString(request.resource.data.display_name, 1, 100)
+        && isValidEmail(request.resource.data.email)
+        && isValidPhoneNumber(request.resource.data.phone_number)
+        && request.resource.data.followers_count == 0
+        && request.resource.data.following_count == 0
+        && isValidRole(request.resource.data.role);
+
+      // Allow users to update their own profile (cannot change role or user_id)
+      allow update: if isAuthenticated()
+        && isOwner(userId)
+        && request.resource.data.user_id == resource.data.user_id
+        && request.resource.data.role == resource.data.role
+        && isValidString(request.resource.data.display_name, 1, 100)
+        && isValidEmail(request.resource.data.email)
+        && isValidPhoneNumber(request.resource.data.phone_number);
+
+      // Allow users to delete their own profile
+      allow delete: if isAuthenticated() && isOwner(userId);
+    }
+
+    // ========================================
+    // POSTS/FEED COLLECTION (Future)
+    // ========================================
+    match /posts/{postId} {
+      // Anyone authenticated can read posts
+      allow read: if isAuthenticated();
+
+      // Only the post owner can create
+      allow create: if isAuthenticated()
+        && request.resource.data.user_id == request.auth.uid;
+
+      // Post owner or admin/moderator can update or delete
+      allow update, delete: if isAuthenticated()
+        && (resource.data.user_id == request.auth.uid || isAdminOrModerator());
+    }
+
+    // ========================================
+    // CONVERSATIONS COLLECTION (Future)
+    // ========================================
+    match /conversations/{conversationId} {
+      // Users can read conversations they're part of
+      allow read: if isAuthenticated()
+        && request.auth.uid in resource.data.participant_ids;
+
+      // Users can create conversations
+      allow create: if isAuthenticated()
+        && request.auth.uid in request.resource.data.participant_ids;
+
+      // Users can update conversations they're part of
+      allow update: if isAuthenticated()
+        && request.auth.uid in resource.data.participant_ids;
+
+      // Messages subcollection
+      match /messages/{messageId} {
+        allow read: if isAuthenticated()
+          && request.auth.uid in get(/databases/$(database)/documents/conversations/$(conversationId)).data.participant_ids;
+
+        allow create: if isAuthenticated()
+          && request.auth.uid in get(/databases/$(database)/documents/conversations/$(conversationId)).data.participant_ids
+          && request.resource.data.sender_id == request.auth.uid;
+      }
+    }
+
+    // ========================================
+    // USER SETTINGS (Private)
+    // ========================================
+    match /user_settings/{userId} {
+      allow read, write: if isAuthenticated() && isOwner(userId);
+    }
+
+    // ========================================
+    // REVIEWS COLLECTION (Future)
+    // ========================================
+    match /reviews/{reviewId} {
+      // Anyone can read reviews
+      allow read: if isAuthenticated();
+
+      // Only authenticated users can create reviews
+      allow create: if isAuthenticated()
+        && request.resource.data.user_id == request.auth.uid;
+
+      // Review owner or admin/moderator can update or delete
+      allow update, delete: if isAuthenticated()
+        && (resource.data.user_id == request.auth.uid || isAdminOrModerator());
+    }
+
+    // ========================================
+    // BUSINESSES COLLECTION
+    // ========================================
+    match /businesses/{businessId} {
+      // Anyone authenticated can read businesses
+      allow read: if isAuthenticated();
+
+      // Only authenticated users can create businesses
+      allow create: if isAuthenticated()
+        && request.resource.data.owner_id == request.auth.uid;
+
+      // Business owner or admin/moderator can update or delete
+      allow update, delete: if isAuthenticated()
+        && (resource.data.owner_id == request.auth.uid || isAdminOrModerator());
+    }
+
+    // ========================================
+    // CATEGORIES COLLECTION (Read-only for clients)
+    // ========================================
+    match /categories/{categoryId} {
+      allow read: if isAuthenticated();
+      allow write: if false;
+    }
+
+    // ========================================
+    // FAVORITES COLLECTION
+    // ========================================
+    match /favorites/{favoriteId} {
+      allow read: if isAuthenticated()
+        && resource.data.user_id == request.auth.uid;
+
+      allow create: if isAuthenticated()
+        && request.resource.data.user_id == request.auth.uid;
+
+      allow delete: if isAuthenticated()
+        && resource.data.user_id == request.auth.uid;
+    }
+
+    // Deny all other access by default
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

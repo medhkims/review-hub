@@ -5,12 +5,317 @@
     "retry": "إعادة المحاولة",
     "save": "حفظ",
     "cancel": "إلغاء",
-    "offline": "أنت غير متصل"
+    "confirm": "تأكيد",
+    "ok": "حسناً",
+    "offline": "أنت غير متصل",
+    "saving": "جاري الحفظ...",
+    "comingSoon": "قريباً",
+    "success": "نجاح"
   },
   "tabs": {
+    "home": "الرئيسية",
+    "notifications": "الإشعارات",
+    "myReviews": "تقييماتي",
+    "settings": "الإعدادات",
     "feed": "الرئيسية",
     "chat": "المحادثات",
     "profile": "الملف الشخصي",
-    "settings": "الإعدادات"
+    "dashboard": "لوحة التحكم",
+    "users": "المستخدمون",
+    "queue": "قائمة الانتظار",
+    "activity": "النشاط",
+    "myBusiness": "نشاطي التجاري",
+    "reviews": "التقييمات"
+  },
+  "roles": {
+    "admin": "مشرف عام",
+    "moderator": "مشرف",
+    "simple_user": "مستخدم",
+    "business_owner": "صاحب عمل"
+  },
+  "auth": {
+    "signIn": {
+      "title": "مرحباً بعودتك!",
+      "subtitle": "سجل الدخول لمواصلة استكشاف الأعمال",
+      "userType": "مستخدم عادي",
+      "socialPrompt": "سجل الدخول فوراً عبر",
+      "orEmail": "أو تابع بالبريد الإلكتروني",
+      "email": "عنوان البريد الإلكتروني",
+      "emailPlaceholder": "hello@example.com",
+      "password": "كلمة المرور",
+      "passwordPlaceholder": "أدخل كلمة المرور",
+      "forgotPassword": "نسيت كلمة المرور؟",
+      "button": "تسجيل الدخول",
+      "noAccount": "ليس لديك حساب؟",
+      "swipeToSignUp": "اسحب للتسجيل"
+    },
+    "signUp": {
+      "title": "إنشاء حساب",
+      "subtitle": "انضم إلى أفضل دليل أعمال في تونس",
+      "button": "إنشاء حساب",
+      "displayName": "الاسم الكامل",
+      "email": "عنوان البريد الإلكتروني",
+      "password": "كلمة المرور",
+      "confirmPassword": "تأكيد كلمة المرور",
+      "hasAccount": "لديك حساب بالفعل؟",
+      "login": "تسجيل الدخول",
+      "userTypeSimple": "مستخدم عادي",
+      "userTypeCompany": "صاحب شركة",
+      "orRegisterWithEmail": "أو سجل بالبريد الإلكتروني",
+      "agreeTerms": "أوافق على",
+      "termsAndConditions": "الشروط والأحكام",
+      "and": "و",
+      "privacyPolicy": "سياسة الخصوصية"
+    },
+    "currentPassword": "كلمة المرور الحالية",
+    "newPassword": "كلمة المرور الجديدة",
+    "confirmNewPassword": "تأكيد كلمة المرور الجديدة",
+    "updatePassword": "تحديث كلمة المرور",
+    "createStrongPassword": "أنشئ كلمة مرور قوية للحفاظ على أمان حسابك.",
+    "passwordChangedSuccess": "تم تحديث كلمة المرور بنجاح.",
+    "fillAllFields": "يرجى ملء جميع الحقول",
+    "passwordMinLength": "يجب أن تتكون كلمة المرور من 6 أحرف على الأقل",
+    "passwordsDoNotMatch": "كلمتا المرور غير متطابقتين"
+  },
+  "home": {
+    "title": "اكتشف تونس",
+    "subtitle": "ابحث عن أفضل الأماكن المحلية",
+    "searchPlaceholder": "ابحث عن الأعمال...",
+    "categoriesSection": "الفئات",
+    "featuredSection": "الأعمال المميزة",
+    "businessesSection": "الأعمال",
+    "seeAll": "عرض الكل",
+    "noResults": "لم يتم العثور على أعمال",
+    "errorLoading": "فشل تحميل الأعمال",
+    "allCategories": {
+      "title": "جميع الفئات",
+      "searchPlaceholder": "ابحث عن الفئات...",
+      "empty": "لم يتم العثور على فئات"
+    }
+  },
+  "notifications": {
+    "title": "الإشعارات",
+    "empty": "لا توجد إشعارات بعد"
+  },
+  "reviews": {
+    "title": "تقييماتي",
+    "empty": "لا توجد تقييمات بعد"
+  },
+  "feed": {
+    "title": "الرئيسية",
+    "empty": "لا توجد منشورات بعد"
+  },
+  "chat": {
+    "title": "المحادثات",
+    "empty": "لا توجد محادثات بعد"
+  },
+  "profile": {
+    "title": "الملف الشخصي",
+    "sections": {
+      "profile": "الملف الشخصي",
+      "settings": "الإعدادات",
+      "support": "الدعم"
+    },
+    "personalInfo": "المعلومات الشخصية",
+    "wishlist": "قائمة الأمنيات",
+    "verifyAccount": "التحقق من الحساب",
+    "resetPassword": "إعادة تعيين كلمة المرور"
+  },
+  "settings": {
+    "title": "الإعدادات",
+    "movedToProfile": "جميع الإعدادات متوفرة الآن في تبويب الملف الشخصي",
+    "goToProfile": "الذهاب إلى الملف الشخصي",
+    "notifications": "الإشعارات",
+    "darkMode": "الوضع الداكن",
+    "language": "اللغة"
+  },
+  "support": {
+    "helpCenter": "مركز المساعدة",
+    "privacyPolicy": "سياسة الخصوصية",
+    "logout": "تسجيل الخروج"
+  },
+  "personalInfo": {
+    "title": "المعلومات الشخصية",
+    "fullName": "الاسم الكامل",
+    "fullNamePlaceholder": "أدخل اسمك الكامل",
+    "email": "البريد الإلكتروني",
+    "emailPlaceholder": "أدخل بريدك الإلكتروني",
+    "phoneNumber": "رقم الهاتف",
+    "phoneNumberPlaceholder": "أدخل رقم هاتفك",
+    "changeEmail": "تغيير البريد الإلكتروني",
+    "saveChanges": "حفظ التغييرات",
+    "success": "نجح",
+    "error": "خطأ",
+    "updateSuccess": "تم تحديث ملفك الشخصي بنجاح",
+    "emailUpdateSuccess": "تم تحديث بريدك الإلكتروني بنجاح. يرجى التحقق من بريدك الجديد.",
+    "emailUnchanged": "عنوان البريد الإلكتروني هو نفسه. يرجى إدخال بريد إلكتروني جديد.",
+    "changeEmailConfirm": "هل أنت متأكد من تغيير بريدك الإلكتروني؟ قد تحتاج إلى إعادة المصادقة.",
+    "avatarUploadSoon": "ميزة تحميل الصورة الشخصية قريباً!",
+    "permissionRequired": "إذن مطلوب",
+    "galleryPermissionMessage": "يرجى السماح بالوصول إلى مكتبة الصور لتغيير صورة ملفك الشخصي.",
+    "uploadingAvatar": "جاري رفع الصورة...",
+    "uploadSuccess": "تم تحديث صورة الملف الشخصي بنجاح"
+  },
+  "changeEmail": {
+    "title": "تغيير البريد الإلكتروني",
+    "heading": "تغيير عنوان بريدك الإلكتروني",
+    "description": "أدخل عنوان بريدك الإلكتروني الجديد لتحديث حسابك.",
+    "currentEmail": "البريد الإلكتروني الحالي",
+    "newEmail": "البريد الإلكتروني الجديد",
+    "newEmailPlaceholder": "name@domain.com",
+    "verificationNote": "سنرسل رابط تحقق إلى هذا العنوان.",
+    "sendConfirmation": "إرسال التأكيد",
+    "sending": "جاري الإرسال...",
+    "success": "تم إرسال بريد التحقق! يرجى التحقق من صندوق الوارد.",
+    "errorSameEmail": "يجب أن يكون البريد الجديد مختلفاً عن بريدك الحالي.",
+    "errorInvalidEmail": "يرجى إدخال عنوان بريد إلكتروني صالح.",
+    "errorEmpty": "يرجى إدخال عنوان بريد إلكتروني جديد."
+  },
+  "addEmailForPassword": {
+    "title": "أضف بريدك الإلكتروني",
+    "heading": "أضف بريدك الإلكتروني",
+    "description": "لتغيير كلمة المرور، يرجى إضافة عنوان بريد إلكتروني إلى حسابك أولاً. سنرسل رابط تأكيد إلى هذا العنوان.",
+    "emailLabel": "عنوان البريد الإلكتروني",
+    "emailPlaceholder": "مثال: name@example.com",
+    "sendConfirmation": "إرسال التأكيد",
+    "sending": "جاري الإرسال...",
+    "success": "تم إرسال بريد التأكيد! يرجى التحقق من صندوق الوارد.",
+    "errorEmpty": "يرجى إدخال عنوان بريد إلكتروني.",
+    "errorInvalidEmail": "يرجى إدخال عنوان بريد إلكتروني صالح."
+  },
+  "changePassword": {
+    "title": "تغيير كلمة المرور",
+    "description": "أنشئ كلمة مرور قوية للحفاظ على أمان حسابك.",
+    "currentPassword": "كلمة المرور الحالية",
+    "newPassword": "كلمة المرور الجديدة",
+    "confirmPassword": "تأكيد كلمة المرور الجديدة",
+    "updateButton": "تحديث كلمة المرور",
+    "showPassword": "إظهار كلمة المرور",
+    "hidePassword": "إخفاء كلمة المرور",
+    "successTitle": "نجح",
+    "successMessage": "تم تحديث كلمة المرور بنجاح.",
+    "errorCurrentRequired": "يرجى إدخال كلمة المرور الحالية.",
+    "errorNewRequired": "يرجى إدخال كلمة مرور جديدة.",
+    "errorMinLength": "يجب أن تتكون كلمة المرور من 6 أحرف على الأقل.",
+    "errorMismatch": "كلمتا المرور غير متطابقتين.",
+    "errorSamePassword": "يجب أن تكون كلمة المرور الجديدة مختلفة عن كلمة المرور الحالية."
+  },
+  "confirmPasswordEmail": {
+    "heading": "تأكيد بريدك الإلكتروني",
+    "description": "لقد أرسلنا رابط تحقق إلى عنوان بريدك الإلكتروني. يرجى النقر على الرابط لتأكيد تغيير كلمة المرور.",
+    "goToInbox": "فتح البريد الوارد",
+    "close": "إغلاق"
+  },
+  "admin": {
+    "home": {
+      "title": "لوحة تحكم المشرف",
+      "subtitle": "إدارة منصتك",
+      "totalUsers": "إجمالي المستخدمين",
+      "activeUsers": "المستخدمون النشطون",
+      "recentSignups": "التسجيلات الأخيرة",
+      "manageUsers": "إدارة المستخدمين",
+      "usersByRole": "المستخدمون حسب الدور"
+    },
+    "users": {
+      "title": "إدارة المستخدمين",
+      "searchPlaceholder": "البحث عن المستخدمين...",
+      "changeRole": "تغيير الدور",
+      "roleUpdated": "تم تحديث الدور بنجاح",
+      "roleUpdateFailed": "فشل تحديث الدور"
+    }
+  },
+  "moderator": {
+    "home": {
+      "title": "لوحة تحكم المشرف",
+      "subtitle": "مراجعة المحتوى المعلق",
+      "pendingReviews": "التقييمات المعلقة",
+      "recentActivity": "النشاط الأخير",
+      "flaggedContent": "المحتوى المبلغ عنه"
+    }
+  },
+  "businessOwner": {
+    "home": {
+      "title": "لوحة تحكم الأعمال",
+      "subtitle": "نظرة عامة على نشاطك التجاري",
+      "totalReviews": "إجمالي التقييمات",
+      "averageRating": "متوسط التقييم",
+      "recentReviews": "التقييمات الأخيرة",
+      "businessOverview": "نظرة عامة على النشاط التجاري"
+    },
+    "companyProfile": {
+      "title": "ملف الشركة",
+      "addCoverPhoto": "إضافة صورة غلاف",
+      "logo": "شعار",
+      "businessName": "اسم نشاطك التجاري",
+      "selectCategory": "اختر الفئة",
+      "description": "الوصف",
+      "descriptionPlaceholder": "أضف وصفاً لنشاطك التجاري...",
+      "information": "المعلومات",
+      "editAll": "تعديل الكل",
+      "location": "الموقع",
+      "addLocation": "إضافة موقع",
+      "locationHint": "اضغط لتحديد العنوان على الخريطة",
+      "contactSocials": "التواصل والشبكات الاجتماعية",
+      "phoneNumber": "رقم الهاتف",
+      "emailAddress": "البريد الإلكتروني",
+      "website": "الموقع الإلكتروني",
+      "instagram": "إنستغرام",
+      "facebook": "فيسبوك",
+      "tiktok": "تيك توك",
+      "linkedin": "لينكد إن",
+      "upwork": "أب وورك",
+      "add": "إضافة +",
+      "addLink": "إضافة رابط",
+      "delivery": "التوصيل",
+      "yassir": "ياسر",
+      "glovo": "غلوفو",
+      "inactive": "غير نشط",
+      "active": "نشط",
+      "manage": "إدارة",
+      "priceList": "قائمة الأسعار / القائمة",
+      "priceListMenu": "قائمة الأسعار / القائمة",
+      "visible": "مرئي",
+      "catalogEmpty": "الكتالوج الخاص بك فارغ.",
+      "addCategory": "إضافة فئة",
+      "addItem": "إضافة عنصر",
+      "all": "الكل",
+      "editProfile": "تعديل الملف",
+      "saveChanges": "حفظ التغييرات"
+    }
+  },
+  "businessDetail": {
+    "coverPhoto": "صورة الغلاف",
+    "openNow": "مفتوح الآن",
+    "closed": "مغلق",
+    "reviews": "التقييمات",
+    "addReview": "أضف تقييم",
+    "addToFavorites": "أضف إلى المفضلة",
+    "removeFromFavorites": "إزالة من المفضلة",
+    "recentReviews": "التقييمات الأخيرة",
+    "viewAll": "عرض الكل",
+    "information": "المعلومات",
+    "location": "الموقع",
+    "contactAndSocials": "التواصل والشبكات الاجتماعية",
+    "phone": "الهاتف",
+    "email": "البريد الإلكتروني",
+    "website": "الموقع الإلكتروني",
+    "delivery": "التوصيل",
+    "orderVia": "اطلب عبر",
+    "menu": "القائمة",
+    "all": "الكل",
+    "allCategories": "جميع الفئات"
+  },
+  "permissions": {
+    "denied": "تم رفض الوصول",
+    "deniedMessage": "ليس لديك إذن لعرض هذه الصفحة."
+  },
+  "wishlist": {
+    "title": "قائمة الأمنيات",
+    "allResults": "جميع النتائج",
+    "empty": "قائمة أمنياتك فارغة",
+    "emptyDescription": "احفظ الأماكن التي تريد زيارتها ومراجعتها لاحقاً",
+    "review": "مراجعة",
+    "removeSuccess": "تم الحذف من قائمة الأمنيات",
+    "removeError": "فشل حذف العنصر"
   }
 }

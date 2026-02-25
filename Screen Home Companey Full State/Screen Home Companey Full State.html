@@ -1,0 +1,383 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Populated Business Owner Profile</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,typography"></script>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet"/>
+<script>
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        primary: "#A855F7", 
+                        "primary-glow": "#C084FC",
+                        "background-dark": "#0F172A",
+                        "surface-dark": "#1E293B",
+                        "surface-darker": "#020617",
+                        "glass": "rgba(30, 41, 59, 0.7)",
+                    },
+                    fontFamily: {
+                        display: ["Outfit", "sans-serif"],
+                        body: ["Outfit", "sans-serif"],
+                    },
+                    borderRadius: {
+                        DEFAULT: "12px",
+                        'xl': "16px",
+                        '2xl': "20px",
+                        '3xl': "24px",
+                    },
+                    boxShadow: {
+                        'neon': '0 0 20px -5px rgba(168, 85, 247, 0.5)',
+                        'neon-intense': '0 0 30px -5px rgba(168, 85, 247, 0.6), inset 0 0 10px rgba(168, 85, 247, 0.2)',
+                        'neon-sm': '0 0 10px -2px rgba(168, 85, 247, 0.4)',
+                        'glass': '0 8px 32px 0 rgba(0, 0, 0, 0.37)',
+                    },
+                },
+            },
+        };
+    </script>
+<style>
+        .scrollbar-hide::-webkit-scrollbar {
+            display: none;
+        }
+        .scrollbar-hide {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+        body {
+            font-family: 'Outfit', sans-serif;
+            min-height: max(884px, 100dvh);
+        }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .profile-glow {
+            box-shadow: 0 0 50px -10px rgba(168, 85, 247, 0.6);
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-[#0F172A] text-white font-body min-h-screen transition-colors duration-200 antialiased pb-24 selection:bg-primary selection:text-white">
+<div class="relative w-full h-64 bg-[#0F172A] flex flex-col items-center justify-center border-b-0 overflow-hidden">
+<img alt="Cover Photo" class="absolute inset-0 w-full h-full object-cover opacity-80" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCcQqyDhH0loRwi-vGOUpsXfCeXrZKGP5wCCysitqMNImuFC1y-dIOsI4IpMSZSDFa3pU9GLSeXouhtc_yX9RzECUVcq-HL2c-e7Gzd38ozF7yI3P1TGFxNuiBoXNSjder823IFuInEUEM0qqVz5jSM5mJFKOKASJ8FzY7LBuMgcqZW9TUP2RCSoBPImyN-Ukz0FPPAWW5Af8ZYsPTi2WkQY93vHB0NTpiGuei9m9kf91-Yrk54xfQbCxMSKWgtUtmvhsvNKPL2RA"/>
+<div class="absolute inset-0 bg-gradient-to-t from-[#0F172A] via-transparent to-transparent"></div>
+<div class="absolute top-0 left-0 right-0 h-12 z-50 pointer-events-none mix-blend-plus-lighter">
+<div class="w-full h-full flex justify-between items-end px-6 pb-2 text-white text-xs font-medium">
+<span>9:41</span>
+<div class="flex gap-1.5 items-center">
+<span class="material-symbols-outlined text-[16px]">signal_cellular_alt</span>
+<span class="material-symbols-outlined text-[16px]">wifi</span>
+<span class="material-symbols-outlined text-[16px] rotate-90">battery_full</span>
+</div>
+</div>
+</div>
+<div class="absolute top-14 left-0 right-0 px-6 flex justify-between items-center z-20">
+<button class="bg-[#1E293B]/60 backdrop-blur-md p-2.5 rounded-full hover:bg-white/20 transition border border-white/10">
+<span class="material-symbols-outlined text-xl text-white">chevron_left</span>
+</button>
+</div>
+</div>
+<div class="relative px-6 flex flex-col items-center -mt-12 z-30">
+<div class="relative mb-4 group cursor-pointer">
+<div class="w-24 h-24 rounded-full bg-[#0F172A] p-1 relative z-10 profile-glow shadow-neon-intense">
+<div class="w-full h-full rounded-full overflow-hidden bg-[#0F172A] flex items-center justify-center border-2 border-primary">
+<img alt="Logo" class="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBXShQd0U32ny1zwwzbCPPEGW5hIcEzi8tuCuM2ktFzL4PEgondsmY1hoJGtyjrW6VkQzxyBrxuF_-DH02PA-2qaFNShnHzxZapuo4keB4ETS84KWqwCs70eDvqTAkhibKdY903w292ATyJc9il1w47HDy25UsRKopB3m_teD-q2RytawqvVzCOLvr18wMVremLlednhRhKTTr4JUgFf6k8z-ggvAB6PMBu9doGJq2eDf2MiCIgVhQIwJQzm8KJRf3Kj7p6jVAz0g"/>
+</div>
+</div>
+<div class="absolute bottom-0 right-0 z-20 bg-primary rounded-full p-1.5 border-2 border-[#0F172A] shadow-lg">
+<span class="material-symbols-outlined text-xs text-white">edit</span>
+</div>
+</div>
+<div class="text-center space-y-1 mb-8 w-full">
+<h1 class="text-2xl font-bold text-white tracking-tight text-center">Pasta Cosi</h1>
+<div class="flex items-center justify-center gap-2">
+<span class="text-sm text-gray-400 font-light">Italian Restaurant</span>
+</div>
+</div>
+</div>
+<div class="px-5 space-y-8 relative z-10 pb-32">
+<div class="bg-[#1E293B] rounded-3xl shadow-lg border border-white/5 overflow-hidden">
+<div class="bg-primary/5 px-6 py-4 flex justify-between items-center border-l-[6px] border-primary backdrop-blur-md">
+<h2 class="font-bold text-lg text-primary tracking-wide">Description</h2>
+<span class="material-symbols-outlined text-primary">expand_less</span>
+</div>
+<div class="p-6">
+<p class="text-sm text-gray-300 leading-relaxed font-light">
+                Authentic Italian cuisine in the heart of the city. We pride ourselves on using traditional recipes passed down through generations, sourcing only the freshest local ingredients and imported Italian specialties. From our homemade pasta to our wood-fired pizzas, every dish tells a story of passion and flavor.
+            </p>
+</div>
+</div>
+<div class="bg-[#1E293B] rounded-3xl shadow-lg border border-white/5 overflow-hidden">
+<div class="bg-primary/5 px-6 py-4 flex justify-between items-center border-l-[6px] border-primary backdrop-blur-md">
+<h2 class="font-bold text-lg text-primary tracking-wide">Information</h2>
+<span class="material-symbols-outlined text-primary">expand_less</span>
+</div>
+<div class="p-6">
+<h3 class="font-bold text-white text-sm mb-4 flex items-center gap-2">
+<span class="w-1.5 h-1.5 rounded-full bg-primary shadow-[0_0_5px_#A855F7]"></span>
+                Location
+            </h3>
+<div class="relative w-full h-40 rounded-2xl overflow-hidden mb-6 border border-white/10 shadow-inner bg-[#0b101e] flex items-center justify-center flex-col group cursor-pointer">
+<iframe allowfullscreen="" class="opacity-80 grayscale hover:grayscale-0 transition-all duration-500" height="100%" loading="lazy" referrerpolicy="no-referrer-when-downgrade" src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3234.856983803174!2d10.6369905!3d35.828829!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x130275759ac9d10d%3A0x698e3915682cef7d!2sSousse%2C%20Tunisia!5e0!3m2!1sen!2sus!4v1715424000000!5m2!1sen!2sus" style="border:0;" width="100%"></iframe>
+</div>
+<h3 class="font-bold text-white text-sm mb-4 flex items-center gap-2">
+<span class="w-1.5 h-1.5 rounded-full bg-primary shadow-[0_0_5px_#A855F7]"></span>
+                Contact &amp; Socials
+            </h3>
+<div class="grid grid-cols-1 gap-3">
+<div class="flex items-center justify-between bg-[#0F172A] p-3.5 rounded-xl border border-white/5 hover:border-primary/30 transition-colors group cursor-pointer">
+<div class="flex items-center gap-4">
+<div class="bg-primary/10 p-2 rounded-lg text-primary group-hover:bg-primary group-hover:text-white transition-colors shadow-neon-sm">
+<span class="material-symbols-outlined text-sm">phone</span>
+</div>
+<div class="flex flex-col">
+<span class="text-[10px] text-gray-500 uppercase tracking-wider">Phone</span>
+<span class="text-xs text-white font-medium tracking-wide">+216 27 277 796</span>
+</div>
+</div>
+<span class="material-symbols-outlined text-gray-500 text-sm">edit</span>
+</div>
+<div class="flex items-center justify-between bg-[#0F172A] p-3.5 rounded-xl border border-white/5 hover:border-primary/30 transition-colors group cursor-pointer">
+<div class="flex items-center gap-4">
+<div class="bg-primary/10 p-2 rounded-lg text-primary group-hover:bg-primary group-hover:text-white transition-colors shadow-neon-sm">
+<span class="material-symbols-outlined text-sm">email</span>
+</div>
+<div class="flex flex-col">
+<span class="text-[10px] text-gray-500 uppercase tracking-wider">Email</span>
+<span class="text-xs text-white font-medium tracking-wide">hello@pastacosi.tn</span>
+</div>
+</div>
+<span class="material-symbols-outlined text-gray-500 text-sm">edit</span>
+</div>
+<div class="flex items-center justify-between bg-[#0F172A] p-3.5 rounded-xl border border-white/5 hover:border-primary/30 transition-colors group cursor-pointer">
+<div class="flex items-center gap-4">
+<div class="bg-primary/10 p-2 rounded-lg text-primary group-hover:bg-primary group-hover:text-white transition-colors shadow-neon-sm w-8 h-8 flex items-center justify-center">
+<i class="fa-brands fa-instagram text-sm"></i>
+</div>
+<div class="flex flex-col">
+<span class="text-[10px] text-gray-500 uppercase tracking-wider">Instagram</span>
+<span class="text-xs text-green-400 font-medium tracking-wide flex items-center gap-1">@pastacosi.tn <span class="material-symbols-outlined text-[10px]">check_circle</span></span>
+</div>
+</div>
+<span class="text-[10px] text-primary font-medium bg-primary/10 px-2 py-1 rounded">Manage</span>
+</div>
+<div class="flex items-center justify-between bg-[#0F172A] p-3.5 rounded-xl border border-white/5 hover:border-primary/30 transition-colors group cursor-pointer">
+<div class="flex items-center gap-4">
+<div class="bg-primary/10 p-2 rounded-lg text-primary group-hover:bg-primary group-hover:text-white transition-colors shadow-neon-sm w-8 h-8 flex items-center justify-center">
+<i class="fa-brands fa-facebook-f text-sm"></i>
+</div>
+<div class="flex flex-col">
+<span class="text-[10px] text-gray-500 uppercase tracking-wider">Facebook</span>
+<span class="text-xs text-green-400 font-medium tracking-wide flex items-center gap-1">Pasta Cosi Sousse <span class="material-symbols-outlined text-[10px]">check_circle</span></span>
+</div>
+</div>
+<span class="text-[10px] text-primary font-medium bg-primary/10 px-2 py-1 rounded">Manage</span>
+</div>
+</div>
+</div>
+</div>
+<div class="bg-[#1E293B] rounded-3xl shadow-lg border border-white/5 overflow-hidden">
+<div class="bg-primary/5 px-6 py-4 flex justify-between items-center border-l-[6px] border-primary backdrop-blur-md">
+<h2 class="font-bold text-lg text-primary tracking-wide">Delivery</h2>
+<span class="material-symbols-outlined text-primary">expand_more</span>
+</div>
+<div class="p-6">
+<div class="grid grid-cols-2 gap-4">
+<div class="bg-[#0F172A] p-4 rounded-xl border border-red-500/30 hover:border-red-500 transition-all group flex flex-col items-center gap-3 relative overflow-hidden">
+<div class="absolute top-2 right-2 w-2 h-2 rounded-full bg-red-500 shadow-[0_0_5px_#ef4444]"></div>
+<div class="w-12 h-12 bg-purple-900/40 rounded-full flex items-center justify-center border border-white/5 mb-1 text-xs font-bold text-white tracking-widest uppercase shadow-inner">
+                        YAS
+                    </div>
+<h3 class="text-sm font-semibold text-white tracking-wide">Yassir</h3>
+<div class="w-full py-1.5 px-3 rounded-lg bg-red-500/10 text-red-400 text-xs font-medium border border-red-500/20 flex items-center justify-center gap-1">
+<span class="material-symbols-outlined text-sm">do_not_disturb_on</span>
+                        Inactive
+                    </div>
+</div>
+<div class="bg-[#0F172A] p-4 rounded-xl border border-red-500/30 hover:border-red-500 transition-all group flex flex-col items-center gap-3 relative overflow-hidden">
+<div class="absolute top-2 right-2 w-2 h-2 rounded-full bg-red-500 shadow-[0_0_5px_#ef4444]"></div>
+<div class="w-12 h-12 bg-yellow-500/20 rounded-full flex items-center justify-center border border-yellow-500/30 mb-1 text-xs font-bold text-yellow-400 tracking-widest uppercase shadow-inner">
+                        GLO
+                    </div>
+<h3 class="text-sm font-semibold text-white tracking-wide">Glovo</h3>
+<div class="w-full py-1.5 px-3 rounded-lg bg-red-500/10 text-red-400 text-xs font-medium border border-red-500/20 flex items-center justify-center gap-1">
+<span class="material-symbols-outlined text-sm">do_not_disturb_on</span>
+                        Inactive
+                    </div>
+</div>
+</div>
+</div>
+</div>
+<div class="bg-[#1E293B] rounded-3xl shadow-lg border border-white/5 overflow-hidden">
+<div class="bg-primary/5 px-6 py-4 flex justify-between items-center border-l-[6px] border-primary backdrop-blur-md">
+<h2 class="font-bold text-lg text-primary tracking-wide">Price List / Menu</h2>
+<span class="material-symbols-outlined text-primary">expand_more</span>
+</div>
+<div class="p-6">
+<div class="flex gap-2 overflow-x-auto scrollbar-hide mb-6 pb-1">
+<button class="px-4 py-1.5 rounded-full bg-primary text-white text-xs font-medium shadow-neon-sm whitespace-nowrap border border-primary">All</button>
+<button class="px-4 py-1.5 rounded-full bg-[#0F172A] text-gray-400 border border-white/10 hover:border-primary/50 hover:text-white text-xs font-medium whitespace-nowrap transition-all">Starters</button>
+<button class="px-4 py-1.5 rounded-full bg-[#0F172A] text-gray-400 border border-white/10 hover:border-primary/50 hover:text-white text-xs font-medium whitespace-nowrap transition-all">Main Course</button>
+<button class="px-4 py-1.5 rounded-full bg-[#0F172A] text-gray-400 border border-white/10 hover:border-primary/50 hover:text-white text-xs font-medium whitespace-nowrap transition-all">Drinks</button>
+</div>
+<div class="flex flex-col gap-6">
+<div class="bg-[#0F172A] rounded-xl border border-white/5 p-4 relative group hover:border-primary/20 transition-all">
+<div class="flex justify-between items-center mb-4">
+<h3 class="text-white font-semibold text-sm border-l-4 border-primary pl-3">Starters</h3>
+<div class="flex gap-2">
+<button class="text-gray-500 hover:text-white transition-colors"><span class="material-symbols-outlined text-sm">edit</span></button>
+</div>
+</div>
+<div class="space-y-3">
+<div class="flex items-center justify-between py-2 border-b border-white/5 last:border-0 group/item">
+<div class="flex items-center gap-3">
+<img alt="Bruschetta" class="w-10 h-10 rounded-lg object-cover border border-white/10" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCL-qzLLcPMrtfOSmtlkqG5aivQY6a35kiAA0qPRRF5tgwy2vVeCU3J0m4XHLvIs_uYaXLPUaQabrp6WkhzU-NY6fnLK2cDi8kb5XuP0qbG8q0_-oXOhmbjA9nvi8USvVtGoM6HHp9O9fytzdAZBpOe_yZU1Dowb04WJKPvZWCULWXmONT1PUcMdRFxY4qH7M_QS5fRc9xUpYtL0SHG71Nc_jk31O8GcEVE14l-YtrpgpAaYKNUTXahIZCBsCBghQGCMjIKDLd3Sw"/>
+<div>
+<p class="text-sm text-white font-medium">Bruschetta</p>
+<p class="text-[10px] text-gray-500">Tomato, basil, garlic, olive oil</p>
+</div>
+</div>
+<span class="text-primary font-bold text-sm">€3.50</span>
+</div>
+<div class="flex items-center justify-between py-2 border-b border-white/5 last:border-0 group/item">
+<div class="flex items-center gap-3">
+<img alt="Caprese" class="w-10 h-10 rounded-lg object-cover border border-white/10" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBId0hqwNoj0p5Vh96QpRFn6JPGew3GC5RwDXxJxXWNaSvdOQc9UWTojlctqQ4CxI1FXILo6Xakhl9mF464jVKBwzd7R7_2qTxYyHJTTAPw1TzwkOyiL-8MCvUocilwC1YK6NrirYgcU57PcF6TPPoyHiDQCnrD97xODqgCBVcvITk7ZTKboJxPvzzqCmqc9AseE2w4e20JKiDX8TM6oYkXJav_h8vCjICTfpabgwM6DyrzfTVfc_WehHzwBz2qm4pZsQjSmUPvbg"/>
+<div>
+<p class="text-sm text-white font-medium">Caprese</p>
+<p class="text-[10px] text-gray-500">Mozzarella, tomato, basil</p>
+</div>
+</div>
+<span class="text-primary font-bold text-sm">€4.25</span>
+</div>
+</div>
+<button class="w-full mt-4 flex items-center justify-center gap-2 py-2 border border-dashed border-gray-600 rounded-lg text-gray-400 hover:text-primary hover:border-primary hover:bg-primary/5 transition-all text-xs font-medium">
+<span class="material-symbols-outlined text-sm">add</span>
+                        Add Item
+                   </button>
+</div>
+<div class="bg-[#0F172A] rounded-xl border border-white/5 p-4 relative group hover:border-primary/20 transition-all">
+<div class="flex justify-between items-center mb-4">
+<h3 class="text-white font-semibold text-sm border-l-4 border-primary pl-3">Main Course</h3>
+<div class="flex gap-2">
+<button class="text-gray-500 hover:text-white transition-colors"><span class="material-symbols-outlined text-sm">edit</span></button>
+</div>
+</div>
+<div class="space-y-3">
+<div class="flex items-center justify-between py-2 border-b border-white/5 last:border-0 group/item">
+<div class="flex items-center gap-3">
+<img alt="Lasagna" class="w-10 h-10 rounded-lg object-cover border border-white/10" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDBbspIxQqRCEwQKqdyfE2A0Pfifg15oUXv0OO0DHefFAYpCtZAukkT0bpc4jALb1CU7eVrZQLWfDZ9NF7vksNPCVCXVkDbssejiKDCSrf52hnGtOpND3barAd6P4VlJjjXPRlQQeKE1pXBNACDIYuJTlKAoi7iQ6lXgPqAfPeMZgG9o8_2xDHUMkLXLRIUWcj9AuP05O9AsRX30r33RJneqaqQDFUujNIawiE-Tep_NVU3TdujgHDeENwE7PdZFN15Jet1vK5IEw"/>
+<div>
+<p class="text-sm text-white font-medium">Lasagna Bolognese</p>
+<p class="text-[10px] text-gray-500">Traditional meat lasagna</p>
+</div>
+</div>
+<span class="text-primary font-bold text-sm">€12.50</span>
+</div>
+<div class="flex items-center justify-between py-2 border-b border-white/5 last:border-0 group/item">
+<div class="flex items-center gap-3">
+<img alt="Spaghetti" class="w-10 h-10 rounded-lg object-cover border border-white/10" src="https://lh3.googleusercontent.com/aida-public/AB6AXuD4ZIR0Ll1B9-YiQVSBIEQGDXf7jA9Bb9-YcSjADeLVAgq6Uet1v5jffvCO3kenMjF6UggyuWHv8ydwEs2y2XkgYIKlebAvK4IO1Vw2lMKyIpnaElhgn35Q9uoec3Bz2snBrEyMir9ORcbQkbTfnLl7dwYYpIj3AoJJrZVsUJa4s_EeAgptuIxucE4abl5qfut_c8ViMivLON5wgX39dId5Q8RnBdeMPXG_OMbzKgXZtG5HXEyJDTZXVAUFQ3sMUNkztBnB4aP6ow"/>
+<div>
+<p class="text-sm text-white font-medium">Spaghetti Carbonara</p>
+<p class="text-[10px] text-gray-500">Pancetta, egg, parmesan</p>
+</div>
+</div>
+<span class="text-primary font-bold text-sm">€10.00</span>
+</div>
+</div>
+<button class="w-full mt-4 flex items-center justify-center gap-2 py-2 border border-dashed border-gray-600 rounded-lg text-gray-400 hover:text-primary hover:border-primary hover:bg-primary/5 transition-all text-xs font-medium">
+<span class="material-symbols-outlined text-sm">add</span>
+                        Add Item
+                   </button>
+</div>
+<div class="bg-[#0F172A] rounded-xl border border-white/5 p-4 relative group hover:border-primary/20 transition-all">
+<div class="flex justify-between items-center mb-4">
+<h3 class="text-white font-semibold text-sm border-l-4 border-primary pl-3">Drinks</h3>
+<div class="flex gap-2">
+<button class="text-gray-500 hover:text-white transition-colors"><span class="material-symbols-outlined text-sm">edit</span></button>
+</div>
+</div>
+<div class="space-y-3">
+<div class="flex items-center justify-between py-2 border-b border-white/5 last:border-0 group/item">
+<div class="flex items-center gap-3">
+<img alt="Lemonade" class="w-10 h-10 rounded-lg object-cover border border-white/10" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDjN6-fzsG4ydrSmwEKKjhK0_Mb4dJRGj_7b7O4keAOqzKKlnTpQnSluZjwFFFARPww8Cm4ywU6GvDhmTA7iY_vJJhWRAqIQaSsmEDOJjGOCFNH2jeYoIeXO3g5m8B73sM73AvW-EqNgysY4j3hA_F32MPKrIJGsnjiVNUdd9UB0yMOImpaC_PNIWWQd59SuGW6wGQCaLI8bwDEQ8vSLQv6DTVqQzIQzfRfUlhM9PVvjJbEpKkwRQhEonDOdXVYhfarnkWuaMy5tw"/>
+<div>
+<p class="text-sm text-white font-medium">Homemade Lemonade</p>
+<p class="text-[10px] text-gray-500">Fresh lemon, mint</p>
+</div>
+</div>
+<span class="text-primary font-bold text-sm">€3.50</span>
+</div>
+<div class="flex items-center justify-between py-2 border-b border-white/5 last:border-0 group/item">
+<div class="flex items-center gap-3">
+<img alt="Soda" class="w-10 h-10 rounded-lg object-cover border border-white/10" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCCEKtVeuir3jK6Dkn2zjspQ7YCVdM3i6DnHaq1sUkG3m0isZCnZLaRMdcJrKkh4ZfHXr6MsWDcOwG_6T7_PFWmt9iG3phTMcwHTZheMGM0lXDF7oZ-PoWNJNGWoB38Y0sdnKhKF3gFP3uX2OykG0n4pVIRuKuadSCEKRLR96bCClXRhZFiCcQre3U2B6pPcSr-e-EqBmB4djo4_m-4MXRuD97pepkssDVTF_oB9-gz3v5rZVWuj4DgTf49iNMoz_WA846tqeRm8A"/>
+<div>
+<p class="text-sm text-white font-medium">Italian Soda</p>
+<p class="text-[10px] text-gray-500">Various flavors</p>
+</div>
+</div>
+<span class="text-primary font-bold text-sm">€4.00</span>
+</div>
+</div>
+<button class="w-full mt-4 flex items-center justify-center gap-2 py-2 border border-dashed border-gray-600 rounded-lg text-gray-400 hover:text-primary hover:border-primary hover:bg-primary/5 transition-all text-xs font-medium">
+<span class="material-symbols-outlined text-sm">add</span>
+                        Add Item
+                   </button>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="fixed bottom-24 right-6 z-40">
+<button class="bg-primary hover:bg-purple-600 text-white font-bold py-3 px-6 rounded-full shadow-neon-intense flex items-center gap-2 transform active:scale-95 transition-all">
+<span class="material-symbols-outlined">edit</span>
+<span>Edit Profile</span>
+</button>
+</div>
+<div class="fixed bottom-0 left-0 right-0 bg-[#0F172A] border-t border-white/5 pb-8 pt-4 px-6 z-50 shadow-[0_-5px_20px_rgba(0,0,0,0.5)]">
+<div class="flex justify-between items-center px-1">
+<button class="flex flex-col items-center gap-1.5 text-primary group w-1/5">
+<div class="relative">
+<span class="material-symbols-outlined text-2xl drop-shadow-[0_0_8px_rgba(168,85,247,0.8)]">home</span>
+<div class="absolute -bottom-2 left-1/2 -translate-x-1/2 w-1 h-1 bg-primary rounded-full shadow-[0_0_4px_#A855F7]"></div>
+</div>
+<span class="text-[10px] font-medium drop-shadow-[0_0_8px_rgba(168,85,247,0.6)] mt-1 whitespace-nowrap">Home</span>
+</button>
+<button class="flex flex-col items-center gap-1.5 text-gray-500 hover:text-gray-300 relative group transition-colors w-1/5">
+<div class="relative">
+<span class="material-symbols-outlined text-2xl group-hover:drop-shadow-[0_0_5px_rgba(255,255,255,0.3)] transition-all">notifications</span>
+</div>
+<span class="text-[10px] font-medium mt-1 whitespace-nowrap">Notifications</span>
+</button>
+<button class="flex flex-col items-center gap-1.5 text-gray-500 hover:text-gray-300 group transition-colors w-1/5">
+<span class="material-symbols-outlined text-2xl group-hover:drop-shadow-[0_0_5px_rgba(255,255,255,0.3)] transition-all">insights</span>
+<span class="text-[10px] font-medium mt-1 whitespace-nowrap">Insight</span>
+</button>
+<button class="flex flex-col items-center gap-1.5 text-gray-500 hover:text-gray-300 group transition-colors w-1/5">
+<span class="material-symbols-outlined text-2xl group-hover:drop-shadow-[0_0_5px_rgba(255,255,255,0.3)] transition-all">rate_review</span>
+<span class="text-[10px] font-medium mt-1 whitespace-nowrap">My reviews</span>
+</button>
+<button class="flex flex-col items-center gap-1.5 text-gray-500 hover:text-gray-300 group transition-colors w-1/5">
+<span class="material-symbols-outlined text-2xl group-hover:drop-shadow-[0_0_5px_rgba(255,255,255,0.3)] transition-all">settings</span>
+<span class="text-[10px] font-medium mt-1 whitespace-nowrap">Settings</span>
+</button>
+</div>
+</div>
+</body></html>

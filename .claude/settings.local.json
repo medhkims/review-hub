@@ -1,22 +1,22 @@
 {
   "permissions": {
     "allow": [
-      "Bash(node:*)",
-      "Bash(npm --version:*)",
-      "Bash(for feature in auth profile chat feed settings)",
-      "Bash(do mkdir -p src/data/$feature/{datasources,models,mappers,repositories})",
-      "Bash(done)",
-      "Bash(do mkdir -p src/domain/$feature/{entities,repositories,usecases})",
-      "Bash(do mkdir -p src/presentation/$feature/{screens,components,hooks,store})",
-      "Bash(npm install:*)",
-      "Bash(npx -y firebase-tools@latest login)",
-      "Bash(npm start)",
-      "Bash(npx expo install:*)",
-      "Bash(npx tsc:*)",
-      "Bash(netstat:*)",
-      "Bash(findstr:*)",
-      "Read(//c/Users/ASUS/Desktop/ReviewHub/**)",
-      "Bash(npx expo start:*)"
+      "Bash(*)",
+      "Read(*)",
+      "Write(*)",
+      "Edit(*)",
+      "Glob(*)",
+      "Grep(*)",
+      "mcp__firebase__firebase_get_environment",
+      "mcp__firebase__firebase_login",
+      "mcp__firebase__firebase_list_projects",
+      "mcp__firebase__firebase_update_environment",
+      "mcp__firebase__firebase_list_apps",
+      "mcp__firebase__firebase_create_app",
+      "mcp__firebase__firebase_get_sdk_config",
+      "mcp__firebase__firebase_init",
+      "mcp__firebase__remoteconfig_get_template",
+      "mcp__firebase__remoteconfig_update_template"
     ]
   }
 }

@@ -4,32 +4,27 @@
     "slug": "reviewhub",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./src/assets/images/icon.png",
     "scheme": "reviewhub",
     "userInterfaceStyle": "automatic",
-    "splash": {
-      "image": "./src/assets/images/splash.png",
-      "resizeMode": "contain",
-      "backgroundColor": "#ffffff"
-    },
     "assetBundlePatterns": [
       "**/*"
     ],
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.reviewhub.app"
+      "bundleIdentifier": "com.reviewhub.app",
+      "googleServicesFile": "./GoogleService-Info.plist"
     },
     "android": {
+      "package": "com.reviewhub.app",
+      "googleServicesFile": "./google-services.json",
       "adaptiveIcon": {
-        "foregroundImage": "./src/assets/images/adaptive-icon.png",
+        "foregroundImage": "./assets/icon.png",
         "backgroundColor": "#ffffff"
-      },
-      "package": "com.reviewhub.app"
+      }
     },
     "web": {
       "bundler": "metro",
-      "output": "static",
-      "favicon": "./src/assets/images/favicon.png"
+      "output": "static"
     },
     "plugins": [
       "expo-router",
@@ -38,6 +33,18 @@
     ],
     "experiments": {
       "typedRoutes": true
+    },
+    "extra": {
+      "firebase": {
+        "apiKey": "AIzaSyC2P11O4HM--Gu8XaCV3lRgg-hqZ7qvV8g",
+        "authDomain": "reviewhub-91cfb.firebaseapp.com",
+        "projectId": "reviewhub-91cfb",
+        "storageBucket": "reviewhub-91cfb.firebasestorage.app",
+        "messagingSenderId": "713435343120",
+        "appId": "1:713435343120:web:054ce9a892746b748cdd95",
+        "measurementId": "G-PGYF9P58JX",
+        "webClientId": "713435343120-ja338uc9vie0un4c48jq4pdk54ltjigl.apps.googleusercontent.com"
+      }
     }
   }
 }

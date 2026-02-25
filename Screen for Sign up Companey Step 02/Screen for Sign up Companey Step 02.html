@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Company Sign-Up Step 2</title>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            colors: {
+              "primary": "#a855f7",
+              "background-light": "#f7f5f8",
+              "background-dark": "#0F172A", // Adapted to user request from #191022
+              "surface-dark": "#1E293B",    // Added for card backgrounds
+            },
+            fontFamily: {
+              "display": ["Plus Jakarta Sans", "sans-serif"]
+            },
+            borderRadius: {"DEFAULT": "1rem", "lg": "2rem", "xl": "3rem", "full": "9999px"},
+          },
+        },
+      }
+    </script>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background-light dark:bg-background-dark font-display min-h-screen flex flex-col items-center justify-center selection:bg-primary/30">
+<div class="relative flex h-full w-full max-w-md flex-col overflow-hidden bg-background-light dark:bg-background-dark min-h-screen">
+<!-- Status Bar Placeholder (Visual only) -->
+<div class="h-10 w-full bg-transparent"></div>
+<!-- Header -->
+<div class="flex items-center px-6 py-4 justify-between">
+<button class="text-slate-900 dark:text-white flex size-10 shrink-0 items-center justify-center rounded-full hover:bg-slate-200 dark:hover:bg-slate-800 transition-colors">
+<span class="material-symbols-outlined !text-2xl">arrow_back_ios_new</span>
+</button>
+<div class="flex flex-col items-center">
+<h2 class="text-slate-900 dark:text-white text-lg font-bold leading-tight tracking-tight">Business Details</h2>
+<span class="text-slate-500 dark:text-slate-400 text-xs font-medium mt-0.5">Step 2 of 3</span>
+</div>
+<div class="w-10"></div> <!-- Spacer for visual balance -->
+</div>
+<!-- Progress Bar -->
+<div class="w-full px-6 py-2">
+<div class="h-1.5 w-full bg-slate-200 dark:bg-slate-800 rounded-full overflow-hidden">
+<div class="h-full w-2/3 bg-primary rounded-full"></div>
+</div>
+</div>
+<!-- Main Content -->
+<div class="flex-1 flex flex-col px-6 pt-6 pb-8 overflow-y-auto">
+<div class="mb-8">
+<h1 class="text-slate-900 dark:text-white text-3xl font-bold leading-tight mb-2">Connect online</h1>
+<p class="text-slate-500 dark:text-slate-400 text-base">Make it easy for customers to find your location and follow you online.</p>
+</div>
+<form class="flex flex-col gap-5">
+<!-- Location Input -->
+<div class="group">
+<label class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2 ml-1" for="location">Location</label>
+<div class="relative flex items-center">
+<div class="absolute inset-y-0 left-0 flex items-center pl-4 pointer-events-none text-slate-400 dark:text-slate-500 group-focus-within:text-primary transition-colors">
+<span class="material-symbols-outlined">location_on</span>
+</div>
+<input class="block w-full rounded-2xl border-0 py-4 pl-12 pr-4 text-slate-900 dark:text-white bg-white dark:bg-surface-dark shadow-sm ring-1 ring-inset ring-slate-200 dark:ring-slate-700 placeholder:text-slate-400 focus:ring-2 focus:ring-inset focus:ring-primary sm:text-base sm:leading-6 transition-all" id="location" placeholder="e.g. 123 Rue de la Liberté, Tunis" type="text"/>
+</div>
+</div>
+<!-- Website Input -->
+<div class="group">
+<label class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2 ml-1" for="website">Website</label>
+<div class="relative flex items-center">
+<div class="absolute inset-y-0 left-0 flex items-center pl-4 pointer-events-none text-slate-400 dark:text-slate-500 group-focus-within:text-primary transition-colors">
+<span class="material-symbols-outlined">language</span>
+</div>
+<input class="block w-full rounded-2xl border-0 py-4 pl-12 pr-4 text-slate-900 dark:text-white bg-white dark:bg-surface-dark shadow-sm ring-1 ring-inset ring-slate-200 dark:ring-slate-700 placeholder:text-slate-400 focus:ring-2 focus:ring-inset focus:ring-primary sm:text-base sm:leading-6 transition-all" id="website" placeholder="https://www.yourbusiness.tn" type="url"/>
+</div>
+</div>
+<!-- Facebook Input -->
+<div class="group">
+<label class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2 ml-1" for="facebook">Facebook</label>
+<div class="relative flex items-center">
+<div class="absolute inset-y-0 left-0 flex items-center pl-4 pointer-events-none text-slate-400 dark:text-slate-500 group-focus-within:text-primary transition-colors">
+<!-- Custom SVG for Brand Icon -->
+<svg class="h-6 w-6 fill-current" viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+<path d="M12 2.04C6.5 2.04 2 6.53 2 12.06C2 17.06 5.66 21.21 10.44 21.96V14.96H7.9V12.06H10.44V9.85C10.44 7.34 11.93 5.96 14.15 5.96C15.21 5.96 16.12 6.04 16.12 6.04V8.51H15.02C13.78 8.51 13.39 9.28 13.39 10.07V12.06H16.18L15.74 14.96H13.39V21.96C18.16 21.21 21.82 17.06 21.82 12.06C21.82 6.53 17.32 2.04 12 2.04Z"></path>
+</svg>
+</div>
+<input class="block w-full rounded-2xl border-0 py-4 pl-12 pr-4 text-slate-900 dark:text-white bg-white dark:bg-surface-dark shadow-sm ring-1 ring-inset ring-slate-200 dark:ring-slate-700 placeholder:text-slate-400 focus:ring-2 focus:ring-inset focus:ring-primary sm:text-base sm:leading-6 transition-all" id="facebook" placeholder="facebook.com/yourpage" type="url"/>
+</div>
+</div>
+<!-- Instagram Input -->
+<div class="group">
+<label class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2 ml-1" for="instagram">Instagram</label>
+<div class="relative flex items-center">
+<div class="absolute inset-y-0 left-0 flex items-center pl-4 pointer-events-none text-slate-400 dark:text-slate-500 group-focus-within:text-primary transition-colors">
+<!-- Custom SVG for Brand Icon -->
+<svg class="h-6 w-6 fill-current" viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+<path d="M7.8,2H16.2C19.4,2 22,4.6 22,7.8V16.2A5.8,5.8 0 0,1 16.2,22H7.8C4.6,22 2,19.4 2,16.2V7.8A5.8,5.8 0 0,1 7.8,2M7.6,4A3.6,3.6 0 0,0 4,7.6V16.4C4,18.39 5.61,20 7.6,20H16.4A3.6,3.6 0 0,0 20,16.4V7.6C20,5.61 18.39,4 16.4,4H7.6M17.25,5.5A1.25,1.25 0 0,1 18.5,6.75A1.25,1.25 0 0,1 17.25,8A1.25,1.25 0 0,1 16,6.75A1.25,1.25 0 0,1 17.25,5.5M12,7A5,5 0 0,1 17,12A5,5 0 0,1 12,17A5,5 0 0,1 7,12A5,5 0 0,1 12,7M12,9A3,3 0 0,0 9,12A3,3 0 0,0 12,15A3,3 0 0,0 15,12A3,3 0 0,0 12,9Z"></path>
+</svg>
+</div>
+<input class="block w-full rounded-2xl border-0 py-4 pl-12 pr-4 text-slate-900 dark:text-white bg-white dark:bg-surface-dark shadow-sm ring-1 ring-inset ring-slate-200 dark:ring-slate-700 placeholder:text-slate-400 focus:ring-2 focus:ring-inset focus:ring-primary sm:text-base sm:leading-6 transition-all" id="instagram" placeholder="instagram.com/yourhandle" type="url"/>
+</div>
+</div>
+</form>
+<div class="mt-auto pt-10 pb-6 flex flex-col gap-4">
+<button class="w-full rounded-full bg-primary py-4 px-6 text-base font-bold text-white shadow-lg shadow-primary/25 hover:bg-purple-500 hover:shadow-primary/40 focus:outline-none focus:ring-4 focus:ring-primary/30 transition-all active:scale-[0.98]">
+                    Next
+                </button>
+<button class="w-full rounded-full bg-transparent py-2 px-6 text-sm font-medium text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-white transition-colors">
+                    Skip for now
+                </button>
+</div>
+</div>
+</div>
+</body></html>

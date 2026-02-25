@@ -5,26 +5,101 @@
     "retry": "Retry",
     "save": "Save",
     "cancel": "Cancel",
-    "offline": "You are offline"
+    "confirm": "Confirm",
+    "ok": "OK",
+    "offline": "You are offline",
+    "saving": "Saving...",
+    "comingSoon": "Coming Soon",
+    "success": "Success"
   },
   "tabs": {
+    "home": "Home",
+    "notifications": "Notifications",
+    "myReviews": "My Reviews",
+    "settings": "Settings",
     "feed": "Feed",
     "chat": "Chat",
     "profile": "Profile",
-    "settings": "Settings"
+    "dashboard": "Dashboard",
+    "users": "Users",
+    "queue": "Queue",
+    "activity": "Activity",
+    "myBusiness": "My Business",
+    "reviews": "Reviews"
+  },
+  "roles": {
+    "admin": "Admin",
+    "moderator": "Moderator",
+    "simple_user": "User",
+    "business_owner": "Business Owner"
   },
   "auth": {
     "signIn": {
-      "title": "Sign In",
-      "email": "Email",
+      "title": "Welcome Back!",
+      "subtitle": "Log in to continue exploring businesses",
+      "userType": "Simple User",
+      "socialPrompt": "Log in instantly with",
+      "orEmail": "Or continue with email",
+      "email": "Email Address",
+      "emailPlaceholder": "hello@example.com",
       "password": "Password",
-      "button": "Sign In",
-      "noAccount": "Don't have an account?"
+      "passwordPlaceholder": "Enter your password",
+      "forgotPassword": "Forgot Password?",
+      "button": "Log In",
+      "noAccount": "Don't have an account?",
+      "swipeToSignUp": "Swipe to Sign Up"
     },
     "signUp": {
-      "title": "Sign Up",
-      "button": "Create Account"
+      "title": "Create Account",
+      "subtitle": "Join the best business directory in Tunisia",
+      "button": "Sign Up",
+      "displayName": "Full Name",
+      "email": "Email Address",
+      "password": "Password",
+      "confirmPassword": "Confirm Password",
+      "hasAccount": "Already have an account?",
+      "login": "Login",
+      "userTypeSimple": "Simple User",
+      "userTypeCompany": "Company Owner",
+      "orRegisterWithEmail": "Or register with email",
+      "agreeTerms": "I agree to the",
+      "termsAndConditions": "Terms & Conditions",
+      "and": "and",
+      "privacyPolicy": "Privacy Policy"
+    },
+    "currentPassword": "Current Password",
+    "newPassword": "New Password",
+    "confirmNewPassword": "Confirm New Password",
+    "updatePassword": "Update Password",
+    "createStrongPassword": "Create a strong password to keep your account secure.",
+    "passwordChangedSuccess": "Your password has been updated successfully.",
+    "fillAllFields": "Please fill in all fields",
+    "passwordMinLength": "Password must be at least 6 characters",
+    "passwordsDoNotMatch": "Passwords do not match"
+  },
+  "home": {
+    "title": "Discover Tunisia",
+    "subtitle": "Find the best local gems",
+    "searchPlaceholder": "Search businesses...",
+    "categoriesSection": "Categories",
+    "featuredSection": "Featured Businesses",
+    "businessesSection": "Businesses",
+    "seeAll": "See All",
+    "noResults": "No businesses found",
+    "errorLoading": "Failed to load businesses",
+    "allCategories": {
+      "title": "All Categories",
+      "searchPlaceholder": "Search categories...",
+      "empty": "No categories found"
     }
+  },
+  "notifications": {
+    "title": "Notifications",
+    "empty": "No notifications yet"
+  },
+  "reviews": {
+    "title": "My Reviews",
+    "empty": "No reviews yet"
   },
   "feed": {
     "title": "Feed",
@@ -35,9 +110,222 @@
     "empty": "No conversations yet"
   },
   "profile": {
-    "title": "Profile"
+    "title": "Profile",
+    "sections": {
+      "profile": "Profile",
+      "settings": "Settings",
+      "support": "Support"
+    },
+    "personalInfo": "Personal Info",
+    "wishlist": "Wishlist",
+    "verifyAccount": "Verify account",
+    "resetPassword": "Reset Password"
   },
   "settings": {
-    "title": "Settings"
+    "title": "Settings",
+    "movedToProfile": "All settings are now available in the Profile tab",
+    "goToProfile": "Go to Profile",
+    "profile": "Profile",
+    "settingsSection": "Settings",
+    "personalInfo": "Personal Info",
+    "wishlist": "Wishlist",
+    "verifyAccount": "Verify account",
+    "resetPassword": "Reset Password",
+    "notifications": "Notifications",
+    "darkMode": "Dark Mode",
+    "language": "Language",
+    "support": "Support",
+    "helpCenter": "Help Center",
+    "privacyPolicy": "Privacy Policy",
+    "logout": "Log out"
+  },
+  "support": {
+    "helpCenter": "Help Center",
+    "privacyPolicy": "Privacy Policy",
+    "logout": "Log out"
+  },
+  "personalInfo": {
+    "title": "Personal Info",
+    "fullName": "Full Name",
+    "fullNamePlaceholder": "Enter your full name",
+    "email": "E-mail",
+    "emailPlaceholder": "Enter your email",
+    "phoneNumber": "Phone Number",
+    "phoneNumberPlaceholder": "Enter your phone number",
+    "changeEmail": "Change email",
+    "saveChanges": "Save Changes",
+    "success": "Success",
+    "error": "Error",
+    "updateSuccess": "Your profile has been updated successfully",
+    "emailUpdateSuccess": "Your email has been updated successfully. Please verify your new email.",
+    "emailUnchanged": "The email address is the same. Please enter a new email.",
+    "changeEmailConfirm": "Are you sure you want to change your email? You may need to re-authenticate.",
+    "avatarUploadSoon": "Avatar upload feature is coming soon!",
+    "permissionRequired": "Permission Required",
+    "galleryPermissionMessage": "Please allow access to your photo library to change your profile picture.",
+    "uploadingAvatar": "Uploading photo...",
+    "uploadSuccess": "Profile photo updated successfully"
+  },
+  "changeEmail": {
+    "title": "Change Email",
+    "heading": "Change your email address",
+    "description": "Enter your new email address to update your account.",
+    "currentEmail": "Current Email",
+    "newEmail": "New Email",
+    "newEmailPlaceholder": "name@domain.com",
+    "verificationNote": "We will send a verification link to this address.",
+    "sendConfirmation": "Send Confirmation",
+    "sending": "Sending...",
+    "success": "Verification email sent! Please check your inbox.",
+    "errorSameEmail": "The new email must be different from your current email.",
+    "errorInvalidEmail": "Please enter a valid email address.",
+    "errorEmpty": "Please enter a new email address."
+  },
+  "addEmailForPassword": {
+    "title": "Add Your Email",
+    "heading": "Add Your Email",
+    "description": "To change your password, please add an email address to your account first. We will send a confirmation link to this address.",
+    "emailLabel": "Email Address",
+    "emailPlaceholder": "e.g. name@example.com",
+    "sendConfirmation": "Send Confirmation",
+    "sending": "Sending...",
+    "success": "Confirmation email sent! Please check your inbox.",
+    "errorEmpty": "Please enter an email address.",
+    "errorInvalidEmail": "Please enter a valid email address."
+  },
+  "changePassword": {
+    "title": "Change Password",
+    "description": "Create a strong password to keep your account secure.",
+    "currentPassword": "Current Password",
+    "newPassword": "New Password",
+    "confirmPassword": "Confirm New Password",
+    "updateButton": "Update Password",
+    "showPassword": "Show password",
+    "hidePassword": "Hide password",
+    "successTitle": "Success",
+    "successMessage": "Your password has been updated successfully.",
+    "errorCurrentRequired": "Please enter your current password.",
+    "errorNewRequired": "Please enter a new password.",
+    "errorMinLength": "Password must be at least 6 characters.",
+    "errorMismatch": "Passwords do not match.",
+    "errorSamePassword": "New password must be different from your current password."
+  },
+  "confirmPasswordEmail": {
+    "heading": "Confirm Your Email",
+    "description": "We've sent a verification link to your email address. Please click the link to confirm your password change.",
+    "goToInbox": "Go to Inbox",
+    "close": "Close"
+  },
+  "admin": {
+    "home": {
+      "title": "Admin Dashboard",
+      "subtitle": "Manage your platform",
+      "totalUsers": "Total Users",
+      "activeUsers": "Active Users",
+      "recentSignups": "Recent Signups",
+      "manageUsers": "Manage Users",
+      "usersByRole": "Users by Role"
+    },
+    "users": {
+      "title": "User Management",
+      "searchPlaceholder": "Search users...",
+      "changeRole": "Change Role",
+      "roleUpdated": "Role updated successfully",
+      "roleUpdateFailed": "Failed to update role"
+    }
+  },
+  "moderator": {
+    "home": {
+      "title": "Moderator Dashboard",
+      "subtitle": "Review pending content",
+      "pendingReviews": "Pending Reviews",
+      "recentActivity": "Recent Activity",
+      "flaggedContent": "Flagged Content"
+    }
+  },
+  "businessOwner": {
+    "home": {
+      "title": "Business Dashboard",
+      "subtitle": "Your business at a glance",
+      "totalReviews": "Total Reviews",
+      "averageRating": "Average Rating",
+      "recentReviews": "Recent Reviews",
+      "businessOverview": "Business Overview"
+    },
+    "companyProfile": {
+      "title": "Company Profile",
+      "addCoverPhoto": "Add Cover Photo",
+      "logo": "Logo",
+      "businessName": "Your Business Name",
+      "selectCategory": "Select Category",
+      "description": "Description",
+      "descriptionPlaceholder": "Add a description for your business...",
+      "information": "Information",
+      "editAll": "Edit All",
+      "location": "Location",
+      "addLocation": "Add Location",
+      "locationHint": "Tap to set address on map",
+      "contactSocials": "Contact & Socials",
+      "phoneNumber": "Phone number",
+      "emailAddress": "Email address",
+      "website": "Website",
+      "instagram": "Instagram",
+      "facebook": "Facebook",
+      "tiktok": "TikTok",
+      "linkedin": "LinkedIn",
+      "upwork": "Upwork",
+      "add": "Add +",
+      "addLink": "Add Link",
+      "delivery": "Delivery",
+      "yassir": "Yassir",
+      "glovo": "Glovo",
+      "inactive": "Inactive",
+      "active": "Active",
+      "manage": "Manage",
+      "priceList": "Price List / Menu",
+      "priceListMenu": "Price List / Menu",
+      "visible": "VISIBLE",
+      "catalogEmpty": "Your catalog is empty.",
+      "addCategory": "Add Category",
+      "addItem": "Add Item",
+      "all": "All",
+      "editProfile": "Edit Profile",
+      "saveChanges": "Save Changes"
+    }
+  },
+  "businessDetail": {
+    "coverPhoto": "Cover photo",
+    "openNow": "Open now",
+    "closed": "Closed",
+    "reviews": "Reviews",
+    "addReview": "Add A Review",
+    "addToFavorites": "Add to favorites",
+    "removeFromFavorites": "Remove from favorites",
+    "recentReviews": "Recent Reviews",
+    "viewAll": "View All",
+    "information": "Information",
+    "location": "Location",
+    "contactAndSocials": "Contact & Socials",
+    "phone": "Phone",
+    "email": "Email",
+    "website": "Website",
+    "delivery": "Delivery",
+    "orderVia": "Order via",
+    "menu": "Menu",
+    "all": "All",
+    "allCategories": "All categories"
+  },
+  "permissions": {
+    "denied": "Access Denied",
+    "deniedMessage": "You do not have permission to view this page."
+  },
+  "wishlist": {
+    "title": "Wishlist",
+    "allResults": "All results",
+    "empty": "Your wishlist is empty",
+    "emptyDescription": "Save places you want to visit and review later",
+    "review": "Review",
+    "removeSuccess": "Removed from wishlist",
+    "removeError": "Failed to remove item"
   }
 }
