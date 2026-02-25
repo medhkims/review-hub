@@ -6,10 +6,13 @@ import { ScreenLayout } from '@/presentation/shared/layouts/ScreenLayout';
 import { AppText } from '@/presentation/shared/components/ui/AppText';
 import { StatCard } from '../components/StatCard';
 import { useAdminDashboard } from '../hooks/useAdminDashboard';
+import { useAnalyticsScreen } from '@/presentation/shared/hooks/useAnalyticsScreen';
+import { AnalyticsScreens } from '@/core/analytics/analyticsKeys';
 import { colors } from '@/core/theme/colors';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 
 export default function AdminHomeScreen() {
+  useAnalyticsScreen(AnalyticsScreens.ADMIN_DASHBOARD);
   const { t } = useTranslation();
   const router = useRouter();
   const { totalUsers, usersByRole, recentSignups, isLoading, refresh } = useAdminDashboard();

@@ -15,7 +15,7 @@ import { doc, setDoc, getDoc, serverTimestamp } from 'firebase/firestore';
 import { UserModel } from '../models/userModel';
 import { UserMapper } from '../mappers/userMapper';
 import { AuthException, ServerException } from '@/core/error/exceptions';
-import { UserRole, DEFAULT_ROLE } from '@/domain/profile/entities/userRole';
+import { UserRole, DEFAULT_ROLE } from '@/core/types/userRole';
 
 export interface AuthRemoteDataSource {
   signIn(email: string, password: string): Promise<UserModel>;
@@ -31,10 +31,11 @@ export class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
     try {
       const userCredential = await signInWithEmailAndPassword(auth, email, password);
       return UserMapper.fromFirebaseUser(userCredential.user);
-    } catch (error: any) {
+    } catch (error: unknown) {
+      const firebaseError = error as { message?: string; code?: string };
       throw new AuthException(
-        error.message || 'Sign in failed',
-        error.code
+        firebaseError.message || 'Sign in failed',
+        firebaseError.code
       );
     }
   }
@@ -78,13 +79,14 @@ export class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
       });
 
       return UserMapper.fromFirebaseUser(updatedUser);
-    } catch (error: any) {
+    } catch (error: unknown) {
       if (error instanceof ServerException) {
         throw error;
       }
+      const firebaseError = error as { message?: string; code?: string };
       throw new AuthException(
-        error.message || 'Sign up failed',
-        error.code
+        firebaseError.message || 'Sign up failed',
+        firebaseError.code
       );
     }
   }
@@ -92,10 +94,11 @@ export class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
   async signOut(): Promise<void> {
     try {
       await firebaseSignOut(auth);
-    } catch (error: any) {
+    } catch (error: unknown) {
+      const firebaseError = error as { message?: string; code?: string };
       throw new AuthException(
-        error.message || 'Sign out failed',
-        error.code
+        firebaseError.message || 'Sign out failed',
+        firebaseError.code
       );
     }
   }

@@ -1,6 +1,7 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { BusinessModel } from '../models/businessModel';
 import { CacheException } from '@/core/error/exceptions';
+import { deserializeTimestampFromMs } from '@/core/utils/timestampSerializer';
 
 export interface BusinessLocalDataSource {
   getCachedBusinesses(key: string): Promise<BusinessModel[] | null>;
@@ -18,12 +19,8 @@ export class BusinessLocalDataSourceImpl implements BusinessLocalDataSource {
       const parsed = JSON.parse(cached) as Array<Record<string, unknown>>;
       return parsed.map((item) => ({
         ...item,
-        created_at: {
-          toDate: () => new Date(item.created_at_ms as number),
-        },
-        updated_at: {
-          toDate: () => new Date(item.updated_at_ms as number),
-        },
+        created_at: deserializeTimestampFromMs(item.created_at_ms as number),
+        updated_at: deserializeTimestampFromMs(item.updated_at_ms as number),
       })) as unknown as BusinessModel[];
     } catch {
       throw new CacheException('Failed to retrieve cached businesses');

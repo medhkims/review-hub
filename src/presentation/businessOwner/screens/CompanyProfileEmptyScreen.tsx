@@ -11,9 +11,12 @@ import { DescriptionCard } from '../components/DescriptionCard';
 import { InformationCard } from '../components/InformationCard';
 import { DeliveryCard } from '../components/DeliveryCard';
 import { PriceListCard } from '../components/PriceListCard';
+import { useAnalyticsScreen } from '@/presentation/shared/hooks/useAnalyticsScreen';
+import { AnalyticsScreens } from '@/core/analytics/analyticsKeys';
 import { colors } from '@/core/theme/colors';
 
 export default function CompanyProfileEmptyScreen() {
+  useAnalyticsScreen(AnalyticsScreens.COMPANY_PROFILE_EMPTY);
   const { t } = useTranslation();
   const router = useRouter();
 

@@ -10,10 +10,13 @@ import { CategoryChip } from '../components/CategoryChip';
 import { BusinessCard } from '../components/BusinessCard';
 import { useHome } from '../hooks/useHome';
 import { useAuthStore } from '@/presentation/auth/store/authStore';
+import { useAnalyticsScreen } from '@/presentation/shared/hooks/useAnalyticsScreen';
+import { AnalyticsScreens } from '@/core/analytics/analyticsKeys';
 import { BusinessEntity } from '@/domain/business/entities/businessEntity';
 import { colors } from '@/core/theme/colors';
 
 export default function HomeScreen() {
+  useAnalyticsScreen(AnalyticsScreens.HOME);
   const { t } = useTranslation();
   const router = useRouter();
   const { user } = useAuthStore();

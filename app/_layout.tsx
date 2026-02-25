@@ -4,6 +4,7 @@ import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { StatusBar } from 'expo-status-bar';
 import { ErrorBoundary } from '@/presentation/shared/components/ErrorBoundary';
 import '@/core/i18n/i18n';
+import '@/core/firebase/firebaseConfig';
 import '../global.css';
 
 export default function RootLayout() {

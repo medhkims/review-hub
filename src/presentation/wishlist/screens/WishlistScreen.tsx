@@ -14,6 +14,8 @@ import { ScreenLayout } from '@/presentation/shared/layouts/ScreenLayout';
 import { AppText } from '@/presentation/shared/components/ui/AppText';
 import { useWishlist } from '../hooks/useWishlist';
 import { useAuthStore } from '@/presentation/auth/store/authStore';
+import { useAnalyticsScreen } from '@/presentation/shared/hooks/useAnalyticsScreen';
+import { AnalyticsScreens } from '@/core/analytics/analyticsKeys';
 import { WishlistItemEntity } from '@/domain/wishlist/entities/wishlistItemEntity';
 
 const NEON_PURPLE = '#A855F7';
@@ -132,6 +134,7 @@ const EmptyState = () => {
 // ─── WishlistScreen ───────────────────────────────────────────────────────────
 
 export default function WishlistScreen() {
+  useAnalyticsScreen(AnalyticsScreens.WISHLIST);
   const { t } = useTranslation();
   const router = useRouter();
   const { user } = useAuthStore();

@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { View, Pressable, Image, Platform } from 'react-native';
+import { useTranslation } from 'react-i18next';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import * as ImagePicker from 'expo-image-picker';
 import { AppText } from '@/presentation/shared/components/ui/AppText';
@@ -130,6 +131,7 @@ export const CompanySignUpStep3: React.FC<CompanySignUpStep3Props> = ({
   onBack,
   isLoading = false,
 }) => {
+  const { t } = useTranslation();
   const [logoUri, setLogoUri] = useState<string | null>(null);
   const [coverUri, setCoverUri] = useState<string | null>(null);
 
@@ -182,12 +184,12 @@ export const CompanySignUpStep3: React.FC<CompanySignUpStep3Props> = ({
 
         <View style={{ alignItems: 'center' }}>
           <AppText style={{ fontSize: 18, fontWeight: '700', color: colors.textWhite }}>
-            Business Branding
+            {t('auth.companySignUp.step3Title')}
           </AppText>
           <AppText
             style={{ fontSize: 12, fontWeight: '500', color: colors.textSlate400, marginTop: 2 }}
           >
-            Step 3 of 3
+            {t('auth.companySignUp.stepOf', { current: 3, total: 3 })}
           </AppText>
         </View>
 
@@ -223,12 +225,12 @@ export const CompanySignUpStep3: React.FC<CompanySignUpStep3Props> = ({
       <AppText
         style={{ fontSize: 28, fontWeight: '700', color: colors.textWhite, marginBottom: 8 }}
       >
-        Connect visually
+        {t('auth.companySignUp.step3Subtitle')}
       </AppText>
       <AppText
         style={{ fontSize: 15, color: colors.textSlate400, marginBottom: 28, lineHeight: 22 }}
       >
-        Upload your brand assets to make your profile stand out to potential customers.
+        {t('auth.companySignUp.step3Description')}
       </AppText>
 
       {/* Upload fields */}

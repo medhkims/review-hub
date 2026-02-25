@@ -1,6 +1,7 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { WishlistItemModel } from '../models/wishlistItemModel';
 import { CacheException } from '@/core/error/exceptions';
+import { serializeTimestamp, deserializeTimestamp } from '@/core/utils/timestampSerializer';
 
 export interface WishlistLocalDataSource {
   getCachedWishlist(userId: string): Promise<WishlistItemModel[] | null>;
@@ -28,19 +29,11 @@ export class WishlistLocalDataSourceImpl implements WishlistLocalDataSource {
       // Restore Timestamp-like objects from serialized format
       return parsed.map((item) => ({
         ...item,
-        added_at: {
-          toDate: () =>
-            new Date(
-              ((item.added_at as Record<string, number>)._seconds ?? 0) * 1000
-            ),
-          _seconds: (item.added_at as Record<string, number>)._seconds ?? 0,
-          _nanoseconds:
-            (item.added_at as Record<string, number>)._nanoseconds ?? 0,
-        },
+        added_at: deserializeTimestamp(item.added_at as { _seconds: number; _nanoseconds: number }),
       })) as unknown as WishlistItemModel[];
     } catch (error: unknown) {
-      const err = error as { message?: string };
-      throw new CacheException(err.message || 'Failed to retrieve cached wishlist');
+      const err = error instanceof Error ? error.message : 'Failed to retrieve cached wishlist';
+      throw new CacheException(err);
     }
   }
 
@@ -50,17 +43,13 @@ export class WishlistLocalDataSourceImpl implements WishlistLocalDataSource {
 
       const serializable = items.map((item) => ({
         ...item,
-        added_at: {
-          _seconds: (item.added_at as unknown as { seconds?: number }).seconds ?? 0,
-          _nanoseconds:
-            (item.added_at as unknown as { nanoseconds?: number }).nanoseconds ?? 0,
-        },
+        added_at: serializeTimestamp(item.added_at),
       }));
 
       await AsyncStorage.setItem(cacheKey, JSON.stringify(serializable));
     } catch (error: unknown) {
-      const err = error as { message?: string };
-      throw new CacheException(err.message || 'Failed to cache wishlist');
+      const err = error instanceof Error ? error.message : 'Failed to cache wishlist';
+      throw new CacheException(err);
     }
   }
 
@@ -72,11 +61,7 @@ export class WishlistLocalDataSourceImpl implements WishlistLocalDataSource {
 
       const serialized = {
         ...item,
-        added_at: {
-          _seconds: (item.added_at as unknown as { seconds?: number }).seconds ?? 0,
-          _nanoseconds:
-            (item.added_at as unknown as { nanoseconds?: number }).nanoseconds ?? 0,
-        },
+        added_at: serializeTimestamp(item.added_at),
       };
 
       // Replace existing entry with same id, or prepend new
@@ -89,8 +74,8 @@ export class WishlistLocalDataSourceImpl implements WishlistLocalDataSource {
 
       await AsyncStorage.setItem(cacheKey, JSON.stringify(parsed));
     } catch (error: unknown) {
-      const err = error as { message?: string };
-      throw new CacheException(err.message || 'Failed to add item to wishlist cache');
+      const err = error instanceof Error ? error.message : 'Failed to add item to wishlist cache';
+      throw new CacheException(err);
     }
   }
 
@@ -105,8 +90,8 @@ export class WishlistLocalDataSourceImpl implements WishlistLocalDataSource {
       const updated = parsed.filter((item) => item.id !== itemId);
       await AsyncStorage.setItem(cacheKey, JSON.stringify(updated));
     } catch (error: unknown) {
-      const err = error as { message?: string };
-      throw new CacheException(err.message || 'Failed to update wishlist cache');
+      const err = error instanceof Error ? error.message : 'Failed to update wishlist cache';
+      throw new CacheException(err);
     }
   }
 }

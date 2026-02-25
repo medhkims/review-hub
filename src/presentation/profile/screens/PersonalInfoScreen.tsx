@@ -10,9 +10,12 @@ import { Avatar } from '@/presentation/shared/components/ui/Avatar';
 import { ScreenLayout } from '@/presentation/shared/layouts/ScreenLayout';
 import { useProfile } from '../hooks/useProfile';
 import { useAuth } from '@/presentation/auth/hooks/useAuth';
+import { useAnalyticsScreen } from '@/presentation/shared/hooks/useAnalyticsScreen';
+import { AnalyticsScreens } from '@/core/analytics/analyticsKeys';
 import { colors } from '@/core/theme/colors';
 
 export default function PersonalInfoScreen() {
+  useAnalyticsScreen(AnalyticsScreens.PERSONAL_INFO);
   const router = useRouter();
   const { user } = useAuth();
   const { profile, isLoading, error, isUploading, uploadProgress, updateProfile, updateEmail, uploadAvatar } = useProfile(user?.id);

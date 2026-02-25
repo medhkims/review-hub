@@ -6,8 +6,11 @@ import { useTranslation } from 'react-i18next';
 import { AppText } from '@/presentation/shared/components/ui/AppText';
 import { AppButton } from '@/presentation/shared/components/ui/AppButton';
 import { ScreenLayout } from '@/presentation/shared/layouts/ScreenLayout';
+import { useAnalyticsScreen } from '@/presentation/shared/hooks/useAnalyticsScreen';
+import { AnalyticsScreens } from '@/core/analytics/analyticsKeys';
 
 export default function ConfirmPasswordEmailScreen() {
+  useAnalyticsScreen(AnalyticsScreens.CONFIRM_PASSWORD_EMAIL);
   const { t } = useTranslation();
   const router = useRouter();
 

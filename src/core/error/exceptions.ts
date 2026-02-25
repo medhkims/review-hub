@@ -25,3 +25,17 @@ export class AuthException extends Error {
     this.name = 'AuthException';
   }
 }
+
+export class ValidationException extends Error {
+  constructor(message: string = 'Validation failed') {
+    super(message);
+    this.name = 'ValidationException';
+  }
+}
+
+export class PermissionException extends Error {
+  constructor(message: string = 'Permission denied', public code?: string) {
+    super(message);
+    this.name = 'PermissionException';
+  }
+}

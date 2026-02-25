@@ -2,7 +2,7 @@ import { BusinessRepository } from '@/domain/business/repositories/businessRepos
 import { BusinessEntity } from '@/domain/business/entities/businessEntity';
 import { BusinessDetailEntity } from '@/domain/business/entities/businessDetailEntity';
 import { ReviewEntity } from '@/domain/business/entities/reviewEntity';
-import { RegisterBusinessParams } from '@/domain/business/usecases/registerBusinessUseCase';
+import { RegisterBusinessParams } from '@/domain/business/repositories/businessRepository';
 import { BusinessRemoteDataSource } from '../datasources/businessRemoteDataSource';
 import { BusinessLocalDataSource } from '../datasources/businessLocalDataSource';
 import { BusinessMapper } from '../mappers/businessMapper';

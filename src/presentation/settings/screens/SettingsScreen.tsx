@@ -9,14 +9,19 @@ import { SectionHeader } from '@/presentation/shared/components/ui/SectionHeader
 import { SettingRow } from '@/presentation/shared/components/ui/SettingRow';
 import { useSettingsStore } from '@/presentation/settings/store/settingsStore';
 import { useAuthStore } from '@/presentation/auth/store/authStore';
+import { useAuth } from '@/presentation/auth/hooks/useAuth';
+import { useAnalyticsScreen } from '@/presentation/shared/hooks/useAnalyticsScreen';
+import { AnalyticsScreens } from '@/core/analytics/analyticsKeys';
 import { colors } from '@/core/theme/colors';
 
 export default function SettingsScreen() {
+  useAnalyticsScreen(AnalyticsScreens.SETTINGS);
   const { t } = useTranslation();
   const router = useRouter();
   const settings = useSettingsStore((state) => state.settings);
   const setSettings = useSettingsStore((state) => state.setSettings);
   const { user } = useAuthStore();
+  const { signOut } = useAuth();
 
   const notificationsEnabled = settings?.notificationsEnabled ?? true;
   const darkModeEnabled = settings?.theme === 'dark';
@@ -29,8 +34,8 @@ export default function SettingsScreen() {
     setSettings({ ...settings!, theme: value ? 'dark' : 'light' });
   };
 
-  const handleLogout = () => {
-    // TODO: Wire up signOut use case
+  const handleLogout = async () => {
+    await signOut();
   };
 
   const getInitials = (name: string) => {
@@ -117,13 +122,13 @@ export default function SettingsScreen() {
               iconName="heart"
               iconColor="pink"
               label={t('settings.wishlist')}
-              onPress={() => {}}
+              onPress={() => router.push('/(main)/(profile)/wishlist')}
             />
             <SettingRow
               iconName="shield-check"
               iconColor="green"
               label={t('settings.verifyAccount')}
-              onPress={() => {}}
+              onPress={() => router.push('/(main)/(profile)/personal-info')}
               isLast
             />
           </View>

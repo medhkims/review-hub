@@ -12,12 +12,15 @@ import { InformationSection } from '../components/InformationSection';
 import { DeliverySection } from '../components/DeliverySection';
 import { MenuSection } from '../components/MenuSection';
 import { useBusinessDetail } from '../hooks/useBusinessDetail';
+import { useAnalyticsScreen } from '@/presentation/shared/hooks/useAnalyticsScreen';
+import { AnalyticsScreens } from '@/core/analytics/analyticsKeys';
 
 interface BusinessDetailScreenProps {
   businessId: string;
 }
 
 export default function BusinessDetailScreen({ businessId }: BusinessDetailScreenProps) {
+  useAnalyticsScreen(AnalyticsScreens.BUSINESS_DETAIL);
   const router = useRouter();
   const { t } = useTranslation();
   const { business, reviews, isLoading, error, toggleFavorite, refresh } = useBusinessDetail(businessId);

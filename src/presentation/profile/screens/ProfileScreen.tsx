@@ -10,8 +10,11 @@ import { SettingRow } from '@/presentation/shared/components/ui/SettingRow';
 import { ScreenLayout } from '@/presentation/shared/layouts/ScreenLayout';
 import { useAuth } from '@/presentation/auth/hooks/useAuth';
 import { useSettings } from '@/presentation/settings/hooks/useSettings';
+import { useAnalyticsScreen } from '@/presentation/shared/hooks/useAnalyticsScreen';
+import { AnalyticsScreens } from '@/core/analytics/analyticsKeys';
 
 export default function ProfileScreen() {
+  useAnalyticsScreen(AnalyticsScreens.PROFILE);
   const router = useRouter();
 
   // Auth hook
@@ -108,13 +111,13 @@ export default function ProfileScreen() {
               iconName="shield-check"
               iconColor="green"
               label="Verify account"
-              onPress={() => console.log('Verify Account')}
+              onPress={() => router.push('/(main)/(profile)/personal-info')}
             />
             <SettingRow
               iconName="lock-reset"
               iconColor="orange"
               label="Reset Password"
-              onPress={() => console.log('Reset Password')}
+              onPress={() => router.push('/(main)/(profile)/change-password')}
               isLast
             />
           </Card>
@@ -160,14 +163,14 @@ export default function ProfileScreen() {
               iconColor="yellow"
               label="Help Center"
               rightElement="external"
-              onPress={() => console.log('Help Center')}
+              onPress={() => {/* TODO: Link to help center URL */}}
             />
             <SettingRow
               iconName="shield-account"
               iconColor="cyan"
               label="Privacy Policy"
               rightElement="external"
-              onPress={() => console.log('Privacy Policy')}
+              onPress={() => {/* TODO: Link to privacy policy URL */}}
             />
             <SettingRow
               iconName="logout"

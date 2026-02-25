@@ -2,6 +2,8 @@ import { useCallback, useEffect } from 'react';
 import { useWishlistStore } from '../store/wishlistStore';
 import { container } from '@/core/di/container';
 import { WishlistAddInput } from '@/domain/wishlist/repositories/wishlistRepository';
+import { AnalyticsHelper } from '@/core/analytics/analyticsHelper';
+import { AnalyticsEvents, AnalyticsParams } from '@/core/analytics/analyticsKeys';
 
 export const useWishlist = (userId?: string) => {
   const { items, isLoading, error, setItems, addItem, removeItem, setLoading, setError, isWishlisted } =
@@ -38,7 +40,12 @@ export const useWishlist = (userId?: string) => {
 
       result.fold(
         (failure) => setError(failure.message),
-        (newItem) => addItem(newItem),
+        (newItem) => {
+          addItem(newItem);
+          AnalyticsHelper.sendEvent(AnalyticsEvents.ADD_TO_WISHLIST, {
+            [AnalyticsParams.ITEM_NAME]: input.placeName,
+          });
+        },
       );
     },
     [addToWishlistUseCase, addItem, setError]
@@ -48,6 +55,9 @@ export const useWishlist = (userId?: string) => {
     async (targetUserId: string, itemId: string) => {
       // Optimistic update — remove from store immediately
       removeItem(itemId);
+      AnalyticsHelper.sendEvent(AnalyticsEvents.REMOVE_FROM_WISHLIST, {
+        [AnalyticsParams.ITEM_ID]: itemId,
+      });
 
       const result = await removeFromWishlistUseCase.execute(targetUserId, itemId);
 

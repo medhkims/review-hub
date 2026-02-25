@@ -1,6 +1,6 @@
 import { AuthRepository } from '@/domain/auth/repositories/authRepository';
 import { UserEntity } from '@/domain/auth/entities/userEntity';
-import { UserRole } from '@/domain/profile/entities/userRole';
+import { UserRole } from '@/core/types/userRole';
 import { AuthRemoteDataSource } from '../datasources/authRemoteDataSource';
 import { AuthLocalDataSource } from '../datasources/authLocalDataSource';
 import { UserMapper } from '../mappers/userMapper';

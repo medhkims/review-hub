@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { View, Pressable, ScrollView } from 'react-native';
 import { useRouter } from 'expo-router';
+import { useTranslation } from 'react-i18next';
 import Svg, { Path } from 'react-native-svg';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { AppText } from '@/presentation/shared/components/ui/AppText';
@@ -8,6 +9,8 @@ import { AppInput } from '@/presentation/shared/components/ui/AppInput';
 import { AppButton } from '@/presentation/shared/components/ui/AppButton';
 import { ScreenLayout } from '@/presentation/shared/layouts/ScreenLayout';
 import { useAuth } from '../hooks/useAuth';
+import { useAnalyticsScreen } from '@/presentation/shared/hooks/useAnalyticsScreen';
+import { AnalyticsScreens } from '@/core/analytics/analyticsKeys';
 import { colors } from '@/core/theme/colors';
 
 const GoogleIcon = () => (
@@ -76,7 +79,9 @@ const SocialButton: React.FC<SocialButtonProps> = ({ onPress, children, accessib
 );
 
 export default function SignInScreen() {
+  useAnalyticsScreen(AnalyticsScreens.SIGN_IN);
   const router = useRouter();
+  const { t } = useTranslation();
   const { signIn, signInWithGoogle, isLoading, error } = useAuth();
 
   const [email, setEmail] = useState('');
@@ -104,7 +109,7 @@ export default function SignInScreen() {
               lineHeight: 40,
             }}
           >
-            {"Welcome Back!"}
+            {t('auth.signIn.title')}
           </AppText>
           <AppText
             style={{
@@ -115,7 +120,7 @@ export default function SignInScreen() {
               marginTop: 8,
             }}
           >
-            {"Log in to continue exploring businesses"}
+            {t('auth.signIn.subtitle')}
           </AppText>
         </View>
 
@@ -145,7 +150,7 @@ export default function SignInScreen() {
                 letterSpacing: 0.5,
               }}
             >
-              {"Simple User"}
+              {t('auth.signIn.userType')}
             </AppText>
           </View>
         </View>
@@ -160,10 +165,10 @@ export default function SignInScreen() {
               textAlign: 'center',
             }}
           >
-            {"Log in instantly with"}
+            {t('auth.signIn.socialPrompt')}
           </AppText>
           <View style={{ flexDirection: 'row', justifyContent: 'center', gap: 24 }}>
-            <SocialButton onPress={signInWithGoogle} accessibilityLabel="Sign in with Google">
+            <SocialButton onPress={signInWithGoogle} accessibilityLabel={t('auth.signIn.socialPrompt')}>
               <GoogleIcon />
             </SocialButton>
             <SocialButton onPress={() => {}} accessibilityLabel="Sign in with Facebook">
@@ -187,7 +192,7 @@ export default function SignInScreen() {
                   textTransform: 'uppercase',
                 }}
               >
-                {"Or continue with email"}
+                {t('auth.signIn.orEmail')}
               </AppText>
             </View>
             <View style={{ flex: 1, height: 1, backgroundColor: 'rgba(51, 65, 85, 0.5)' }} />
@@ -217,8 +222,8 @@ export default function SignInScreen() {
         {/* Login Form */}
         <View style={{ paddingHorizontal: 24, paddingTop: 8 }}>
           <AppInput
-            label={"Email Address"}
-            placeholder={"hello@example.com"}
+            label={t('auth.signIn.email')}
+            placeholder={t('auth.signIn.emailPlaceholder')}
             value={email}
             onChangeText={setEmail}
             keyboardType="email-address"
@@ -226,19 +231,19 @@ export default function SignInScreen() {
             autoComplete="email"
             textContentType="emailAddress"
             variant="pill"
-            accessibilityLabel={"Email Address"}
+            accessibilityLabel={t('auth.signIn.email')}
           />
 
           <AppInput
-            label={"Password"}
-            placeholder={"Enter your password"}
+            label={t('auth.signIn.password')}
+            placeholder={t('auth.signIn.passwordPlaceholder')}
             value={password}
             onChangeText={setPassword}
             secureTextEntry
             autoComplete="password"
             textContentType="password"
             variant="pill"
-            accessibilityLabel={"Password"}
+            accessibilityLabel={t('auth.signIn.password')}
           />
 
           {/* Forgot Password */}
@@ -246,7 +251,7 @@ export default function SignInScreen() {
             <Pressable
               onPress={() => router.push('/(auth)/forgot-password')}
               accessibilityRole="link"
-              accessibilityLabel={"Forgot Password?"}
+              accessibilityLabel={t('auth.signIn.forgotPassword')}
             >
               <AppText
                 style={{
@@ -255,14 +260,14 @@ export default function SignInScreen() {
                   color: colors.neonPurple,
                 }}
               >
-                {"Forgot Password?"}
+                {t('auth.signIn.forgotPassword')}
               </AppText>
             </Pressable>
           </View>
 
           {/* Login Button */}
           <AppButton
-            title={"Log In"}
+            title={t('auth.signIn.button')}
             onPress={handleSignIn}
             isLoading={isLoading}
             disabled={!email.trim() || !password.trim()}
@@ -279,7 +284,7 @@ export default function SignInScreen() {
               elevation: 8,
             }}
             accessibilityRole="button"
-            accessibilityLabel={"Log In"}
+            accessibilityLabel={t('auth.signIn.button')}
           />
         </View>
 
@@ -287,12 +292,12 @@ export default function SignInScreen() {
         <View style={{ marginTop: 'auto', paddingVertical: 32, alignItems: 'center' }}>
           <View style={{ flexDirection: 'row', alignItems: 'center' }}>
             <AppText style={{ fontSize: 14, color: colors.textSlate400 }}>
-              {"Don't have an account?"}{' '}
+              {t('auth.signIn.noAccount')}{' '}
             </AppText>
             <Pressable
               onPress={() => router.push('/(auth)/sign-up')}
               accessibilityRole="link"
-              accessibilityLabel={"Swipe to Sign Up"}
+              accessibilityLabel={t('auth.signIn.swipeToSignUp')}
             >
               <AppText
                 style={{
@@ -302,7 +307,7 @@ export default function SignInScreen() {
                   marginLeft: 4,
                 }}
               >
-                {"Swipe to Sign Up"}
+                {t('auth.signIn.swipeToSignUp')}
               </AppText>
             </Pressable>
           </View>

@@ -3,6 +3,8 @@ import { View, FlatList, RefreshControl, Pressable, Alert } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import { ScreenLayout } from '@/presentation/shared/layouts/ScreenLayout';
 import { AppText } from '@/presentation/shared/components/ui/AppText';
+import { useAnalyticsScreen } from '@/presentation/shared/hooks/useAnalyticsScreen';
+import { AnalyticsScreens } from '@/core/analytics/analyticsKeys';
 import { colors } from '@/core/theme/colors';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { UserRole, USER_ROLES } from '@/domain/profile/entities/userRole';
@@ -31,6 +33,7 @@ const ROLE_COLORS: Record<UserRole, string> = {
 };
 
 export default function AdminUsersScreen() {
+  useAnalyticsScreen(AnalyticsScreens.ADMIN_USERS);
   const { t } = useTranslation();
   const [users] = useState<UserItem[]>(MOCK_USERS);
   const [isLoading, setIsLoading] = useState(false);

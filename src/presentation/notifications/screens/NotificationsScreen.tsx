@@ -3,9 +3,12 @@ import { View } from 'react-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { AppText } from '@/presentation/shared/components/ui/AppText';
 import { ScreenLayout } from '@/presentation/shared/layouts/ScreenLayout';
+import { useAnalyticsScreen } from '@/presentation/shared/hooks/useAnalyticsScreen';
+import { AnalyticsScreens } from '@/core/analytics/analyticsKeys';
 import { colors } from '@/core/theme/colors';
 
 export default function NotificationsScreen() {
+  useAnalyticsScreen(AnalyticsScreens.NOTIFICATIONS);
   return (
     <ScreenLayout>
       <View className="px-6 pt-4 pb-2" style={{ paddingHorizontal: 24, paddingTop: 16, paddingBottom: 8 }}>

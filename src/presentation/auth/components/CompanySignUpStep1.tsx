@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { View, Pressable, TextInput, Platform } from 'react-native';
 import { useRouter } from 'expo-router';
+import { useTranslation } from 'react-i18next';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { AppText } from '@/presentation/shared/components/ui/AppText';
 import { AppButton } from '@/presentation/shared/components/ui/AppButton';
@@ -319,6 +320,7 @@ export const CompanySignUpStep1: React.FC<CompanySignUpStep1Props> = ({
   isLoading = false,
 }) => {
   const router = useRouter();
+  const { t } = useTranslation();
   const [businessName, setBusinessName] = useState('');
   const [category, setCategory] = useState('');
   const [subCategory, setSubCategory] = useState('');
@@ -334,27 +336,27 @@ export const CompanySignUpStep1: React.FC<CompanySignUpStep1Props> = ({
     setFormError(null);
 
     if (!businessName.trim()) {
-      setFormError('Business name is required.');
+      setFormError(t('auth.companySignUp.businessNameRequired'));
       return;
     }
     if (!category) {
-      setFormError('Please select a category.');
+      setFormError(t('auth.companySignUp.categoryRequired'));
       return;
     }
     if (!email.trim()) {
-      setFormError('Email is required.');
+      setFormError(t('auth.companySignUp.emailRequired'));
       return;
     }
     if (!phone.trim()) {
-      setFormError('Phone number is required.');
+      setFormError(t('auth.companySignUp.phoneRequired'));
       return;
     }
     if (password.length < 6) {
-      setFormError('Password must be at least 6 characters.');
+      setFormError(t('auth.passwordMinLength'));
       return;
     }
     if (password !== confirmPassword) {
-      setFormError('Passwords do not match.');
+      setFormError(t('auth.passwordsDoNotMatch'));
       return;
     }
 
@@ -415,7 +417,7 @@ export const CompanySignUpStep1: React.FC<CompanySignUpStep1Props> = ({
           }}
         >
           <AppText style={{ fontSize: 12, fontWeight: '600', color: colors.neonPurple }}>
-            Step 1 of 3
+            {t('auth.companySignUp.stepOf', { current: 1, total: 3 })}
           </AppText>
         </View>
 
@@ -426,10 +428,10 @@ export const CompanySignUpStep1: React.FC<CompanySignUpStep1Props> = ({
       <AppText
         style={{ fontSize: 28, fontWeight: '700', color: colors.textWhite, marginBottom: 8 }}
       >
-        Business Registration
+        {t('auth.companySignUp.step1Title')}
       </AppText>
       <AppText style={{ fontSize: 14, color: colors.textSlate400, marginBottom: 20 }}>
-        Create your business profile to get listed in the directory.
+        {t('auth.companySignUp.step1Subtitle')}
       </AppText>
 
       {/* Progress bar */}
@@ -469,7 +471,7 @@ export const CompanySignUpStep1: React.FC<CompanySignUpStep1Props> = ({
 
       {/* ===== BUSINESS DETAILS ===== */}
       <View style={{ marginBottom: 20 }}>
-        <SectionHeader title="Business Details" />
+        <SectionHeader title={t('auth.companySignUp.businessDetails')} />
         <View style={{ gap: 16 }}>
           <IconInputField
             label="Business Name"
@@ -509,7 +511,7 @@ export const CompanySignUpStep1: React.FC<CompanySignUpStep1Props> = ({
 
       {/* ===== OWNER CONTACT ===== */}
       <View style={{ marginBottom: 20, marginTop: 16 }}>
-        <SectionHeader title="Owner Contact" />
+        <SectionHeader title={t('auth.companySignUp.ownerContact')} />
         <View style={{ gap: 16 }}>
           <IconInputField
             label="Personal Email"
@@ -603,7 +605,7 @@ export const CompanySignUpStep1: React.FC<CompanySignUpStep1Props> = ({
 
       {/* ===== SECURITY ===== */}
       <View style={{ marginBottom: 24, marginTop: 16 }}>
-        <SectionHeader title="Security" />
+        <SectionHeader title={t('auth.companySignUp.security')} />
         <View style={{ gap: 16 }}>
           <IconInputField
             label="Password"
@@ -669,12 +671,12 @@ export const CompanySignUpStep1: React.FC<CompanySignUpStep1Props> = ({
         <View style={{ marginTop: 16, alignItems: 'center' }}>
           <View style={{ flexDirection: 'row', alignItems: 'center' }}>
             <AppText style={{ fontSize: 14, color: colors.textSlate400 }}>
-              Already have an account?{' '}
+              {t('auth.companySignUp.hasAccount')}{' '}
             </AppText>
             <Pressable
               onPress={() => router.push('/(auth)/sign-in')}
               accessibilityRole="link"
-              accessibilityLabel="Log in"
+              accessibilityLabel={t('auth.companySignUp.logIn')}
             >
               <AppText
                 style={{
@@ -684,7 +686,7 @@ export const CompanySignUpStep1: React.FC<CompanySignUpStep1Props> = ({
                   textDecorationLine: 'underline',
                 }}
               >
-                Log in
+                {t('auth.companySignUp.logIn')}
               </AppText>
             </Pressable>
           </View>

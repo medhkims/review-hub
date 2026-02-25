@@ -64,9 +64,10 @@ export class AvatarRemoteDataSourceImpl implements AvatarRemoteDataSource {
           },
         );
       });
-    } catch (error: any) {
+    } catch (error: unknown) {
       if (error instanceof ServerException) throw error;
-      throw new ServerException(error.message || 'Failed to upload avatar', error.code);
+      const firebaseError = error as { message?: string; code?: string };
+      throw new ServerException(firebaseError.message || 'Failed to upload avatar', firebaseError.code);
     }
   }
 
@@ -82,8 +83,9 @@ export class AvatarRemoteDataSourceImpl implements AvatarRemoteDataSource {
       await deleteObject(storageRef).catch(() => {
         // File may not exist, ignore
       });
-    } catch (error: any) {
-      throw new ServerException(error.message || 'Failed to delete avatar', error.code);
+    } catch (error: unknown) {
+      const firebaseError = error as { message?: string; code?: string };
+      throw new ServerException(firebaseError.message || 'Failed to delete avatar', firebaseError.code);
     }
   }
 }

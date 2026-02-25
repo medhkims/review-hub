@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { View, Pressable, ScrollView } from 'react-native';
 import { useRouter } from 'expo-router';
+import { useTranslation } from 'react-i18next';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { AppText } from '@/presentation/shared/components/ui/AppText';
 import { AppInput } from '@/presentation/shared/components/ui/AppInput';
@@ -10,6 +11,8 @@ import { CompanySignUpStep1, CompanyStep1Data } from '../components/CompanySignU
 import { CompanySignUpStep2, CompanyStep2Data } from '../components/CompanySignUpStep2';
 import { CompanySignUpStep3, CompanyStep3Data } from '../components/CompanySignUpStep3';
 import { useAuth } from '../hooks/useAuth';
+import { useAnalyticsScreen } from '@/presentation/shared/hooks/useAnalyticsScreen';
+import { AnalyticsScreens } from '@/core/analytics/analyticsKeys';
 import { colors } from '@/core/theme/colors';
 
 type UserType = 'simple' | 'company';
@@ -46,6 +49,7 @@ interface UserTypeToggleProps {
 }
 
 const UserTypeToggle: React.FC<UserTypeToggleProps> = ({ selected, onSelect }) => {
+  const { t } = useTranslation();
   return (
     <View
       style={{
@@ -67,8 +71,8 @@ const UserTypeToggle: React.FC<UserTypeToggleProps> = ({ selected, onSelect }) =
             accessibilityState={{ selected: isSelected }}
             accessibilityLabel={
               type === 'simple'
-                ? "Simple User"
-                : "Company Owner"
+                ? t('auth.signUp.userTypeSimple')
+                : t('auth.signUp.userTypeCompany')
             }
             style={{
               flex: 1,
@@ -96,8 +100,8 @@ const UserTypeToggle: React.FC<UserTypeToggleProps> = ({ selected, onSelect }) =
               }}
             >
               {type === 'simple'
-                ? "Simple User"
-                : "Company Owner"}
+                ? t('auth.signUp.userTypeSimple')
+                : t('auth.signUp.userTypeCompany')}
             </AppText>
           </Pressable>
         );
@@ -107,7 +111,9 @@ const UserTypeToggle: React.FC<UserTypeToggleProps> = ({ selected, onSelect }) =
 };
 
 export default function SignUpScreen() {
+  useAnalyticsScreen(AnalyticsScreens.SIGN_UP);
   const router = useRouter();
+  const { t } = useTranslation();
   const { signUp, signUpAsBusinessOwner, isLoading, error } = useAuth();
 
   const [userType, setUserType] = useState<UserType>('simple');
@@ -124,7 +130,7 @@ export default function SignUpScreen() {
     setConfirmError(null);
     if (!displayName.trim() || !email.trim() || !password) return;
     if (password.length < 6) {
-      setConfirmError("Password must be at least 6 characters.");
+      setConfirmError(t('auth.passwordMinLength'));
       return;
     }
     signUp(email.trim(), password, displayName.trim());
@@ -222,7 +228,7 @@ export default function SignUpScreen() {
               textAlign: 'center',
             }}
           >
-            {"Create Account"}
+            {t('auth.signUp.title')}
           </AppText>
           <AppText
             style={{
@@ -234,7 +240,7 @@ export default function SignUpScreen() {
               lineHeight: 20,
             }}
           >
-            {"Join the best business directory in Tunisia"}
+            {t('auth.signUp.subtitle')}
           </AppText>
         </View>
 
@@ -334,7 +340,7 @@ export default function SignUpScreen() {
                       letterSpacing: 1,
                     }}
                   >
-                    {"Or register with email"}
+                    {t('auth.signUp.orRegisterWithEmail')}
                   </AppText>
                 </View>
                 <View style={{ flex: 1, height: 1, backgroundColor: colors.borderDark }} />
@@ -363,34 +369,34 @@ export default function SignUpScreen() {
             {/* Form Fields */}
             <View style={{ paddingHorizontal: 24, gap: 16 }}>
               <AppInput
-                placeholder={"Full Name"}
+                placeholder={t('auth.signUp.displayName')}
                 value={displayName}
                 onChangeText={setDisplayName}
                 autoCapitalize="words"
                 autoComplete="name"
                 textContentType="name"
-                accessibilityLabel={"Full Name"}
+                accessibilityLabel={t('auth.signUp.displayName')}
               />
 
               <AppInput
-                placeholder={"Email Address"}
+                placeholder={t('auth.signUp.email')}
                 value={email}
                 onChangeText={setEmail}
                 keyboardType="email-address"
                 autoCapitalize="none"
                 autoComplete="email"
                 textContentType="emailAddress"
-                accessibilityLabel={"Email Address"}
+                accessibilityLabel={t('auth.signUp.email')}
               />
 
               <AppInput
-                placeholder={"Password"}
+                placeholder={t('auth.signUp.password')}
                 value={password}
                 onChangeText={setPassword}
                 secureTextEntry
                 autoComplete="new-password"
                 textContentType="newPassword"
-                accessibilityLabel={"Password"}
+                accessibilityLabel={t('auth.signUp.password')}
               />
 
               {/* Terms Agreement */}
@@ -407,7 +413,7 @@ export default function SignUpScreen() {
                   onPress={() => setAgreedToTerms((v) => !v)}
                   accessibilityRole="checkbox"
                   accessibilityState={{ checked: agreedToTerms }}
-                  accessibilityLabel={"I agree to the"}
+                  accessibilityLabel={t('auth.signUp.agreeTerms')}
                   style={{
                     width: 20,
                     height: 20,
@@ -427,13 +433,13 @@ export default function SignUpScreen() {
                 <AppText
                   style={{ flex: 1, fontSize: 12, color: colors.textSlate400, lineHeight: 20 }}
                 >
-                  {"I agree to the"}{' '}
+                  {t('auth.signUp.agreeTerms')}{' '}
                   <AppText style={{ fontSize: 12, color: colors.neonPurple, fontWeight: '700' }}>
-                    {"Terms & Conditions"}
+                    {t('auth.signUp.termsAndConditions')}
                   </AppText>
-                  {' '}{"and"}{' '}
+                  {' '}{t('auth.signUp.and')}{' '}
                   <AppText style={{ fontSize: 12, color: colors.neonPurple, fontWeight: '700' }}>
-                    {"Privacy Policy"}
+                    {t('auth.signUp.privacyPolicy')}
                   </AppText>
                   .
                 </AppText>
@@ -441,7 +447,7 @@ export default function SignUpScreen() {
 
               {/* Sign Up Button */}
               <AppButton
-                title={"Sign Up"}
+                title={t('auth.signUp.button')}
                 onPress={handleSignUp}
                 isLoading={isLoading}
                 disabled={!isFormValid}
@@ -456,7 +462,7 @@ export default function SignUpScreen() {
                   elevation: 8,
                 }}
                 accessibilityRole="button"
-                accessibilityLabel={"Sign Up"}
+                accessibilityLabel={t('auth.signUp.button')}
               />
             </View>
 
@@ -466,17 +472,17 @@ export default function SignUpScreen() {
             >
               <View style={{ flexDirection: 'row', alignItems: 'center' }}>
                 <AppText style={{ fontSize: 14, color: colors.textSlate400 }}>
-                  {"Already have an account?"}{' '}
+                  {t('auth.signUp.hasAccount')}{' '}
                 </AppText>
                 <Pressable
                   onPress={() => router.push('/(auth)/sign-in')}
                   accessibilityRole="link"
-                  accessibilityLabel={"Login"}
+                  accessibilityLabel={t('auth.signUp.login')}
                 >
                   <AppText
                     style={{ fontSize: 14, color: colors.textWhite, fontWeight: '700' }}
                   >
-                    {"Login"}
+                    {t('auth.signUp.login')}
                   </AppText>
                 </Pressable>
               </View>

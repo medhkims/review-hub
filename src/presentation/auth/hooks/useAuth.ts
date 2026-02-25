@@ -1,14 +1,17 @@
-import { useCallback, useEffect } from 'react';
+import { useCallback, useEffect, useRef } from 'react';
 import { useAuthStore } from '../store/authStore';
 import { useRoleStore } from '../store/roleStore';
 import { container } from '@/core/di/container';
 import { useRouter } from 'expo-router';
 import { RegisterBusinessParams } from '@/domain/business/usecases/registerBusinessUseCase';
+import { AnalyticsHelper } from '@/core/analytics/analyticsHelper';
+import { AnalyticsEvents, AnalyticsParams, AnalyticsValues } from '@/core/analytics/analyticsKeys';
 
 export const useAuth = () => {
   const { user, isLoading, isAuthenticated, error, setUser, setLoading, setError, reset } = useAuthStore();
   const { setRole, reset: resetRole } = useRoleStore();
   const router = useRouter();
+  const hasLoadedRef = useRef(false);
 
   const getCurrentUserUseCase = container.getCurrentUserUseCase;
   const signInUseCase = container.signInUseCase;
@@ -18,18 +21,13 @@ export const useAuth = () => {
   const signInWithGoogleUseCase = container.signInWithGoogleUseCase;
   const registerBusinessUseCase = container.registerBusinessUseCase;
 
-  // Load current user on mount
-  useEffect(() => {
-    loadCurrentUser();
-  }, []);
-
   const loadRole = useCallback(async (userId: string) => {
     const roleResult = await getUserRoleUseCase.execute(userId);
     roleResult.fold(
       () => setRole('simple_user'),
       (role) => setRole(role),
     );
-  }, []);
+  }, [getUserRoleUseCase, setRole]);
 
   const loadCurrentUser = useCallback(async () => {
     setLoading(true);
@@ -50,7 +48,15 @@ export const useAuth = () => {
       }
     );
     setLoading(false);
-  }, []);
+  }, [getCurrentUserUseCase, setLoading, setError, setUser, resetRole, loadRole]);
+
+  // Load current user on mount (once)
+  useEffect(() => {
+    if (!hasLoadedRef.current) {
+      hasLoadedRef.current = true;
+      loadCurrentUser();
+    }
+  }, [loadCurrentUser]);
 
   const signIn = useCallback(async (email: string, password: string) => {
     setLoading(true);
@@ -66,11 +72,14 @@ export const useAuth = () => {
       async (loggedInUser) => {
         setUser(loggedInUser);
         await loadRole(loggedInUser.id);
+        AnalyticsHelper.sendEvent(AnalyticsEvents.LOGIN, {
+          [AnalyticsParams.METHOD]: AnalyticsValues.METHOD_EMAIL,
+        });
         setLoading(false);
         router.replace('/(main)/(feed)');
       }
     );
-  }, [router]);
+  }, [router, signInUseCase, setLoading, setError, setUser, loadRole]);
 
   const signUp = useCallback(async (email: string, password: string, displayName: string) => {
     setLoading(true);
@@ -86,11 +95,14 @@ export const useAuth = () => {
       (newUser) => {
         setUser(newUser);
         setRole('simple_user');
+        AnalyticsHelper.sendEvent(AnalyticsEvents.SIGN_UP, {
+          [AnalyticsParams.METHOD]: AnalyticsValues.METHOD_EMAIL,
+        });
         setLoading(false);
         router.replace('/(main)/(feed)');
       }
     );
-  }, [router]);
+  }, [router, signUpUseCase, setLoading, setError, setUser, setRole]);
 
   const signUpAsBusinessOwner = useCallback(async (
     email: string,
@@ -140,16 +152,22 @@ export const useAuth = () => {
       (failure) => {
         setRole('business_owner');
         setError(failure.message);
+        AnalyticsHelper.sendEvent(AnalyticsEvents.SIGN_UP_BUSINESS_OWNER, {
+          [AnalyticsParams.SUCCESS]: false,
+        });
         setLoading(false);
         router.replace('/(main)/(feed)');
       },
       () => {
         setRole('business_owner');
+        AnalyticsHelper.sendEvent(AnalyticsEvents.SIGN_UP_BUSINESS_OWNER, {
+          [AnalyticsParams.SUCCESS]: true,
+        });
         setLoading(false);
         router.replace('/(main)/(feed)');
       },
     );
-  }, [router]);
+  }, [router, signUpUseCase, registerBusinessUseCase, setLoading, setError, setUser, setRole]);
 
   const signOut = useCallback(async () => {
     setLoading(true);
@@ -163,12 +181,13 @@ export const useAuth = () => {
         setLoading(false);
       },
       () => {
+        AnalyticsHelper.sendEvent(AnalyticsEvents.LOGOUT);
         reset();
         resetRole();
         router.replace('/(auth)/sign-in');
       }
     );
-  }, [router]);
+  }, [router, signOutUseCase, setLoading, setError, reset, resetRole]);
 
   const signInWithGoogle = useCallback(async () => {
     setLoading(true);
@@ -184,11 +203,14 @@ export const useAuth = () => {
       async (loggedInUser) => {
         setUser(loggedInUser);
         await loadRole(loggedInUser.id);
+        AnalyticsHelper.sendEvent(AnalyticsEvents.LOGIN_GOOGLE, {
+          [AnalyticsParams.METHOD]: AnalyticsValues.METHOD_GOOGLE,
+        });
         setLoading(false);
         router.replace('/(main)/(feed)');
       }
     );
-  }, [router]);
+  }, [router, signInWithGoogleUseCase, setLoading, setError, setUser, loadRole]);
 
   return {
     user,

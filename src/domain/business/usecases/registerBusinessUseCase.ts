@@ -1,17 +1,8 @@
-import { BusinessRepository } from '../repositories/businessRepository';
+import { BusinessRepository, RegisterBusinessParams } from '../repositories/businessRepository';
 import { Either } from '@/core/types/either';
 import { Failure } from '@/core/error/failures';
 
-export interface RegisterBusinessParams {
-  businessName: string;
-  category: string;
-  subCategory: string;
-  phone: string;
-  location: string;
-  website: string;
-  facebook: string;
-  instagram: string;
-}
+export { type RegisterBusinessParams } from '../repositories/businessRepository';
 
 export class RegisterBusinessUseCase {
   constructor(private readonly businessRepository: BusinessRepository) {}

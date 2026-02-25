@@ -23,9 +23,10 @@ export class ProfileRemoteDataSourceImpl implements ProfileRemoteDataSource {
       }
 
       return { id: profileSnap.id, ...profileSnap.data() } as ProfileModel;
-    } catch (error: any) {
+    } catch (error: unknown) {
       if (error instanceof ServerException) throw error;
-      throw new ServerException(error.message || 'Failed to fetch profile', error.code);
+      const firebaseError = error as { message?: string; code?: string };
+      throw new ServerException(firebaseError.message || 'Failed to fetch profile', firebaseError.code);
     }
   }
 
@@ -43,8 +44,9 @@ export class ProfileRemoteDataSourceImpl implements ProfileRemoteDataSource {
 
       // Fetch and return the updated profile
       return this.getProfile(userId);
-    } catch (error: any) {
-      throw new ServerException(error.message || 'Failed to update profile', error.code);
+    } catch (error: unknown) {
+      const firebaseError = error as { message?: string; code?: string };
+      throw new ServerException(firebaseError.message || 'Failed to update profile', firebaseError.code);
     }
   }
 
@@ -65,11 +67,12 @@ export class ProfileRemoteDataSourceImpl implements ProfileRemoteDataSource {
         email: newEmail,
         updated_at: serverTimestamp(),
       });
-    } catch (error: any) {
-      if (error.code === 'auth/requires-recent-login') {
-        throw new AuthException('Please re-authenticate to change your email', error.code);
+    } catch (error: unknown) {
+      const firebaseError = error as { message?: string; code?: string };
+      if (firebaseError.code === 'auth/requires-recent-login') {
+        throw new AuthException('Please re-authenticate to change your email', firebaseError.code);
       }
-      throw new AuthException(error.message || 'Failed to update email', error.code);
+      throw new AuthException(firebaseError.message || 'Failed to update email', firebaseError.code);
     }
   }
 }

@@ -2,6 +2,8 @@ import { useCallback, useEffect, useState } from 'react';
 import { useProfileStore } from '../store/profileStore';
 import { container } from '@/core/di/container';
 import { ProfileEntity } from '@/domain/profile/entities/profileEntity';
+import { AnalyticsHelper } from '@/core/analytics/analyticsHelper';
+import { AnalyticsEvents } from '@/core/analytics/analyticsKeys';
 
 export const useProfile = (userId?: string) => {
   const { profile, isLoading, error, setProfile, setLoading, setError } = useProfileStore();
@@ -48,6 +50,7 @@ export const useProfile = (userId?: string) => {
         },
         (updatedProfile) => {
           setProfile(updatedProfile);
+          AnalyticsHelper.sendEvent(AnalyticsEvents.UPDATE_PROFILE);
           setLoading(false);
         }
       );
@@ -68,6 +71,7 @@ export const useProfile = (userId?: string) => {
           setLoading(false);
         },
         () => {
+          AnalyticsHelper.sendEvent(AnalyticsEvents.UPDATE_EMAIL);
           // Refresh profile after email update
           fetchProfile(targetUserId);
         }
@@ -100,6 +104,7 @@ export const useProfile = (userId?: string) => {
           if (profile) {
             setProfile({ ...profile, avatarUrl });
           }
+          AnalyticsHelper.sendEvent(AnalyticsEvents.UPLOAD_AVATAR);
           setIsUploading(false);
           setUploadProgress(0);
         },

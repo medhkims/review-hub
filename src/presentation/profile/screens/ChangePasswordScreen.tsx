@@ -6,11 +6,15 @@ import { useTranslation } from 'react-i18next';
 import { AppText } from '@/presentation/shared/components/ui/AppText';
 import { AppButton } from '@/presentation/shared/components/ui/AppButton';
 import { ScreenLayout } from '@/presentation/shared/layouts/ScreenLayout';
+import { useAnalyticsScreen } from '@/presentation/shared/hooks/useAnalyticsScreen';
+import { AnalyticsHelper } from '@/core/analytics/analyticsHelper';
+import { AnalyticsScreens, AnalyticsEvents, AnalyticsParams } from '@/core/analytics/analyticsKeys';
 import { container } from '@/core/di/container';
 
 const MIN_PASSWORD_LENGTH = 6;
 
 export default function ChangePasswordScreen() {
+  useAnalyticsScreen(AnalyticsScreens.CHANGE_PASSWORD);
   const { t } = useTranslation();
   const router = useRouter();
 
@@ -69,6 +73,9 @@ export default function ChangePasswordScreen() {
         setValidationError(failure.message);
       },
       () => {
+        AnalyticsHelper.sendEvent(AnalyticsEvents.CHANGE_PASSWORD, {
+          [AnalyticsParams.SUCCESS]: true,
+        });
         router.replace('/(main)/(profile)/confirm-password-email');
       }
     );

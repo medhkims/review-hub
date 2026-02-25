@@ -18,5 +18,9 @@
       "mcp__firebase__remoteconfig_get_template",
       "mcp__firebase__remoteconfig_update_template"
     ]
-  }
+  },
+  "enabledMcpjsonServers": [
+    "firebase"
+  ],
+  "enableAllProjectMcpServers": true
 }

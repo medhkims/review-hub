@@ -1,5 +1,5 @@
 import { UserEntity } from '../entities/userEntity';
-import { UserRole } from '@/domain/profile/entities/userRole';
+import { UserRole } from '@/core/types/userRole';
 import { Either } from '@/core/types/either';
 import { Failure } from '@/core/error/failures';
 

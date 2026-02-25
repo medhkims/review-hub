@@ -20,11 +20,17 @@ web-build/
 .env.production
 
 # Firebase
-google-services.json
-GoogleService-Info.plist
+**/google-services.json
+**/GoogleService-Info.plist
 serviceAccountKey.json
 firebase-debug.log
 .firebase/
+
+# EAS
+*.ipa
+*.apk
+*.aab
+play-store-key.json
 
 # Maestro
 e2e/.maestro/

@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { View, Pressable, TextInput, Platform } from 'react-native';
+import { useTranslation } from 'react-i18next';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { AppText } from '@/presentation/shared/components/ui/AppText';
 import { AppButton } from '@/presentation/shared/components/ui/AppButton';
@@ -100,6 +101,7 @@ export const CompanySignUpStep2: React.FC<CompanySignUpStep2Props> = ({
   onSkip,
   isLoading = false,
 }) => {
+  const { t } = useTranslation();
   const [location, setLocation] = useState('');
   const [website, setWebsite] = useState('');
   const [facebook, setFacebook] = useState('');
@@ -143,10 +145,10 @@ export const CompanySignUpStep2: React.FC<CompanySignUpStep2Props> = ({
 
         <View style={{ alignItems: 'center' }}>
           <AppText style={{ fontSize: 18, fontWeight: '700', color: colors.textWhite }}>
-            Business Details
+            {t('auth.companySignUp.step2Title')}
           </AppText>
           <AppText style={{ fontSize: 12, fontWeight: '500', color: colors.textSlate400, marginTop: 2 }}>
-            Step 2 of 3
+            {t('auth.companySignUp.stepOf', { current: 2, total: 3 })}
           </AppText>
         </View>
 
@@ -182,10 +184,10 @@ export const CompanySignUpStep2: React.FC<CompanySignUpStep2Props> = ({
       <AppText
         style={{ fontSize: 28, fontWeight: '700', color: colors.textWhite, marginBottom: 8 }}
       >
-        Connect online
+        {t('auth.companySignUp.step2Subtitle')}
       </AppText>
       <AppText style={{ fontSize: 15, color: colors.textSlate400, marginBottom: 28, lineHeight: 22 }}>
-        Make it easy for customers to find your location and follow you online.
+        {t('auth.companySignUp.step2Description')}
       </AppText>
 
       {/* Form fields */}
@@ -273,7 +275,7 @@ export const CompanySignUpStep2: React.FC<CompanySignUpStep2Props> = ({
           style={{ marginTop: 16, alignItems: 'center', paddingVertical: 8 }}
         >
           <AppText style={{ fontSize: 14, fontWeight: '500', color: colors.textSlate400 }}>
-            Skip for now
+            {t('auth.companySignUp.skipForNow')}
           </AppText>
         </Pressable>
       </View>

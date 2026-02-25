@@ -1,9 +1,19 @@
 import { BusinessEntity } from '../entities/businessEntity';
 import { BusinessDetailEntity } from '../entities/businessDetailEntity';
 import { ReviewEntity } from '../entities/reviewEntity';
-import { RegisterBusinessParams } from '../usecases/registerBusinessUseCase';
 import { Either } from '@/core/types/either';
 import { Failure } from '@/core/error/failures';
+
+export interface RegisterBusinessParams {
+  businessName: string;
+  category: string;
+  subCategory: string;
+  phone: string;
+  location: string;
+  website: string;
+  facebook: string;
+  instagram: string;
+}
 
 export interface BusinessRepository {
   getFeaturedBusinesses(): Promise<Either<Failure, BusinessEntity[]>>;

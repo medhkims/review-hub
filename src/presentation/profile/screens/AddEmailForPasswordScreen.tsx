@@ -8,10 +8,13 @@ import { AppButton } from '@/presentation/shared/components/ui/AppButton';
 import { ScreenLayout } from '@/presentation/shared/layouts/ScreenLayout';
 import { useProfile } from '../hooks/useProfile';
 import { useAuth } from '@/presentation/auth/hooks/useAuth';
+import { useAnalyticsScreen } from '@/presentation/shared/hooks/useAnalyticsScreen';
+import { AnalyticsScreens } from '@/core/analytics/analyticsKeys';
 
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 export default function AddEmailForPasswordScreen() {
+  useAnalyticsScreen(AnalyticsScreens.ADD_EMAIL_FOR_PASSWORD);
   const { t } = useTranslation();
   const router = useRouter();
   const { user } = useAuth();

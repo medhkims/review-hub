@@ -1,6 +1,7 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { ProfileModel } from '../models/profileModel';
 import { CacheException } from '@/core/error/exceptions';
+import { serializeTimestamp, deserializeTimestamp } from '@/core/utils/timestampSerializer';
 
 export interface ProfileLocalDataSource {
   getCachedProfile(userId: string): Promise<ProfileModel | null>;
@@ -26,16 +27,13 @@ export class ProfileLocalDataSourceImpl implements ProfileLocalDataSource {
 
       // Convert timestamp strings back to Timestamp objects
       if (parsed.updated_at) {
-        parsed.updated_at = {
-          toDate: () => new Date(parsed.updated_at._seconds * 1000),
-          _seconds: parsed.updated_at._seconds,
-          _nanoseconds: parsed.updated_at._nanoseconds,
-        };
+        parsed.updated_at = deserializeTimestamp(parsed.updated_at);
       }
 
       return parsed as ProfileModel;
-    } catch (error: any) {
-      throw new CacheException(error.message || 'Failed to retrieve cached profile');
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : 'Failed to retrieve cached profile';
+      throw new CacheException(message);
     }
   }
 
@@ -46,15 +44,13 @@ export class ProfileLocalDataSourceImpl implements ProfileLocalDataSource {
       // Serialize the profile (convert Timestamp to JSON-serializable format)
       const serializable = {
         ...profile,
-        updated_at: {
-          _seconds: (profile.updated_at as any).seconds || 0,
-          _nanoseconds: (profile.updated_at as any).nanoseconds || 0,
-        },
+        updated_at: serializeTimestamp(profile.updated_at),
       };
 
       await AsyncStorage.setItem(cacheKey, JSON.stringify(serializable));
-    } catch (error: any) {
-      throw new CacheException(error.message || 'Failed to cache profile');
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : 'Failed to cache profile';
+      throw new CacheException(message);
     }
   }
 
@@ -62,8 +58,9 @@ export class ProfileLocalDataSourceImpl implements ProfileLocalDataSource {
     try {
       const cacheKey = this.getCacheKey(userId);
       await AsyncStorage.removeItem(cacheKey);
-    } catch (error: any) {
-      throw new CacheException(error.message || 'Failed to clear profile cache');
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : 'Failed to clear profile cache';
+      throw new CacheException(message);
     }
   }
 }

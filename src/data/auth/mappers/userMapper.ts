@@ -1,3 +1,4 @@
+import { User as FirebaseUser } from 'firebase/auth';
 import { UserModel } from '../models/userModel';
 import { UserEntity } from '@/domain/auth/entities/userEntity';
 import { Timestamp } from 'firebase/firestore';
@@ -23,7 +24,7 @@ export class UserMapper {
     };
   }
 
-  static fromFirebaseUser(firebaseUser: any): UserModel {
+  static fromFirebaseUser(firebaseUser: FirebaseUser): UserModel {
     return {
       uid: firebaseUser.uid,
       email: firebaseUser.email || '',

@@ -20,8 +20,8 @@ const isWeb = Platform.OS === 'web';
 
 const firebaseConfig = {
   apiKey: Constants.expoConfig?.extra?.firebase?.apiKey || process.env.FIREBASE_API_KEY || '',
-  authDomain: isWeb 
-    ? `${Constants.expoConfig?.extra?.firebase?.projectId || 'reviewhub-91cfb'}.firebaseapp.com`
+  authDomain: isWeb
+    ? `${Constants.expoConfig?.extra?.firebase?.projectId || process.env.FIREBASE_PROJECT_ID || ''}.firebaseapp.com`
     : Constants.expoConfig?.extra?.firebase?.authDomain || process.env.FIREBASE_AUTH_DOMAIN || '',
   projectId: Constants.expoConfig?.extra?.firebase?.projectId || process.env.FIREBASE_PROJECT_ID || '',
   storageBucket: Constants.expoConfig?.extra?.firebase?.storageBucket || process.env.FIREBASE_STORAGE_BUCKET || '',

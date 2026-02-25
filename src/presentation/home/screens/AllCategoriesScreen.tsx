@@ -7,10 +7,13 @@ import { ScreenLayout } from '@/presentation/shared/layouts/ScreenLayout';
 import { AppText } from '@/presentation/shared/components/ui/AppText';
 import { CategoryCard } from '../components/CategoryCard';
 import { useHome } from '../hooks/useHome';
+import { useAnalyticsScreen } from '@/presentation/shared/hooks/useAnalyticsScreen';
+import { AnalyticsScreens } from '@/core/analytics/analyticsKeys';
 import { CategoryEntity } from '@/domain/business/entities/categoryEntity';
 import { colors } from '@/core/theme/colors';
 
 export default function AllCategoriesScreen() {
+  useAnalyticsScreen(AnalyticsScreens.ALL_CATEGORIES);
   const { t } = useTranslation();
   const router = useRouter();
   const { categories, isCategoryLoading, selectCategory } = useHome();

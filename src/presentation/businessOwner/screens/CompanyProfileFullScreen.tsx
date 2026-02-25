@@ -14,6 +14,8 @@ import { PriceListCard } from '../components/PriceListCard';
 import { colors } from '@/core/theme/colors';
 import { BusinessDetailEntity } from '@/domain/business/entities/businessDetailEntity';
 import { useBusinessOwnerStore } from '../store/businessOwnerStore';
+import { useAnalyticsScreen } from '@/presentation/shared/hooks/useAnalyticsScreen';
+import { AnalyticsScreens } from '@/core/analytics/analyticsKeys';
 import { container } from '@/core/di/container';
 
 interface CompanyProfileFullScreenProps {
@@ -31,6 +33,7 @@ const CONTACT_FIELD_MAP: Record<string, { entityKey: keyof BusinessDetailEntity[
 };
 
 export default function CompanyProfileFullScreen({ business, onRefresh }: CompanyProfileFullScreenProps) {
+  useAnalyticsScreen(AnalyticsScreens.COMPANY_PROFILE_FULL);
   const { t } = useTranslation();
   const router = useRouter();
   const setBusiness = useBusinessOwnerStore((s) => s.setBusiness);

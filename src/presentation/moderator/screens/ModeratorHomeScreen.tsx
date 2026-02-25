@@ -5,10 +5,13 @@ import { ScreenLayout } from '@/presentation/shared/layouts/ScreenLayout';
 import { AppText } from '@/presentation/shared/components/ui/AppText';
 import { StatCard } from '@/presentation/admin/components/StatCard';
 import { useModeratorDashboard } from '../hooks/useModeratorDashboard';
+import { useAnalyticsScreen } from '@/presentation/shared/hooks/useAnalyticsScreen';
+import { AnalyticsScreens } from '@/core/analytics/analyticsKeys';
 import { colors } from '@/core/theme/colors';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 
 export default function ModeratorHomeScreen() {
+  useAnalyticsScreen(AnalyticsScreens.MODERATOR_DASHBOARD);
   const { t } = useTranslation();
   const { pendingReviews, flaggedContent, recentActivity, isLoading, refresh } = useModeratorDashboard();
 
