@@ -31,9 +31,6 @@ export default ({ config }: ConfigContext): ExpoConfig => {
       'expo-router',
       'expo-asset',
       'expo-font',
-      '@react-native-firebase/app',
-      '@react-native-firebase/crashlytics',
-      '@react-native-firebase/messaging',
     ],
     experiments: {
       typedRoutes: true,
