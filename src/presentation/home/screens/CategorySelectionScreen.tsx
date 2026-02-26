@@ -1,37 +1,45 @@
-import React, { useCallback, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { View, FlatList, TextInput, Pressable } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { ScreenLayout } from '@/presentation/shared/layouts/ScreenLayout';
 import { AppText } from '@/presentation/shared/components/ui/AppText';
+import { LoadingIndicator } from '@/presentation/shared/components/ui/LoadingIndicator';
 import { useAnalyticsScreen } from '@/presentation/shared/hooks/useAnalyticsScreen';
 import { AnalyticsScreens } from '@/core/analytics/analyticsKeys';
 import { colors } from '@/core/theme/colors';
+import { useHomeStore } from '../store/homeStore';
+import { useHome } from '../hooks/useHome';
+import { CategoryEntity } from '@/domain/business/entities/categoryEntity';
 
-// ── Category Data ───────────────────────────────────────────────────────────
+// ── Icon Mapping ────────────────────────────────────────────────────────────
+
+const CATEGORY_ICON_MAP: Record<string, keyof typeof MaterialCommunityIcons.glyphMap> = {
+  restaurants: 'silverware-fork-knife',
+  gyms: 'dumbbell',
+  coffeeshops: 'coffee',
+  beauty_spa: 'spa',
+  automotive: 'car',
+  electronics: 'laptop',
+  hotels: 'bed',
+  entertainment: 'party-popper',
+  pharmacy: 'pill',
+  real_estate: 'home-city',
+  education: 'school',
+  legal: 'gavel',
+  fashion: 'hanger',
+};
+
+const getIconForCategory = (category: CategoryEntity): keyof typeof MaterialCommunityIcons.glyphMap => {
+  return CATEGORY_ICON_MAP[category.id] ?? (category.icon as keyof typeof MaterialCommunityIcons.glyphMap) ?? 'tag-outline';
+};
 
 interface CategoryItem {
   id: string;
   name: string;
   icon: keyof typeof MaterialCommunityIcons.glyphMap;
 }
-
-const CATEGORIES: CategoryItem[] = [
-  { id: 'restaurants', name: 'Restaurants', icon: 'silverware-fork-knife' },
-  { id: 'gyms', name: 'Gyms', icon: 'dumbbell' },
-  { id: 'coffeeshops', name: 'Coffeeshops', icon: 'coffee' },
-  { id: 'beauty_spa', name: 'Beauty & Spa', icon: 'spa' },
-  { id: 'automotive', name: 'Automotive', icon: 'car' },
-  { id: 'electronics', name: 'Electronics', icon: 'laptop' },
-  { id: 'hotels', name: 'Hotels', icon: 'bed' },
-  { id: 'entertainment', name: 'Entertainment', icon: 'party-popper' },
-  { id: 'pharmacy', name: 'Pharmacy', icon: 'pill' },
-  { id: 'real_estate', name: 'Real Estate', icon: 'home-city' },
-  { id: 'education', name: 'Education', icon: 'school' },
-  { id: 'legal', name: 'Legal', icon: 'gavel' },
-  { id: 'fashion', name: 'Fashion', icon: 'hanger' },
-];
 
 // ── Row Component ───────────────────────────────────────────────────────────
 
@@ -146,15 +154,28 @@ export default function CategorySelectionScreen() {
   useAnalyticsScreen(AnalyticsScreens.CATEGORY_SELECTION);
   const { t } = useTranslation();
   const router = useRouter();
+  const { categories: storeCategories, isCategoryLoading, selectedCategoryId } = useHomeStore();
+  const { selectCategory } = useHome();
 
-  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(() => {
+    return selectedCategoryId ? new Set([selectedCategoryId]) : new Set();
+  });
   const [searchQuery, setSearchQuery] = useState('');
+
+  // Map store categories to display items with icons
+  const categoryItems: CategoryItem[] = useMemo(() => {
+    return storeCategories.map((cat) => ({
+      id: cat.id,
+      name: cat.name,
+      icon: getIconForCategory(cat),
+    }));
+  }, [storeCategories]);
 
   const filteredCategories = useMemo(() => {
     const query = searchQuery.trim().toLowerCase();
-    if (!query) return CATEGORIES;
-    return CATEGORIES.filter((cat) => cat.name.toLowerCase().includes(query));
-  }, [searchQuery]);
+    if (!query) return categoryItems;
+    return categoryItems.filter((cat) => cat.name.toLowerCase().includes(query));
+  }, [searchQuery, categoryItems]);
 
   const handleToggle = useCallback((id: string) => {
     setSelectedIds((prev) => {
@@ -173,8 +194,11 @@ export default function CategorySelectionScreen() {
   }, []);
 
   const handleFilter = useCallback(() => {
+    // Apply first selected category as filter (or clear if none)
+    const firstSelected = Array.from(selectedIds)[0] ?? null;
+    selectCategory(firstSelected);
     router.back();
-  }, [router]);
+  }, [router, selectedIds, selectCategory]);
 
   const handleBack = useCallback(() => {
     router.back();

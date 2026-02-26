@@ -25,6 +25,7 @@ export class AnalyticsScreens {
   // Features
   static readonly WISHLIST = 'wishlist_screen';
   static readonly CONVERSATIONS = 'conversations_screen';
+  static readonly CHAT_MESSAGES = 'chat_messages_screen';
   static readonly FEED = 'feed_screen';
   static readonly NOTIFICATIONS = 'notifications_screen';
   static readonly MY_REVIEWS = 'my_reviews_screen';
@@ -83,6 +84,22 @@ export class AnalyticsEvents {
   static readonly TOGGLE_NOTIFICATIONS = 'toggle_notifications';
   static readonly TOGGLE_DARK_MODE = 'toggle_dark_mode';
   static readonly CHANGE_LANGUAGE = 'change_language';
+
+  // Feed
+  static readonly CREATE_POST = 'create_post';
+  static readonly LIKE_POST = 'like_post';
+  static readonly UNLIKE_POST = 'unlike_post';
+
+  // Chat
+  static readonly SEND_MESSAGE = 'send_message';
+  static readonly OPEN_CONVERSATION = 'open_conversation';
+
+  // Reviews
+  static readonly SUBMIT_REVIEW = 'submit_review';
+
+  // Notifications
+  static readonly MARK_NOTIFICATION_READ = 'mark_notification_read';
+  static readonly MARK_ALL_NOTIFICATIONS_READ = 'mark_all_notifications_read';
 
   // Business Owner
   static readonly UPDATE_BUSINESS = 'update_business';

@@ -1,18 +1,9 @@
 import React from 'react';
-import { View } from 'react-native';
 import { useLocalSearchParams } from 'expo-router';
-import { AppText } from '@/presentation/shared/components/ui/AppText';
-import { ScreenLayout } from '@/presentation/shared/layouts/ScreenLayout';
+import { ChatScreen } from '@/presentation/chat/screens/ChatScreen';
 
-export default function ChatScreen() {
+export default function ChatRoute() {
   const { conversationId } = useLocalSearchParams<{ conversationId: string }>();
 
-  return (
-    <ScreenLayout withKeyboardAvoid>
-      <View className="flex-1 items-center justify-center">
-        <AppText className="text-xl font-bold">Chat: {conversationId}</AppText>
-        {/* TODO: Implement chat UI */}
-      </View>
-    </ScreenLayout>
-  );
+  return <ChatScreen conversationId={conversationId ?? ''} />;
 }

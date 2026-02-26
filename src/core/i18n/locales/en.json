@@ -203,11 +203,42 @@
   },
   "feed": {
     "title": "Feed",
-    "empty": "No posts yet"
+    "subtitle": "See what's happening around you",
+    "empty": "No posts yet",
+    "emptyMessage": "Be the first to share something with the community.",
+    "loadingMore": "Loading more posts...",
+    "like": "Like",
+    "unlike": "Unlike",
+    "comments": "comments",
+    "justNow": "Just now",
+    "minutesAgo": "{{count}}m ago",
+    "hoursAgo": "{{count}}h ago",
+    "daysAgo": "{{count}}d ago"
   },
   "chat": {
-    "title": "Chat",
-    "empty": "No conversations yet"
+    "title": "Messages",
+    "empty": "No conversations yet",
+    "emptyMessage": "Start a conversation with a business or user.",
+    "unread": "{{count}} unread",
+    "typeMessage": "Type a message...",
+    "send": "Send",
+    "sending": "Sending...",
+    "noMessages": "No messages yet. Say hello!",
+    "justNow": "Just now",
+    "minutesAgo": "{{count}}m ago",
+    "hoursAgo": "{{count}}h ago",
+    "yesterday": "Yesterday"
+  },
+  "notifications": {
+    "title": "Notifications",
+    "empty": "No notifications yet",
+    "emptyMessage": "You'll see your notifications here when you get them.",
+    "markAllRead": "Mark all read",
+    "justNow": "Just now",
+    "minutesAgo": "{{count}}m ago",
+    "hoursAgo": "{{count}}h ago",
+    "daysAgo": "{{count}}d ago",
+    "yesterday": "Yesterday"
   },
   "profile": {
     "title": "Profile",

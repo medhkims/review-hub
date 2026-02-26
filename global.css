@@ -1,3 +1,13 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import "tailwindcss/theme.css" layer(theme);
+@import "tailwindcss/preflight.css" layer(base);
+@import "tailwindcss/utilities.css";
+@import "nativewind/theme";
+
+@theme {
+  --color-primary: #3B82F6;
+  --color-neon-purple: #A855F7;
+  --color-midnight: #0F172A;
+  --color-card-dark: #1E293B;
+  --color-border-dark: #334155;
+  --color-rating-gold: #FBBF24;
+}

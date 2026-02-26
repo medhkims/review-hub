@@ -1,28 +1,31 @@
-import React, { useEffect, useRef, useState } from 'react';
-import { View, ScrollView, Pressable, Animated } from 'react-native';
+import React, { useCallback, useEffect, useRef } from 'react';
+import { View, FlatList, Pressable, Animated, RefreshControl } from 'react-native';
 import { useRouter } from 'expo-router';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
-import { useTranslation } from 'react-i18next';
 import { ScreenLayout } from '@/presentation/shared/layouts/ScreenLayout';
 import { AppText } from '@/presentation/shared/components/ui/AppText';
-import { useAnalyticsScreen } from '@/presentation/shared/hooks/useAnalyticsScreen';
-import { AnalyticsScreens } from '@/core/analytics/analyticsKeys';
+import { LoadingIndicator } from '@/presentation/shared/components/ui/LoadingIndicator';
+import { ErrorView } from '@/presentation/shared/components/ui/ErrorView';
+import { useNotifications } from '../hooks/useNotifications';
+import { NotificationEntity, NotificationType } from '@/domain/notifications/entities/notificationEntity';
 import { colors } from '@/core/theme/colors';
 
-// ── Types ────────────────────────────────────────────────────────────────────
+// -- Helpers ------------------------------------------------------------------
 
-type NotificationType = 'rating' | 'update' | 'subscription' | 'offer' | 'security' | 'stats';
-type TabFilter = 'all' | 'unread';
-
-interface NotificationItem {
-  id: string;
-  type: NotificationType;
-  title: string;
-  body: string;
-  timestamp: string;
-  isUnread: boolean;
-  section: 'today' | 'earlier';
+function getRelativeTime(date: Date): string {
+  const now = new Date();
+  const diff = now.getTime() - date.getTime();
+  const minutes = Math.floor(diff / 60000);
+  if (minutes < 1) return 'Just now';
+  if (minutes < 60) return `${minutes}m ago`;
+  const hours = Math.floor(minutes / 60);
+  if (hours < 24) return `${hours}h ago`;
+  const days = Math.floor(hours / 24);
+  if (days < 7) return `${days}d ago`;
+  return date.toLocaleDateString();
 }
+
+// -- Type config --------------------------------------------------------------
 
 interface NotificationTypeConfig {
   icon: keyof typeof MaterialCommunityIcons.glyphMap;
@@ -30,101 +33,35 @@ interface NotificationTypeConfig {
   bgColor: string;
 }
 
-// ── Notification type config ─────────────────────────────────────────────────
-
 const NOTIFICATION_TYPE_CONFIG: Record<NotificationType, NotificationTypeConfig> = {
-  rating: {
+  review: {
     icon: 'star',
     color: colors.neonPurple,
     bgColor: 'rgba(168, 85, 247, 0.1)',
   },
-  update: {
-    icon: 'update',
+  like: {
+    icon: 'heart',
+    color: colors.pink,
+    bgColor: 'rgba(236, 72, 153, 0.1)',
+  },
+  follow: {
+    icon: 'account-plus',
     color: colors.blue,
     bgColor: 'rgba(59, 130, 246, 0.1)',
   },
-  subscription: {
-    icon: 'cash-multiple',
-    color: colors.green,
-    bgColor: 'rgba(34, 197, 94, 0.1)',
-  },
-  offer: {
-    icon: 'tag',
-    color: colors.neonPurple,
-    bgColor: 'rgba(168, 85, 247, 0.1)',
-  },
-  security: {
+  system: {
     icon: 'shield-alert',
     color: colors.orange,
     bgColor: 'rgba(249, 115, 22, 0.1)',
   },
-  stats: {
-    icon: 'chart-line',
-    color: colors.cyan,
-    bgColor: 'rgba(6, 182, 212, 0.1)',
+  promotion: {
+    icon: 'tag',
+    color: colors.green,
+    bgColor: 'rgba(34, 197, 94, 0.1)',
   },
 };
 
-// ── Mock Data ────────────────────────────────────────────────────────────────
-
-const MOCK_NOTIFICATIONS: NotificationItem[] = [
-  {
-    id: '1',
-    type: 'rating',
-    title: 'New 5-Star Rating',
-    body: 'Coffee House Tunis just got a new glowing review from Sarah M.',
-    timestamp: '2m ago',
-    isUnread: true,
-    section: 'today',
-  },
-  {
-    id: '2',
-    type: 'update',
-    title: 'App Update Available',
-    body: 'Version 2.4 is live! Check out the new interactive map features for Tunis.',
-    timestamp: '1h ago',
-    isUnread: true,
-    section: 'today',
-  },
-  {
-    id: '3',
-    type: 'subscription',
-    title: 'Subscription Renewed',
-    body: 'Your monthly business pro plan has been successfully renewed.',
-    timestamp: '3h ago',
-    isUnread: true,
-    section: 'today',
-  },
-  {
-    id: '4',
-    type: 'offer',
-    title: 'Weekend Offer',
-    body: "Don't miss out on the 50% discount at Sidi Bou Said Spa this weekend.",
-    timestamp: '1d ago',
-    isUnread: false,
-    section: 'earlier',
-  },
-  {
-    id: '5',
-    type: 'security',
-    title: 'Login Attempt',
-    body: 'New login detected from Chrome on Windows. Was this you?',
-    timestamp: '2d ago',
-    isUnread: false,
-    section: 'earlier',
-  },
-  {
-    id: '6',
-    type: 'stats',
-    title: 'Weekly Stats',
-    body: 'Your profile views went up by 24% this week. Great job!',
-    timestamp: '3d ago',
-    isUnread: false,
-    section: 'earlier',
-  },
-];
-
-// ── Pulse Dot ────────────────────────────────────────────────────────────────
+// -- Pulse Dot ----------------------------------------------------------------
 
 interface PulseDotProps {
   color: string;
@@ -162,7 +99,6 @@ const PulseDot: React.FC<PulseDotProps> = ({ color }) => {
         justifyContent: 'center',
       }}
     >
-      {/* Glow ring */}
       <Animated.View
         style={{
           position: 'absolute',
@@ -181,7 +117,6 @@ const PulseDot: React.FC<PulseDotProps> = ({ color }) => {
           ],
         }}
       />
-      {/* Solid dot */}
       <View
         style={{
           width: 10,
@@ -199,123 +134,203 @@ const PulseDot: React.FC<PulseDotProps> = ({ color }) => {
   );
 };
 
-// ── Notification Card ────────────────────────────────────────────────────────
+// -- Notification Row ---------------------------------------------------------
 
-interface NotificationCardProps {
-  notification: NotificationItem;
+interface NotificationRowProps {
+  notification: NotificationEntity;
+  onPress: (notification: NotificationEntity) => void;
 }
 
-const NotificationCard: React.FC<NotificationCardProps> = ({ notification }) => {
-  const config = NOTIFICATION_TYPE_CONFIG[notification.type];
-  const isRead = !notification.isUnread;
+const NotificationRow: React.FC<NotificationRowProps> = React.memo(
+  ({ notification, onPress }) => {
+    const config =
+      NOTIFICATION_TYPE_CONFIG[notification.type] ?? NOTIFICATION_TYPE_CONFIG.system;
+    const isUnread = !notification.isRead;
 
-  return (
-    <Pressable
-      style={{
-        position: 'relative',
-        backgroundColor: colors.cardDark,
-        opacity: isRead ? 0.6 : 1,
-        padding: 16,
-        borderRadius: 24,
-        flexDirection: 'row',
-        alignItems: 'flex-start',
-        gap: 14,
-        marginBottom: 12,
-      }}
-      accessibilityLabel={`${notification.title}, ${notification.timestamp}`}
-      accessibilityRole="button"
-    >
-      {/* Unread indicator dot */}
-      {notification.isUnread && <PulseDot color={colors.neonPurple} />}
+    const handlePress = useCallback(() => {
+      onPress(notification);
+    }, [notification, onPress]);
 
-      {/* Icon circle */}
-      <View
+    return (
+      <Pressable
+        onPress={handlePress}
         style={{
-          width: 48,
-          height: 48,
+          position: 'relative',
+          backgroundColor: isUnread ? colors.cardDark : colors.cardDark,
+          opacity: isUnread ? 1 : 0.6,
+          padding: 16,
           borderRadius: 24,
-          backgroundColor: config.bgColor,
-          alignItems: 'center',
-          justifyContent: 'center',
-          flexShrink: 0,
+          flexDirection: 'row',
+          alignItems: 'flex-start',
+          gap: 14,
+          marginBottom: 12,
+          borderLeftWidth: isUnread ? 3 : 0,
+          borderLeftColor: isUnread ? colors.neonPurple : 'transparent',
         }}
+        accessibilityLabel={`${notification.title}, ${getRelativeTime(notification.createdAt)}`}
+        accessibilityRole="button"
       >
-        <MaterialCommunityIcons
-          name={config.icon}
-          size={24}
-          color={config.color}
-        />
-      </View>
+        {isUnread && <PulseDot color={colors.neonPurple} />}
 
-      {/* Content */}
-      <View style={{ flex: 1, paddingRight: 16 }}>
-        {/* Title row + timestamp */}
+        {/* Icon circle */}
         <View
           style={{
-            flexDirection: 'row',
-            justifyContent: 'space-between',
-            alignItems: 'flex-start',
-            marginBottom: 4,
+            width: 48,
+            height: 48,
+            borderRadius: 24,
+            backgroundColor: config.bgColor,
+            alignItems: 'center',
+            justifyContent: 'center',
+            flexShrink: 0,
           }}
         >
-          <AppText
-            style={{
-              fontSize: 15,
-              fontWeight: '700',
-              color: isRead ? colors.textSlate200 : colors.textWhite,
-              flex: 1,
-              lineHeight: 20,
-            }}
-            numberOfLines={1}
-          >
-            {notification.title}
-          </AppText>
-          <AppText
-            style={{
-              fontSize: 12,
-              color: colors.textSlate400,
-              marginLeft: 8,
-              flexShrink: 0,
-            }}
-          >
-            {notification.timestamp}
-          </AppText>
+          <MaterialCommunityIcons
+            name={config.icon}
+            size={24}
+            color={config.color}
+          />
         </View>
 
-        {/* Body */}
-        <AppText
-          style={{
-            fontSize: 13,
-            color: colors.textSlate400,
-            lineHeight: 20,
-          }}
-        >
-          {notification.body}
-        </AppText>
-      </View>
-    </Pressable>
-  );
-};
+        {/* Content */}
+        <View style={{ flex: 1, paddingRight: 16 }}>
+          <View
+            style={{
+              flexDirection: 'row',
+              justifyContent: 'space-between',
+              alignItems: 'flex-start',
+              marginBottom: 4,
+            }}
+          >
+            <AppText
+              style={{
+                fontSize: 15,
+                fontWeight: '700',
+                color: isUnread ? colors.textWhite : colors.textSlate200,
+                flex: 1,
+                lineHeight: 20,
+              }}
+              numberOfLines={1}
+            >
+              {notification.title}
+            </AppText>
+            <AppText
+              style={{
+                fontSize: 12,
+                color: colors.textSlate400,
+                marginLeft: 8,
+                flexShrink: 0,
+              }}
+            >
+              {getRelativeTime(notification.createdAt)}
+            </AppText>
+          </View>
 
-// ── Notifications Screen ─────────────────────────────────────────────────────
+          <AppText
+            style={{
+              fontSize: 13,
+              color: colors.textSlate400,
+              lineHeight: 20,
+            }}
+          >
+            {notification.body}
+          </AppText>
+        </View>
+      </Pressable>
+    );
+  },
+);
+
+NotificationRow.displayName = 'NotificationRow';
+
+// -- Empty State --------------------------------------------------------------
+
+const EmptyState: React.FC = () => (
+  <View
+    style={{
+      flex: 1,
+      alignItems: 'center',
+      justifyContent: 'center',
+      paddingVertical: 64,
+    }}
+  >
+    <MaterialCommunityIcons
+      name="bell-off-outline"
+      size={64}
+      color={colors.textSlate500}
+    />
+    <AppText
+      style={{
+        color: colors.textSlate500,
+        marginTop: 16,
+        fontSize: 16,
+      }}
+    >
+      No notifications yet
+    </AppText>
+  </View>
+);
+
+// -- Screen -------------------------------------------------------------------
 
 export default function NotificationsScreen() {
-  useAnalyticsScreen(AnalyticsScreens.NOTIFICATIONS);
-  const { t } = useTranslation();
   const router = useRouter();
-  const [activeTab, setActiveTab] = useState<TabFilter>('all');
+  const {
+    notifications,
+    unreadCount,
+    isLoading,
+    error,
+    markAsRead,
+    markAllAsRead,
+    refresh,
+  } = useNotifications();
 
-  const filteredNotifications =
-    activeTab === 'unread'
-      ? MOCK_NOTIFICATIONS.filter((n) => n.isUnread)
-      : MOCK_NOTIFICATIONS;
+  const handleNotificationPress = useCallback(
+    (notification: NotificationEntity) => {
+      if (!notification.isRead) {
+        markAsRead(notification.id);
+      }
+      // Navigate to reference if applicable
+      if (notification.referenceId && notification.referenceType === 'business') {
+        router.push(`/(main)/(feed)/business/${notification.referenceId}`);
+      }
+    },
+    [markAsRead, router],
+  );
 
-  const todayNotifications = filteredNotifications.filter((n) => n.section === 'today');
-  const earlierNotifications = filteredNotifications.filter((n) => n.section === 'earlier');
+  const keyExtractor = useCallback(
+    (item: NotificationEntity) => item.id,
+    [],
+  );
+
+  const renderItem = useCallback(
+    ({ item }: { item: NotificationEntity }) => (
+      <NotificationRow
+        notification={item}
+        onPress={handleNotificationPress}
+      />
+    ),
+    [handleNotificationPress],
+  );
+
+  if (isLoading && notifications.length === 0) {
+    return (
+      <ScreenLayout>
+        <LoadingIndicator />
+      </ScreenLayout>
+    );
+  }
+
+  if (error && notifications.length === 0) {
+    return (
+      <ScreenLayout>
+        <ErrorView message={error} onRetry={refresh} />
+      </ScreenLayout>
+    );
+  }
 
   return (
     <ScreenLayout>
-      {/* ── Header ──────────────────────────────────────────────── */}
+      {/* Header */}
       <View
         style={{
           paddingHorizontal: 24,
@@ -335,10 +350,14 @@ export default function NotificationsScreen() {
             alignItems: 'center',
             justifyContent: 'center',
           }}
-          accessibilityLabel={t('common.goBack', { defaultValue: 'Go back' })}
+          accessibilityLabel="Go back"
           accessibilityRole="button"
         >
-          <MaterialCommunityIcons name="arrow-left" size={24} color={colors.textWhite} />
+          <MaterialCommunityIcons
+            name="arrow-left"
+            size={24}
+            color={colors.textWhite}
+          />
         </Pressable>
 
         <AppText
@@ -349,211 +368,56 @@ export default function NotificationsScreen() {
             letterSpacing: -0.3,
           }}
         >
-          {t('notifications.title', { defaultValue: 'Notifications' })}
+          Notifications
         </AppText>
 
-        <Pressable
-          style={{
-            width: 40,
-            height: 40,
-            borderRadius: 20,
-            alignItems: 'center',
-            justifyContent: 'center',
-          }}
-          accessibilityLabel={t('notifications.moreOptions', { defaultValue: 'More options' })}
-          accessibilityRole="button"
-        >
-          <MaterialCommunityIcons name="dots-horizontal" size={24} color={colors.textWhite} />
-        </Pressable>
-      </View>
-
-      {/* ── Segmented Control ───────────────────────────────────── */}
-      <View
-        style={{
-          marginHorizontal: 24,
-          marginTop: 16,
-          marginBottom: 8,
-          padding: 4,
-          backgroundColor: colors.cardDark,
-          borderRadius: 9999,
-          flexDirection: 'row',
-        }}
-      >
-        <Pressable
-          onPress={() => setActiveTab('all')}
-          style={{
-            flex: 1,
-            paddingVertical: 10,
-            paddingHorizontal: 16,
-            borderRadius: 9999,
-            alignItems: 'center',
-            justifyContent: 'center',
-            backgroundColor: activeTab === 'all' ? colors.neonPurple : 'transparent',
-            ...(activeTab === 'all'
-              ? {
-                  shadowColor: colors.neonPurple,
-                  shadowOffset: { width: 0, height: 0 },
-                  shadowOpacity: 0.5,
-                  shadowRadius: 10,
-                  elevation: 6,
-                }
-              : {}),
-          }}
-          accessibilityLabel={t('notifications.all', { defaultValue: 'All' })}
-          accessibilityRole="tab"
-          accessibilityState={{ selected: activeTab === 'all' }}
-        >
-          <AppText
+        {unreadCount > 0 ? (
+          <Pressable
+            onPress={markAllAsRead}
             style={{
-              fontSize: 14,
-              fontWeight: '600',
-              color: activeTab === 'all' ? colors.textWhite : colors.textSlate400,
+              paddingHorizontal: 8,
+              paddingVertical: 4,
             }}
+            accessibilityLabel="Mark all as read"
+            accessibilityRole="button"
           >
-            {t('notifications.all', { defaultValue: 'All' })}
-          </AppText>
-        </Pressable>
-
-        <Pressable
-          onPress={() => setActiveTab('unread')}
-          style={{
-            flex: 1,
-            paddingVertical: 10,
-            paddingHorizontal: 16,
-            borderRadius: 9999,
-            alignItems: 'center',
-            justifyContent: 'center',
-            backgroundColor: activeTab === 'unread' ? colors.neonPurple : 'transparent',
-            ...(activeTab === 'unread'
-              ? {
-                  shadowColor: colors.neonPurple,
-                  shadowOffset: { width: 0, height: 0 },
-                  shadowOpacity: 0.5,
-                  shadowRadius: 10,
-                  elevation: 6,
-                }
-              : {}),
-          }}
-          accessibilityLabel={t('notifications.unread', { defaultValue: 'Unread' })}
-          accessibilityRole="tab"
-          accessibilityState={{ selected: activeTab === 'unread' }}
-        >
-          <AppText
-            style={{
-              fontSize: 14,
-              fontWeight: '600',
-              color: activeTab === 'unread' ? colors.textWhite : colors.textSlate400,
-            }}
-          >
-            {t('notifications.unread', { defaultValue: 'Unread' })}
-          </AppText>
-        </Pressable>
-      </View>
-
-      {/* ── Notification List ───────────────────────────────────── */}
-      <ScrollView
-        style={{ flex: 1 }}
-        contentContainerStyle={{ paddingHorizontal: 24, paddingTop: 16, paddingBottom: 100 }}
-        showsVerticalScrollIndicator={false}
-      >
-        {/* ── TODAY section ──────────────────────────────────────── */}
-        {todayNotifications.length > 0 && (
-          <>
-            <View
-              style={{
-                flexDirection: 'row',
-                justifyContent: 'space-between',
-                alignItems: 'flex-end',
-                marginBottom: 12,
-              }}
-            >
-              <AppText
-                style={{
-                  fontSize: 12,
-                  fontWeight: '600',
-                  color: colors.textSlate400,
-                  textTransform: 'uppercase',
-                  letterSpacing: 1.2,
-                }}
-              >
-                {t('notifications.today', { defaultValue: 'Today' })}
-              </AppText>
-              <Pressable
-                accessibilityLabel={t('notifications.markAllAsRead', { defaultValue: 'Mark all as read' })}
-                accessibilityRole="button"
-              >
-                <AppText
-                  style={{
-                    fontSize: 12,
-                    fontWeight: '500',
-                    color: colors.neonPurple,
-                  }}
-                >
-                  {t('notifications.markAllAsRead', { defaultValue: 'Mark all as read' })}
-                </AppText>
-              </Pressable>
-            </View>
-
-            {todayNotifications.map((notification) => (
-              <NotificationCard key={notification.id} notification={notification} />
-            ))}
-          </>
-        )}
-
-        {/* ── EARLIER section ───────────────────────────────────── */}
-        {earlierNotifications.length > 0 && (
-          <>
-            <View
-              style={{
-                flexDirection: 'row',
-                justifyContent: 'space-between',
-                alignItems: 'flex-end',
-                marginTop: 12,
-                marginBottom: 12,
-              }}
-            >
-              <AppText
-                style={{
-                  fontSize: 12,
-                  fontWeight: '600',
-                  color: colors.textSlate400,
-                  textTransform: 'uppercase',
-                  letterSpacing: 1.2,
-                }}
-              >
-                {t('notifications.earlier', { defaultValue: 'Earlier' })}
-              </AppText>
-            </View>
-
-            {earlierNotifications.map((notification) => (
-              <NotificationCard key={notification.id} notification={notification} />
-            ))}
-          </>
-        )}
-
-        {/* ── Empty state ───────────────────────────────────────── */}
-        {filteredNotifications.length === 0 && (
-          <View
-            style={{
-              flex: 1,
-              alignItems: 'center',
-              justifyContent: 'center',
-              paddingVertical: 64,
-            }}
-          >
-            <MaterialCommunityIcons name="bell-off-outline" size={64} color={colors.textSlate500} />
             <AppText
               style={{
-                color: colors.textSlate500,
-                marginTop: 16,
-                fontSize: 16,
+                fontSize: 12,
+                fontWeight: '500',
+                color: colors.neonPurple,
               }}
             >
-              {t('notifications.empty', { defaultValue: 'No notifications yet' })}
+              Mark all read
             </AppText>
-          </View>
+          </Pressable>
+        ) : (
+          <View style={{ width: 40 }} />
         )}
-      </ScrollView>
+      </View>
+
+      {/* Notification List */}
+      <FlatList
+        data={notifications}
+        keyExtractor={keyExtractor}
+        renderItem={renderItem}
+        contentContainerStyle={{
+          paddingHorizontal: 24,
+          paddingTop: 16,
+          paddingBottom: 100,
+          flexGrow: 1,
+        }}
+        showsVerticalScrollIndicator={false}
+        ListEmptyComponent={EmptyState}
+        refreshControl={
+          <RefreshControl
+            refreshing={isLoading}
+            onRefresh={refresh}
+            tintColor={colors.neonPurple}
+            colors={[colors.neonPurple]}
+          />
+        }
+      />
     </ScreenLayout>
   );
 }

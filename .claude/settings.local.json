@@ -18,7 +18,9 @@
       "mcp__firebase__remoteconfig_get_template",
       "mcp__firebase__remoteconfig_update_template",
       "mcp__firebase__firebase_get_project",
-      "mcp__firebase__firestore_list_collections"
+      "mcp__firebase__firestore_list_collections",
+      "mcp__firebase__firebase_validate_security_rules",
+      "mcp__firebase__firebase_read_resources"
     ]
   },
   "enableAllProjectMcpServers": true,

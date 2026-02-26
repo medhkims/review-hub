@@ -1,6 +1,6 @@
-import React, { useState, useCallback } from 'react';
-import { View, ScrollView, TextInput, Pressable } from 'react-native';
-import { useRouter } from 'expo-router';
+import React, { useState, useCallback, useEffect } from 'react';
+import { View, ScrollView, TextInput, Pressable, Alert } from 'react-native';
+import { useRouter, useLocalSearchParams } from 'expo-router';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useTranslation } from 'react-i18next';
 import { ScreenLayout } from '@/presentation/shared/layouts/ScreenLayout';
@@ -10,9 +10,9 @@ import { Card } from '@/presentation/shared/components/ui/Card';
 import { useAnalyticsScreen } from '@/presentation/shared/hooks/useAnalyticsScreen';
 import { AnalyticsScreens } from '@/core/analytics/analyticsKeys';
 import { colors } from '@/core/theme/colors';
+import { useWriteReview } from '../hooks/useWriteReview';
 
 const MAX_CHARS = 500;
-const MOCK_BUSINESS = { name: 'Pasta Cosi', rating: 4.9, reviews: 1200 };
 
 const CATEGORIES = [
   { key: 'cooking', label: 'Cooking', icon: 'silverware-fork-knife' as const },
@@ -53,6 +53,14 @@ export default function WriteReviewScreen() {
   useAnalyticsScreen(AnalyticsScreens.WRITE_REVIEW);
   const router = useRouter();
   const { t } = useTranslation();
+  const { businessId, businessName } = useLocalSearchParams<{ businessId: string; businessName: string }>();
+
+  const resolvedBusinessId = businessId ?? '';
+  const resolvedBusinessName = businessName ?? 'Business';
+
+  const { isSubmitting, submitSuccess, error, submitReview, reset } =
+    useWriteReview(resolvedBusinessId, resolvedBusinessName);
+
   const [ratings, setRatings] = useState<RatingsState>({ cooking: 0, cleanliness: 0, service: 0 });
   const [reviewText, setReviewText] = useState('');
 
@@ -65,10 +73,30 @@ export default function WriteReviewScreen() {
   }, []);
 
   const handleSubmit = useCallback(() => {
-    // TODO: wire up submitReview use case
-  }, []);
+    submitReview(ratings, reviewText, []);
+  }, [ratings, reviewText, submitReview]);
 
-  const isSubmitDisabled = !reviewText.trim() || Object.values(ratings).some((r) => r === 0);
+  useEffect(() => {
+    if (submitSuccess) {
+      Alert.alert('Success', 'Your review has been submitted!', [
+        {
+          text: 'OK',
+          onPress: () => {
+            reset();
+            router.back();
+          },
+        },
+      ]);
+    }
+  }, [submitSuccess, reset, router]);
+
+  useEffect(() => {
+    if (error) {
+      Alert.alert('Error', error);
+    }
+  }, [error]);
+
+  const isSubmitDisabled = isSubmitting || !reviewText.trim() || Object.values(ratings).some((r) => r === 0);
 
   return (
     <ScreenLayout withKeyboardAvoid>
@@ -109,17 +137,8 @@ export default function WriteReviewScreen() {
             <MaterialCommunityIcons name="store" size={32} color={colors.neonPurple} />
           </View>
           <AppText style={{ fontSize: 22, fontWeight: '700', color: colors.textWhite, marginTop: 10, textAlign: 'center' }}>
-            {MOCK_BUSINESS.name}
+            {resolvedBusinessName}
           </AppText>
-          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, marginTop: 6 }}>
-            <MaterialCommunityIcons name="star" size={16} color={colors.ratingGold} />
-            <AppText style={{ fontSize: 14, fontWeight: '600', color: colors.ratingGold }}>
-              {MOCK_BUSINESS.rating}
-            </AppText>
-            <AppText style={{ fontSize: 14, color: colors.textSlate400 }}>
-              {'\u00B7 '}{MOCK_BUSINESS.reviews.toLocaleString()} {t('writeReview.reviews')}
-            </AppText>
-          </View>
         </View>
 
         {/* Rating Categories */}
@@ -212,10 +231,11 @@ export default function WriteReviewScreen() {
             size="lg"
             shape="pill"
             disabled={isSubmitDisabled}
+            isLoading={isSubmitting}
             onPress={handleSubmit}
             accessibilityLabel={t('writeReview.submit')}
             accessibilityRole="button"
-            icon={<MaterialCommunityIcons name="arrow-right" size={20} color={colors.textWhite} />}
+            icon={!isSubmitting ? <MaterialCommunityIcons name="arrow-right" size={20} color={colors.textWhite} /> : undefined}
           />
         </View>
       </ScrollView>

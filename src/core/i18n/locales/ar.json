@@ -203,11 +203,42 @@
   },
   "feed": {
     "title": "الرئيسية",
-    "empty": "لا توجد منشورات بعد"
+    "subtitle": "شاهد ما يحدث حولك",
+    "empty": "لا توجد منشورات بعد",
+    "emptyMessage": "كن أول من يشارك شيئاً مع المجتمع.",
+    "loadingMore": "جاري تحميل المزيد...",
+    "like": "إعجاب",
+    "unlike": "إلغاء الإعجاب",
+    "comments": "تعليقات",
+    "justNow": "الآن",
+    "minutesAgo": "منذ {{count}} دقيقة",
+    "hoursAgo": "منذ {{count}} ساعة",
+    "daysAgo": "منذ {{count}} يوم"
   },
   "chat": {
-    "title": "المحادثات",
-    "empty": "لا توجد محادثات بعد"
+    "title": "الرسائل",
+    "empty": "لا توجد محادثات بعد",
+    "emptyMessage": "ابدأ محادثة مع شركة أو مستخدم.",
+    "unread": "{{count}} غير مقروءة",
+    "typeMessage": "اكتب رسالة...",
+    "send": "إرسال",
+    "sending": "جاري الإرسال...",
+    "noMessages": "لا توجد رسائل بعد. قل مرحبا!",
+    "justNow": "الآن",
+    "minutesAgo": "منذ {{count}} دقيقة",
+    "hoursAgo": "منذ {{count}} ساعة",
+    "yesterday": "أمس"
+  },
+  "notifications": {
+    "title": "الإشعارات",
+    "empty": "لا توجد إشعارات بعد",
+    "emptyMessage": "ستظهر إشعاراتك هنا عند استلامها.",
+    "markAllRead": "تعيين الكل كمقروء",
+    "justNow": "الآن",
+    "minutesAgo": "منذ {{count}} دقيقة",
+    "hoursAgo": "منذ {{count}} ساعة",
+    "daysAgo": "منذ {{count}} يوم",
+    "yesterday": "أمس"
   },
   "profile": {
     "title": "الملف الشخصي",

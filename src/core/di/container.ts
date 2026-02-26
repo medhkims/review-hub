@@ -123,8 +123,62 @@ const registerBusinessUseCase = new RegisterBusinessUseCase(businessRepository);
 const getOwnerBusinessUseCase = new GetOwnerBusinessUseCase(businessRepository);
 const updateBusinessUseCase = new UpdateBusinessUseCase(businessRepository);
 
+// ---- Feed ----
+import { FeedRemoteDataSourceImpl } from '@/data/feed/datasources/feedRemoteDataSource';
+import { FeedLocalDataSourceImpl } from '@/data/feed/datasources/feedLocalDataSource';
+import { FeedRepositoryImpl } from '@/data/feed/repositories/feedRepositoryImpl';
+import { GetPostsUseCase } from '@/domain/feed/usecases/getPostsUseCase';
+import { CreatePostUseCase } from '@/domain/feed/usecases/createPostUseCase';
+import { LikePostUseCase } from '@/domain/feed/usecases/likePostUseCase';
+
+// ---- Reviews ----
+import { ReviewRemoteDataSourceImpl } from '@/data/reviews/datasources/reviewRemoteDataSource';
+import { ReviewRepositoryImpl } from '@/data/reviews/repositories/reviewRepositoryImpl';
+import { CreateReviewUseCase } from '@/domain/reviews/usecases/createReviewUseCase';
+
 // ---- Chat ----
-// TODO: Wire chat data sources → repository → use cases
+import { ChatRemoteDataSourceImpl } from '@/data/chat/datasources/chatRemoteDataSource';
+import { ChatLocalDataSourceImpl } from '@/data/chat/datasources/chatLocalDataSource';
+import { ChatRepositoryImpl } from '@/data/chat/repositories/chatRepositoryImpl';
+import { GetConversationsUseCase } from '@/domain/chat/usecases/getConversationsUseCase';
+import { GetMessagesUseCase } from '@/domain/chat/usecases/getMessagesUseCase';
+import { SendMessageUseCase } from '@/domain/chat/usecases/sendMessageUseCase';
+
+// ---- Feed ----
+const feedRemoteDataSource = new FeedRemoteDataSourceImpl();
+const feedLocalDataSource = new FeedLocalDataSourceImpl();
+const feedRepository = new FeedRepositoryImpl(feedRemoteDataSource, feedLocalDataSource, networkInfo);
+
+const getPostsUseCase = new GetPostsUseCase(feedRepository);
+const createPostUseCase = new CreatePostUseCase(feedRepository);
+const likePostUseCase = new LikePostUseCase(feedRepository);
+
+// ---- Reviews ----
+const reviewRemoteDataSource = new ReviewRemoteDataSourceImpl();
+const reviewRepository = new ReviewRepositoryImpl(reviewRemoteDataSource);
+
+const createReviewUseCase = new CreateReviewUseCase(reviewRepository);
+
+// ---- Chat ----
+const chatRemoteDataSource = new ChatRemoteDataSourceImpl();
+const chatLocalDataSource = new ChatLocalDataSourceImpl();
+const chatRepository = new ChatRepositoryImpl(chatRemoteDataSource, chatLocalDataSource, networkInfo);
+
+const getConversationsUseCase = new GetConversationsUseCase(chatRepository);
+const getMessagesUseCase = new GetMessagesUseCase(chatRepository);
+const sendMessageUseCase = new SendMessageUseCase(chatRepository);
+
+// ---- Notifications ----
+import { NotificationRemoteDataSourceImpl } from '@/data/notifications/datasources/notificationRemoteDataSource';
+import { NotificationRepositoryImpl } from '@/data/notifications/repositories/notificationRepositoryImpl';
+import { GetNotificationsUseCase } from '@/domain/notifications/usecases/getNotificationsUseCase';
+import { MarkNotificationReadUseCase } from '@/domain/notifications/usecases/markNotificationReadUseCase';
+
+const notificationRemoteDataSource = new NotificationRemoteDataSourceImpl();
+const notificationRepository = new NotificationRepositoryImpl(notificationRemoteDataSource, networkInfo);
+
+const getNotificationsUseCase = new GetNotificationsUseCase(notificationRepository);
+const markNotificationReadUseCase = new MarkNotificationReadUseCase(notificationRepository);
 
 export const container = {
   networkInfo,
@@ -160,4 +214,17 @@ export const container = {
   registerBusinessUseCase,
   getOwnerBusinessUseCase,
   updateBusinessUseCase,
+  // Feed use cases
+  getPostsUseCase,
+  createPostUseCase,
+  likePostUseCase,
+  // Review use cases
+  createReviewUseCase,
+  // Chat use cases
+  getConversationsUseCase,
+  getMessagesUseCase,
+  sendMessageUseCase,
+  // Notification use cases
+  getNotificationsUseCase,
+  markNotificationReadUseCase,
 };
