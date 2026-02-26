@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Wishlist Neon Dark Mode</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,typography,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<script>
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        primary: "#3b82f6",
+                        "midnight": "#0F172A",
+                        "card-dark": "#1E293B",
+                        "border-dark": "#334155",
+                        "neon-purple": "#A855F7",
+                        "text-muted": "#94A3B8",
+                    },
+                    fontFamily: {
+                        sans: ["Inter", "sans-serif"],
+                    },
+                },
+            },
+        };
+    </script>
+<style type="text/tailwindcss">
+        :root {
+            --bg-deep: #0F172A;
+            --card-bg: #1E293B;
+            --accent-blue: #3b82f6;
+            --neon-glow: #A855F7;
+        }
+        body {
+            background-color: var(--bg-deep);
+            -webkit-tap-highlight-color: transparent;
+        }.ios-blur {
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+        }
+        .neon-icon-glow {
+            box-shadow: 0 0 25px 5px rgba(168, 85, 247, 0.4), 
+                        0 0 50px 10px rgba(168, 85, 247, 0.2);
+            animation: pulse-purple 3s infinite ease-in-out;
+        }
+        @keyframes pulse-purple {
+            0%, 100% { box-shadow: 0 0 25px 5px rgba(168, 85, 247, 0.4), 0 0 50px 10px rgba(168, 85, 247, 0.2); }
+            50% { box-shadow: 0 0 35px 10px rgba(168, 85, 247, 0.6), 0 0 60px 15px rgba(168, 85, 247, 0.3); }
+        }
+        .safe-area-pb {
+            padding-bottom: env(safe-area-inset-bottom);
+        }
+        .safe-area-pt {
+            padding-top: env(safe-area-inset-top);
+        }
+        .hide-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .hide-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="text-slate-100 min-h-screen pb-32 font-sans bg-midnight">
+<div class="fixed top-0 w-full z-[70] text-white px-6 pt-[14px] pb-2 flex justify-between items-center text-[15px] font-semibold select-none mix-blend-plus-lighter">
+<div class="tracking-wide w-[30%] pl-1">9:41</div>
+<div class="flex items-center gap-1.5 justify-end w-[30%] pr-1">
+<span class="material-symbols-outlined text-[18px] leading-none">signal_cellular_alt</span>
+<span class="material-symbols-outlined text-[18px] leading-none">wifi</span>
+<span class="material-symbols-outlined text-[20px] rotate-90 leading-none">battery_full</span>
+</div>
+</div>
+<header class="sticky top-0 z-50 px-6 pt-[50px] pb-4 flex items-center justify-between bg-transparent transition-colors duration-200">
+<button class="p-1 rounded-full bg-slate-800/50 backdrop-blur-md hover:bg-slate-700/50 transition-colors">
+<span class="material-symbols-outlined text-white text-xl">chevron_left</span>
+</button>
+<h1 class="text-[17px] font-semibold tracking-tight text-white">Wishlist</h1>
+<div class="w-8"></div>
+</header>
+<main class="px-5 mt-0 space-y-4 mb-6">
+<section class="flex flex-col items-center pt-2 pb-6">
+<div class="relative">
+<div class="absolute inset-0 rounded-full bg-neon-purple/20 blur-[60px] scale-150 pointer-events-none"></div>
+<div class="relative w-24 h-24 rounded-full border border-neon-purple/50 flex items-center justify-center neon-icon-glow bg-midnight z-10">
+<span class="material-symbols-outlined text-neon-purple text-[40px]" style="font-variation-settings: 'FILL' 1">favorite</span>
+</div>
+</div>
+</section>
+<section>
+<div class="flex items-center justify-between mb-4 px-1">
+<h2 class="text-lg font-bold text-white tracking-tight">All results</h2>
+<button class="p-1.5 rounded-lg bg-card-dark border border-border-dark/50 text-neon-purple">
+<span class="material-symbols-outlined text-[18px]">tune</span>
+</button>
+</div>
+<div class="space-y-2.5">
+<div class="bg-card-dark rounded-xl p-2 flex gap-3 shadow-lg border border-border-dark/30 relative overflow-hidden group items-center">
+<div class="w-12 h-12 shrink-0 rounded-lg overflow-hidden relative bg-slate-800">
+<img alt="Pasta Cosi" class="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCxRt249hgnCao4sx9yKu7GXWkFA3Mp3YvP8SJQn8uYukkhZ1YG0OYBVlP7_IAXX-WnyBq872qsSSlPfUzTw310pMlLWgTE5iUPSDbqqfQbj9z_quj4ug9DxAJLHGoLlIxmvMEles8n72ECkvXy896tixSSGwuYdU0qMfFJMajcBmOssEbnL8z4M9QdH9lw5ZTS8TRABMyjd6v9JitacN_5ah4cbm7bHkIBuwCfm0Cq2zMLVmzvka_5TCgtNCO2mPQEV-Pfo8DPWA"/>
+</div>
+<div class="flex-1 min-w-0 flex flex-col justify-center h-full gap-0.5">
+<div class="flex items-start justify-between gap-2">
+<h3 class="text-[13px] font-bold text-white leading-tight truncate">Pasta Cosi</h3>
+</div>
+<div class="flex items-center gap-1">
+<span class="material-symbols-outlined text-yellow-400 text-[10px]" style="font-variation-settings: 'FILL' 1">star</span>
+<span class="text-[11px] font-bold text-white">4.9</span>
+<span class="text-[9px] text-slate-400 ml-0.5">(1200)</span>
+</div>
+<div class="flex items-start gap-1">
+<span class="material-symbols-outlined text-slate-500 text-[10px] mt-0.5 shrink-0">location_on</span>
+<p class="text-[9px] leading-tight text-slate-400 truncate w-full">Immeuble Constance, Les Berges du Lac</p>
+</div>
+</div>
+<div class="flex flex-col justify-center h-full">
+<button class="w-[40px] h-[40px] rounded-lg bg-neon-purple hover:bg-purple-600 transition-colors flex flex-col items-center justify-center shadow-[0_0_8px_rgba(168,85,247,0.3)]">
+<span class="material-symbols-outlined text-white text-[16px]" style="font-variation-settings: 'FILL' 1">bookmark</span>
+<span class="text-[7px] font-medium text-white leading-none text-center mt-0.5">Review</span>
+</button>
+</div>
+</div>
+<div class="bg-card-dark rounded-xl p-2 flex gap-3 shadow-lg border border-border-dark/30 relative overflow-hidden group items-center">
+<div class="w-12 h-12 shrink-0 rounded-lg overflow-hidden relative bg-slate-800">
+<img alt="La Trattoria" class="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCAUSQzzgxNlyy93iVOohgZVRvh5v5VQ24O_YzOJndKcISpBbOqwkUavUkfldaMXVP8kTJEUnCL6K-YYgDPe-gAuuQ6A0BP261fWJJM9VbX0PUf71PACLwvxm9WvFJ80k0HxsP6Bh-8BbQb060o1OksxrQs48QpdUqv66sTf0L1xnqdR4KBUqPH9nGVbQ0IDSrpU_IL-imr1hOwC3Y-xWZUQi6gACFug05UzKUuS8nDi4NqgjjQYKp-uRcDUq3tnneqjJ-FC0Q_Hw"/>
+</div>
+<div class="flex-1 min-w-0 flex flex-col justify-center h-full gap-0.5">
+<div class="flex items-start justify-between gap-2">
+<h3 class="text-[13px] font-bold text-white leading-tight truncate">La Trattoria</h3>
+</div>
+<div class="flex items-center gap-1">
+<span class="material-symbols-outlined text-yellow-400 text-[10px]" style="font-variation-settings: 'FILL' 1">star</span>
+<span class="text-[11px] font-bold text-white">4.8</span>
+<span class="text-[9px] text-slate-400 ml-0.5">(850)</span>
+</div>
+<div class="flex items-start gap-1">
+<span class="material-symbols-outlined text-slate-500 text-[10px] mt-0.5 shrink-0">keyboard_double_arrow_right</span>
+<p class="text-[9px] leading-tight text-slate-400 truncate w-full">Avenue Habib Bourguiba, Sousse</p>
+</div>
+</div>
+<div class="flex flex-col justify-center h-full">
+<button class="w-[40px] h-[40px] rounded-lg bg-neon-purple hover:bg-purple-600 transition-colors flex flex-col items-center justify-center shadow-[0_0_8px_rgba(168,85,247,0.3)]">
+<span class="material-symbols-outlined text-white text-[16px]" style="font-variation-settings: 'FILL' 1">bookmark</span>
+<span class="text-[7px] font-medium text-white leading-none text-center mt-0.5">Review</span>
+</button>
+</div>
+</div>
+<div class="bg-card-dark rounded-xl p-2 flex gap-3 shadow-lg border border-border-dark/30 relative overflow-hidden group items-center">
+<div class="w-12 h-12 shrink-0 rounded-lg overflow-hidden relative bg-slate-800">
+<img alt="Le Golfe" class="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuClDd_KuTgm9Hq_NMmEILTUXzlw2xC0JUhiyUa5qA3607J2CZPFGuipWLr5ZDrtQP9Nm9DX5ZHRWC0nEwRB8GSrXx-cNX0gsCOqota1fJ3HE8mcyoPwY1Rdi1-N-xHOcNL4QAdfV03uI8FWLsGPBC6jrGOOsu-mSUppvsSghCcVbuJ28OtTSgNvNe_v4I8rXjkEPiE7MntW1VWcpF9mA0ZPOIzpIIx-RcvnVvCu3pZ-BlhfxUmgTwnlVocZVT84a2P-tKkmqFzDBw"/>
+</div>
+<div class="flex-1 min-w-0 flex flex-col justify-center h-full gap-0.5">
+<div class="flex items-start justify-between gap-2">
+<h3 class="text-[13px] font-bold text-white leading-tight truncate">Le Golfe</h3>
+</div>
+<div class="flex items-center gap-1">
+<span class="material-symbols-outlined text-yellow-400 text-[10px]" style="font-variation-settings: 'FILL' 1">star</span>
+<span class="text-[11px] font-bold text-white">4.7</span>
+<span class="text-[9px] text-slate-400 ml-0.5">(2100)</span>
+</div>
+<div class="flex items-start gap-1">
+<span class="material-symbols-outlined text-slate-500 text-[10px] mt-0.5 shrink-0">location_on</span>
+<p class="text-[9px] leading-tight text-slate-400 truncate w-full">5 Rue de la Plage, La Marsa</p>
+</div>
+</div>
+<div class="flex flex-col justify-center h-full">
+<button class="w-[40px] h-[40px] rounded-lg bg-neon-purple hover:bg-purple-600 transition-colors flex flex-col items-center justify-center shadow-[0_0_8px_rgba(168,85,247,0.3)]">
+<span class="material-symbols-outlined text-white text-[16px]" style="font-variation-settings: 'FILL' 1">bookmark</span>
+<span class="text-[7px] font-medium text-white leading-none text-center mt-0.5">Review</span>
+</button>
+</div>
+</div>
+<div class="bg-card-dark rounded-xl p-2 flex gap-3 shadow-lg border border-border-dark/30 relative overflow-hidden group items-center">
+<div class="w-12 h-12 shrink-0 rounded-lg overflow-hidden relative bg-slate-800">
+<img alt="The Cliff" class="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBgtoqjfS2aIq8R1zP_GitOivGqVoDz_4wx1AUcpeywt9S_unQ46kmEI9qFVd9lWWS1vHqr-paae6vjSNsN22SW0QzoOmrvuGo-pky_o7Gve9sjePbsJclzxug2Ba2GHYbWyrz-NaqYjv7l-XA1SM07Q-iXz00jKoGoN1xA3DvYwdZYvg5k-oxbcT3MlK3gqeRs1DWsopjfQF0OtctSLIKLK6cc63YmMRJjzmDhxL_Angc3mZCcqozaYJw4RsxGUWSJy6Chwi6ysg"/>
+</div>
+<div class="flex-1 min-w-0 flex flex-col justify-center h-full gap-0.5">
+<div class="flex items-start justify-between gap-2">
+<h3 class="text-[13px] font-bold text-white leading-tight truncate">The Cliff</h3>
+</div>
+<div class="flex items-center gap-1">
+<span class="material-symbols-outlined text-yellow-400 text-[10px]" style="font-variation-settings: 'FILL' 1">star</span>
+<span class="text-[11px] font-bold text-white">4.9</span>
+<span class="text-[9px] text-slate-400 ml-0.5">(540)</span>
+</div>
+<div class="flex items-start gap-1">
+<span class="material-symbols-outlined text-slate-500 text-[10px] mt-0.5 shrink-0">location_on</span>
+<p class="text-[9px] leading-tight text-slate-400 truncate w-full">Route de la Corniche, Gammarth</p>
+</div>
+</div>
+<div class="flex flex-col justify-center h-full">
+<button class="w-[40px] h-[40px] rounded-lg bg-neon-purple hover:bg-purple-600 transition-colors flex flex-col items-center justify-center shadow-[0_0_8px_rgba(168,85,247,0.3)]">
+<span class="material-symbols-outlined text-white text-[16px]" style="font-variation-settings: 'FILL' 1">bookmark</span>
+<span class="text-[7px] font-medium text-white leading-none text-center mt-0.5">Review</span>
+</button>
+</div>
+</div>
+</div>
+</section>
+</main>
+<nav class="fixed bottom-0 left-0 right-0 bg-midnight border-t border-slate-800 px-6 safe-area-pb z-50 h-[85px] pb-4">
+<div class="flex justify-between items-center h-full w-full">
+<button class="flex-1 flex flex-col items-center justify-center gap-1.5 text-slate-500 hover:text-slate-300 transition-colors">
+<span class="material-symbols-outlined text-[28px]">home</span>
+<span class="text-[10px] font-medium leading-none">Home</span>
+</button>
+<button class="flex-1 flex flex-col items-center justify-center gap-1.5 text-slate-500 hover:text-slate-300 transition-colors">
+<span class="material-symbols-outlined text-[28px]">notifications</span>
+<span class="text-[10px] font-medium leading-none">Notifications</span>
+</button>
+<button class="flex-1 flex flex-col items-center justify-center gap-1.5 text-slate-500 hover:text-slate-300 transition-colors">
+<span class="material-symbols-outlined text-[28px]">forum</span>
+<span class="text-[10px] font-medium leading-none">My reviews</span>
+</button>
+<button class="flex-1 flex flex-col items-center justify-center gap-1.5 text-slate-500 transition-colors">
+<span class="material-symbols-outlined text-[28px]">settings</span>
+<span class="text-[10px] font-medium leading-none">Settings</span>
+</button>
+</div>
+</nav>
+</body></html>

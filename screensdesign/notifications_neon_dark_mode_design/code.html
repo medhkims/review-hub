@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Notifications - Neon Dark Mode</title>
+<!-- Fonts -->
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<!-- Material Symbols -->
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Tailwind CSS -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<!-- Tailwind Config -->
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#a855f7",
+                        "primary-glow": "#c084fc",
+                        "background-dark": "#0f172a", 
+                        "surface-dark": "#1e293b",
+                        "surface-light": "#334155",
+                        "text-main": "#f8fafc",
+                        "text-muted": "#94a3b8",
+                    },
+                    fontFamily: {
+                        "display": ["Plus Jakarta Sans", "sans-serif"],
+                        "sans": ["Plus Jakarta Sans", "sans-serif"]
+                    },
+                    boxShadow: {
+                        "neon": "0 0 10px rgba(168, 85, 247, 0.5), 0 0 20px rgba(168, 85, 247, 0.3)",
+                        "neon-sm": "0 0 5px rgba(168, 85, 247, 0.4)",
+                    }
+                },
+            },
+        }
+    </script>
+<style>
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            -webkit-font-smoothing: antialiased;
+        }
+        /* Custom Scrollbar for hidden scroll feel */
+        .hide-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .hide-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background-dark text-text-main h-screen flex flex-col overflow-hidden selection:bg-primary selection:text-white">
+<!-- Header Area -->
+<header class="flex-none pt-12 pb-4 px-6 bg-background-dark/95 backdrop-blur-md sticky top-0 z-20 border-b border-surface-light/20">
+<!-- Status Bar Simulation -->
+<div class="absolute top-0 left-0 w-full h-12 flex justify-between items-center px-6 text-sm font-medium text-text-main">
+<span>9:41</span>
+<div class="flex gap-2 items-center">
+<span class="material-symbols-outlined text-[18px]">signal_cellular_alt</span>
+<span class="material-symbols-outlined text-[18px]">wifi</span>
+<span class="material-symbols-outlined text-[18px]">battery_full</span>
+</div>
+</div>
+<div class="flex items-center justify-between mt-2">
+<button class="w-10 h-10 flex items-center justify-center rounded-full hover:bg-surface-dark transition-colors text-text-main">
+<span class="material-symbols-outlined">arrow_back</span>
+</button>
+<h1 class="text-lg font-bold tracking-tight">Notifications</h1>
+<button class="w-10 h-10 flex items-center justify-center rounded-full hover:bg-surface-dark transition-colors text-text-main">
+<span class="material-symbols-outlined">more_horiz</span>
+</button>
+</div>
+<!-- Segmented Control -->
+<div class="mt-6 p-1 bg-surface-dark rounded-full flex relative">
+<button class="flex-1 py-2 px-4 rounded-full bg-primary text-white text-sm font-semibold shadow-neon transition-all duration-300">
+                All
+            </button>
+<button class="flex-1 py-2 px-4 rounded-full text-text-muted hover:text-text-main text-sm font-medium transition-colors">
+                Unread
+            </button>
+</div>
+</header>
+<!-- Main Content: Scrollable List -->
+<main class="flex-1 overflow-y-auto hide-scrollbar p-6 space-y-4 pb-24">
+<!-- Today Header -->
+<div class="flex justify-between items-end pb-2">
+<h2 class="text-sm font-semibold text-text-muted uppercase tracking-wider">Today</h2>
+<button class="text-xs text-primary font-medium hover:text-primary-glow">Mark all as read</button>
+</div>
+<!-- Notification Card: Review (Unread) -->
+<div class="group relative bg-surface-dark p-4 rounded-3xl flex items-start gap-4 active:scale-[0.98] transition-transform duration-200 border border-transparent hover:border-primary/20">
+<!-- Unread Dot -->
+<div class="absolute top-5 right-4 w-2.5 h-2.5 bg-primary rounded-full shadow-neon-sm animate-pulse"></div>
+<div class="flex-shrink-0 w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center text-primary group-hover:bg-primary group-hover:text-white transition-colors duration-300">
+<span class="material-symbols-outlined">star</span>
+</div>
+<div class="flex-1 pr-4">
+<div class="flex justify-between items-start mb-1">
+<h3 class="font-bold text-text-main text-base leading-tight">New 5-Star Rating</h3>
+<span class="text-xs text-text-muted whitespace-nowrap ml-2">2m ago</span>
+</div>
+<p class="text-sm text-text-muted leading-relaxed">
+<span class="text-text-main font-medium">Coffee House Tunis</span> just got a new glowing review from Sarah M.
+                </p>
+</div>
+</div>
+<!-- Notification Card: Update (Unread) -->
+<div class="group relative bg-surface-dark p-4 rounded-3xl flex items-start gap-4 active:scale-[0.98] transition-transform duration-200 border border-transparent hover:border-blue-500/20">
+<!-- Unread Dot -->
+<div class="absolute top-5 right-4 w-2.5 h-2.5 bg-primary rounded-full shadow-neon-sm"></div>
+<div class="flex-shrink-0 w-12 h-12 rounded-full bg-blue-500/10 flex items-center justify-center text-blue-400 group-hover:bg-blue-500 group-hover:text-white transition-colors duration-300">
+<span class="material-symbols-outlined">update</span>
+</div>
+<div class="flex-1 pr-4">
+<div class="flex justify-between items-start mb-1">
+<h3 class="font-bold text-text-main text-base leading-tight">App Update Available</h3>
+<span class="text-xs text-text-muted whitespace-nowrap ml-2">1h ago</span>
+</div>
+<p class="text-sm text-text-muted leading-relaxed">
+                    Version 2.4 is live! Check out the new interactive map features for Tunis.
+                </p>
+</div>
+</div>
+<!-- Notification Card: Payment (Unread) -->
+<div class="group relative bg-surface-dark p-4 rounded-3xl flex items-start gap-4 active:scale-[0.98] transition-transform duration-200 border border-transparent hover:border-green-500/20">
+<!-- Unread Dot -->
+<div class="absolute top-5 right-4 w-2.5 h-2.5 bg-primary rounded-full shadow-neon-sm"></div>
+<div class="flex-shrink-0 w-12 h-12 rounded-full bg-green-500/10 flex items-center justify-center text-green-400 group-hover:bg-green-500 group-hover:text-white transition-colors duration-300">
+<span class="material-symbols-outlined">payments</span>
+</div>
+<div class="flex-1 pr-4">
+<div class="flex justify-between items-start mb-1">
+<h3 class="font-bold text-text-main text-base leading-tight">Subscription Renewed</h3>
+<span class="text-xs text-text-muted whitespace-nowrap ml-2">3h ago</span>
+</div>
+<p class="text-sm text-text-muted leading-relaxed">
+                    Your monthly business pro plan has been successfully renewed.
+                </p>
+</div>
+</div>
+<!-- Earlier Header -->
+<div class="flex justify-between items-end pb-2 pt-4">
+<h2 class="text-sm font-semibold text-text-muted uppercase tracking-wider">Earlier</h2>
+</div>
+<!-- Notification Card: Offer (Read) -->
+<div class="group relative bg-surface-dark/60 p-4 rounded-3xl flex items-start gap-4 active:scale-[0.98] transition-transform duration-200">
+<div class="flex-shrink-0 w-12 h-12 rounded-full bg-purple-500/10 flex items-center justify-center text-purple-400 group-hover:bg-purple-500 group-hover:text-white transition-colors duration-300">
+<span class="material-symbols-outlined">local_offer</span>
+</div>
+<div class="flex-1 pr-4">
+<div class="flex justify-between items-start mb-1">
+<h3 class="font-bold text-text-main/80 text-base leading-tight">Weekend Offer</h3>
+<span class="text-xs text-text-muted whitespace-nowrap ml-2">1d ago</span>
+</div>
+<p class="text-sm text-text-muted leading-relaxed">
+                    Don't miss out on the 50% discount at Sidi Bou Said Spa this weekend.
+                </p>
+</div>
+</div>
+<!-- Notification Card: Security (Read) -->
+<div class="group relative bg-surface-dark/60 p-4 rounded-3xl flex items-start gap-4 active:scale-[0.98] transition-transform duration-200">
+<div class="flex-shrink-0 w-12 h-12 rounded-full bg-orange-500/10 flex items-center justify-center text-orange-400 group-hover:bg-orange-500 group-hover:text-white transition-colors duration-300">
+<span class="material-symbols-outlined">security</span>
+</div>
+<div class="flex-1 pr-4">
+<div class="flex justify-between items-start mb-1">
+<h3 class="font-bold text-text-main/80 text-base leading-tight">Login Attempt</h3>
+<span class="text-xs text-text-muted whitespace-nowrap ml-2">2d ago</span>
+</div>
+<p class="text-sm text-text-muted leading-relaxed">
+                    New login detected from Chrome on Windows. Was this you?
+                </p>
+</div>
+</div>
+<!-- Notification Card: Analytics (Read) -->
+<div class="group relative bg-surface-dark/60 p-4 rounded-3xl flex items-start gap-4 active:scale-[0.98] transition-transform duration-200">
+<div class="flex-shrink-0 w-12 h-12 rounded-full bg-cyan-500/10 flex items-center justify-center text-cyan-400 group-hover:bg-cyan-500 group-hover:text-white transition-colors duration-300">
+<span class="material-symbols-outlined">analytics</span>
+</div>
+<div class="flex-1 pr-4">
+<div class="flex justify-between items-start mb-1">
+<h3 class="font-bold text-text-main/80 text-base leading-tight">Weekly Stats</h3>
+<span class="text-xs text-text-muted whitespace-nowrap ml-2">3d ago</span>
+</div>
+<p class="text-sm text-text-muted leading-relaxed">
+                    Your profile views went up by 24% this week. Great job!
+                </p>
+</div>
+</div>
+</main>
+<!-- Bottom Navigation Bar -->
+<nav class="flex-none bg-surface-dark/90 backdrop-blur-lg border-t border-surface-light/20 pb-6 pt-3 px-6 rounded-t-3xl">
+<ul class="flex justify-between items-center">
+<!-- Home -->
+<li class="flex-1">
+<a class="flex flex-col items-center gap-1 text-text-muted hover:text-text-main transition-colors group" href="#">
+<span class="material-symbols-outlined text-[24px] group-hover:-translate-y-0.5 transition-transform">home</span>
+<span class="text-[10px] font-medium">Home</span>
+</a>
+</li>
+<!-- Notifications (Active) -->
+<li class="flex-1">
+<a class="flex flex-col items-center gap-1 text-primary relative group" href="#">
+<!-- Glow effect behind icon -->
+<div class="absolute top-0 w-8 h-8 bg-primary/20 blur-lg rounded-full"></div>
+<span class="material-symbols-outlined text-[24px] drop-shadow-[0_0_8px_rgba(168,85,247,0.6)]" style="font-variation-settings: 'FILL' 1;">notifications</span>
+<span class="text-[10px] font-bold tracking-wide drop-shadow-[0_0_5px_rgba(168,85,247,0.4)]">Notifications</span>
+</a>
+</li>
+<!-- My Reviews -->
+<li class="flex-1">
+<a class="flex flex-col items-center gap-1 text-text-muted hover:text-text-main transition-colors group" href="#">
+<span class="material-symbols-outlined text-[24px] group-hover:-translate-y-0.5 transition-transform">star</span>
+<span class="text-[10px] font-medium">My reviews</span>
+</a>
+</li>
+<!-- Settings -->
+<li class="flex-1">
+<a class="flex flex-col items-center gap-1 text-text-muted hover:text-text-main transition-colors group" href="#">
+<span class="material-symbols-outlined text-[24px] group-hover:-translate-y-0.5 transition-transform">settings</span>
+<span class="text-[10px] font-medium">Settings</span>
+</a>
+</li>
+</ul>
+</nav>
+</body></html>

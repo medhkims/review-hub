@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>All Businesses List View</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,typography"></script>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script>
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            colors: {
+              primary: "#8B5CF6", 
+              "primary-glow": "#A78BFA", 
+              "background-light": "#F3F4F6", 
+              "background-dark": "#050505", 
+              "surface-dark": "#121212", 
+              "surface-light": "#FFFFFF",
+              "text-light": "#1F2937",
+              "text-dark": "#F9FAFB",
+              "muted-light": "#6B7280",
+              "muted-dark": "#9CA3AF",
+              "midnight": "#0F172A",
+              "neon-purple": "#A855F7"
+            },
+            fontFamily: {
+              display: ["'Plus Jakarta Sans'", "sans-serif"],
+            },
+            borderRadius: {
+              DEFAULT: "1rem",
+              "xl": "1.5rem",
+              "2xl": "2rem",
+            },
+            boxShadow: {
+                'neon': '0 0 15px rgba(139, 92, 246, 0.3)',
+                'neon-strong': '0 0 20px rgba(139, 92, 246, 0.5)',
+                'neon-border': '0 0 5px rgba(168, 85, 247, 0.5)',
+            }
+          },
+        },
+      };
+    </script>
+<style>
+        .no-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .no-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+        body {
+            min-height: max(884px, 100dvh);
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background-light dark:bg-background-dark font-display antialiased min-h-screen pb-24 selection:bg-primary selection:text-white transition-colors duration-300">
+<div class="bg-midnight text-white flex justify-between items-center px-6 py-3 text-sm font-semibold sticky top-0 z-50">
+<span>9:41</span>
+<div class="flex space-x-2 items-center">
+<span class="material-icons-round text-sm">signal_cellular_alt</span>
+<span class="material-icons-round text-sm">wifi</span>
+<span class="material-icons-round text-sm">battery_full</span>
+</div>
+</div>
+<header class="bg-midnight px-6 pt-2 pb-6 sticky top-[44px] z-40 shadow-lg border-b border-white/5">
+<div class="flex items-center mb-6">
+<button class="text-white hover:text-neon-purple transition-colors p-1 -ml-1">
+<span class="material-icons-round text-3xl">chevron_left</span>
+</button>
+<h1 class="text-xl font-bold text-white ml-2">All Businesses</h1>
+</div>
+<div class="flex items-center space-x-3">
+<div class="relative flex-1 group">
+<div class="absolute -inset-0.5 bg-neon-purple rounded-xl blur opacity-30 group-focus-within:opacity-70 transition duration-300"></div>
+<div class="relative flex items-center bg-[#1E293B] rounded-xl px-4 py-3 border border-neon-purple shadow-[0_0_10px_rgba(168,85,247,0.15)] focus-within:shadow-[0_0_15px_rgba(168,85,247,0.3)] transition-shadow">
+<span class="material-icons-round text-neon-purple text-xl mr-3">search</span>
+<input class="w-full bg-transparent border-none p-0 text-white placeholder-gray-400 focus:ring-0 text-sm font-medium" placeholder="Search for places..." type="text"/>
+</div>
+</div>
+<div class="flex space-x-2">
+<button class="bg-[#1E293B] h-[46px] w-[46px] flex items-center justify-center rounded-full border border-white/10 text-neon-purple hover:bg-white/5 transition-colors shadow-lg active:scale-95">
+<span class="material-icons-round">swap_vert</span>
+</button>
+<button class="bg-[#1E293B] h-[46px] w-[46px] flex items-center justify-center rounded-full border border-white/10 text-neon-purple hover:bg-white/5 transition-colors shadow-lg active:scale-95">
+<span class="material-icons-round">filter_list</span>
+</button>
+</div>
+</div>
+</header>
+<main class="px-5 py-6 space-y-4">
+<article class="bg-surface-light dark:bg-[#1E1E24] p-3 rounded-2xl flex items-center space-x-4 shadow-md border border-gray-100 dark:border-white/5 active:scale-[0.99] transition-transform">
+<div class="h-20 w-20 flex-shrink-0 rounded-xl overflow-hidden bg-gray-700">
+<img alt="Restaurant El Ali" class="h-full w-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBGJ_lQBYAnR_B5CW3kGmKSXqCOwcJkFRGm7cPsLY0ZJZv0or6tndIFgkem3PRr7G4P3pdSev0M7OSc7QenOXStmQz1r8_BRF4zYbUiiAoaSlJJCPM_dTKgetrCkT89Hd0xmDQNbPkfTM8QTnvTKWBuRX8z75K7l8Z_Hd9s7uJf-X2oLyko3QX-GOS9hCyk4rHqQYYJWCFEcmoJC5_5fqOcE0yriPUMhJVMM30y9YXdCCZBwWsGiimwxwiM5VdUl9vfkzad53Y6vA"/>
+</div>
+<div class="flex-1 min-w-0">
+<h3 class="text-base font-bold text-text-light dark:text-white truncate">Restaurant El Ali</h3>
+<div class="flex items-center mt-1 space-x-1">
+<span class="material-icons-round text-neon-purple text-sm">star</span>
+<span class="text-sm font-semibold text-text-light dark:text-gray-200">4.8</span>
+<span class="text-xs text-muted-light dark:text-gray-500 ml-1">(124)</span>
+</div>
+<p class="text-xs text-muted-light dark:text-gray-400 mt-1 truncate">Tunis • Traditional</p>
+</div>
+<button class="text-muted-light dark:text-gray-500 hover:text-red-500 transition-colors p-2">
+<span class="material-icons-round">favorite_border</span>
+</button>
+</article>
+<article class="bg-surface-light dark:bg-[#1E1E24] p-3 rounded-2xl flex items-center space-x-4 shadow-md border border-gray-100 dark:border-white/5 active:scale-[0.99] transition-transform">
+<div class="h-20 w-20 flex-shrink-0 rounded-xl overflow-hidden bg-gray-700">
+<img alt="La Marsa Boutique" class="h-full w-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDFDddWYDMKRKD1NxA81FppUOzLgzcAZ5_s3uFlqbHpCwqBOhnCxwgBtCIr8PdBNkgkTybD7bO4-8sVqP1Bb97xDGVCVpk1VIUqD-63JReug8hL5AllENYWCgO2JMCC75ZbUF8SLqQWa5mghTPONQ9wbcwSwlD_WGbADf96RFXTufmKYS1O7pNSmZ9VIzUfY1EXMi56ZbaohYyUaqeeCWhqVKVRnQxT-2NaFi7gNYb0sW0wpq8tj-OFNE52VzpMFNSvuLZbUCKoFA"/>
+</div>
+<div class="flex-1 min-w-0">
+<h3 class="text-base font-bold text-text-light dark:text-white truncate">La Marsa Boutique</h3>
+<div class="flex items-center mt-1 space-x-1">
+<span class="material-icons-round text-neon-purple text-sm">star</span>
+<span class="text-sm font-semibold text-text-light dark:text-gray-200">4.7</span>
+<span class="text-xs text-muted-light dark:text-gray-500 ml-1">(89)</span>
+</div>
+<p class="text-xs text-muted-light dark:text-gray-400 mt-1 truncate">La Marsa • Fashion</p>
+</div>
+<button class="text-muted-light dark:text-gray-500 hover:text-red-500 transition-colors p-2">
+<span class="material-icons-round">favorite_border</span>
+</button>
+</article>
+<article class="bg-surface-light dark:bg-[#1E1E24] p-3 rounded-2xl flex items-center space-x-4 shadow-md border border-gray-100 dark:border-white/5 active:scale-[0.99] transition-transform">
+<div class="h-20 w-20 flex-shrink-0 rounded-xl overflow-hidden bg-gray-700">
+<img alt="Dar El Jeld" class="h-full w-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuB_d4pHaAkD56y3F611nPuIF36VATCW44fgBVJyet1zlTU9rlREsYrTT5R54Ose0ZDj1UrjsiXn4Z0QblKROAByyTw68iq6g_CooMi8vlRhSe9NBh-7isvNxSTcmkgwO1j72jaL9eJQ242Oh7mpIH4Z03dsjoO-qujJz3gjk4YQJYE-Sy5yEoXU7hBCB01eFrVMFzCwtSmFoSV0pq3ych5zVMXAvoy6EsFq7rgcPHiwNNLWjXqwUf2c9DoX3MsgK55Ze7xgTgAJHg"/>
+</div>
+<div class="flex-1 min-w-0">
+<h3 class="text-base font-bold text-text-light dark:text-white truncate">Dar El Jeld</h3>
+<div class="flex items-center mt-1 space-x-1">
+<span class="material-icons-round text-neon-purple text-sm">star</span>
+<span class="text-sm font-semibold text-text-light dark:text-gray-200">4.9</span>
+<span class="text-xs text-muted-light dark:text-gray-500 ml-1">(210)</span>
+</div>
+<p class="text-xs text-muted-light dark:text-gray-400 mt-1 truncate">Medina • Luxury Spa</p>
+</div>
+<button class="text-muted-light dark:text-gray-500 hover:text-red-500 transition-colors p-2">
+<span class="material-icons-round">favorite_border</span>
+</button>
+</article>
+<article class="bg-surface-light dark:bg-[#1E1E24] p-3 rounded-2xl flex items-center space-x-4 shadow-md border border-gray-100 dark:border-white/5 active:scale-[0.99] transition-transform">
+<div class="h-20 w-20 flex-shrink-0 rounded-xl overflow-hidden bg-gray-700">
+<img alt="Cafe des Délices" class="h-full w-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDbs1l1EwG50FlkVkThcZdoPxMSk0BsKCQgJCvwkntm79VBt7lgJQ4PZVDgxQZsuaQ6ycBg77VEiEE-8L_-0p0ISivubVQQrdSEP6zgKi7rM4q-hM0V5bCZ556xRPVROG7wI3aoCr7sQOsKx3kDCmvAtPE5oRY6tRLhEfrPKW0yFqiM9Pku9wIQ5b_cZHeA6m-Q0jdI-UUBf2OCaveE2TdGDmL6jSvc6E0nETsuhDL5ekhD7aPpdA90EtVVFN5cXTCzRZOunUxi7g"/>
+</div>
+<div class="flex-1 min-w-0">
+<h3 class="text-base font-bold text-text-light dark:text-white truncate">Café des Délices</h3>
+<div class="flex items-center mt-1 space-x-1">
+<span class="material-icons-round text-neon-purple text-sm">star</span>
+<span class="text-sm font-semibold text-text-light dark:text-gray-200">4.6</span>
+<span class="text-xs text-muted-light dark:text-gray-500 ml-1">(342)</span>
+</div>
+<p class="text-xs text-muted-light dark:text-gray-400 mt-1 truncate">Sidi Bou Said • Cafe</p>
+</div>
+<button class="text-muted-light dark:text-gray-500 hover:text-red-500 transition-colors p-2">
+<span class="material-icons-round">favorite_border</span>
+</button>
+</article>
+<article class="bg-surface-light dark:bg-[#1E1E24] p-3 rounded-2xl flex items-center space-x-4 shadow-md border border-gray-100 dark:border-white/5 active:scale-[0.99] transition-transform">
+<div class="h-20 w-20 flex-shrink-0 rounded-xl overflow-hidden bg-gray-700">
+<img alt="The Pottery Shop" class="h-full w-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBgQ63xlSud0xSujG_LnVgCj9DRoZJknU2Mqsw7S6hXV7NnWJ-R69npWYWhL-EmKAEe6BP8oili0WyVk2c10l-lZq3zLz3iKUvKJXtH4LXrF7kxl_k40Bg0M2mVxblNscN8q7l5mmhXu0j1jVlm77Z_TgRuURh1_QlTNih2HXVNxi3pQB3PEdpjbOY3rZYpflKrh5ZBHyC-692BOwf4MwgYXB-GdGD8Kb-0sqRzDCGyFPSHUlPRXp_zc1X8_P5-EcRqT-TckBRR6g"/>
+</div>
+<div class="flex-1 min-w-0">
+<h3 class="text-base font-bold text-text-light dark:text-white truncate">Nabeul Ceramics</h3>
+<div class="flex items-center mt-1 space-x-1">
+<span class="material-icons-round text-neon-purple text-sm">star</span>
+<span class="text-sm font-semibold text-text-light dark:text-gray-200">4.5</span>
+<span class="text-xs text-muted-light dark:text-gray-500 ml-1">(56)</span>
+</div>
+<p class="text-xs text-muted-light dark:text-gray-400 mt-1 truncate">Nabeul • Crafts</p>
+</div>
+<button class="text-muted-light dark:text-gray-500 hover:text-red-500 transition-colors p-2">
+<span class="material-icons-round">favorite_border</span>
+</button>
+</article>
+<article class="bg-surface-light dark:bg-[#1E1E24] p-3 rounded-2xl flex items-center space-x-4 shadow-md border border-gray-100 dark:border-white/5 active:scale-[0.99] transition-transform">
+<div class="h-20 w-20 flex-shrink-0 rounded-xl overflow-hidden bg-gray-700">
+<img alt="Hotel Badira" class="h-full w-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBjPtZb1E7_gJHtru2h-GwdQY2Haig95W8Trn3ggsDf4KK3_CJ36d9ypBhfnLPGbhtg6Z7Lt1zZEOtLwFidnBawNY5o6aVppi7n9lnbIRj874qJueAEP_qwdtMnYEUu0-QZPouR5w9rLrTreNUjSDH__2ze7ihvwbxDexuYE1pZoQGwaTneRcm4axSQGgsFnYaoWH_I1X23XAD68WzZP--XII-bJApyWB62ERhFYm-HdT6MnGWOwZpz07fDSxMliL7BySKy4JiKoQ"/>
+</div>
+<div class="flex-1 min-w-0">
+<h3 class="text-base font-bold text-text-light dark:text-white truncate">La Badira Hotel</h3>
+<div class="flex items-center mt-1 space-x-1">
+<span class="material-icons-round text-neon-purple text-sm">star</span>
+<span class="text-sm font-semibold text-text-light dark:text-gray-200">4.9</span>
+<span class="text-xs text-muted-light dark:text-gray-500 ml-1">(420)</span>
+</div>
+<p class="text-xs text-muted-light dark:text-gray-400 mt-1 truncate">Hammamet • Hotel</p>
+</div>
+<button class="text-muted-light dark:text-gray-500 hover:text-red-500 transition-colors p-2">
+<span class="material-icons-round">favorite_border</span>
+</button>
+</article>
+</main>
+<nav class="fixed bottom-0 w-full z-50 bg-[#0F172A] border-t border-white/5 pb-6 pt-3 px-6 h-[88px]">
+<div class="flex justify-between items-center h-full max-w-lg mx-auto">
+<a class="flex flex-col items-center justify-center space-y-1 group w-16" href="#">
+<span class="material-symbols-outlined text-neon-purple text-[28px] drop-shadow-[0_0_8px_rgba(168,85,247,0.4)]">home</span>
+<span class="text-[11px] font-medium text-neon-purple tracking-wide">Home</span>
+</a>
+<a class="flex flex-col items-center justify-center space-y-1 group w-16" href="#">
+<span class="material-symbols-outlined text-gray-500 group-hover:text-gray-300 transition-colors text-[28px]">notifications</span>
+<span class="text-[11px] font-medium text-gray-500 group-hover:text-gray-300 transition-colors tracking-wide whitespace-nowrap">Notifications</span>
+</a>
+<a class="flex flex-col items-center justify-center space-y-1 group w-16" href="#">
+<span class="material-symbols-outlined text-gray-500 group-hover:text-gray-300 transition-colors text-[28px]">reviews</span>
+<span class="text-[11px] font-medium text-gray-500 group-hover:text-gray-300 transition-colors tracking-wide whitespace-nowrap">My reviews</span>
+</a>
+<a class="flex flex-col items-center justify-center space-y-1 group w-16" href="#">
+<span class="material-symbols-outlined text-gray-500 group-hover:text-gray-300 transition-colors text-[28px]">settings</span>
+<span class="text-[11px] font-medium text-gray-500 group-hover:text-gray-300 transition-colors tracking-wide">Settings</span>
+</a>
+</div>
+</nav>
+<script>
+        document.documentElement.classList.add('dark');
+    </script>
+</body></html>

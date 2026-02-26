@@ -1,0 +1,695 @@
+<!DOCTYPE html>
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Admin Dashboard</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script>
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        primary: "#a355f7",
+                        "primary-glow": "#bd85f8",
+                        "background-dark": "#0F172A",
+                        "surface-dark": "#1E293B",
+                        "neon-accent": "#22d3ee",
+                        "neon-warning": "#fbbf24",
+                        "neon-danger": "#f43f5e",
+                        "neon-purple": "#A855F7",
+                        "neon-green": "#22c55e",
+                        "neon-yellow": "#eab308",
+                        "neon-red": "#ef4444",
+                        "neon-blue": "#3b82f6",
+                        "neon-cyan": "#06b6d4",
+                        "neon-orange": "#f97316",
+                        "neon-pink": "#ec4899",
+                    },
+                    fontFamily: {
+                        display: ["Inter", "sans-serif"],
+                        body: ["Inter", "sans-serif"],
+                    },
+                    boxShadow: {
+                        'neon': '0 0 10px rgba(163, 85, 247, 0.5), 0 0 20px rgba(163, 85, 247, 0.3)',
+                        'neon-sm': '0 0 5px rgba(163, 85, 247, 0.5)',
+                        'neon-card': '0 4px 6px -1px rgba(0, 0, 0, 0.5), 0 2px 4px -1px rgba(0, 0, 0, 0.3)',
+                    },
+                    fontSize: {
+                        'xxs': '0.65rem',
+                    }
+                },
+            },
+        }
+    </script>
+<style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #0F172A;
+        }
+        ::-webkit-scrollbar {
+            width: 4px;
+            height: 4px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #0F172A;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #334155;
+            border-radius: 4px;
+        }
+        .text-glow {
+            text-shadow: 0 0 10px rgba(163, 85, 247, 0.5);
+        }
+        .scrollbar-hide::-webkit-scrollbar {
+            display: none;
+        }
+        .scrollbar-hide {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background-dark text-slate-100 antialiased selection:bg-primary selection:text-white min-h-screen flex flex-col pb-20">
+<header class="sticky top-0 z-50 bg-background-dark/80 backdrop-blur-md border-b border-white/5 px-4 pt-12 pb-4">
+<div class="flex items-center justify-center relative">
+<h1 class="text-lg font-bold tracking-tight text-white">Admin Dashboard</h1>
+<div class="absolute right-0">
+<button class="relative p-2 text-slate-400 hover:text-white transition-colors">
+<span class="material-symbols-outlined">notifications</span>
+<span class="absolute top-2 right-2 h-2 w-2 rounded-full bg-red-500 shadow-[0_0_8px_rgba(239,68,68,0.6)]"></span>
+</button>
+</div>
+</div>
+</header>
+<main class="flex-1 px-4 py-6 space-y-6 overflow-y-auto">
+<div>
+<p class="text-slate-400 text-sm font-medium mb-1">Welcome back,</p>
+<h2 class="text-2xl font-bold text-white">Administrator</h2>
+</div>
+<div class="relative w-full">
+<div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+<span class="material-symbols-outlined text-slate-400 text-[20px]">search</span>
+</div>
+<input class="block w-full pl-10 pr-3 py-3 border border-white/10 rounded-xl leading-5 bg-surface-dark text-slate-300 placeholder-slate-500 focus:outline-none focus:bg-surface-dark focus:border-primary/50 focus:ring-1 focus:ring-primary/50 sm:text-sm transition duration-150 ease-in-out shadow-sm" placeholder="Search companies, users or reports..." type="text"/>
+</div>
+<section>
+<div class="flex w-full justify-between items-center gap-2 pb-2 overflow-x-auto scrollbar-hide">
+<button class="flex-1 rounded-full border border-primary bg-primary/10 py-2.5 text-[10px] font-bold text-primary shadow-[0_0_10px_rgba(163,85,247,0.3)] whitespace-nowrap text-center px-2 min-w-0">
+            COMPANY
+        </button>
+<button class="flex-1 rounded-full border border-slate-700 bg-surface-dark py-2.5 text-[10px] font-medium text-slate-400 hover:border-slate-600 hover:text-slate-200 transition-colors whitespace-nowrap text-center px-2 min-w-0">
+            MODERATOR
+        </button>
+<button class="flex-1 rounded-full border border-slate-700 bg-surface-dark py-2.5 text-[10px] font-medium text-slate-400 hover:border-slate-600 hover:text-slate-200 transition-colors whitespace-nowrap text-center px-2 min-w-0">
+            GLOBAL
+        </button>
+<button class="flex-1 rounded-full border border-slate-700 bg-surface-dark py-2.5 text-[10px] font-medium text-slate-400 hover:border-slate-600 hover:text-slate-200 transition-colors whitespace-nowrap text-center px-2 min-w-0">
+            FINANCIAL
+        </button>
+</div>
+</section>
+<section class="space-y-4">
+<div class="group relative overflow-hidden rounded-xl bg-surface-dark p-5 shadow-neon-card transition-transform hover:-translate-y-1">
+<div class="absolute left-0 top-0 bottom-0 w-1 bg-[#A855F7] shadow-[0_0_10px_#A855F7]"></div>
+<div class="flex justify-between items-start">
+<div class="flex h-10 w-10 items-center justify-center rounded-lg bg-[#A855F7]/10 text-[#A855F7] border border-[#A855F7]/20">
+<span class="material-symbols-outlined">business</span>
+</div>
+<span class="text-[10px] font-medium text-emerald-400 flex items-center bg-emerald-400/10 px-2 py-0.5 rounded-full border border-emerald-400/20">
+<span class="material-symbols-outlined text-[10px] mr-0.5">trending_up</span>12%
+            </span>
+</div>
+<div class="mt-4">
+<p class="text-xs font-medium text-slate-400">Total Companies</p>
+<h3 class="text-2xl font-bold text-white mt-1">1,248</h3>
+</div>
+</div>
+<div class="grid grid-cols-2 gap-4">
+<div class="group relative overflow-hidden rounded-xl bg-surface-dark p-4 shadow-neon-card transition-transform hover:-translate-y-1">
+<div class="absolute left-0 top-0 bottom-0 w-1 bg-neon-green shadow-[0_0_10px_#22c55e]"></div>
+<div class="mb-3 flex h-8 w-8 items-center justify-center rounded-lg bg-neon-green/10 text-neon-green border border-neon-green/20">
+<span class="material-symbols-outlined text-[18px]">verified</span>
+</div>
+<p class="text-[10px] font-medium text-slate-400 uppercase tracking-wider">Verified</p>
+<div class="mt-1 flex items-baseline gap-2">
+<h3 class="text-xl font-bold text-white">856</h3>
+<span class="text-[10px] font-medium text-emerald-400">+8%</span>
+</div>
+</div>
+<div class="group relative overflow-hidden rounded-xl bg-surface-dark p-4 shadow-neon-card transition-transform hover:-translate-y-1">
+<div class="absolute left-0 top-0 bottom-0 w-1 bg-neon-yellow shadow-[0_0_10px_#eab308]"></div>
+<div class="mb-3 flex h-8 w-8 items-center justify-center rounded-lg bg-neon-yellow/10 text-neon-yellow border border-neon-yellow/20">
+<span class="material-symbols-outlined text-[18px]">new_releases</span>
+</div>
+<p class="text-[10px] font-medium text-slate-400 uppercase tracking-wider">Unverified</p>
+<div class="mt-1 flex items-baseline gap-2">
+<h3 class="text-xl font-bold text-white">392</h3>
+<span class="text-[10px] font-medium text-rose-400">-2%</span>
+</div>
+</div>
+<div class="group relative overflow-hidden rounded-xl bg-surface-dark p-4 shadow-neon-card transition-transform hover:-translate-y-1">
+<div class="absolute left-0 top-0 bottom-0 w-1 bg-neon-red shadow-[0_0_10px_#ef4444]"></div>
+<div class="mb-3 flex h-8 w-8 items-center justify-center rounded-lg bg-neon-red/10 text-neon-red border border-neon-red/20">
+<span class="material-symbols-outlined text-[18px]">workspace_premium</span>
+</div>
+<p class="text-[10px] font-medium text-slate-400 uppercase tracking-wider">Premium</p>
+<div class="mt-1 flex items-baseline gap-2">
+<h3 class="text-xl font-bold text-white">124</h3>
+<span class="text-[10px] font-medium text-emerald-400">+15%</span>
+</div>
+</div>
+<div class="group relative overflow-hidden rounded-xl bg-surface-dark p-4 shadow-neon-card transition-transform hover:-translate-y-1">
+<div class="absolute left-0 top-0 bottom-0 w-1 bg-neon-blue shadow-[0_0_10px_#3b82f6]"></div>
+<div class="mb-3 flex h-8 w-8 items-center justify-center rounded-lg bg-neon-blue/10 text-neon-blue border border-neon-blue/20">
+<span class="material-symbols-outlined text-[18px]">verified_user</span>
+</div>
+<p class="text-[10px] font-medium text-slate-400 uppercase tracking-wider">Verif. Basic</p>
+<div class="mt-1 flex items-baseline gap-2">
+<h3 class="text-xl font-bold text-white">732</h3>
+<span class="text-[10px] font-medium text-emerald-400">+4%</span>
+</div>
+</div>
+</div>
+<div class="w-full space-y-3 pt-2">
+<div class="flex items-center justify-between px-1">
+<h3 class="text-base font-bold text-white">Global Engagement</h3>
+</div>
+<div class="grid grid-cols-3 gap-3">
+<div class="group flex flex-col items-center justify-center rounded-xl bg-surface-dark p-3 shadow-neon-card border border-white/5 relative overflow-hidden">
+<div class="absolute inset-x-0 bottom-0 h-0.5 bg-neon-cyan/50 shadow-[0_0_8px_rgba(6,182,212,0.6)]"></div>
+<div class="mb-2 flex h-8 w-8 items-center justify-center rounded-full bg-neon-cyan/10 text-neon-cyan border border-neon-cyan/20">
+<span class="material-symbols-outlined text-[16px]">visibility</span>
+</div>
+<p class="text-[10px] font-medium text-slate-400 text-center leading-tight">Total Visits</p>
+<h4 class="text-sm font-bold text-white mt-1">45.2k</h4>
+</div>
+<div class="group flex flex-col items-center justify-center rounded-xl bg-surface-dark p-3 shadow-neon-card border border-white/5 relative overflow-hidden">
+<div class="absolute inset-x-0 bottom-0 h-0.5 bg-neon-orange/50 shadow-[0_0_8px_rgba(249,115,22,0.6)]"></div>
+<div class="mb-2 flex h-8 w-8 items-center justify-center rounded-full bg-neon-orange/10 text-neon-orange border border-neon-orange/20">
+<span class="material-symbols-outlined text-[16px]">search</span>
+</div>
+<p class="text-[10px] font-medium text-slate-400 text-center leading-tight">Searches</p>
+<h4 class="text-sm font-bold text-white mt-1">12.8k</h4>
+</div>
+<div class="group flex flex-col items-center justify-center rounded-xl bg-surface-dark p-3 shadow-neon-card border border-white/5 relative overflow-hidden">
+<div class="absolute inset-x-0 bottom-0 h-0.5 bg-neon-pink/50 shadow-[0_0_8px_rgba(236,72,153,0.6)]"></div>
+<div class="mb-2 flex h-8 w-8 items-center justify-center rounded-full bg-neon-pink/10 text-neon-pink border border-neon-pink/20">
+<span class="material-symbols-outlined text-[16px]">reviews</span>
+</div>
+<p class="text-[10px] font-medium text-slate-400 text-center leading-tight">Reviews</p>
+<h4 class="text-sm font-bold text-white mt-1">3.4k</h4>
+</div>
+</div>
+<button class="w-full rounded-full bg-primary/10 border border-primary/30 py-2.5 text-xs font-semibold text-primary shadow-[0_0_15px_rgba(163,85,247,0.15)] hover:bg-primary/20 hover:shadow-[0_0_20px_rgba(163,85,247,0.3)] transition-all active:scale-[0.98]">
+        View More Details
+    </button>
+</div>
+</section>
+<section class="relative overflow-hidden rounded-xl bg-surface-dark p-5 shadow-neon-card transition-transform hover:-translate-y-1">
+<div class="absolute left-0 top-0 bottom-0 w-1 bg-neon-purple shadow-[0_0_10px_#A855F7]"></div>
+<div class="flex items-center justify-between mb-4">
+<h3 class="text-base font-bold text-white">Top Categories</h3>
+<button class="text-slate-400 hover:text-white transition-colors">
+<span class="material-symbols-outlined text-sm">more_horiz</span>
+</button>
+</div>
+<div class="flex flex-row items-center gap-6">
+<div class="relative w-32 h-32 flex-shrink-0">
+<svg class="w-full h-full transform -rotate-90" viewBox="0 0 100 100">
+<circle cx="50" cy="50" fill="none" opacity="0.3" r="40" stroke="#334155" stroke-width="12"></circle>
+<circle class="drop-shadow-[0_0_3px_rgba(168,85,247,0.5)]" cx="50" cy="50" fill="none" r="40" stroke="#A855F7" stroke-dasharray="62.8 251.2" stroke-dashoffset="0" stroke-width="12"></circle>
+<circle class="drop-shadow-[0_0_3px_rgba(249,115,22,0.5)]" cx="50" cy="50" fill="none" r="40" stroke="#f97316" stroke-dasharray="87.9 251.2" stroke-dashoffset="-62.8" stroke-width="12"></circle>
+<circle class="drop-shadow-[0_0_3px_rgba(236,72,153,0.5)]" cx="50" cy="50" fill="none" r="40" stroke="#ec4899" stroke-dasharray="50.2 251.2" stroke-dashoffset="-150.7" stroke-width="12"></circle>
+<circle class="drop-shadow-[0_0_3px_rgba(6,182,212,0.5)]" cx="50" cy="50" fill="none" r="40" stroke="#06b6d4" stroke-dasharray="50.2 251.2" stroke-dashoffset="-200.9" stroke-width="12"></circle>
+</svg>
+<div class="absolute inset-0 flex flex-col items-center justify-center">
+<span class="text-2xl font-bold text-white">1.2k</span>
+<span class="text-[10px] text-slate-400">Total</span>
+</div>
+</div>
+<div class="flex-1 space-y-3 min-w-0">
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-2">
+<span class="w-2 h-2 rounded-full bg-neon-orange shadow-[0_0_5px_rgba(249,115,22,0.6)]"></span>
+<span class="text-xs text-slate-300">Restaurants</span>
+</div>
+<div class="text-right">
+<span class="block text-xs font-bold text-white">436</span>
+<span class="block text-[10px] text-slate-500">35%</span>
+</div>
+</div>
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-2">
+<span class="w-2 h-2 rounded-full bg-neon-purple shadow-[0_0_5px_rgba(168,85,247,0.6)]"></span>
+<span class="text-xs text-slate-300">Services</span>
+</div>
+<div class="text-right">
+<span class="block text-xs font-bold text-white">312</span>
+<span class="block text-[10px] text-slate-500">25%</span>
+</div>
+</div>
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-2">
+<span class="w-2 h-2 rounded-full bg-neon-pink shadow-[0_0_5px_rgba(236,72,153,0.6)]"></span>
+<span class="text-xs text-slate-300">Beauty</span>
+</div>
+<div class="text-right">
+<span class="block text-xs font-bold text-white">250</span>
+<span class="block text-[10px] text-slate-500">20%</span>
+</div>
+</div>
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-2">
+<span class="w-2 h-2 rounded-full bg-neon-cyan shadow-[0_0_5px_rgba(6,182,212,0.6)]"></span>
+<span class="text-xs text-slate-300">Health</span>
+</div>
+<div class="text-right">
+<span class="block text-xs font-bold text-white">250</span>
+<span class="block text-[10px] text-slate-500">20%</span>
+</div>
+</div>
+</div>
+</div>
+</section>
+<section class="relative overflow-hidden rounded-xl bg-surface-dark p-5 shadow-neon-card">
+<div class="absolute left-0 top-0 bottom-0 w-1 bg-neon-purple shadow-[0_0_10px_#A855F7]"></div>
+<div class="flex items-center justify-between mb-4">
+<h3 class="text-base font-bold text-white uppercase tracking-wide">Top Total Companies</h3>
+<span class="text-[10px] text-slate-400 bg-white/5 px-2 py-0.5 rounded-full">Top 4</span>
+</div>
+<div class="space-y-4">
+<div class="flex items-center gap-3 border-b border-white/5 pb-3 last:border-0 last:pb-0">
+<div class="h-10 w-10 flex-shrink-0 overflow-hidden rounded-full bg-slate-700">
+<img alt="Logo" class="h-full w-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDdBx1hHQR6fOu222QdiDnTrdf3cI_FF9JIpjFnTLu6oMx2DDxldfczZR9LFoW3Ejii1lKYgUrBVv4rLxenPsFLWOKDmJXthVoP_7Gw7eKfB1X9ZENMG6XwyVP8q0gXIuJPBxEBi7jFbvgfnGEIV1nd3lBGS-o2wG3YkZbKeCwTOAxhdy_Ox6ieXCWdel2biyfNV2V-UXOMza107vHaOOAArDGgoZVX8WaTrCikoGiEZOQz-QAw6jnBmI3f9YI3NNYhPFENMBl8iQ"/>
+</div>
+<div class="flex-1 min-w-0">
+<div class="flex items-center gap-1.5">
+<h4 class="text-sm font-semibold text-white truncate">Pasta Cosi</h4>
+<span class="material-symbols-outlined text-[14px] text-neon-green" title="Verified">verified</span>
+</div>
+<div class="flex items-center gap-3 mt-1 text-[10px] text-slate-400">
+<span class="flex items-center gap-1"><span class="material-symbols-outlined text-[10px]">visibility</span> 12.4k</span>
+<span class="flex items-center gap-1"><span class="material-symbols-outlined text-[10px]">search</span> 8.2k</span>
+<span class="flex items-center gap-1"><span class="material-symbols-outlined text-[10px]">reviews</span> 128</span>
+</div>
+</div>
+</div>
+<div class="flex items-center gap-3 border-b border-white/5 pb-3 last:border-0 last:pb-0">
+<div class="h-10 w-10 flex-shrink-0 overflow-hidden rounded-full bg-slate-700">
+<img alt="Logo" class="h-full w-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuA7NjamqVjDpjHlxKCTsukommvu14udqLeo6c1qVHS0qZLNINh4-mpwhHlpcyhNS8sAW8D9orXOBX2C63e0hCDka2aBXdXrgMNVfox-Vp8Kwb-mHRHI-jDBSFk_O4LWsejz2y34atqHGf7xxhaLA6mZE48AsyLteWN4DuAKFls0ysNlTRl1YA9RWhDJrLK6vc7AFxeolSuWX49QnBwZpih5Sjz3g460cwmeQEU1Z1Y4w6ywCKWxNGNYoRL5-VzAWHzyQZgaEf3jaw"/>
+</div>
+<div class="flex-1 min-w-0">
+<div class="flex items-center gap-1.5">
+<h4 class="text-sm font-semibold text-white truncate">Le Malouf</h4>
+<span class="material-symbols-outlined text-[14px] text-neon-green" title="Verified">verified</span>
+</div>
+<div class="flex items-center gap-3 mt-1 text-[10px] text-slate-400">
+<span class="flex items-center gap-1"><span class="material-symbols-outlined text-[10px]">visibility</span> 10.1k</span>
+<span class="flex items-center gap-1"><span class="material-symbols-outlined text-[10px]">search</span> 6.5k</span>
+<span class="flex items-center gap-1"><span class="material-symbols-outlined text-[10px]">reviews</span> 94</span>
+</div>
+</div>
+</div>
+<div class="flex items-center gap-3 border-b border-white/5 pb-3 last:border-0 last:pb-0">
+<div class="h-10 w-10 flex-shrink-0 overflow-hidden rounded-full bg-slate-700">
+<img alt="Logo" class="h-full w-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCPpIiSOrzSfhTw764X7L-y5q6ysggPDooI_RtBKEqT3P-GMepHwwrXLTuX1MDL7yDbEnCkIAPY5wLDg3O-R7BEbJT-2itcUbluNfP5n9F_jgNKYKHNDxjUlyJukcWKym6m1IPZW-OTqHMjm384N1wLbp87Yc3UTaLcYcYwT2qtkVoUoxyj2kDtXcJvGCPmB3-jXG2V3N3pzAldACdalzM352JeksDO6VA_naiySXOfCC3AzTCJSMrHiIWH_IB50WgqcDgi9ldhcQ"/>
+</div>
+<div class="flex-1 min-w-0">
+<div class="flex items-center gap-1.5">
+<h4 class="text-sm font-semibold text-white truncate">Dar El Jeld</h4>
+<span class="material-symbols-outlined text-[14px] text-slate-500" title="Unverified">shield</span>
+</div>
+<div class="flex items-center gap-3 mt-1 text-[10px] text-slate-400">
+<span class="flex items-center gap-1"><span class="material-symbols-outlined text-[10px]">visibility</span> 9.8k</span>
+<span class="flex items-center gap-1"><span class="material-symbols-outlined text-[10px]">search</span> 5.1k</span>
+<span class="flex items-center gap-1"><span class="material-symbols-outlined text-[10px]">reviews</span> 82</span>
+</div>
+</div>
+</div>
+<div class="flex items-center gap-3 border-b border-white/5 pb-3 last:border-0 last:pb-0">
+<div class="h-10 w-10 flex-shrink-0 overflow-hidden rounded-full bg-slate-700">
+<img alt="Logo" class="h-full w-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBc6cjL_nYkdkc_oG6v7PykK0TPVbuexDQMkUFY8iFFKLq0YOfZIDf-zwmsQXgFq6tEgR7eDr8xvgwe4vNcjdMiRDPSi-G2bbJov0bNjUyywmNrGsDrYvuGDnun_RfKdOQQ7G4G0fI0veg-f6BROLZYH9YsHNVv8ZhnhPjJfy5FNknhAPybtSJq-xk8VcJa85SXtkhjAT64GZyqNm-Al2YVogP9EJRBVwPCLeW1jGVimlflW-lprKqmpktVig4JN-uOEOsZ58H2ig"/>
+</div>
+<div class="flex-1 min-w-0">
+<div class="flex items-center gap-1.5">
+<h4 class="text-sm font-semibold text-white truncate">Bella Spa</h4>
+<span class="material-symbols-outlined text-[14px] text-neon-green" title="Verified">verified</span>
+</div>
+<div class="flex items-center gap-3 mt-1 text-[10px] text-slate-400">
+<span class="flex items-center gap-1"><span class="material-symbols-outlined text-[10px]">visibility</span> 8.5k</span>
+<span class="flex items-center gap-1"><span class="material-symbols-outlined text-[10px]">search</span> 4.3k</span>
+<span class="flex items-center gap-1"><span class="material-symbols-outlined text-[10px]">reviews</span> 65</span>
+</div>
+</div>
+</div>
+</div>
+</section>
+<section class="relative overflow-hidden rounded-xl bg-surface-dark p-5 shadow-neon-card">
+<div class="absolute left-0 top-0 bottom-0 w-1 bg-neon-purple shadow-[0_0_10px_#A855F7]"></div>
+<div class="flex items-center justify-between mb-4">
+<h3 class="text-base font-bold text-white uppercase tracking-wide">Top Verified</h3>
+<span class="text-[10px] text-neon-green bg-neon-green/10 px-2 py-0.5 rounded-full border border-neon-green/20">Active</span>
+</div>
+<div class="space-y-4">
+<div class="flex items-center gap-3 border-b border-white/5 pb-3 last:border-0 last:pb-0">
+<div class="h-10 w-10 flex-shrink-0 overflow-hidden rounded-full bg-slate-700">
+<img alt="Logo" class="h-full w-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCCB2eIZcmCJ86pIgjZ83hb7gcnuuzFRUIntftnhflRIZLl0vB4EEFdBylW3owwU4QMTChGTKFRrChMcrCHSb1D5Zr151vUs6LIowSIdvkdyISnpccznovmiOVHq65jlZbXrAPG9DZ6JgGjtCuAKT1be17LCIP_RFt2makOTsVlDT9GGZZluqnI-HUe2gVJlq9HC3EW1mS9oL0vU7ifbVUYgqW7EE_HVGKuWFwV9tP8-A4zWlU3Km-3wkM95xiMZeM00wtCxVF-rA"/>
+</div>
+<div class="flex-1 min-w-0">
+<div class="flex items-center gap-1.5">
+<h4 class="text-sm font-semibold text-white truncate">Cafe Culture</h4>
+<span class="material-symbols-outlined text-[14px] text-neon-green">verified</span>
+</div>
+<div class="flex items-center gap-3 mt-1 text-[10px] text-slate-400">
+<span class="flex items-center gap-1"><span class="material-symbols-outlined text-[10px]">visibility</span> 15.2k</span>
+<span class="flex items-center gap-1"><span class="material-symbols-outlined text-[10px]">search</span> 9.1k</span>
+<span class="flex items-center gap-1"><span class="material-symbols-outlined text-[10px]">reviews</span> 210</span>
+</div>
+</div>
+</div>
+<div class="flex items-center gap-3 border-b border-white/5 pb-3 last:border-0 last:pb-0">
+<div class="h-10 w-10 flex-shrink-0 overflow-hidden rounded-full bg-slate-700">
+<img alt="Logo" class="h-full w-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDhenKlN6DOXiUFo3n6KpP8mSck0HJZOM6PIcAev4g5nNO0kNE6gWZ2iepP_VVeZ-AoAYBWa8nW2-BAlKNr3jiTG-aBxLQkwHrCCc75zwOX-2yciTnVW4Vo3bYpFnL662v5fYmf4e31_gfeRSgiVFh-VsfyCkoxrjWElHEgXnenRbkoncbt1jM-N_ebPANUb0xQbBj20vVGGb1gcrBAyQKChG-EacuzL7UD46gg7NajPqhUaBseY__oo9QP_IIeQ1irzI4tOnnxdA"/>
+</div>
+<div class="flex-1 min-w-0">
+<div class="flex items-center gap-1.5">
+<h4 class="text-sm font-semibold text-white truncate">Tunis Tech</h4>
+<span class="material-symbols-outlined text-[14px] text-neon-green">verified</span>
+</div>
+<div class="flex items-center gap-3 mt-1 text-[10px] text-slate-400">
+<span class="flex items-center gap-1"><span class="material-symbols-outlined text-[10px]">visibility</span> 11.5k</span>
+<span class="flex items-center gap-1"><span class="material-symbols-outlined text-[10px]">search</span> 7.2k</span>
+<span class="flex items-center gap-1"><span class="material-symbols-outlined text-[10px]">reviews</span> 145</span>
+</div>
+</div>
+</div>
+<div class="flex items-center gap-3 border-b border-white/5 pb-3 last:border-0 last:pb-0">
+<div class="h-10 w-10 flex-shrink-0 overflow-hidden rounded-full bg-slate-700">
+<img alt="Logo" class="h-full w-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCVbm-KH6iTnGBsMvWoky4HmylTKmy2k6k7HPrUzUv7cZ9d5YyRawYZTuFNGXglWM6h8ZYwD6mgy5yS7eLI6oc9Fe9IoCwlchBGAKKl5szILXeCkiuuInbkhVUgNSOs-yUC8Gko-U7ZgOIfD_AG3ivw1xht6JUJgAIPVNt1c9zn0IwZ7XPOidWR_0V1cHrtDGhyK0TpqiogNllSQXLbnE-iRatrfpuaPRm6jyV1ZSp1HDH_8YV3BNBH6kOQYNygY3Z6pI23O3QgGQ"/>
+</div>
+<div class="flex-1 min-w-0">
+<div class="flex items-center gap-1.5">
+<h4 class="text-sm font-semibold text-white truncate">Oasis Gym</h4>
+<span class="material-symbols-outlined text-[14px] text-neon-green">verified</span>
+</div>
+<div class="flex items-center gap-3 mt-1 text-[10px] text-slate-400">
+<span class="flex items-center gap-1"><span class="material-symbols-outlined text-[10px]">visibility</span> 9.3k</span>
+<span class="flex items-center gap-1"><span class="material-symbols-outlined text-[10px]">search</span> 4.8k</span>
+<span class="flex items-center gap-1"><span class="material-symbols-outlined text-[10px]">reviews</span> 88</span>
+</div>
+</div>
+</div>
+<div class="flex items-center gap-3 border-b border-white/5 pb-3 last:border-0 last:pb-0">
+<div class="h-10 w-10 flex-shrink-0 overflow-hidden rounded-full bg-slate-700">
+<img alt="Logo" class="h-full w-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuD8lUWvM5axpUYi9a7azbfWKtPz7WtCyk8ti39TJZrU8K-OBIap_-y-1-ot8m0A9h8FT4IaxO0pLjeeQVYf9OEhsY1hBUVcqUU4w6ONuAPajhGS163SuJxdBoDcxSPQQL5TiHA_AHCXlpvLrA-NDIPjRxtCkwNlU3eUk8W7v3QqZo9E9mRuaANSxBF2SE7Y-Je_3Y8nwaGbZGTfTyZdbyqoWH9VgXk16LzY5KT-Q7kWH5QC_3k14c19Sg3ZVFutWUw7sKE2C5Pmmg"/>
+</div>
+<div class="flex-1 min-w-0">
+<div class="flex items-center gap-1.5">
+<h4 class="text-sm font-semibold text-white truncate">Sfax Motors</h4>
+<span class="material-symbols-outlined text-[14px] text-neon-green">verified</span>
+</div>
+<div class="flex items-center gap-3 mt-1 text-[10px] text-slate-400">
+<span class="flex items-center gap-1"><span class="material-symbols-outlined text-[10px]">visibility</span> 8.9k</span>
+<span class="flex items-center gap-1"><span class="material-symbols-outlined text-[10px]">search</span> 5.5k</span>
+<span class="flex items-center gap-1"><span class="material-symbols-outlined text-[10px]">reviews</span> 76</span>
+</div>
+</div>
+</div>
+</div>
+</section>
+<section class="relative overflow-hidden rounded-xl bg-surface-dark p-5 shadow-neon-card">
+<div class="absolute left-0 top-0 bottom-0 w-1 bg-neon-purple shadow-[0_0_10px_#A855F7]"></div>
+<div class="flex items-center justify-between mb-4">
+<h3 class="text-base font-bold text-white uppercase tracking-wide">Top Unverified</h3>
+<span class="text-[10px] text-slate-400 bg-white/5 px-2 py-0.5 rounded-full">Pending</span>
+</div>
+<div class="space-y-4">
+<div class="flex items-center gap-3 border-b border-white/5 pb-3 last:border-0 last:pb-0">
+<div class="h-10 w-10 flex-shrink-0 overflow-hidden rounded-full bg-slate-700">
+<img alt="Logo" class="h-full w-full object-cover grayscale opacity-70" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAkSiFms72KGrs9CREi6jc314ls_Jggd537X_bnMalikCvnPBspx_Pj8MM1rv0hPCBYHWdrJE44kCqgky913fqGsjFBtMNMvE7XwLGCIAGm7mHfxuwBfnqjz6YjvIvfc0iLWWOLcfOKzzix8utFr4gGMvNU4vRvxramCkA8TvIjen1FHLx8W8qLznOu3Fs0jbJxqjgpAkYdFg_Wky9I3Qh9UDNeiujTL1PctOirKKqOZgO1fhEPUUQe3miYonj0Px3vqN1BVki7Vw"/>
+</div>
+<div class="flex-1 min-w-0">
+<div class="flex items-center gap-1.5">
+<h4 class="text-sm font-semibold text-slate-300 truncate">Bizerte Bakery</h4>
+<span class="material-symbols-outlined text-[14px] text-slate-500">shield</span>
+</div>
+<div class="flex items-center gap-3 mt-1 text-[10px] text-slate-500">
+<span class="flex items-center gap-1"><span class="material-symbols-outlined text-[10px]">visibility</span> 4.2k</span>
+<span class="flex items-center gap-1"><span class="material-symbols-outlined text-[10px]">search</span> 1.2k</span>
+<span class="flex items-center gap-1"><span class="material-symbols-outlined text-[10px]">reviews</span> 12</span>
+</div>
+</div>
+</div>
+<div class="flex items-center gap-3 border-b border-white/5 pb-3 last:border-0 last:pb-0">
+<div class="h-10 w-10 flex-shrink-0 overflow-hidden rounded-full bg-slate-700">
+<img alt="Logo" class="h-full w-full object-cover grayscale opacity-70" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDMlneVlq11WNQYntWTBRgMICem2wcbhHHZ1BRAC4bUnLLP8UEkAzWLgtlQmc6PQ1t-v_A9ZN7stt5VdXByeVEQUN87qO8CVTbf-LebljOhq3oiSh93qL5YK4Atft4yTqoMomUmW9GUxUzP-yvH5AuHEn-rhdd-lhrzVkPA2CuJ5iDFN5HpmZZEpJRfei4GXf0rbgpXwEfT8y07QOqKAroOf_ekk9WWNd_r1WApxcupHgz31G9aUMTlGq-HoKCyheEEOWsi7gVNtg"/>
+</div>
+<div class="flex-1 min-w-0">
+<div class="flex items-center gap-1.5">
+<h4 class="text-sm font-semibold text-slate-300 truncate">Hammamet Souk</h4>
+<span class="material-symbols-outlined text-[14px] text-slate-500">shield</span>
+</div>
+<div class="flex items-center gap-3 mt-1 text-[10px] text-slate-500">
+<span class="flex items-center gap-1"><span class="material-symbols-outlined text-[10px]">visibility</span> 3.8k</span>
+<span class="flex items-center gap-1"><span class="material-symbols-outlined text-[10px]">search</span> 980</span>
+<span class="flex items-center gap-1"><span class="material-symbols-outlined text-[10px]">reviews</span> 8</span>
+</div>
+</div>
+</div>
+<div class="flex items-center gap-3 border-b border-white/5 pb-3 last:border-0 last:pb-0">
+<div class="h-10 w-10 flex-shrink-0 overflow-hidden rounded-full bg-slate-700">
+<img alt="Logo" class="h-full w-full object-cover grayscale opacity-70" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAuXWofhJT_34oXyYEZdSip_pLreiEI-24o2L2DK6WP4ZDnoL6Cd6ruMWEcbuM99xrIBFV-1RYPq6UbOIqZNGvJu69AeS3bXqkmF-bMrTlJgOyoTi0x7t9DPq88VX48nSbPHmC5po4TWjXiSIiECU4UYWbWi7IoAfm4-IPn3q5TaUwthZTr1nYTcW0GwRPMTDOKo8ACRj7-fWrcD70yde17OAro8S3fANgAQ20xMKM9eRfJryb-wO2FbwkNiSlUhDBPENU2A64DTg"/>
+</div>
+<div class="flex-1 min-w-0">
+<div class="flex items-center gap-1.5">
+<h4 class="text-sm font-semibold text-slate-300 truncate">Kairouan Carpets</h4>
+<span class="material-symbols-outlined text-[14px] text-slate-500">shield</span>
+</div>
+<div class="flex items-center gap-3 mt-1 text-[10px] text-slate-500">
+<span class="flex items-center gap-1"><span class="material-symbols-outlined text-[10px]">visibility</span> 2.5k</span>
+<span class="flex items-center gap-1"><span class="material-symbols-outlined text-[10px]">search</span> 650</span>
+<span class="flex items-center gap-1"><span class="material-symbols-outlined text-[10px]">reviews</span> 5</span>
+</div>
+</div>
+</div>
+<div class="flex items-center gap-3 border-b border-white/5 pb-3 last:border-0 last:pb-0">
+<div class="h-10 w-10 flex-shrink-0 overflow-hidden rounded-full bg-slate-700">
+<img alt="Logo" class="h-full w-full object-cover grayscale opacity-70" src="https://lh3.googleusercontent.com/aida-public/AB6AXuChnaDKz_beD7BWX6pQsj5kUFAjz67krmFMfScky27zNbPfnlIn0LPDoUiraIteKcdZZhnbeOe5yxT57iY1qRWIt_EwCvsBuXJYP0Ylft8TlcubnIUWeQwhlH2dSX60YWOP2aCIxO9KsWFa19UM2Zd4rlrUT17WjwlJBsqR8LL7wmo-VVSyjYSjMg9oSOgkQTQOA7TKGvpiuKAXsrlkKZE3AX8RIo1W_u6zP7FpDcF9xq2JWFUGsnKxvzOY6BvmOuJEhcWeXVQVxQ"/>
+</div>
+<div class="flex-1 min-w-0">
+<div class="flex items-center gap-1.5">
+<h4 class="text-sm font-semibold text-slate-300 truncate">Monastir Textiles</h4>
+<span class="material-symbols-outlined text-[14px] text-slate-500">shield</span>
+</div>
+<div class="flex items-center gap-3 mt-1 text-[10px] text-slate-500">
+<span class="flex items-center gap-1"><span class="material-symbols-outlined text-[10px]">visibility</span> 1.9k</span>
+<span class="flex items-center gap-1"><span class="material-symbols-outlined text-[10px]">search</span> 420</span>
+<span class="flex items-center gap-1"><span class="material-symbols-outlined text-[10px]">reviews</span> 2</span>
+</div>
+</div>
+</div>
+</div>
+</section>
+<section class="relative overflow-hidden rounded-xl bg-surface-dark p-5 shadow-neon-card">
+<div class="absolute left-0 top-0 bottom-0 w-1 bg-neon-purple shadow-[0_0_10px_#A855F7]"></div>
+<div class="flex items-center justify-between mb-4">
+<h3 class="text-base font-bold text-white uppercase tracking-wide">Top Premium</h3>
+<span class="text-[10px] text-neon-red bg-neon-red/10 px-2 py-0.5 rounded-full border border-neon-red/20">Elite</span>
+</div>
+<div class="space-y-4">
+<div class="flex items-center gap-3 border-b border-white/5 pb-3 last:border-0 last:pb-0">
+<div class="h-10 w-10 flex-shrink-0 overflow-hidden rounded-full bg-slate-700 ring-2 ring-neon-red ring-offset-1 ring-offset-surface-dark">
+<img alt="Logo" class="h-full w-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCnNgt_N7jNj6RJF8qq7EcurrAD0-GPzMQr4EIoNIkf4ppMUdA9L8imFeNVFR_bie_gnIoJdowosUMreaXYsOp3saNdW435RJx16uOPO23P5cy7ZUJZTiqP1M6-AS-LLy2v17VwoclMZOtwm40I4dNNbkSe42u7-wXKzRnOhV9eGYR6jKtCQIFyrcNijQjIM1xAPL39SLuW5648BQ5vUaL63fgz4nPGfbEDzHstByfUlF34J6RL9cTJbDCQ1smNc2g87n5RjpvdLw"/>
+</div>
+<div class="flex-1 min-w-0">
+<div class="flex items-center gap-1.5">
+<h4 class="text-sm font-semibold text-white truncate">Royal Hotel</h4>
+<span class="material-symbols-outlined text-[14px] text-neon-red" title="Premium">workspace_premium</span>
+</div>
+<div class="flex items-center gap-3 mt-1 text-[10px] text-slate-400">
+<span class="flex items-center gap-1"><span class="material-symbols-outlined text-[10px]">visibility</span> 22.4k</span>
+<span class="flex items-center gap-1"><span class="material-symbols-outlined text-[10px]">search</span> 14.2k</span>
+<span class="flex items-center gap-1"><span class="material-symbols-outlined text-[10px]">reviews</span> 450</span>
+</div>
+</div>
+</div>
+<div class="flex items-center gap-3 border-b border-white/5 pb-3 last:border-0 last:pb-0">
+<div class="h-10 w-10 flex-shrink-0 overflow-hidden rounded-full bg-slate-700 ring-2 ring-neon-red ring-offset-1 ring-offset-surface-dark">
+<img alt="Logo" class="h-full w-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDy3rGeethSKuZDdJ8NAMMnujmA57mSR0eGHMqnxres5usiIJnjc7gKTD6FiJb-YoubnLVm4fTJlcZ8bch2nGFKARJFkChkD6i4GQXC_n-rsqaM_Tgk7cJb95_my6x50jjZidIP_TdNQRJI7UkRAZ05eZi8zjaRzwID0Pt5IjsvOWJPBtnbylzhRhGpNB552i4nQuGxcRY1b5G3LcGKUglMTkXcusVQPgmR9tJL3qeoPqceWfWfm_dAXU3F2U-aWtrcY9ZbwRu6jQ"/>
+</div>
+<div class="flex-1 min-w-0">
+<div class="flex items-center gap-1.5">
+<h4 class="text-sm font-semibold text-white truncate">Golden Mall</h4>
+<span class="material-symbols-outlined text-[14px] text-neon-red" title="Premium">workspace_premium</span>
+</div>
+<div class="flex items-center gap-3 mt-1 text-[10px] text-slate-400">
+<span class="flex items-center gap-1"><span class="material-symbols-outlined text-[10px]">visibility</span> 18.1k</span>
+<span class="flex items-center gap-1"><span class="material-symbols-outlined text-[10px]">search</span> 10.5k</span>
+<span class="flex items-center gap-1"><span class="material-symbols-outlined text-[10px]">reviews</span> 320</span>
+</div>
+</div>
+</div>
+<div class="flex items-center gap-3 border-b border-white/5 pb-3 last:border-0 last:pb-0">
+<div class="h-10 w-10 flex-shrink-0 overflow-hidden rounded-full bg-slate-700 ring-2 ring-neon-red ring-offset-1 ring-offset-surface-dark">
+<img alt="Logo" class="h-full w-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBWPDwF8Tapxp88wlwollSIj5ir5Cwv9Elo7mQsPKUgIzr05YiE5rv5vNbXufqyY7DTfEcpAh4hS_tK2tn164Ewv2p8Ak2Rt8IeXwSlOHRkLEFMvNZBX6WItw3cg9jOhYlDvzGVMK_HS7TarqkYKlTg4srf28_YZQpTG9MkCsJeJotTlUf_o_cud-tNcDHtF2oAOkgmpAZ5hBojsHfE8oZ-gwmjDEKKKTNB6HSkebHbgCrudy6Yk3LBeU5apzoNWOnRrFpcOtoQag"/>
+</div>
+<div class="flex-1 min-w-0">
+<div class="flex items-center gap-1.5">
+<h4 class="text-sm font-semibold text-white truncate">Luxury Rides</h4>
+<span class="material-symbols-outlined text-[14px] text-neon-red" title="Premium">workspace_premium</span>
+</div>
+<div class="flex items-center gap-3 mt-1 text-[10px] text-slate-400">
+<span class="flex items-center gap-1"><span class="material-symbols-outlined text-[10px]">visibility</span> 14.8k</span>
+<span class="flex items-center gap-1"><span class="material-symbols-outlined text-[10px]">search</span> 8.9k</span>
+<span class="flex items-center gap-1"><span class="material-symbols-outlined text-[10px]">reviews</span> 215</span>
+</div>
+</div>
+</div>
+<div class="flex items-center gap-3 border-b border-white/5 pb-3 last:border-0 last:pb-0">
+<div class="h-10 w-10 flex-shrink-0 overflow-hidden rounded-full bg-slate-700 ring-2 ring-neon-red ring-offset-1 ring-offset-surface-dark">
+<img alt="Logo" class="h-full w-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAOhkRfXTaZ4L2kexy9ZehG2v9DXOuYFdnQCCpknYp0odF6YmOznzoDKhIWq1AjJEzUWVbWci1pUceHjRObO6HAXFU1AkPQ3fnxPR6MNu5fvGDltPoU13UEkBLuAyiWGU5Kl5v-NTYuNN1JIshqBrt0Mtwb0Awz73Dl5qnl_Qv-NpUvvdphu_jwECG9a7tWSl59lB1DnfshYxz0D7UKvNv3U7cW-RjMpakbmY11o5AerD2bol6ieTCZeqUMvWzn8wKG0yyfl_nHiQ"/>
+</div>
+<div class="flex-1 min-w-0">
+<div class="flex items-center gap-1.5">
+<h4 class="text-sm font-semibold text-white truncate">Elite Consulting</h4>
+<span class="material-symbols-outlined text-[14px] text-neon-red" title="Premium">workspace_premium</span>
+</div>
+<div class="flex items-center gap-3 mt-1 text-[10px] text-slate-400">
+<span class="flex items-center gap-1"><span class="material-symbols-outlined text-[10px]">visibility</span> 12.2k</span>
+<span class="flex items-center gap-1"><span class="material-symbols-outlined text-[10px]">search</span> 6.8k</span>
+<span class="flex items-center gap-1"><span class="material-symbols-outlined text-[10px]">reviews</span> 180</span>
+</div>
+</div>
+</div>
+</div>
+</section>
+<section class="relative overflow-hidden rounded-xl bg-surface-dark p-5 shadow-neon-card">
+<div class="absolute left-0 top-0 bottom-0 w-1 bg-neon-purple shadow-[0_0_10px_#A855F7]"></div>
+<div class="flex items-center justify-between mb-4">
+<h3 class="text-base font-bold text-white uppercase tracking-wide">Top Verified Basic</h3>
+<span class="text-[10px] text-neon-blue bg-neon-blue/10 px-2 py-0.5 rounded-full border border-neon-blue/20">Standard</span>
+</div>
+<div class="space-y-4">
+<div class="flex items-center gap-3 border-b border-white/5 pb-3 last:border-0 last:pb-0">
+<div class="h-10 w-10 flex-shrink-0 overflow-hidden rounded-full bg-slate-700">
+<img alt="Logo" class="h-full w-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuC6GcHlEcIRMuq2xHYu6SsXzozJh2nhPlTP8x8bkGt8v7Om0CHgpy1M94wQCyvoYFxsP5n0S6zlpvXq0bVEbEJDqX752e0W4jDTM97NHRCeIuy9Oju8C-NNgaxmKJnyc_o9EK5Ryxx97hwzqIe-PGtH6_QiczDJSRSjLjQUAdgQMjI8Sh6ttfxKUvfmqstEMX5MzcA-CgpRK8xwvPcwZ8gSdJy7GMhQo8KAXWYg1hExof4rez9QQZERvmWtMfU2K2OHe58YnGaASw"/>
+</div>
+<div class="flex-1 min-w-0">
+<div class="flex items-center gap-1.5">
+<h4 class="text-sm font-semibold text-white truncate">Djerba Delights</h4>
+<span class="material-symbols-outlined text-[14px] text-neon-blue" title="Verified Basic">verified_user</span>
+</div>
+<div class="flex items-center gap-3 mt-1 text-[10px] text-slate-400">
+<span class="flex items-center gap-1"><span class="material-symbols-outlined text-[10px]">visibility</span> 6.5k</span>
+<span class="flex items-center gap-1"><span class="material-symbols-outlined text-[10px]">search</span> 3.2k</span>
+<span class="flex items-center gap-1"><span class="material-symbols-outlined text-[10px]">reviews</span> 45</span>
+</div>
+</div>
+</div>
+<div class="flex items-center gap-3 border-b border-white/5 pb-3 last:border-0 last:pb-0">
+<div class="h-10 w-10 flex-shrink-0 overflow-hidden rounded-full bg-slate-700">
+<img alt="Logo" class="h-full w-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAmR9jjo918Oxa0VerylRY681BBmJlM3jFskku3eX-N9c0VskjwItHBtQgz8m_3-JqKoPThDSn3fYeI63lYR9F4j1wTHjOG-JoPYOaLsvDWQbcT6Weaix-AHV2ndlCqg0jsXr5cJ-JyEywnb422pXXToUdkxRNai0JHaEu_rtwIwr-yj_EaWimFSS3TXWkyN0k1-jW2zoy0GFguwRY8X5QiI9M7TT2b7vwalyDhhB8skaM3mQEmkkm74BVce0tJ1BdKaICx2l-v1A"/>
+</div>
+<div class="flex-1 min-w-0">
+<div class="flex items-center gap-1.5">
+<h4 class="text-sm font-semibold text-white truncate">Tozeur Handicrafts</h4>
+<span class="material-symbols-outlined text-[14px] text-neon-blue" title="Verified Basic">verified_user</span>
+</div>
+<div class="flex items-center gap-3 mt-1 text-[10px] text-slate-400">
+<span class="flex items-center gap-1"><span class="material-symbols-outlined text-[10px]">visibility</span> 5.8k</span>
+<span class="flex items-center gap-1"><span class="material-symbols-outlined text-[10px]">search</span> 2.9k</span>
+<span class="flex items-center gap-1"><span class="material-symbols-outlined text-[10px]">reviews</span> 38</span>
+</div>
+</div>
+</div>
+<div class="flex items-center gap-3 border-b border-white/5 pb-3 last:border-0 last:pb-0">
+<div class="h-10 w-10 flex-shrink-0 overflow-hidden rounded-full bg-slate-700">
+<img alt="Logo" class="h-full w-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDyEkQbfWGDsDy7RvivOH9K70lENZ1Xy-XinabQgpf0-cZk0OOb1Zug9BtVNaHabG_L_TGfBx6kOdXwW5-9rdDnibMiLxc4czCzpD-Z6oCpvBE8Uigf8BYUhBrRgpbzT556HYXNgJFBSz54-X_J-QQofxeo8FAv-yv3k4XbpiiuK5BrDTXDpKrODd2aWsfHU61BQV2OrfqF6urab-_TBjzBMGx8Po0iM1IJ_1ufhw9QVCRdngKFxwDgwl0a2wfIXz0oIy9kDm5WYA"/>
+</div>
+<div class="flex-1 min-w-0">
+<div class="flex items-center gap-1.5">
+<h4 class="text-sm font-semibold text-white truncate">Nabeul Souvenirs</h4>
+<span class="material-symbols-outlined text-[14px] text-neon-blue" title="Verified Basic">verified_user</span>
+</div>
+<div class="flex items-center gap-3 mt-1 text-[10px] text-slate-400">
+<span class="flex items-center gap-1"><span class="material-symbols-outlined text-[10px]">visibility</span> 5.1k</span>
+<span class="flex items-center gap-1"><span class="material-symbols-outlined text-[10px]">search</span> 2.5k</span>
+<span class="flex items-center gap-1"><span class="material-symbols-outlined text-[10px]">reviews</span> 32</span>
+</div>
+</div>
+</div>
+<div class="flex items-center gap-3 border-b border-white/5 pb-3 last:border-0 last:pb-0">
+<div class="h-10 w-10 flex-shrink-0 overflow-hidden rounded-full bg-slate-700">
+<img alt="Logo" class="h-full w-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuABUJ_bgR5t2FaIEldcZW6M5NqsDGHTEphlACvbasZgQtOkvOSua6qmhXbRpGAkJ1NBHsJRAt43ULA_-3nUdLQ6wztWftr3VvaLlX3ImDYYjX_DuGtqcbQFZaQ1VXaAsrQ6YyZ8VR9zIMW5xOisdYkKhkM2mwtDa9ME9Cf2nDmT3tzpOBWdN8yAcNS-4IbUV7dLaZI8DHlCglAylyGivJp-t_RJGqSw4oqI1lKgDyO0kk6k7VIeiWSXzDXYQPLTWfrO9O6UWw-tAw"/>
+</div>
+<div class="flex-1 min-w-0">
+<div class="flex items-center gap-1.5">
+<h4 class="text-sm font-semibold text-white truncate">Gafsa Electronics</h4>
+<span class="material-symbols-outlined text-[14px] text-neon-blue" title="Verified Basic">verified_user</span>
+</div>
+<div class="flex items-center gap-3 mt-1 text-[10px] text-slate-400">
+<span class="flex items-center gap-1"><span class="material-symbols-outlined text-[10px]">visibility</span> 4.5k</span>
+<span class="flex items-center gap-1"><span class="material-symbols-outlined text-[10px]">search</span> 2.1k</span>
+<span class="flex items-center gap-1"><span class="material-symbols-outlined text-[10px]">reviews</span> 28</span>
+</div>
+</div>
+</div>
+</div>
+</section>
+</main>
+<nav class="fixed bottom-0 left-0 right-0 z-50 border-t border-white/5 bg-background-dark pb-safe">
+<div class="flex h-16 items-center justify-around px-1">
+<a class="group flex flex-1 flex-col items-center justify-center gap-1 p-2 text-slate-500 hover:text-slate-300 transition-colors" href="#">
+<span class="material-symbols-outlined text-[24px]">home</span>
+<span class="text-[9px] font-medium">Home</span>
+</a>
+<a class="group flex flex-1 flex-col items-center justify-center gap-1 p-2 text-primary" href="#">
+<div class="relative flex items-center justify-center rounded-xl p-1 transition-all">
+<span class="material-symbols-outlined text-[26px] drop-shadow-[0_0_8px_rgba(163,85,247,0.8)] fill-current">bar_chart</span>
+<span class="absolute inset-0 rounded-xl bg-primary/10 opacity-50 blur-md"></span>
+</div>
+<span class="text-[9px] font-semibold tracking-wide text-glow">Insights</span>
+</a>
+<a class="group flex flex-1 flex-col items-center justify-center gap-1 p-2 text-slate-500 hover:text-slate-300 transition-colors" href="#">
+<span class="material-symbols-outlined text-[24px]">tune</span>
+<span class="text-[9px] font-medium">Controll</span>
+</a>
+<a class="group flex flex-1 flex-col items-center justify-center gap-1 p-2 text-slate-500 hover:text-slate-300 transition-colors" href="#">
+<span class="material-symbols-outlined text-[24px]">chat</span>
+<span class="text-[9px] font-medium">Chat</span>
+</a>
+<a class="group flex flex-1 flex-col items-center justify-center gap-1 p-2 text-slate-500 hover:text-slate-300 transition-colors" href="#">
+<span class="material-symbols-outlined text-[24px]">rocket_launch</span>
+<span class="text-[9px] font-medium">Boost</span>
+</a>
+<a class="group flex flex-1 flex-col items-center justify-center gap-1 p-2 text-slate-500 hover:text-slate-300 transition-colors" href="#">
+<span class="material-symbols-outlined text-[24px]">settings</span>
+<span class="text-[9px] font-medium">Settings</span>
+</a>
+</div>
+</nav>
+<div class="h-6 w-full bg-background-dark"></div>
+</body></html>

@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html class="dark" lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+    <title>Change Email - Neon Seamless Design</title>
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&amp;display=swap"
+        rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Outlined" rel="stylesheet" />
+    <link
+        href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap"
+        rel="stylesheet" />
+    <script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#a855f7",
+                        "primary-dark": "#7e22ce",
+                        "background-light": "#f7f5f8",
+                        "background-dark": "#0F172A", // Deep slate as requested
+                        "surface-dark": "#1E293B", // Lighter slate for cards
+                        "surface-light": "#ffffff",
+                    },
+                    fontFamily: {
+                        "display": ["Inter", "sans-serif"]
+                    },
+                    borderRadius: { "DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px" },
+                    boxShadow: {
+                        'neon': '0 0 20px -5px rgba(168, 85, 247, 0.5)',
+                        'neon-strong': '0 0 30px -5px rgba(168, 85, 247, 0.7)',
+                    }
+                },
+            },
+        }
+    </script>
+    <style>
+        .spotlight-glow {
+            background: radial-gradient(circle, rgba(168, 85, 247, 0.4) 0%, rgba(15, 23, 42, 0) 70%);
+        }
+
+        .no-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+
+        .no-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+    </style>
+    <style>
+        body {
+            min-height: max(884px, 100dvh);
+        }
+    </style>
+    <style>
+        body {
+            min-height: max(884px, 100dvh);
+        }
+    </style>
+</head>
+
+<body
+    class="bg-background-light dark:bg-background-dark font-display text-slate-800 dark:text-white h-screen flex flex-col overflow-hidden selection:bg-primary selection:text-white">
+    <div class="w-full h-12 flex items-center justify-between px-6 pt-2 z-20 shrink-0">
+        <span class="text-sm font-semibold">9:41</span>
+        <div class="flex items-center gap-1.5">
+            <span class="material-icons text-sm">signal_cellular_alt</span>
+            <span class="material-icons text-sm">wifi</span>
+            <span class="material-icons text-sm rotate-180">battery_full</span>
+        </div>
+    </div>
+    <header class="w-full px-4 py-4 flex items-center relative shrink-0 z-20">
+        <button class="p-2 rounded-full hover:bg-white/10 active:bg-white/20 transition-colors">
+            <span class="material-icons text-2xl">chevron_left</span>
+        </button>
+        <h1 class="text-lg font-semibold absolute left-1/2 -translate-x-1/2">Change Email</h1>
+    </header>
+    <main class="flex-1 overflow-y-auto no-scrollbar px-6 pb-24 relative">
+        <div class="flex flex-col items-center justify-center mt-6 mb-10 relative">
+            <div
+                class="absolute w-64 h-64 spotlight-glow rounded-full -z-10 blur-xl top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2">
+            </div>
+            <div
+                class="w-20 h-20 bg-surface-dark border border-white/5 rounded-full flex items-center justify-center shadow-neon mb-6">
+                <span class="material-icons text-4xl text-primary">mail</span>
+            </div>
+            <h2 class="text-2xl font-bold text-center mb-2">Change your email address</h2>
+            <p class="text-slate-400 text-center text-sm leading-relaxed max-w-[280px]">
+                Enter your new email address to update your account.
+            </p>
+        </div>
+        <div class="space-y-6">
+            <div class="space-y-2">
+                <label class="text-xs font-medium text-slate-400 ml-1 uppercase tracking-wider">Current Email</label>
+                <div class="relative group">
+                    <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                        <span class="material-icons text-slate-500 text-xl">lock</span>
+                    </div>
+                    <input
+                        class="w-full bg-surface-dark/50 border border-white/5 text-slate-400 text-sm rounded-xl py-4 pl-12 pr-4 focus:ring-0 focus:border-white/10 cursor-not-allowed select-none shadow-sm"
+                        disabled="" type="email" value="ahmed.ben.ali@example.tn" />
+                </div>
+            </div>
+            <div class="space-y-2">
+                <label class="text-xs font-medium text-primary ml-1 uppercase tracking-wider">New Email</label>
+                <div class="relative group">
+                    <div
+                        class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none transition-colors duration-200 group-focus-within:text-primary">
+                        <span
+                            class="material-icons text-slate-400 text-xl group-focus-within:text-primary">alternate_email</span>
+                    </div>
+                    <input
+                        class="w-full bg-surface-dark border border-slate-700/50 text-white text-sm rounded-xl py-4 pl-12 pr-4 focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary transition-all shadow-lg placeholder:text-slate-600"
+                        placeholder="name@domain.com" type="email" />
+                </div>
+                <p class="text-xs text-slate-500 ml-1">We will send a verification link to this address.</p>
+            </div>
+        </div>
+        <div class="mt-12">
+            <button
+                class="w-full bg-primary hover:bg-primary-dark text-white font-semibold py-4 rounded-xl shadow-neon active:scale-[0.98] transition-all duration-200 flex items-center justify-center gap-2 group">
+                <span>Send Confirmation</span>
+                <span class="material-icons text-sm group-hover:translate-x-1 transition-transform">arrow_forward</span>
+            </button>
+        </div>
+    </main>
+    <nav class="bg-background-dark border-t border-slate-800/50 pb-8 pt-4 px-6 shrink-0 z-30">
+        <ul class="flex justify-between items-end w-full">
+            <li class="flex-1 flex justify-center">
+                <a class="flex flex-col items-center gap-1.5 group w-full" href="#">
+                    <span class="material-symbols-outlined text-[28px]">home</span>
+                    <span class="text-[10px] font-medium leading-none">Home</span>
+                </a>
+            </li>
+            <li class="flex-1 flex justify-center">
+                <a class="flex flex-col items-center gap-1.5 group w-full" href="#">
+                    <div class="relative">
+                        <span
+                            class="material-symbols-outlined text-[26px] text-slate-400 group-hover:text-white transition-colors">notifications</span>
+                    </div>
+                    <span
+                        class="text-[10px] font-medium text-slate-400 group-hover:text-white transition-colors whitespace-nowrap">Notifications</span>
+                </a>
+            </li>
+            <li class="flex-1 flex justify-center">
+                <a class="flex flex-col items-center gap-1.5 group w-full" href="#">
+                    <span
+                        class="material-symbols-outlined text-[26px] text-slate-400 group-hover:text-white transition-colors">reviews</span>
+                    <span
+                        class="text-[10px] font-medium text-slate-400 group-hover:text-white transition-colors whitespace-nowrap">My
+                        reviews</span>
+                </a>
+            </li>
+            <li class="flex-1 flex justify-center">
+                <a class="flex flex-col items-center gap-1.5 group w-full relative" href="#">
+                    <div
+                        class="absolute -top-3 left-1/2 -translate-x-1/2 w-12 h-12 bg-primary/20 rounded-full blur-xl opacity-0 group-hover:opacity-100 transition-opacity">
+                    </div>
+                    <span
+                        class="material-symbols-outlined text-[26px] text-primary drop-shadow-[0_0_8px_rgba(168,85,247,0.5)]">settings</span>
+                    <span
+                        class="text-[10px] font-medium text-primary drop-shadow-[0_0_8px_rgba(168,85,247,0.5)] whitespace-nowrap">Settings</span>
+                </a>
+            </li>
+        </ul>
+    </nav>
+</body>
+
+</html>

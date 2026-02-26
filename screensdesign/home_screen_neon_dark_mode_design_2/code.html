@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>All Categories Browser View</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,typography"></script>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script>
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            colors: {
+              primary: "#8B5CF6", // Neon Purple
+              "primary-glow": "#A78BFA", 
+              "background-light": "#F3F4F6", 
+              "background-dark": "#0F172A", // Updated to match request
+              "surface-dark": "#1E293B", // Slightly lighter slate for cards
+              "surface-light": "#FFFFFF",
+              "text-light": "#1F2937",
+              "text-dark": "#F9FAFB",
+              "muted-light": "#6B7280",
+              "muted-dark": "#94A3B8",
+            },
+            fontFamily: {
+              display: ["'Plus Jakarta Sans'", "sans-serif"],
+            },
+            borderRadius: {
+              DEFAULT: "1rem",
+              "xl": "1.5rem",
+              "2xl": "2rem",
+            },
+            boxShadow: {
+                'neon': '0 0 15px rgba(139, 92, 246, 0.3)',
+                'neon-strong': '0 0 20px rgba(139, 92, 246, 0.5)',
+            }
+          },
+        },
+      };
+    </script>
+<style>
+        .no-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .no-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+        body {
+            min-height: max(884px, 100dvh);
+            background-color: #0F172A;
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-[#0F172A] text-white font-display antialiased min-h-screen pb-[168px] selection:bg-primary selection:text-white dark relative">
+<div class="flex justify-between items-center px-6 py-3 text-text-dark text-sm font-semibold">
+<span>9:41</span>
+<div class="flex space-x-2 items-center">
+<span class="material-icons-round text-sm">signal_cellular_alt</span>
+<span class="material-icons-round text-sm">wifi</span>
+<span class="material-icons-round text-sm">battery_full</span>
+</div>
+</div>
+<header class="px-6 pt-2 pb-4 flex items-center space-x-4">
+<button class="w-10 h-10 flex items-center justify-center rounded-full bg-surface-dark/50 hover:bg-surface-dark transition-colors text-white">
+<span class="material-icons-round text-2xl">chevron_left</span>
+</button>
+<h1 class="text-xl font-bold text-white tracking-tight flex-1">All Categories</h1>
+</header>
+<section class="px-6 py-2">
+<div class="relative group">
+<div class="absolute -inset-0.5 bg-[#A855F7] rounded-2xl blur opacity-30 group-focus-within:opacity-60 transition duration-300"></div>
+<div class="relative flex items-center bg-[#1E293B] rounded-2xl px-4 py-3.5 shadow-sm border border-white/5">
+<span class="material-icons-round text-[#A855F7] text-xl mr-3">search</span>
+<input class="w-full bg-transparent border-none p-0 text-white placeholder-gray-400 focus:ring-0 text-base" placeholder="Search categories..." type="text"/>
+</div>
+</div>
+</section>
+<main class="px-6 py-6 grid grid-cols-2 gap-4">
+<button class="group relative flex flex-col items-center justify-center bg-[#1E293B] p-6 rounded-2xl border border-pink-500 bg-pink-500/10 shadow-[0_0_15px_rgba(236,72,153,0.15)] transition-all duration-300 active:scale-95">
+<div class="absolute top-3 right-3 w-5 h-5 bg-pink-500 rounded-full flex items-center justify-center">
+<span class="material-icons-round text-white text-[14px] font-bold">check</span>
+</div>
+<div class="w-14 h-14 rounded-full bg-pink-500/10 flex items-center justify-center mb-3 group-hover:bg-pink-500/20 transition-colors">
+<span class="material-icons-round text-pink-500 text-3xl">restaurant</span>
+</div>
+<span class="font-semibold text-white text-base">Food</span>
+<span class="text-xs text-gray-300 mt-1">128 Places</span>
+</button>
+<button class="group relative flex flex-col items-center justify-center bg-[#1E293B] p-6 rounded-2xl border border-white/5 hover:border-[#A855F7]/30 transition-all duration-300 active:scale-95">
+<div class="w-14 h-14 rounded-full bg-purple-500/10 flex items-center justify-center mb-3 group-hover:bg-purple-500/20 transition-colors">
+<span class="material-icons-round text-purple-500 text-3xl">shopping_bag</span>
+</div>
+<span class="font-semibold text-white text-base">Shopping</span>
+<span class="text-xs text-gray-400 mt-1">84 Shops</span>
+</button>
+<button class="group relative flex flex-col items-center justify-center bg-[#1E293B] p-6 rounded-2xl border border-white/5 hover:border-[#A855F7]/30 transition-all duration-300 active:scale-95">
+<div class="w-14 h-14 rounded-full bg-blue-500/10 flex items-center justify-center mb-3 group-hover:bg-blue-500/20 transition-colors">
+<span class="material-icons-round text-blue-500 text-3xl">build</span>
+</div>
+<span class="font-semibold text-white text-base">Services</span>
+<span class="text-xs text-gray-400 mt-1">56 Pros</span>
+</button>
+<button class="group relative flex flex-col items-center justify-center bg-[#1E293B] p-6 rounded-2xl border border-white/5 hover:border-[#A855F7]/30 transition-all duration-300 active:scale-95">
+<div class="w-14 h-14 rounded-full bg-rose-500/10 flex items-center justify-center mb-3 group-hover:bg-rose-500/20 transition-colors">
+<span class="material-icons-round text-rose-500 text-3xl">spa</span>
+</div>
+<span class="font-semibold text-white text-base">Beauty</span>
+<span class="text-xs text-gray-400 mt-1">42 Salons</span>
+</button>
+<button class="group relative flex flex-col items-center justify-center bg-[#1E293B] p-6 rounded-2xl border border-orange-500 bg-orange-500/10 shadow-[0_0_15px_rgba(249,115,22,0.15)] transition-all duration-300 active:scale-95">
+<div class="absolute top-3 right-3 w-5 h-5 bg-orange-500 rounded-full flex items-center justify-center">
+<span class="material-icons-round text-white text-[14px] font-bold">check</span>
+</div>
+<div class="w-14 h-14 rounded-full bg-orange-500/10 flex items-center justify-center mb-3 group-hover:bg-orange-500/20 transition-colors">
+<span class="material-icons-round text-orange-500 text-3xl">hotel</span>
+</div>
+<span class="font-semibold text-white text-base">Hotels</span>
+<span class="text-xs text-gray-300 mt-1">35 Stays</span>
+</button>
+<button class="group relative flex flex-col items-center justify-center bg-[#1E293B] p-6 rounded-2xl border border-green-500 bg-green-500/10 shadow-[0_0_15px_rgba(34,197,94,0.15)] transition-all duration-300 active:scale-95">
+<div class="absolute top-3 right-3 w-5 h-5 bg-green-500 rounded-full flex items-center justify-center">
+<span class="material-icons-round text-white text-[14px] font-bold">check</span>
+</div>
+<div class="w-14 h-14 rounded-full bg-green-500/10 flex items-center justify-center mb-3 group-hover:bg-green-500/20 transition-colors">
+<span class="material-icons-round text-green-500 text-3xl">fitness_center</span>
+</div>
+<span class="font-semibold text-white text-base">Gym</span>
+<span class="text-xs text-gray-300 mt-1">28 Clubs</span>
+</button>
+<button class="group relative flex flex-col items-center justify-center bg-[#1E293B] p-6 rounded-2xl border border-white/5 hover:border-[#A855F7]/30 transition-all duration-300 active:scale-95">
+<div class="w-14 h-14 rounded-full bg-indigo-500/10 flex items-center justify-center mb-3 group-hover:bg-indigo-500/20 transition-colors">
+<span class="material-icons-round text-indigo-500 text-3xl">local_bar</span>
+</div>
+<span class="font-semibold text-white text-base">Nightlife</span>
+<span class="text-xs text-gray-400 mt-1">45 Spots</span>
+</button>
+<button class="group relative flex flex-col items-center justify-center bg-[#1E293B] p-6 rounded-2xl border border-white/5 hover:border-[#A855F7]/30 transition-all duration-300 active:scale-95">
+<div class="w-14 h-14 rounded-full bg-teal-500/10 flex items-center justify-center mb-3 group-hover:bg-teal-500/20 transition-colors">
+<span class="material-icons-round text-teal-500 text-3xl">local_hospital</span>
+</div>
+<span class="font-semibold text-white text-base">Health</span>
+<span class="text-xs text-gray-400 mt-1">15 Clinics</span>
+</button>
+</main>
+<div class="fixed bottom-[88px] w-full px-6 py-4 bg-gradient-to-t from-[#0F172A] to-[#0F172A]/90 z-40">
+<button class="w-full bg-[#A855F7] hover:bg-[#9333ea] text-white font-bold py-3.5 rounded-xl shadow-[0_0_20px_rgba(168,85,247,0.4)] active:scale-95 transition-all duration-200">
+    Confirm
+  </button>
+</div>
+<nav class="fixed bottom-0 w-full z-50 bg-[#0F172A] border-t border-white/5 pb-6 pt-3 px-6 h-[88px]">
+<div class="flex justify-between items-center h-full max-w-lg mx-auto">
+<a class="flex flex-col items-center justify-center space-y-1 group w-16" href="#">
+<span class="material-symbols-outlined text-[#A855F7] text-[28px] drop-shadow-[0_0_8px_rgba(168,85,247,0.4)]">home</span>
+<span class="text-[11px] font-medium text-[#A855F7] tracking-wide">Home</span>
+</a>
+<a class="flex flex-col items-center justify-center space-y-1 group w-16" href="#">
+<span class="material-symbols-outlined text-gray-500 group-hover:text-gray-300 transition-colors text-[28px]">notifications</span>
+<span class="text-[11px] font-medium text-gray-500 group-hover:text-gray-300 transition-colors tracking-wide whitespace-nowrap">Notifications</span>
+</a>
+<a class="flex flex-col items-center justify-center space-y-1 group w-16" href="#">
+<span class="material-symbols-outlined text-gray-500 group-hover:text-gray-300 transition-colors text-[28px]">reviews</span>
+<span class="text-[11px] font-medium text-gray-500 group-hover:text-gray-300 transition-colors tracking-wide whitespace-nowrap">My reviews</span>
+</a>
+<a class="flex flex-col items-center justify-center space-y-1 group w-16" href="#">
+<span class="material-symbols-outlined text-gray-500 group-hover:text-gray-300 transition-colors text-[28px]">settings</span>
+<span class="text-[11px] font-medium text-gray-500 group-hover:text-gray-300 transition-colors tracking-wide">Settings</span>
+</a>
+</div>
+</nav>
+</body></html>

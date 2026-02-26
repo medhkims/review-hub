@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Sign Up - Tunisian Business Directory</title>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#a855f7",
+                        "primary-glow": "rgba(168, 85, 247, 0.5)",
+                        "background-light": "#f7f5f8",
+                        "background-dark": "#0F172A", // Midnight Blue requested
+                        "surface-dark": "#1E293B", // Dark rounded cards requested
+                    },
+                    fontFamily: {
+                        "display": ["Plus Jakarta Sans", "sans-serif"]
+                    },
+                    borderRadius: { "DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "2xl": "1rem", "full": "9999px" },
+                    boxShadow: {
+                        'neon': '0 0 20px -5px rgba(168, 85, 247, 0.5)',
+                        'neon-sm': '0 0 10px -2px rgba(168, 85, 247, 0.4)',
+                    }
+                },
+            },
+        }
+    </script>
+<style>
+        /* Custom scrollbar hide for cleaner mobile look */
+        .no-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .no-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background-light dark:bg-background-dark font-display text-slate-900 dark:text-slate-100 antialiased selection:bg-primary selection:text-white">
+<div class="relative flex min-h-screen w-full flex-col overflow-hidden max-w-md mx-auto">
+<!-- Abstract Background Glow -->
+<div class="absolute top-[-10%] left-[-20%] w-[80%] h-[40%] rounded-full bg-primary/20 blur-[120px] pointer-events-none"></div>
+<div class="absolute bottom-[-10%] right-[-10%] w-[60%] h-[30%] rounded-full bg-primary/10 blur-[100px] pointer-events-none"></div>
+<!-- Header Content -->
+<header class="pt-8 pb-4 px-6 z-10 flex flex-col items-center text-center mt-6">
+<h1 class="text-3xl font-extrabold tracking-tight text-white mb-2 drop-shadow-lg">Create Account</h1>
+<p class="text-slate-400 text-sm font-medium leading-relaxed max-w-[280px]">
+                Join the best business directory in Tunisia
+            </p>
+</header>
+<!-- User Type Toggle -->
+<div class="px-6 py-2 z-10 w-full">
+<div class="flex p-1 bg-surface-dark rounded-xl relative">
+<!-- Using radio inputs for functionality logic simulation -->
+<label class="flex-1 relative cursor-pointer group">
+<input checked="" class="peer sr-only" name="userType" type="radio"/>
+<div class="h-10 flex items-center justify-center text-sm font-semibold rounded-lg transition-all duration-300 text-slate-400 peer-checked:text-white peer-checked:bg-primary peer-checked:shadow-neon">
+                        Simple User
+                    </div>
+</label>
+<label class="flex-1 relative cursor-pointer group">
+<input class="peer sr-only" name="userType" type="radio"/>
+<div class="h-10 flex items-center justify-center text-sm font-semibold rounded-lg transition-all duration-300 text-slate-400 peer-checked:text-white peer-checked:bg-primary peer-checked:shadow-neon">
+                        Company Owner
+                    </div>
+</label>
+</div>
+</div>
+<!-- Social Signup -->
+<div class="px-6 py-6 flex flex-col items-center gap-4 z-10">
+<div class="flex gap-4 justify-center w-full">
+<button class="flex items-center justify-center w-14 h-14 rounded-full bg-surface-dark hover:bg-slate-700 border border-slate-700 hover:border-slate-600 transition-colors group">
+<!-- Google SVG -->
+<svg class="w-6 h-6" viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+<path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"></path>
+<path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"></path>
+<path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"></path>
+<path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"></path>
+</svg>
+</button>
+<button class="flex items-center justify-center w-14 h-14 rounded-full bg-surface-dark hover:bg-slate-700 border border-slate-700 hover:border-slate-600 transition-colors group">
+<!-- Facebook SVG -->
+<svg class="w-6 h-6 fill-blue-500 group-hover:fill-blue-400 transition-colors" viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+<path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"></path>
+</svg>
+</button>
+<button class="flex items-center justify-center w-14 h-14 rounded-full bg-surface-dark hover:bg-slate-700 border border-slate-700 hover:border-slate-600 transition-colors group">
+<!-- Apple SVG -->
+<svg class="w-6 h-6 fill-white" viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+<path d="M17.05 20.28c-.98.95-2.05.8-3.08.35-1.09-.46-2.09-.48-3.24 0-1.44.62-2.2.44-3.06-.35C2.79 15.25 3.51 7.59 9.05 7.31c1.35.07 2.29.74 3.08.74 1.18 0 2.48-1.23 3.93-1.14 1.31.08 2.53.69 3.29 1.85-3.54 1.68-2.6 6.54 1.14 8.04-.63 1.43-1.49 2.85-2.74 4.09l-.7.69zM12.03 7.25c-.15-2.23 1.66-4.07 3.74-4.25.29 2.58-2.34 4.5-3.74 4.25z"></path>
+</svg>
+</button>
+</div>
+<div class="relative w-full flex items-center justify-center mt-2 mb-2">
+<div class="absolute inset-0 flex items-center">
+<div class="w-full border-t border-slate-800"></div>
+</div>
+<div class="relative bg-background-dark px-3 text-xs text-slate-500 uppercase tracking-wider font-semibold">
+                    Or register with email
+                </div>
+</div>
+</div>
+<!-- Form Fields -->
+<form class="flex flex-col gap-4 px-6 z-10" onsubmit="event.preventDefault();">
+<!-- Full Name -->
+<div class="group relative">
+<div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-slate-500 group-focus-within:text-primary transition-colors">
+<span class="material-symbols-outlined text-[20px]">person</span>
+</div>
+<input class="block w-full rounded-2xl border-none bg-surface-dark py-4 pl-11 pr-4 text-white placeholder:text-slate-500 focus:ring-2 focus:ring-primary focus:bg-slate-800 transition-all text-base" placeholder="Full Name" type="text"/>
+</div>
+<!-- Email -->
+<div class="group relative">
+<div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-slate-500 group-focus-within:text-primary transition-colors">
+<span class="material-symbols-outlined text-[20px]">mail</span>
+</div>
+<input class="block w-full rounded-2xl border-none bg-surface-dark py-4 pl-11 pr-4 text-white placeholder:text-slate-500 focus:ring-2 focus:ring-primary focus:bg-slate-800 transition-all text-base" placeholder="Email Address" type="email"/>
+</div>
+<!-- Password -->
+<div class="group relative">
+<div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-slate-500 group-focus-within:text-primary transition-colors">
+<span class="material-symbols-outlined text-[20px]">lock</span>
+</div>
+<input class="block w-full rounded-2xl border-none bg-surface-dark py-4 pl-11 pr-12 text-white placeholder:text-slate-500 focus:ring-2 focus:ring-primary focus:bg-slate-800 transition-all text-base" placeholder="Password" type="password"/>
+<button class="absolute inset-y-0 right-0 pr-4 flex items-center text-slate-500 hover:text-white cursor-pointer focus:outline-none" type="button">
+<span class="material-symbols-outlined text-[20px]">visibility</span>
+</button>
+</div>
+<!-- Agreement -->
+<div class="flex items-start gap-3 mt-2 px-1">
+<div class="flex h-5 items-center">
+<input class="h-5 w-5 rounded border-slate-600 bg-surface-dark text-primary focus:ring-primary/50 focus:ring-offset-0 focus:ring-offset-transparent cursor-pointer" id="terms" name="terms" type="checkbox"/>
+</div>
+<label class="text-xs text-slate-400 leading-5 cursor-pointer select-none" for="terms">
+                    I agree to the <a class="font-bold text-primary hover:text-primary/80 hover:underline" href="#">Terms &amp; Conditions</a> 
+                    and <a class="font-bold text-primary hover:text-primary/80 hover:underline" href="#">Privacy Policy</a>.
+                </label>
+</div>
+<!-- Sign Up Button -->
+<button class="mt-4 w-full flex items-center justify-center rounded-2xl bg-primary py-4 text-base font-bold text-white shadow-neon hover:shadow-[0_0_25px_rgba(168,85,247,0.7)] hover:bg-primary/90 active:scale-[0.98] transition-all duration-200" type="submit">
+                Sign Up
+            </button>
+</form>
+<!-- Footer -->
+<div class="mt-auto py-8 z-10 text-center">
+<p class="text-sm text-slate-400">
+                Already have an account? 
+                <a class="font-bold text-white hover:text-primary transition-colors" href="#">Login</a>
+</p>
+</div>
+</div>
+</body></html>
