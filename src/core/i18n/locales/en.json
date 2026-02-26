@@ -10,7 +10,8 @@
     "offline": "You are offline",
     "saving": "Saving...",
     "comingSoon": "Coming Soon",
-    "success": "Success"
+    "success": "Success",
+    "back": "Go back"
   },
   "tabs": {
     "home": "Home",
@@ -142,6 +143,32 @@
       "title": "All Categories",
       "searchPlaceholder": "Search categories...",
       "empty": "No categories found"
+    },
+    "categorySelection": {
+      "title": "Select Categories",
+      "searchPlaceholder": "Search categories...",
+      "endOfList": "End of list",
+      "reset": "Reset",
+      "filter": "Filter"
+    },
+    "addBusiness": {
+      "title": "Add Business",
+      "subtitle": "Create a new listing",
+      "businessDetails": "Business Details",
+      "businessName": "Business Name",
+      "businessNamePlaceholder": "e.g. Le Gourmet",
+      "category": "Category",
+      "categoryPlaceholder": "Select Category",
+      "location": "Location",
+      "locationPlaceholder": "e.g. Sidi Bou Said, Tunis",
+      "website": "Website",
+      "websitePlaceholder": "https://",
+      "media": "Media",
+      "logo": "Logo",
+      "coverPicture": "Cover Picture",
+      "uploadLogo": "Upload Logo",
+      "uploadCover": "Upload Cover",
+      "submitBusiness": "Submit Business"
     }
   },
   "notifications": {
@@ -151,6 +178,28 @@
   "reviews": {
     "title": "My Reviews",
     "empty": "No reviews yet"
+  },
+  "myReviews": {
+    "title": "My Reviews",
+    "subtitle": "Manage your contributions",
+    "statisticsSection": "STATISTICS",
+    "statReviews": "Reviews",
+    "statLikes": "Likes",
+    "statSeen": "Seen",
+    "recentReviewsSection": "RECENT REVIEWS",
+    "viewAll": "View All",
+    "emptyTitle": "No reviews yet",
+    "emptyDescription": "You haven't written any reviews yet. Your opinion matters!",
+    "writeReview": "Write a Review"
+  },
+  "writeReview": {
+    "reviews": "reviews",
+    "tapToRate": "TAP TO RATE",
+    "writeYourReview": "Write your review",
+    "placeholder": "Share your experience... what did you like? what could be improved?",
+    "addPhotos": "Add Photos",
+    "uploadPhotos": "Upload photos or videos",
+    "submit": "SUBMIT REVIEW"
   },
   "feed": {
     "title": "Feed",
@@ -244,6 +293,18 @@
     "errorEmpty": "Please enter an email address.",
     "errorInvalidEmail": "Please enter a valid email address."
   },
+  "verifyAccount": {
+    "title": "Verify your account",
+    "subtitle": "Complete your profile to access all features",
+    "fullName": "Full name",
+    "fullNamePlaceholder": "Jane Doe",
+    "phoneNumber": "Phone number",
+    "phonePlaceholder": "00 000 000",
+    "phoneHelper": "Please re-check your phone number before submitting.",
+    "uploadCin": "Upload CIN",
+    "selectFile": "Select file",
+    "submit": "Submit"
+  },
   "changePassword": {
     "title": "Change Password",
     "description": "Create a strong password to keep your account secure.",
@@ -283,6 +344,49 @@
       "changeRole": "Change Role",
       "roleUpdated": "Role updated successfully",
       "roleUpdateFailed": "Failed to update role"
+    },
+    "globalInsights": {
+      "title": "Global Insights",
+      "searchPlaceholder": "Search insights...",
+      "company": "COMPANY",
+      "moderator": "MODERATOR",
+      "global": "GLOBAL",
+      "appDownloads": "App Downloads",
+      "activeUsers": "Active Users",
+      "adRevenue": "Ad Revenue",
+      "retentionRate": "Retention Rate",
+      "totalProfileVisits": "Total Profile Visits",
+      "viewedCompanies": "Viewed Companies",
+      "activeSubs": "Active Subs",
+      "promotedAds": "Promoted Ads",
+      "globalGrowth": "Global Growth",
+      "viewReport": "VIEW REPORT",
+      "topCompanies": "Top 5 Companies",
+      "seeAll": "See all",
+      "userActivity": "User Activity",
+      "dailyMau": "DAILY (MAU)",
+      "weeklyMau": "WEEKLY (MAU)",
+      "monthlyMau": "MONTHLY (MAU)",
+      "yearlyYau": "YEARLY (YAU)",
+      "avgSessionTime": "Avg. Session Time",
+      "searchTerms": "Most Common Search Terms",
+      "reviewsSentiment": "Reviews & Sentiment",
+      "totalReviews": "Total Reviews",
+      "flagged": "Flagged",
+      "positive": "Positive",
+      "neutral": "Neutral",
+      "negative": "Negative",
+      "moreDetails": "More Details",
+      "systemHealth": "System Health",
+      "pendingApprovals": "Pending Approvals",
+      "moderationBacklog": "Moderation Backlog",
+      "reportedIssues": "Reported Issues",
+      "conversionMetrics": "Conversion Metrics",
+      "profileToContact": "Profile to Contact",
+      "freeToPremium": "Free to Premium",
+      "geographicalInsights": "Geographical Insights",
+      "topRegions": "TOP REGIONS",
+      "distributionByGov": "DISTRIBUTION BY GOVERNORATE"
     }
   },
   "moderator": {
@@ -342,6 +446,32 @@
       "all": "All",
       "editProfile": "Edit Profile",
       "saveChanges": "Save Changes"
+    },
+    "insights": {
+      "title": "Financial Intelligence",
+      "searchPlaceholder": "Search financial insights...",
+      "overview": "OVERVIEW",
+      "profile": "PROFILE",
+      "financial": "FINANCIAL",
+      "reviews": "REVIEWS",
+      "financialMoney": "FINANCIAL MONEY",
+      "downloadReport": "Download Report",
+      "totalRevenue": "Total Revenue",
+      "subs": "SUBS",
+      "boosts": "BOOSTS",
+      "refunds": "REFUNDS",
+      "numbersData": "NUMBERS DATA",
+      "subscriptionHealth": "Subscription Health",
+      "days30": "30 DAYS",
+      "monthly": "MONTHLY",
+      "yearly": "YEARLY",
+      "boostIntelligence": "BOOST INTELLIGENCE",
+      "topKeywords": "Top Performing Keywords",
+      "views": "views",
+      "conversionFunnel": "Conversion Funnel",
+      "impressions": "Impressions",
+      "clicks": "Clicks",
+      "paymentMethods": "PAYMENT METHODS"
     }
   },
   "businessDetail": {
@@ -378,5 +508,92 @@
     "review": "Review",
     "removeSuccess": "Removed from wishlist",
     "removeError": "Failed to remove item"
+  },
+  "locationSearch": {
+    "title": "Search Location",
+    "searchPlaceholder": "Search location...",
+    "currentLocation": "Current Location",
+    "usingGPS": "Using GPS",
+    "recentSearches": "Recent Searches",
+    "clearAll": "Clear All"
+  },
+  "accountSwitcher": {
+    "title": "Select Account",
+    "subtitle": "Manage your personal and business profiles",
+    "userAccounts": "USER ACCOUNTS",
+    "businessAccounts": "BUSINESS ACCOUNTS",
+    "addAccount": "Add another account"
+  },
+  "sortBy": {
+    "title": "Sort By",
+    "recommended": "Recommended",
+    "highestRated": "Highest Rated",
+    "mostReviewed": "Most Reviewed",
+    "nearest": "Nearest to Me",
+    "apply": "Apply Filters"
+  },
+  "filterBy": {
+    "title": "Filter By",
+    "reset": "Reset",
+    "location": "LOCATION",
+    "categories": "CATEGORIES",
+    "minRating": "MINIMUM RATING",
+    "apply": "Apply Filters"
+  },
+  "noResults": {
+    "title": "Oops! No results found",
+    "description": "It looks like the business you're searching for isn't in our database yet.",
+    "addNew": "Add a new one"
+  },
+  "boostManagement": {
+    "title": "Boost & Promotions",
+    "boost": "BOOST",
+    "subscription": "SUBSCRIPTION",
+    "sortBy": "Sort By",
+    "dateRange": "Date Range",
+    "filter": "Filter",
+    "active": "ACTIVE",
+    "pending": "PENDING",
+    "packages": "PACKAGES",
+    "history": "HISTORY",
+    "expired": "EXPIRED",
+    "plans": "PLANS",
+    "revenue": "REVENUE",
+    "overview": "OVERVIEW",
+    "liveBoosts": "Live Boosts",
+    "requests": "Requests",
+    "adRevenue": "Ad Revenue",
+    "activeCampaigns": "ACTIVE CAMPAIGNS",
+    "manageCampaign": "Manage Campaign",
+    "totalActiveSubs": "Total Active Subs",
+    "expiringSoon": "Expiring Soon",
+    "monthlyRevenue": "Monthly Revenue",
+    "activeSubscriptions": "ACTIVE SUBSCRIPTIONS",
+    "managePlan": "Manage Plan",
+    "renewSubscription": "Renew Subscription"
+  },
+  "menuItemDetail": {
+    "ingredients": "Ingredients"
+  },
+  "subCategory": {
+    "searchBusinesses": "Search {{category}}...",
+    "searchDoctors": "Search doctors, clinics...",
+    "all": "All",
+    "open": "Open",
+    "closed": "Closed",
+    "reviews": "reviews",
+    "km": "km"
+  },
+  "verification": {
+    "otpTitle": "Please Verify your account",
+    "otpSubtitle": "Enter the code sent to your phone number",
+    "verify": "Verify",
+    "didntReceive": "Didn't receive code?",
+    "resend": "Resend",
+    "otpInputLabel": "OTP digit {{index}}",
+    "successMessage": "We have received your contact details:",
+    "changeDetails": "Change your details",
+    "contactNotice": "We will contact you on the given phone number within 72 hours.",
+    "close": "Close"
   }
 }

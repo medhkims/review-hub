@@ -10,7 +10,8 @@
     "offline": "أنت غير متصل",
     "saving": "جاري الحفظ...",
     "comingSoon": "قريباً",
-    "success": "نجاح"
+    "success": "نجاح",
+    "back": "رجوع"
   },
   "tabs": {
     "home": "الرئيسية",
@@ -142,6 +143,32 @@
       "title": "جميع الفئات",
       "searchPlaceholder": "ابحث عن الفئات...",
       "empty": "لم يتم العثور على فئات"
+    },
+    "categorySelection": {
+      "title": "اختر الفئات",
+      "searchPlaceholder": "ابحث في الفئات...",
+      "endOfList": "نهاية القائمة",
+      "reset": "إعادة تعيين",
+      "filter": "تصفية"
+    },
+    "addBusiness": {
+      "title": "إضافة نشاط تجاري",
+      "subtitle": "إنشاء قائمة جديدة",
+      "businessDetails": "تفاصيل النشاط التجاري",
+      "businessName": "اسم النشاط التجاري",
+      "businessNamePlaceholder": "مثال: لو غورميه",
+      "category": "الفئة",
+      "categoryPlaceholder": "اختر الفئة",
+      "location": "الموقع",
+      "locationPlaceholder": "مثال: سيدي بوسعيد، تونس",
+      "website": "الموقع الإلكتروني",
+      "websitePlaceholder": "https://",
+      "media": "الوسائط",
+      "logo": "الشعار",
+      "coverPicture": "صورة الغلاف",
+      "uploadLogo": "رفع الشعار",
+      "uploadCover": "رفع الغلاف",
+      "submitBusiness": "إرسال النشاط التجاري"
     }
   },
   "notifications": {
@@ -151,6 +178,28 @@
   "reviews": {
     "title": "تقييماتي",
     "empty": "لا توجد تقييمات بعد"
+  },
+  "myReviews": {
+    "title": "تقييماتي",
+    "subtitle": "إدارة مساهماتك",
+    "statisticsSection": "الإحصائيات",
+    "statReviews": "التقييمات",
+    "statLikes": "الإعجابات",
+    "statSeen": "المشاهدات",
+    "recentReviewsSection": "التقييمات الأخيرة",
+    "viewAll": "عرض الكل",
+    "emptyTitle": "لا توجد تقييمات بعد",
+    "emptyDescription": "لم تكتب أي تقييمات بعد. رأيك مهم!",
+    "writeReview": "اكتب تقييم"
+  },
+  "writeReview": {
+    "reviews": "تقييمات",
+    "tapToRate": "اضغط للتقييم",
+    "writeYourReview": "اكتب تقييمك",
+    "placeholder": "شارك تجربتك... ما الذي أعجبك؟ ما الذي يمكن تحسينه؟",
+    "addPhotos": "أضف صور",
+    "uploadPhotos": "ارفع صور أو فيديوهات",
+    "submit": "إرسال التقييم"
   },
   "feed": {
     "title": "الرئيسية",
@@ -244,6 +293,18 @@
     "errorEmpty": "يرجى إدخال عنوان بريد إلكتروني.",
     "errorInvalidEmail": "يرجى إدخال عنوان بريد إلكتروني صالح."
   },
+  "verifyAccount": {
+    "title": "تحقق من حسابك",
+    "subtitle": "أكمل ملفك الشخصي للوصول إلى جميع الميزات",
+    "fullName": "الاسم الكامل",
+    "fullNamePlaceholder": "فلان الفلاني",
+    "phoneNumber": "رقم الهاتف",
+    "phonePlaceholder": "00 000 000",
+    "phoneHelper": "يرجى التحقق من رقم هاتفك قبل الإرسال.",
+    "uploadCin": "تحميل بطاقة الهوية",
+    "selectFile": "اختر ملف",
+    "submit": "إرسال"
+  },
   "changePassword": {
     "title": "تغيير كلمة المرور",
     "description": "أنشئ كلمة مرور قوية للحفاظ على أمان حسابك.",
@@ -283,6 +344,49 @@
       "changeRole": "تغيير الدور",
       "roleUpdated": "تم تحديث الدور بنجاح",
       "roleUpdateFailed": "فشل تحديث الدور"
+    },
+    "globalInsights": {
+      "title": "الرؤى العالمية",
+      "searchPlaceholder": "ابحث في الرؤى...",
+      "company": "شركة",
+      "moderator": "مشرف",
+      "global": "عالمي",
+      "appDownloads": "تحميلات التطبيق",
+      "activeUsers": "المستخدمون النشطون",
+      "adRevenue": "إيرادات الإعلانات",
+      "retentionRate": "معدل الاحتفاظ",
+      "totalProfileVisits": "إجمالي زيارات الملف",
+      "viewedCompanies": "الشركات المعروضة",
+      "activeSubs": "الاشتراكات النشطة",
+      "promotedAds": "الإعلانات المُروّجة",
+      "globalGrowth": "النمو العالمي",
+      "viewReport": "عرض التقرير",
+      "topCompanies": "أفضل 5 شركات",
+      "seeAll": "عرض الكل",
+      "userActivity": "نشاط المستخدمين",
+      "dailyMau": "يومي",
+      "weeklyMau": "أسبوعي",
+      "monthlyMau": "شهري",
+      "yearlyYau": "سنوي",
+      "avgSessionTime": "متوسط مدة الجلسة",
+      "searchTerms": "أكثر مصطلحات البحث شيوعاً",
+      "reviewsSentiment": "المراجعات والمشاعر",
+      "totalReviews": "إجمالي المراجعات",
+      "flagged": "مُبلّغ عنها",
+      "positive": "إيجابي",
+      "neutral": "محايد",
+      "negative": "سلبي",
+      "moreDetails": "مزيد من التفاصيل",
+      "systemHealth": "صحة النظام",
+      "pendingApprovals": "الموافقات المعلقة",
+      "moderationBacklog": "تراكم الإشراف",
+      "reportedIssues": "المشاكل المُبلّغ عنها",
+      "conversionMetrics": "مقاييس التحويل",
+      "profileToContact": "الملف إلى جهة اتصال",
+      "freeToPremium": "مجاني إلى مميز",
+      "geographicalInsights": "الرؤى الجغرافية",
+      "topRegions": "أهم المناطق",
+      "distributionByGov": "التوزيع حسب الولاية"
     }
   },
   "moderator": {
@@ -342,6 +446,32 @@
       "all": "الكل",
       "editProfile": "تعديل الملف",
       "saveChanges": "حفظ التغييرات"
+    },
+    "insights": {
+      "title": "الذكاء المالي",
+      "searchPlaceholder": "ابحث في الرؤى المالية...",
+      "overview": "نظرة عامة",
+      "profile": "الملف الشخصي",
+      "financial": "المالية",
+      "reviews": "المراجعات",
+      "financialMoney": "الأموال المالية",
+      "downloadReport": "تحميل التقرير",
+      "totalRevenue": "إجمالي الإيرادات",
+      "subs": "الاشتراكات",
+      "boosts": "التعزيزات",
+      "refunds": "المبالغ المستردة",
+      "numbersData": "بيانات الأرقام",
+      "subscriptionHealth": "صحة الاشتراكات",
+      "days30": "30 يوم",
+      "monthly": "شهري",
+      "yearly": "سنوي",
+      "boostIntelligence": "ذكاء التعزيز",
+      "topKeywords": "أهم الكلمات المفتاحية",
+      "views": "مشاهدات",
+      "conversionFunnel": "قمع التحويل",
+      "impressions": "الانطباعات",
+      "clicks": "النقرات",
+      "paymentMethods": "طرق الدفع"
     }
   },
   "businessDetail": {
@@ -378,5 +508,92 @@
     "review": "مراجعة",
     "removeSuccess": "تم الحذف من قائمة الأمنيات",
     "removeError": "فشل حذف العنصر"
+  },
+  "locationSearch": {
+    "title": "البحث عن موقع",
+    "searchPlaceholder": "ابحث عن موقع...",
+    "currentLocation": "الموقع الحالي",
+    "usingGPS": "باستخدام GPS",
+    "recentSearches": "عمليات البحث الأخيرة",
+    "clearAll": "مسح الكل"
+  },
+  "accountSwitcher": {
+    "title": "اختر حساب",
+    "subtitle": "إدارة ملفاتك الشخصية والتجارية",
+    "userAccounts": "حسابات المستخدمين",
+    "businessAccounts": "حسابات الأعمال",
+    "addAccount": "إضافة حساب آخر"
+  },
+  "sortBy": {
+    "title": "ترتيب حسب",
+    "recommended": "موصى به",
+    "highestRated": "الأعلى تقييماً",
+    "mostReviewed": "الأكثر مراجعة",
+    "nearest": "الأقرب إلي",
+    "apply": "تطبيق الفلاتر"
+  },
+  "filterBy": {
+    "title": "تصفية حسب",
+    "reset": "إعادة تعيين",
+    "location": "الموقع",
+    "categories": "الفئات",
+    "minRating": "الحد الأدنى للتقييم",
+    "apply": "تطبيق الفلاتر"
+  },
+  "noResults": {
+    "title": "عفواً! لم يتم العثور على نتائج",
+    "description": "يبدو أن النشاط التجاري الذي تبحث عنه غير موجود في قاعدة بياناتنا بعد.",
+    "addNew": "أضف واحداً جديداً"
+  },
+  "boostManagement": {
+    "title": "التعزيز والعروض الترويجية",
+    "boost": "التعزيز",
+    "subscription": "الاشتراك",
+    "sortBy": "ترتيب حسب",
+    "dateRange": "نطاق التاريخ",
+    "filter": "تصفية",
+    "active": "نشط",
+    "pending": "معلق",
+    "packages": "الباقات",
+    "history": "السجل",
+    "expired": "منتهي",
+    "plans": "الخطط",
+    "revenue": "الإيرادات",
+    "overview": "نظرة عامة",
+    "liveBoosts": "التعزيزات النشطة",
+    "requests": "الطلبات",
+    "adRevenue": "إيرادات الإعلانات",
+    "activeCampaigns": "الحملات النشطة",
+    "manageCampaign": "إدارة الحملة",
+    "totalActiveSubs": "إجمالي الاشتراكات النشطة",
+    "expiringSoon": "تنتهي قريباً",
+    "monthlyRevenue": "الإيرادات الشهرية",
+    "activeSubscriptions": "الاشتراكات النشطة",
+    "managePlan": "إدارة الخطة",
+    "renewSubscription": "تجديد الاشتراك"
+  },
+  "menuItemDetail": {
+    "ingredients": "المكونات"
+  },
+  "subCategory": {
+    "searchBusinesses": "ابحث في {{category}}...",
+    "searchDoctors": "ابحث عن أطباء، عيادات...",
+    "all": "الكل",
+    "open": "مفتوح",
+    "closed": "مغلق",
+    "reviews": "مراجعات",
+    "km": "كم"
+  },
+  "verification": {
+    "otpTitle": "يرجى التحقق من حسابك",
+    "otpSubtitle": "أدخل الرمز المرسل إلى رقم هاتفك",
+    "verify": "تحقق",
+    "didntReceive": "لم تستلم الرمز؟",
+    "resend": "إعادة الإرسال",
+    "otpInputLabel": "رقم التحقق {{index}}",
+    "successMessage": "لقد استلمنا بيانات الاتصال الخاصة بك:",
+    "changeDetails": "تغيير بياناتك",
+    "contactNotice": "سنتواصل معك على رقم الهاتف المقدم خلال 72 ساعة.",
+    "close": "إغلاق"
   }
 }

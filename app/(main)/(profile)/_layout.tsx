@@ -11,6 +11,8 @@ export default function ProfileLayout() {
       <Stack.Screen name="change-password" />
       <Stack.Screen name="add-email-for-password" />
       <Stack.Screen name="confirm-password-email" />
+      <Stack.Screen name="verify-account" />
+      <Stack.Screen name="account-switcher" />
     </Stack>
   );
 }

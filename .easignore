@@ -1,0 +1,37 @@
+node_modules/
+.expo/
+.expo-shared/
+dist/
+npm-debug.*
+*.jks
+*.p8
+*.p12
+*.key
+*.mobileprovision
+*.orig.*
+web-build/
+
+# macOS
+.DS_Store
+
+# Environment
+.env
+.env.local
+.env.production
+
+# Firebase — allow GoogleService-Info.plist and google-services.json for EAS builds
+serviceAccountKey.json
+firebase-debug.log
+.firebase/
+
+# EAS
+*.ipa
+*.apk
+*.aab
+play-store-key.json
+
+# Maestro
+e2e/.maestro/
+
+expo-env.d.ts
+.idea/

@@ -111,7 +111,7 @@ export default function ProfileScreen() {
               iconName="shield-check"
               iconColor="green"
               label="Verify account"
-              onPress={() => router.push('/(main)/(profile)/personal-info')}
+              onPress={() => router.push('/(main)/(profile)/verify-account')}
             />
             <SettingRow
               iconName="lock-reset"

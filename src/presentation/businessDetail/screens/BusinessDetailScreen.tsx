@@ -44,7 +44,10 @@ export default function BusinessDetailScreen({ businessId }: BusinessDetailScree
   if (!business) return null;
 
   const handleAddReview = () => {
-    // TODO: Navigate to add review screen
+    router.push({
+      pathname: '/(main)/(feed)/write-review' as const,
+      params: { businessId: business.id, businessName: business.name },
+    } as never);
   };
 
   return (

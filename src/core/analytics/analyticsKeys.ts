@@ -9,6 +9,9 @@ export class AnalyticsScreens {
   static readonly HOME = 'home_screen';
   static readonly ALL_CATEGORIES = 'all_categories_screen';
   static readonly BUSINESS_DETAIL = 'business_detail_screen';
+  static readonly SUB_CATEGORY_BROWSER = 'sub_category_browser_screen';
+  static readonly ADD_BUSINESS = 'add_business_screen';
+  static readonly CATEGORY_SELECTION = 'category_selection_screen';
 
   // Profile
   static readonly PROFILE = 'profile_screen';
@@ -17,6 +20,7 @@ export class AnalyticsScreens {
   static readonly CHANGE_PASSWORD = 'change_password_screen';
   static readonly CONFIRM_PASSWORD_EMAIL = 'confirm_password_email_screen';
   static readonly ADD_EMAIL_FOR_PASSWORD = 'add_email_for_password_screen';
+  static readonly VERIFY_ACCOUNT = 'verify_account_screen';
 
   // Features
   static readonly WISHLIST = 'wishlist_screen';
@@ -24,11 +28,14 @@ export class AnalyticsScreens {
   static readonly FEED = 'feed_screen';
   static readonly NOTIFICATIONS = 'notifications_screen';
   static readonly MY_REVIEWS = 'my_reviews_screen';
+  static readonly WRITE_REVIEW = 'write_review_screen';
   static readonly SETTINGS = 'settings_screen';
 
   // Admin
   static readonly ADMIN_DASHBOARD = 'admin_dashboard_screen';
   static readonly ADMIN_USERS = 'admin_users_screen';
+  static readonly ADMIN_BOOST_MANAGEMENT = 'admin_boost_management_screen';
+  static readonly ADMIN_GLOBAL_INSIGHTS = 'admin_global_insights_screen';
 
   // Moderator
   static readonly MODERATOR_DASHBOARD = 'moderator_dashboard_screen';
@@ -37,6 +44,7 @@ export class AnalyticsScreens {
   static readonly BUSINESS_OWNER_HOME = 'business_owner_home_screen';
   static readonly COMPANY_PROFILE_EMPTY = 'company_profile_empty_screen';
   static readonly COMPANY_PROFILE_FULL = 'company_profile_full_screen';
+  static readonly BUSINESS_INSIGHTS = 'business_insights_screen';
 }
 
 // ── Event Names ──────────────────────────────────────────────────────────────

@@ -1,6 +1,7 @@
 {
   "expo": {
     "name": "ReviewHub",
-    "slug": "reviewhub"
+    "slug": "reviewhub",
+    "owner": "medhkims"
   }
 }
