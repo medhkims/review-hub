@@ -35,3 +35,15 @@ e2e/.maestro/
 
 expo-env.d.ts
 .idea/
+
+# Build artifacts — must not be uploaded to EAS
+android/app/build/
+android/.gradle/
+ios/Pods/
+ios/build/
+
+# Unnecessary for builds
+screensdesign/
+.git/
+.github/
+.claude/
