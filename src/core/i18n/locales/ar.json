@@ -140,6 +140,9 @@
     "businessesSection": "الأعمال",
     "seeAll": "عرض الكل",
     "noResults": "لم يتم العثور على أعمال",
+    "allBusinesses": "جميع الأعمال",
+    "sort": "ترتيب",
+    "filter": "تصفية",
     "errorLoading": "فشل تحميل الأعمال",
     "allCategories": {
       "title": "جميع الفئات",

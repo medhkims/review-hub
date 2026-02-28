@@ -12,6 +12,7 @@ export class AnalyticsScreens {
   static readonly SUB_CATEGORY_BROWSER = 'sub_category_browser_screen';
   static readonly ADD_BUSINESS = 'add_business_screen';
   static readonly CATEGORY_SELECTION = 'category_selection_screen';
+  static readonly ALL_BUSINESSES = 'all_businesses_screen';
 
   // Profile
   static readonly PROFILE = 'profile_screen';

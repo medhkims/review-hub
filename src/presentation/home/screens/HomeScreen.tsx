@@ -213,7 +213,11 @@ export default function HomeScreen() {
         >
           {t('home.newAddedSection')}
         </AppText>
-        <Pressable accessibilityLabel="See all new businesses" accessibilityRole="button">
+        <Pressable
+          onPress={() => router.push('/(main)/(feed)/all-businesses')}
+          accessibilityLabel="See all new businesses"
+          accessibilityRole="button"
+        >
           <AppText
             style={{ color: colors.neonPurple, fontSize: 14, fontWeight: '600' }}
           >
@@ -269,7 +273,11 @@ export default function HomeScreen() {
         >
           {t('home.businessesSection')}
         </AppText>
-        <Pressable accessibilityLabel="See all businesses" accessibilityRole="button">
+        <Pressable
+          onPress={() => router.push('/(main)/(feed)/all-businesses')}
+          accessibilityLabel="See all businesses"
+          accessibilityRole="button"
+        >
           <AppText
             style={{ color: colors.neonPurple, fontSize: 14, fontWeight: '600' }}
           >

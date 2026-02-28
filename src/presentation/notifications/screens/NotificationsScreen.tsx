@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useRef } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { View, FlatList, Pressable, Animated, RefreshControl } from 'react-native';
 import { useRouter } from 'expo-router';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
@@ -24,6 +24,17 @@ function getRelativeTime(date: Date): string {
   if (days < 7) return `${days}d ago`;
   return date.toLocaleDateString();
 }
+
+function isToday(date: Date): boolean {
+  const now = new Date();
+  return (
+    date.getDate() === now.getDate() &&
+    date.getMonth() === now.getMonth() &&
+    date.getFullYear() === now.getFullYear()
+  );
+}
+
+type TabFilter = 'all' | 'unread';
 
 // -- Type config --------------------------------------------------------------
 
@@ -134,6 +145,74 @@ const PulseDot: React.FC<PulseDotProps> = ({ color }) => {
   );
 };
 
+// -- Tab Toggle ---------------------------------------------------------------
+
+interface TabToggleProps {
+  activeTab: TabFilter;
+  onTabChange: (tab: TabFilter) => void;
+}
+
+const TabToggle: React.FC<TabToggleProps> = ({ activeTab, onTabChange }) => (
+  <View
+    style={{
+      flexDirection: 'row',
+      marginHorizontal: 24,
+      marginTop: 12,
+      marginBottom: 16,
+      borderRadius: 28,
+      backgroundColor: colors.cardDark,
+      padding: 4,
+      borderWidth: 1,
+      borderColor: colors.borderDark,
+    }}
+  >
+    <Pressable
+      onPress={() => onTabChange('all')}
+      style={{
+        flex: 1,
+        paddingVertical: 10,
+        borderRadius: 24,
+        backgroundColor: activeTab === 'all' ? colors.neonPurple : 'transparent',
+        alignItems: 'center',
+      }}
+      accessibilityLabel="Show all notifications"
+      accessibilityRole="tab"
+    >
+      <AppText
+        style={{
+          fontSize: 14,
+          fontWeight: '600',
+          color: activeTab === 'all' ? colors.textWhite : colors.textSlate400,
+        }}
+      >
+        All
+      </AppText>
+    </Pressable>
+    <Pressable
+      onPress={() => onTabChange('unread')}
+      style={{
+        flex: 1,
+        paddingVertical: 10,
+        borderRadius: 24,
+        backgroundColor: activeTab === 'unread' ? colors.neonPurple : 'transparent',
+        alignItems: 'center',
+      }}
+      accessibilityLabel="Show unread notifications"
+      accessibilityRole="tab"
+    >
+      <AppText
+        style={{
+          fontSize: 14,
+          fontWeight: '600',
+          color: activeTab === 'unread' ? colors.textWhite : colors.textSlate400,
+        }}
+      >
+        Unread
+      </AppText>
+    </Pressable>
+  </View>
+);
+
 // -- Notification Row ---------------------------------------------------------
 
 interface NotificationRowProps {
@@ -156,7 +235,7 @@ const NotificationRow: React.FC<NotificationRowProps> = React.memo(
         onPress={handlePress}
         style={{
           position: 'relative',
-          backgroundColor: isUnread ? colors.cardDark : colors.cardDark,
+          backgroundColor: colors.cardDark,
           opacity: isUnread ? 1 : 0.6,
           padding: 16,
           borderRadius: 24,
@@ -242,6 +321,58 @@ const NotificationRow: React.FC<NotificationRowProps> = React.memo(
 
 NotificationRow.displayName = 'NotificationRow';
 
+// -- Section Header -----------------------------------------------------------
+
+interface SectionGroupHeaderProps {
+  title: string;
+  showMarkAllRead?: boolean;
+  onMarkAllRead?: () => void;
+}
+
+const SectionGroupHeader: React.FC<SectionGroupHeaderProps> = ({
+  title,
+  showMarkAllRead,
+  onMarkAllRead,
+}) => (
+  <View
+    style={{
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      alignItems: 'center',
+      marginBottom: 12,
+      marginTop: 4,
+    }}
+  >
+    <AppText
+      style={{
+        fontSize: 14,
+        fontWeight: '700',
+        color: colors.textSlate400,
+        letterSpacing: 0.5,
+      }}
+    >
+      {title}
+    </AppText>
+    {showMarkAllRead && onMarkAllRead && (
+      <Pressable
+        onPress={onMarkAllRead}
+        accessibilityLabel="Mark all as read"
+        accessibilityRole="button"
+      >
+        <AppText
+          style={{
+            fontSize: 13,
+            fontWeight: '600',
+            color: colors.neonPurple,
+          }}
+        >
+          Mark all as read
+        </AppText>
+      </Pressable>
+    )}
+  </View>
+);
+
 // -- Empty State --------------------------------------------------------------
 
 const EmptyState: React.FC = () => (
@@ -270,10 +401,18 @@ const EmptyState: React.FC = () => (
   </View>
 );
 
+// -- Section List Item Type ---------------------------------------------------
+
+type ListItem =
+  | { type: 'section_header'; title: string; showMarkAllRead: boolean }
+  | { type: 'notification'; data: NotificationEntity };
+
 // -- Screen -------------------------------------------------------------------
 
 export default function NotificationsScreen() {
   const router = useRouter();
+  const [activeTab, setActiveTab] = useState<TabFilter>('all');
+
   const {
     notifications,
     unreadCount,
@@ -284,12 +423,48 @@ export default function NotificationsScreen() {
     refresh,
   } = useNotifications();
 
+  const filteredNotifications = useMemo(() => {
+    if (activeTab === 'unread') {
+      return notifications.filter((n) => !n.isRead);
+    }
+    return notifications;
+  }, [notifications, activeTab]);
+
+  // Group into Today / Earlier sections
+  const sectionedData = useMemo((): ListItem[] => {
+    const todayItems = filteredNotifications.filter((n) => isToday(n.createdAt));
+    const earlierItems = filteredNotifications.filter((n) => !isToday(n.createdAt));
+
+    const result: ListItem[] = [];
+
+    if (todayItems.length > 0) {
+      result.push({ type: 'section_header', title: 'TODAY', showMarkAllRead: unreadCount > 0 });
+      todayItems.forEach((n) => result.push({ type: 'notification', data: n }));
+    }
+
+    if (earlierItems.length > 0) {
+      result.push({
+        type: 'section_header',
+        title: 'EARLIER',
+        showMarkAllRead: todayItems.length === 0 && unreadCount > 0,
+      });
+      earlierItems.forEach((n) => result.push({ type: 'notification', data: n }));
+    }
+
+    // If no grouping possible (all items either today or earlier only), show with mark all read on first header
+    if (result.length === 0 && filteredNotifications.length > 0) {
+      result.push({ type: 'section_header', title: 'TODAY', showMarkAllRead: unreadCount > 0 });
+      filteredNotifications.forEach((n) => result.push({ type: 'notification', data: n }));
+    }
+
+    return result;
+  }, [filteredNotifications, unreadCount]);
+
   const handleNotificationPress = useCallback(
     (notification: NotificationEntity) => {
       if (!notification.isRead) {
         markAsRead(notification.id);
       }
-      // Navigate to reference if applicable
       if (notification.referenceId && notification.referenceType === 'business') {
         router.push(`/(main)/(feed)/business/${notification.referenceId}`);
       }
@@ -298,18 +473,32 @@ export default function NotificationsScreen() {
   );
 
   const keyExtractor = useCallback(
-    (item: NotificationEntity) => item.id,
+    (item: ListItem, index: number) => {
+      if (item.type === 'section_header') return `header_${item.title}_${index}`;
+      return item.data.id;
+    },
     [],
   );
 
   const renderItem = useCallback(
-    ({ item }: { item: NotificationEntity }) => (
-      <NotificationRow
-        notification={item}
-        onPress={handleNotificationPress}
-      />
-    ),
-    [handleNotificationPress],
+    ({ item }: { item: ListItem }) => {
+      if (item.type === 'section_header') {
+        return (
+          <SectionGroupHeader
+            title={item.title}
+            showMarkAllRead={item.showMarkAllRead}
+            onMarkAllRead={markAllAsRead}
+          />
+        );
+      }
+      return (
+        <NotificationRow
+          notification={item.data}
+          onPress={handleNotificationPress}
+        />
+      );
+    },
+    [handleNotificationPress, markAllAsRead],
   );
 
   if (isLoading && notifications.length === 0) {
@@ -371,39 +560,35 @@ export default function NotificationsScreen() {
           Notifications
         </AppText>
 
-        {unreadCount > 0 ? (
-          <Pressable
-            onPress={markAllAsRead}
-            style={{
-              paddingHorizontal: 8,
-              paddingVertical: 4,
-            }}
-            accessibilityLabel="Mark all as read"
-            accessibilityRole="button"
-          >
-            <AppText
-              style={{
-                fontSize: 12,
-                fontWeight: '500',
-                color: colors.neonPurple,
-              }}
-            >
-              Mark all read
-            </AppText>
-          </Pressable>
-        ) : (
-          <View style={{ width: 40 }} />
-        )}
+        <Pressable
+          style={{
+            width: 40,
+            height: 40,
+            borderRadius: 20,
+            alignItems: 'center',
+            justifyContent: 'center',
+          }}
+          accessibilityLabel="More options"
+          accessibilityRole="button"
+        >
+          <MaterialCommunityIcons
+            name="dots-horizontal"
+            size={24}
+            color={colors.textSlate400}
+          />
+        </Pressable>
       </View>
+
+      {/* All / Unread Toggle */}
+      <TabToggle activeTab={activeTab} onTabChange={setActiveTab} />
 
       {/* Notification List */}
       <FlatList
-        data={notifications}
+        data={sectionedData}
         keyExtractor={keyExtractor}
         renderItem={renderItem}
         contentContainerStyle={{
           paddingHorizontal: 24,
-          paddingTop: 16,
           paddingBottom: 100,
           flexGrow: 1,
         }}

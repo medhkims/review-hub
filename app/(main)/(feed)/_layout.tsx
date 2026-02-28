@@ -14,6 +14,7 @@ export default function FeedLayout() {
       <Stack.Screen name="category-selection" />
       <Stack.Screen name="sub-category" />
       <Stack.Screen name="business-insights" />
+      <Stack.Screen name="all-businesses" />
     </Stack>
   );
 }

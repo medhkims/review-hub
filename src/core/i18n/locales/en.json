@@ -140,6 +140,9 @@
     "businessesSection": "Businesses",
     "seeAll": "See All",
     "noResults": "No businesses found",
+    "allBusinesses": "All Businesses",
+    "sort": "Sort",
+    "filter": "Filter",
     "errorLoading": "Failed to load businesses",
     "allCategories": {
       "title": "All Categories",
