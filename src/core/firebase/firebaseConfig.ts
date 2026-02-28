@@ -6,8 +6,8 @@ import {
 } from 'firebase/firestore';
 import {
   initializeAuth,
+  getAuth,
   getReactNativePersistence,
-  browserLocalPersistence,
 } from 'firebase/auth';
 import { getStorage } from 'firebase/storage';
 import { getFunctions } from 'firebase/functions';
@@ -40,12 +40,13 @@ export const firestore = initializeFirestore(app, {
   }),
 });
 
-// Initialize Auth with platform-appropriate persistence
-export const auth = initializeAuth(app, {
-  persistence: Platform.OS === 'web'
-    ? browserLocalPersistence
-    : getReactNativePersistence(AsyncStorage),
-});
+// Initialize Auth — getAuth on web (includes popup resolver automatically),
+// initializeAuth on native (sets AsyncStorage persistence for offline support)
+export const auth = isWeb
+  ? getAuth(app)
+  : initializeAuth(app, {
+      persistence: getReactNativePersistence(AsyncStorage),
+    });
 
 // Initialize Storage
 export const storage = getStorage(app);

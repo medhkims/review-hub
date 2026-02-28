@@ -13,26 +13,8 @@ import { useHomeStore } from '../store/homeStore';
 import { useHome } from '../hooks/useHome';
 import { CategoryEntity } from '@/domain/business/entities/categoryEntity';
 
-// ── Icon Mapping ────────────────────────────────────────────────────────────
-
-const CATEGORY_ICON_MAP: Record<string, keyof typeof MaterialCommunityIcons.glyphMap> = {
-  restaurants: 'silverware-fork-knife',
-  gyms: 'dumbbell',
-  coffeeshops: 'coffee',
-  beauty_spa: 'spa',
-  automotive: 'car',
-  electronics: 'laptop',
-  hotels: 'bed',
-  entertainment: 'party-popper',
-  pharmacy: 'pill',
-  real_estate: 'home-city',
-  education: 'school',
-  legal: 'gavel',
-  fashion: 'hanger',
-};
-
 const getIconForCategory = (category: CategoryEntity): keyof typeof MaterialCommunityIcons.glyphMap => {
-  return CATEGORY_ICON_MAP[category.id] ?? (category.icon as keyof typeof MaterialCommunityIcons.glyphMap) ?? 'tag-outline';
+  return (category.icon as keyof typeof MaterialCommunityIcons.glyphMap) ?? 'tag-outline';
 };
 
 interface CategoryItem {
@@ -194,11 +176,18 @@ export default function CategorySelectionScreen() {
   }, []);
 
   const handleFilter = useCallback(() => {
-    // Apply first selected category as filter (or clear if none)
     const firstSelected = Array.from(selectedIds)[0] ?? null;
     selectCategory(firstSelected);
-    router.back();
-  }, [router, selectedIds, selectCategory]);
+    if (firstSelected) {
+      const selectedCategory = categoryItems.find((cat) => cat.id === firstSelected);
+      router.push({
+        pathname: '/(main)/(feed)/sub-category',
+        params: { categoryId: firstSelected, categoryName: selectedCategory?.name ?? firstSelected },
+      });
+    } else {
+      router.back();
+    }
+  }, [router, selectedIds, selectCategory, categoryItems]);
 
   const handleBack = useCallback(() => {
     router.back();

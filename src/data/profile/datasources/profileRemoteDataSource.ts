@@ -1,5 +1,5 @@
 import { firestore, auth } from '@/core/firebase/firebaseConfig';
-import { doc, getDoc, updateDoc, serverTimestamp } from 'firebase/firestore';
+import { doc, getDoc, setDoc, serverTimestamp } from 'firebase/firestore';
 import { updateEmail as firebaseUpdateEmail } from 'firebase/auth';
 import { ProfileModel } from '../models/profileModel';
 import { ServerException, AuthException } from '@/core/error/exceptions';
@@ -40,7 +40,7 @@ export class ProfileRemoteDataSourceImpl implements ProfileRemoteDataSource {
         updated_at: serverTimestamp(),
       };
 
-      await updateDoc(profileRef, updateData);
+      await setDoc(profileRef, updateData, { merge: true });
 
       // Fetch and return the updated profile
       return this.getProfile(userId);

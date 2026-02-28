@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useEffect } from 'react';
+import React, { useState, useCallback, useEffect, useMemo } from 'react';
 import { View, ScrollView, TextInput, Pressable, Alert } from 'react-native';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
@@ -10,14 +10,15 @@ import { Card } from '@/presentation/shared/components/ui/Card';
 import { useAnalyticsScreen } from '@/presentation/shared/hooks/useAnalyticsScreen';
 import { AnalyticsScreens } from '@/core/analytics/analyticsKeys';
 import { colors } from '@/core/theme/colors';
+import { CATEGORY_MAP, RatingCriterionDef } from '@/core/constants/categoriesData';
 import { useWriteReview } from '../hooks/useWriteReview';
 
 const MAX_CHARS = 500;
 
-const CATEGORIES = [
-  { key: 'cooking', label: 'Cooking', icon: 'silverware-fork-knife' as const },
-  { key: 'cleanliness', label: 'Cleanliness', icon: 'broom' as const },
-  { key: 'service', label: 'Service', icon: 'shield-account' as const },
+const FALLBACK_CRITERIA: RatingCriterionDef[] = [
+  { key: 'service', label: 'Service', icon: 'shield-account' },
+  { key: 'quality', label: 'Quality', icon: 'star-check' },
+  { key: 'cleanliness', label: 'Cleanliness', icon: 'broom' },
 ];
 
 type RatingsState = Record<string, number>;
@@ -53,7 +54,11 @@ export default function WriteReviewScreen() {
   useAnalyticsScreen(AnalyticsScreens.WRITE_REVIEW);
   const router = useRouter();
   const { t } = useTranslation();
-  const { businessId, businessName } = useLocalSearchParams<{ businessId: string; businessName: string }>();
+  const { businessId, businessName, categoryId } = useLocalSearchParams<{
+    businessId: string;
+    businessName: string;
+    categoryId?: string;
+  }>();
 
   const resolvedBusinessId = businessId ?? '';
   const resolvedBusinessName = businessName ?? 'Business';
@@ -61,7 +66,17 @@ export default function WriteReviewScreen() {
   const { isSubmitting, submitSuccess, error, submitReview, reset } =
     useWriteReview(resolvedBusinessId, resolvedBusinessName);
 
-  const [ratings, setRatings] = useState<RatingsState>({ cooking: 0, cleanliness: 0, service: 0 });
+  const ratingCriteria = useMemo<RatingCriterionDef[]>(() => {
+    if (!categoryId) return FALLBACK_CRITERIA;
+    return CATEGORY_MAP[categoryId]?.ratingCriteria ?? FALLBACK_CRITERIA;
+  }, [categoryId]);
+
+  const initialRatings = useMemo<RatingsState>(
+    () => Object.fromEntries(ratingCriteria.map((c) => [c.key, 0])),
+    [ratingCriteria],
+  );
+
+  const [ratings, setRatings] = useState<RatingsState>(initialRatings);
   const [reviewText, setReviewText] = useState('');
 
   const handleRate = useCallback((key: string, val: number) => {
@@ -141,15 +156,15 @@ export default function WriteReviewScreen() {
           </AppText>
         </View>
 
-        {/* Rating Categories */}
+        {/* Rating Criteria */}
         <View style={{ paddingHorizontal: 20, marginBottom: 24 }}>
           <Card style={{ backgroundColor: colors.cardDark, borderRadius: 16, padding: 20 }}>
-            {CATEGORIES.map((cat, idx) => (
+            {ratingCriteria.map((criterion, idx) => (
               <View
-                key={cat.key}
+                key={criterion.key}
                 style={{
                   flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
-                  paddingVertical: 14, borderBottomWidth: idx < CATEGORIES.length - 1 ? 1 : 0,
+                  paddingVertical: 14, borderBottomWidth: idx < ratingCriteria.length - 1 ? 1 : 0,
                   borderBottomColor: colors.borderDark,
                 }}
               >
@@ -158,20 +173,24 @@ export default function WriteReviewScreen() {
                     width: 36, height: 36, borderRadius: 18, backgroundColor: `${colors.neonPurple}15`,
                     alignItems: 'center', justifyContent: 'center',
                   }}>
-                    <MaterialCommunityIcons name={cat.icon} size={18} color={colors.neonPurple} />
+                    <MaterialCommunityIcons
+                      name={criterion.icon as React.ComponentProps<typeof MaterialCommunityIcons>['name']}
+                      size={18}
+                      color={colors.neonPurple}
+                    />
                   </View>
                   <View>
                     <AppText style={{ fontSize: 15, fontWeight: '600', color: colors.textWhite }}>
-                      {cat.label}
+                      {criterion.label}
                     </AppText>
-                    {ratings[cat.key] === 0 && (
+                    {ratings[criterion.key] === 0 && (
                       <AppText style={{ fontSize: 11, color: colors.textSlate400, marginTop: 2 }}>
                         {t('writeReview.tapToRate')}
                       </AppText>
                     )}
                   </View>
                 </View>
-                <StarRating rating={ratings[cat.key] ?? 0} onRate={(v) => handleRate(cat.key, v)} />
+                <StarRating rating={ratings[criterion.key] ?? 0} onRate={(v) => handleRate(criterion.key, v)} />
               </View>
             ))}
           </Card>

@@ -37,6 +37,7 @@ export interface UpdateBusinessData {
 
 export interface BusinessRemoteDataSource {
   getFeaturedBusinesses(): Promise<BusinessModel[]>;
+  getNewBusinesses(): Promise<BusinessModel[]>;
   getBusinessesByCategory(categoryId: string): Promise<BusinessModel[]>;
   searchBusinesses(queryStr: string): Promise<BusinessModel[]>;
   getUserFavoriteIds(userId: string): Promise<string[]>;
@@ -67,6 +68,21 @@ export class BusinessRemoteDataSourceImpl implements BusinessRemoteDataSource {
       return snapshot.docs.map((d) => ({ id: d.id, ...d.data() } as BusinessModel));
     } catch (error: unknown) {
       const message = error instanceof Error ? error.message : 'Failed to fetch featured businesses';
+      throw new ServerException(message);
+    }
+  }
+
+  async getNewBusinesses(): Promise<BusinessModel[]> {
+    try {
+      const q = query(
+        collection(firestore, this.BUSINESSES),
+        orderBy('created_at', 'desc'),
+        limit(10)
+      );
+      const snapshot = await getDocs(q);
+      return snapshot.docs.map((d) => ({ id: d.id, ...d.data() } as BusinessModel));
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : 'Failed to fetch new businesses';
       throw new ServerException(message);
     }
   }

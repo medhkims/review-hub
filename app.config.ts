@@ -31,6 +31,7 @@ export default ({ config }: ConfigContext): ExpoConfig => {
       'expo-router',
       'expo-asset',
       'expo-font',
+      '@react-native-google-signin/google-signin',
     ],
     experiments: {
       typedRoutes: true,

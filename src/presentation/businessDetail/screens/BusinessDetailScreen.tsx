@@ -46,7 +46,11 @@ export default function BusinessDetailScreen({ businessId }: BusinessDetailScree
   const handleAddReview = () => {
     router.push({
       pathname: '/(main)/(feed)/write-review' as const,
-      params: { businessId: business.id, businessName: business.name },
+      params: {
+        businessId: business.id,
+        businessName: business.name,
+        categoryId: business.categoryId,
+      },
     } as never);
   };
 

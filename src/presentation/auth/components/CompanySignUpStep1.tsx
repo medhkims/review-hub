@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import { View, Pressable, TextInput, Platform } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useTranslation } from 'react-i18next';
@@ -6,6 +6,7 @@ import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { AppText } from '@/presentation/shared/components/ui/AppText';
 import { AppButton } from '@/presentation/shared/components/ui/AppButton';
 import { colors } from '@/core/theme/colors';
+import { CATEGORIES_DATA } from '@/core/constants/categoriesData';
 
 interface CompanySignUpStep1Props {
   onNext: (data: CompanyStep1Data) => void;
@@ -280,37 +281,17 @@ const Divider: React.FC = () => (
   />
 );
 
-// --- Constants ---
+// --- Constants derived from canonical category data ---
 
-const CATEGORIES = [
-  { label: 'Technology', value: 'tech' },
-  { label: 'Retail', value: 'retail' },
-  { label: 'Food & Beverage', value: 'food' },
-  { label: 'Services', value: 'services' },
-];
+const CATEGORY_OPTIONS = CATEGORIES_DATA.map((c) => ({ label: c.name, value: c.id }));
 
-const SUB_CATEGORIES: Record<string, { label: string; value: string }[]> = {
-  tech: [
-    { label: 'Software Development', value: 'software' },
-    { label: 'Hardware Repair', value: 'hardware' },
-    { label: 'IT Consulting', value: 'it_consulting' },
-  ],
-  retail: [
-    { label: 'Clothing', value: 'clothing' },
-    { label: 'Electronics', value: 'electronics' },
-    { label: 'Grocery', value: 'grocery' },
-  ],
-  food: [
-    { label: 'Restaurant', value: 'restaurant' },
-    { label: 'Cafe', value: 'cafe' },
-    { label: 'Catering', value: 'catering' },
-  ],
-  services: [
-    { label: 'Consulting', value: 'consulting' },
-    { label: 'Legal', value: 'legal' },
-    { label: 'Marketing', value: 'marketing' },
-  ],
-};
+const SUB_CATEGORY_OPTIONS: Record<string, { label: string; value: string }[]> =
+  Object.fromEntries(
+    CATEGORIES_DATA.map((c) => [
+      c.id,
+      c.subcategories.map((s) => ({ label: s.name, value: s.id })),
+    ]),
+  );
 
 // --- Main Component ---
 
@@ -330,7 +311,10 @@ export const CompanySignUpStep1: React.FC<CompanySignUpStep1Props> = ({
   const [confirmPassword, setConfirmPassword] = useState('');
   const [formError, setFormError] = useState<string | null>(null);
 
-  const availableSubCategories = category ? SUB_CATEGORIES[category] || [] : [];
+  const availableSubCategories = useMemo(
+    () => (category ? SUB_CATEGORY_OPTIONS[category] ?? [] : []),
+    [category],
+  );
 
   const handleNext = () => {
     setFormError(null);
@@ -487,7 +471,7 @@ export const CompanySignUpStep1: React.FC<CompanySignUpStep1Props> = ({
             label="Category"
             placeholder="Select industry"
             value={category}
-            options={CATEGORIES}
+            options={CATEGORY_OPTIONS}
             onSelect={(val) => {
               setCategory(val);
               setSubCategory('');

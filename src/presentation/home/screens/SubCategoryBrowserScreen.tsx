@@ -1,5 +1,13 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
-import { View, FlatList, TextInput, Pressable, Image, RefreshControl } from 'react-native';
+import {
+  View,
+  FlatList,
+  TextInput,
+  Pressable,
+  Image,
+  RefreshControl,
+  ScrollView,
+} from 'react-native';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
@@ -12,6 +20,7 @@ import { AnalyticsScreens } from '@/core/analytics/analyticsKeys';
 import { colors } from '@/core/theme/colors';
 import { container } from '@/core/di/container';
 import { useAuthStore } from '@/presentation/auth/store/authStore';
+import { useHomeStore } from '../store/homeStore';
 import { BusinessEntity } from '@/domain/business/entities/businessEntity';
 
 // ── Helper ───────────────────────────────────────────────────────────────────
@@ -20,17 +29,52 @@ const getCategoryDisplayName = (categoryId: string): string => {
   return categoryId.charAt(0).toUpperCase() + categoryId.slice(1);
 };
 
-// ── Business Card ────────────────────────────────────────────────────────────
+// ── Sub-Category Tab ──────────────────────────────────────────────────────────
+
+interface SubCategoryTabProps {
+  label: string;
+  isSelected: boolean;
+  onPress: () => void;
+}
+
+const SubCategoryTab: React.FC<SubCategoryTabProps> = ({ label, isSelected, onPress }) => (
+  <Pressable
+    onPress={onPress}
+    style={({ pressed }) => ({
+      paddingHorizontal: 18,
+      paddingVertical: 9,
+      borderRadius: 20,
+      backgroundColor: isSelected ? colors.neonPurple : colors.cardDark,
+      borderWidth: 1,
+      borderColor: isSelected ? colors.neonPurple : colors.borderDark,
+      marginRight: 10,
+      opacity: pressed ? 0.8 : 1,
+    })}
+    accessibilityRole="button"
+    accessibilityLabel={label}
+  >
+    <AppText
+      style={{
+        fontSize: 14,
+        fontWeight: isSelected ? '600' : '400',
+        color: isSelected ? colors.white : colors.textSlate400,
+      }}
+    >
+      {label}
+    </AppText>
+  </Pressable>
+);
+
+// ── Business Card ─────────────────────────────────────────────────────────────
 
 interface BusinessCardProps {
   item: BusinessEntity;
   onPress: (id: string) => void;
   onFavorite: (id: string) => void;
-  reviewsLabel: string;
 }
 
 const BusinessCard: React.FC<BusinessCardProps> = React.memo(
-  ({ item, onPress, onFavorite, reviewsLabel }) => {
+  ({ item, onPress, onFavorite }) => {
     const handlePress = useCallback(() => onPress(item.id), [item.id, onPress]);
     const handleFavorite = useCallback(() => onFavorite(item.id), [item.id, onFavorite]);
 
@@ -38,112 +82,113 @@ const BusinessCard: React.FC<BusinessCardProps> = React.memo(
       <Pressable
         onPress={handlePress}
         style={({ pressed }) => ({
-          marginBottom: 16,
+          marginBottom: 14,
           borderRadius: 16,
           backgroundColor: colors.cardDark,
           overflow: 'hidden',
           opacity: pressed ? 0.9 : 1,
+          flexDirection: 'row',
+          alignItems: 'center',
+          padding: 14,
         })}
         accessibilityLabel={item.name}
         accessibilityRole="button"
       >
-        {/* Cover Image */}
-        <View
-          style={{
-            height: 160,
-            backgroundColor: colors.borderDark,
-            alignItems: 'center',
-            justifyContent: 'center',
-          }}
-        >
-          {item.coverImageUrl ? (
-            <Image
-              source={{ uri: item.coverImageUrl }}
-              style={{ width: '100%', height: '100%' }}
-              accessibilityLabel={item.name}
-            />
-          ) : (
-            <MaterialCommunityIcons
-              name="image-outline"
-              size={48}
-              color={colors.textSlate500}
-            />
-          )}
-
-          {/* Favorite button */}
-          <Pressable
-            onPress={handleFavorite}
-            style={({ pressed }) => ({
-              position: 'absolute',
-              top: 12,
-              right: 12,
-              width: 36,
-              height: 36,
-              borderRadius: 18,
-              backgroundColor: pressed ? 'rgba(0,0,0,0.6)' : 'rgba(0,0,0,0.4)',
+        {/* Avatar / Cover Image */}
+        <View style={{ position: 'relative', marginRight: 14 }}>
+          <View
+            style={{
+              width: 72,
+              height: 72,
+              borderRadius: 36,
+              backgroundColor: colors.borderDark,
               alignItems: 'center',
               justifyContent: 'center',
-            })}
-            accessibilityLabel={`Favorite ${item.name}`}
-            accessibilityRole="button"
+              overflow: 'hidden',
+            }}
           >
-            <MaterialCommunityIcons
-              name={item.isFavorite ? 'heart' : 'heart-outline'}
-              size={20}
-              color={item.isFavorite ? colors.neonPurple : colors.white}
-            />
-          </Pressable>
+            {item.coverImageUrl ? (
+              <Image
+                source={{ uri: item.coverImageUrl }}
+                style={{ width: '100%', height: '100%' }}
+                accessibilityLabel={item.name}
+              />
+            ) : (
+              <MaterialCommunityIcons name="store" size={32} color={colors.textSlate500} />
+            )}
+          </View>
+
+          {/* Rating Badge */}
+          <View
+            style={{
+              position: 'absolute',
+              bottom: 0,
+              left: -2,
+              flexDirection: 'row',
+              alignItems: 'center',
+              backgroundColor: colors.neonPurple,
+              borderRadius: 10,
+              paddingHorizontal: 5,
+              paddingVertical: 2,
+            }}
+          >
+            <MaterialCommunityIcons name="star" size={10} color={colors.white} />
+            <AppText
+              style={{ fontSize: 10, fontWeight: '700', color: colors.white, marginLeft: 2 }}
+            >
+              {item.rating.toFixed(1)}
+            </AppText>
+          </View>
         </View>
 
-        {/* Card Content */}
-        <View style={{ padding: 14 }}>
+        {/* Info */}
+        <View style={{ flex: 1 }}>
           <AppText
-            style={{ fontSize: 17, fontWeight: '700', color: colors.white, marginBottom: 6 }}
+            style={{ fontSize: 16, fontWeight: '700', color: colors.white, marginBottom: 3 }}
             numberOfLines={1}
           >
             {item.name}
           </AppText>
-
-          <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 6 }}>
+          <AppText
+            style={{ fontSize: 13, color: colors.neonPurple, fontWeight: '500', marginBottom: 6 }}
+            numberOfLines={1}
+          >
+            {item.categoryName}
+          </AppText>
+          <View style={{ flexDirection: 'row', alignItems: 'center' }}>
             <MaterialCommunityIcons
               name="map-marker-outline"
-              size={14}
+              size={13}
               color={colors.textSlate400}
             />
             <AppText
-              style={{ fontSize: 13, color: colors.textSlate400, marginLeft: 4 }}
+              style={{ fontSize: 12, color: colors.textSlate400, marginLeft: 3 }}
               numberOfLines={1}
             >
               {item.location}
             </AppText>
           </View>
-
-          <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-            <MaterialCommunityIcons
-              name="star"
-              size={14}
-              color={colors.ratingGold}
-            />
-            <AppText style={{ fontSize: 13, color: colors.white, marginLeft: 4, fontWeight: '600' }}>
-              {item.rating.toFixed(1)}
-            </AppText>
-            <AppText style={{ fontSize: 13, color: colors.textSlate400, marginLeft: 4 }}>
-              {item.reviewCount}+ {reviewsLabel}
-            </AppText>
-            <View
-              style={{
-                width: 3,
-                height: 3,
-                borderRadius: 1.5,
-                backgroundColor: colors.textSlate500,
-                marginHorizontal: 8,
-              }}
-            />
-            <AppText style={{ fontSize: 13, color: colors.neonPurple, fontWeight: '500' }}>
-              {item.categoryName}
-            </AppText>
-          </View>
         </View>
+
+        {/* Favorite Button */}
+        <Pressable
+          onPress={handleFavorite}
+          style={({ pressed }) => ({
+            width: 36,
+            height: 36,
+            alignItems: 'center',
+            justifyContent: 'center',
+            opacity: pressed ? 0.7 : 1,
+          })}
+          accessibilityLabel={`Favorite ${item.name}`}
+          accessibilityRole="button"
+        >
+          <MaterialCommunityIcons
+            name={item.isFavorite ? 'heart' : 'heart-outline'}
+            size={22}
+            color={item.isFavorite ? colors.neonPurple : colors.textSlate400}
+          />
+        </Pressable>
       </Pressable>
     );
   },
@@ -151,17 +196,21 @@ const BusinessCard: React.FC<BusinessCardProps> = React.memo(
 
 BusinessCard.displayName = 'BusinessCard';
 
-
-// ── Main Screen ──────────────────────────────────────────────────────────────
+// ── Main Screen ───────────────────────────────────────────────────────────────
 
 export default function SubCategoryBrowserScreen() {
   useAnalyticsScreen(AnalyticsScreens.SUB_CATEGORY_BROWSER);
   const { t } = useTranslation();
   const router = useRouter();
   const { user } = useAuthStore();
-  const { categoryId, categoryName } = useLocalSearchParams<{ categoryId: string; categoryName?: string }>();
+  const { categoryId, categoryName } = useLocalSearchParams<{
+    categoryId: string;
+    categoryName?: string;
+  }>();
 
-  const resolvedCategoryId = categoryId ?? 'restaurants';
+  const { categories: storeCategories } = useHomeStore();
+
+  const resolvedCategoryId = categoryId ?? 'restaurant';
   const categoryDisplayName = categoryName ?? getCategoryDisplayName(resolvedCategoryId);
 
   const [businesses, setBusinesses] = useState<BusinessEntity[]>([]);
@@ -169,6 +218,7 @@ export default function SubCategoryBrowserScreen() {
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
+  const [selectedSubCategory, setSelectedSubCategory] = useState<string | null>(null);
 
   const loadBusinesses = useCallback(async () => {
     setError(null);
@@ -190,11 +240,23 @@ export default function SubCategoryBrowserScreen() {
     loadBusinesses();
   }, [loadBusinesses]);
 
+  // Use subcategories from the category entity definition (not derived from business data)
+  const subCategories = useMemo(() => {
+    const cat = storeCategories.find((c) => c.id === resolvedCategoryId);
+    return cat?.subcategories ?? [];
+  }, [storeCategories, resolvedCategoryId]);
+
   const filteredData = useMemo(() => {
-    if (!searchQuery.trim()) return businesses;
-    const query = searchQuery.toLowerCase();
-    return businesses.filter((b) => b.name.toLowerCase().includes(query));
-  }, [businesses, searchQuery]);
+    let data = businesses;
+    if (selectedSubCategory) {
+      data = data.filter((b) => b.categoryName === selectedSubCategory);
+    }
+    if (searchQuery.trim()) {
+      const query = searchQuery.toLowerCase();
+      data = data.filter((b) => b.name.toLowerCase().includes(query));
+    }
+    return data;
+  }, [businesses, selectedSubCategory, searchQuery]);
 
   const handleBack = useCallback(() => {
     router.back();
@@ -207,68 +269,47 @@ export default function SubCategoryBrowserScreen() {
     [router],
   );
 
-  const handleFavorite = useCallback(async (businessId: string) => {
-    if (!user) return;
-    const result = await container.toggleFavoriteUseCase.execute(businessId, user.id);
-    result.fold(
-      () => {},
-      (isFavorite) => {
-        setBusinesses((prev) =>
-          prev.map((b) => (b.id === businessId ? { ...b, isFavorite } : b)),
-        );
-      },
-    );
-  }, [user]);
+  const handleFavorite = useCallback(
+    async (businessId: string) => {
+      if (!user) return;
+      const result = await container.toggleFavoriteUseCase.execute(businessId, user.id);
+      result.fold(
+        () => {},
+        (isFavorite) => {
+          setBusinesses((prev) =>
+            prev.map((b) => (b.id === businessId ? { ...b, isFavorite } : b)),
+          );
+        },
+      );
+    },
+    [user],
+  );
 
-  const searchPlaceholder = t('subCategory.searchBusinesses', { category: categoryDisplayName.toLowerCase() });
+  const searchPlaceholder = t('subCategory.searchBusinesses', {
+    category: categoryDisplayName.toLowerCase(),
+  });
 
   const renderItem = useCallback(
     ({ item }: { item: BusinessEntity }) => (
-      <BusinessCard
-        item={item}
-        onPress={handleItemPress}
-        onFavorite={handleFavorite}
-        reviewsLabel={t('subCategory.reviews')}
-      />
+      <BusinessCard item={item} onPress={handleItemPress} onFavorite={handleFavorite} />
     ),
-    [handleItemPress, handleFavorite, t],
+    [handleItemPress, handleFavorite],
   );
 
   const keyExtractor = useCallback((item: BusinessEntity) => item.id, []);
 
-  if (isLoading && businesses.length === 0) {
-    return (
-      <ScreenLayout>
-        <View style={{ flexDirection: 'row', alignItems: 'center', paddingHorizontal: 24, paddingTop: 8, paddingBottom: 12 }}>
-          <Pressable onPress={handleBack} style={{ width: 40, height: 40, borderRadius: 20, backgroundColor: 'rgba(30,41,59,0.5)', alignItems: 'center', justifyContent: 'center' }} accessibilityLabel={t('common.back')} accessibilityRole="button">
-            <MaterialCommunityIcons name="chevron-left" size={28} color={colors.white} />
-          </Pressable>
-          <AppText style={{ fontSize: 20, fontWeight: '700', color: colors.white, flex: 1, marginLeft: 16 }}>{categoryDisplayName}</AppText>
-        </View>
-        <LoadingIndicator />
-      </ScreenLayout>
-    );
-  }
+  const emptyMessage = selectedSubCategory
+    ? t('subCategory.emptySubCategory', {
+        subCategory: selectedSubCategory,
+        category: categoryDisplayName,
+      })
+    : t('subCategory.emptyCategory', { category: categoryDisplayName });
 
-  if (error && businesses.length === 0) {
-    return (
-      <ScreenLayout>
-        <View style={{ flexDirection: 'row', alignItems: 'center', paddingHorizontal: 24, paddingTop: 8, paddingBottom: 12 }}>
-          <Pressable onPress={handleBack} style={{ width: 40, height: 40, borderRadius: 20, backgroundColor: 'rgba(30,41,59,0.5)', alignItems: 'center', justifyContent: 'center' }} accessibilityLabel={t('common.back')} accessibilityRole="button">
-            <MaterialCommunityIcons name="chevron-left" size={28} color={colors.white} />
-          </Pressable>
-          <AppText style={{ fontSize: 20, fontWeight: '700', color: colors.white, flex: 1, marginLeft: 16 }}>{categoryDisplayName}</AppText>
-        </View>
-        <View style={{ flex: 1, justifyContent: 'center' }}>
-          <ErrorView message={error} onRetry={loadBusinesses} />
-        </View>
-      </ScreenLayout>
-    );
-  }
+  // ── Shared Header ──────────────────────────────────────────────────────────
 
-  return (
-    <ScreenLayout>
-      {/* Header */}
+  const renderHeader = () => (
+    <>
+      {/* Title Row */}
       <View
         style={{
           flexDirection: 'row',
@@ -291,11 +332,7 @@ export default function SubCategoryBrowserScreen() {
           accessibilityLabel={t('common.back')}
           accessibilityRole="button"
         >
-          <MaterialCommunityIcons
-            name="chevron-left"
-            size={28}
-            color={colors.white}
-          />
+          <MaterialCommunityIcons name="chevron-left" size={28} color={colors.white} />
         </Pressable>
         <AppText
           style={{
@@ -394,11 +431,64 @@ export default function SubCategoryBrowserScreen() {
         </View>
       </View>
 
-      {/* List */}
+      {/* Sub-Category Tabs — shown whenever the category has defined subcategories */}
+      {subCategories.length > 0 && (
+        <ScrollView
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          style={{ flexGrow: 0 }}
+          contentContainerStyle={{ paddingHorizontal: 24, paddingBottom: 14, alignItems: 'center' }}
+        >
+          <SubCategoryTab
+            label={t('subCategory.all')}
+            isSelected={selectedSubCategory === null}
+            onPress={() => setSelectedSubCategory(null)}
+          />
+          {subCategories.map((sub) => (
+            <SubCategoryTab
+              key={sub.id}
+              label={sub.name}
+              isSelected={selectedSubCategory === sub.name}
+              onPress={() => setSelectedSubCategory(sub.name)}
+            />
+          ))}
+        </ScrollView>
+      )}
+    </>
+  );
+
+  // ── Loading / Error states ─────────────────────────────────────────────────
+
+  if (isLoading && businesses.length === 0) {
+    return (
+      <ScreenLayout>
+        {renderHeader()}
+        <LoadingIndicator />
+      </ScreenLayout>
+    );
+  }
+
+  if (error && businesses.length === 0) {
+    return (
+      <ScreenLayout>
+        {renderHeader()}
+        <View style={{ flex: 1, justifyContent: 'center' }}>
+          <ErrorView message={error} onRetry={loadBusinesses} />
+        </View>
+      </ScreenLayout>
+    );
+  }
+
+  // ── Main Content ───────────────────────────────────────────────────────────
+
+  return (
+    <ScreenLayout>
+      {renderHeader()}
       <FlatList
         data={filteredData}
         renderItem={renderItem}
         keyExtractor={keyExtractor}
+        style={{ flex: 1 }}
         contentContainerStyle={{ paddingHorizontal: 24, paddingBottom: 100 }}
         showsVerticalScrollIndicator={false}
         refreshControl={
@@ -413,11 +503,19 @@ export default function SubCategoryBrowserScreen() {
           <View style={{ paddingVertical: 60, alignItems: 'center' }}>
             <MaterialCommunityIcons
               name="store-search-outline"
-              size={48}
+              size={52}
               color={colors.textSlate500}
             />
-            <AppText style={{ color: colors.textSlate500, fontSize: 16, marginTop: 16 }}>
-              {t('home.noResults')}
+            <AppText
+              style={{
+                color: colors.textSlate400,
+                fontSize: 16,
+                fontWeight: '600',
+                marginTop: 16,
+                textAlign: 'center',
+              }}
+            >
+              {emptyMessage}
             </AppText>
           </View>
         }

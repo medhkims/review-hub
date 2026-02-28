@@ -17,6 +17,7 @@ export interface RegisterBusinessParams {
 
 export interface BusinessRepository {
   getFeaturedBusinesses(): Promise<Either<Failure, BusinessEntity[]>>;
+  getNewBusinesses(): Promise<Either<Failure, BusinessEntity[]>>;
   getBusinessesByCategory(categoryId: string): Promise<Either<Failure, BusinessEntity[]>>;
   searchBusinesses(query: string): Promise<Either<Failure, BusinessEntity[]>>;
   toggleFavorite(businessId: string, userId: string): Promise<Either<Failure, boolean>>;

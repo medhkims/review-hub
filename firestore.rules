@@ -167,6 +167,11 @@ service cloud.firestore {
     match /categories/{categoryId} {
       allow read: if isAuthenticated();
       allow write: if false;
+
+      match /subcategories/{subcategoryId} {
+        allow read: if isAuthenticated();
+        allow write: if false;
+      }
     }
 
     // ========================================

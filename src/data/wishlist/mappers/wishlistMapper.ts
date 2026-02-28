@@ -12,7 +12,7 @@ export class WishlistMapper {
       rating: model.rating,
       reviewCount: model.review_count,
       location: model.location,
-      addedAt: model.added_at.toDate(),
+      addedAt: model.added_at?.toDate() ?? new Date(),
     };
   }
 }

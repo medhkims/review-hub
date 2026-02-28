@@ -1,6 +1,7 @@
 import { storage } from '@/core/firebase/firebaseConfig';
 import { ref, uploadBytesResumable, getDownloadURL, deleteObject } from 'firebase/storage';
 import { ServerException } from '@/core/error/exceptions';
+import { Platform } from 'react-native';
 
 export interface UploadProgressCallback {
   (progress: number): void;
@@ -26,14 +27,26 @@ export class AvatarRemoteDataSourceImpl implements AvatarRemoteDataSource {
     onProgress?: UploadProgressCallback,
   ): Promise<string> {
     try {
-      // Fetch the image as a blob
-      const response = await fetch(imageUri);
-      if (!response.ok) {
-        throw new ServerException('Failed to read image file');
+      // Web: fetch() works fine with blob: URLs from expo-image-picker.
+      // Native: fetch() hangs on local file:// URIs; use XHR + ArrayBuffer instead
+      //         because React Native's Blob polyfill is incompatible with Firebase Storage.
+      let uploadData: Uint8Array | Blob;
+      if (Platform.OS === 'web') {
+        const response = await fetch(imageUri);
+        if (!response.ok) throw new ServerException('Failed to read image file');
+        uploadData = await response.blob();
+      } else {
+        const arrayBuffer = await new Promise<ArrayBuffer>((resolve, reject) => {
+          const xhr = new XMLHttpRequest();
+          xhr.onload = () => resolve(xhr.response as ArrayBuffer);
+          xhr.onerror = () => reject(new ServerException('Failed to read image file'));
+          xhr.responseType = 'arraybuffer';
+          xhr.open('GET', imageUri, true);
+          xhr.send(null);
+        });
+        uploadData = new Uint8Array(arrayBuffer);
       }
-
-      const blob = await response.blob();
-      const contentType = mimeType || blob.type || 'image/jpeg';
+      const contentType = mimeType || 'image/jpeg';
       const extension = contentType.split('/')[1] || 'jpg';
 
       // Create a unique filename with timestamp
@@ -43,7 +56,7 @@ export class AvatarRemoteDataSourceImpl implements AvatarRemoteDataSource {
 
       // Upload with progress tracking
       return new Promise((resolve, reject) => {
-        const uploadTask = uploadBytesResumable(storageRef, blob, {
+        const uploadTask = uploadBytesResumable(storageRef, uploadData, {
           contentType,
         });
 

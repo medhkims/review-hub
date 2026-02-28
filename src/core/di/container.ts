@@ -96,6 +96,7 @@ import { CategoryRemoteDataSourceImpl } from '@/data/business/datasources/catego
 import { BusinessRepositoryImpl } from '@/data/business/repositories/businessRepositoryImpl';
 import { CategoryRepositoryImpl } from '@/data/business/repositories/categoryRepositoryImpl';
 import { GetFeaturedBusinessesUseCase } from '@/domain/business/usecases/getFeaturedBusinessesUseCase';
+import { GetNewBusinessesUseCase } from '@/domain/business/usecases/getNewBusinessesUseCase';
 import { GetCategoriesUseCase } from '@/domain/business/usecases/getCategoriesUseCase';
 import { SearchBusinessesUseCase } from '@/domain/business/usecases/searchBusinessesUseCase';
 import { ToggleFavoriteUseCase } from '@/domain/business/usecases/toggleFavoriteUseCase';
@@ -113,6 +114,7 @@ const businessRepository = new BusinessRepositoryImpl(businessRemoteDataSource, 
 const categoryRepository = new CategoryRepositoryImpl(categoryRemoteDataSource);
 
 const getFeaturedBusinessesUseCase = new GetFeaturedBusinessesUseCase(businessRepository);
+const getNewBusinessesUseCase = new GetNewBusinessesUseCase(businessRepository);
 const getCategoriesUseCase = new GetCategoriesUseCase(categoryRepository);
 const searchBusinessesUseCase = new SearchBusinessesUseCase(businessRepository);
 const toggleFavoriteUseCase = new ToggleFavoriteUseCase(businessRepository);
@@ -205,6 +207,7 @@ export const container = {
   removeFromWishlistUseCase,
   // Business use cases
   getFeaturedBusinessesUseCase,
+  getNewBusinessesUseCase,
   getCategoriesUseCase,
   searchBusinessesUseCase,
   toggleFavoriteUseCase,

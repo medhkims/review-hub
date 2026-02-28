@@ -113,7 +113,7 @@ export default function PersonalInfoScreen() {
     if (result.canceled || !result.assets[0]) return;
 
     const asset = result.assets[0];
-    await uploadAvatar(user.id, asset.uri, asset.type || 'image/jpeg');
+    await uploadAvatar(user.id, asset.uri, asset.mimeType || 'image/jpeg');
   }, [user, uploadAvatar]);
 
   const getInitials = (name: string) => {

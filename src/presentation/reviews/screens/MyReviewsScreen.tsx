@@ -32,34 +32,9 @@ interface ReviewStats {
   seen: number;
 }
 
-const MOCK_STATS: ReviewStats = { reviews: 12, likes: 48, seen: 1200 };
+const MOCK_STATS: ReviewStats = { reviews: 0, likes: 0, seen: 0 };
 
-const MOCK_REVIEWS: ReviewItem[] = [
-  {
-    id: '1',
-    businessName: 'Pasta Cosi',
-    businessCategory: 'Italian',
-    businessLocation: 'Lac 2, Tunis',
-    rating: 5,
-    text: 'Absolutely loved the carbonara! Authentic taste and the ambiance was perfect for a date night. Highly...',
-    timeAgo: '2 days ago',
-    hearts: 15,
-    views: 120,
-    businessImage: null,
-  },
-  {
-    id: '2',
-    businessName: 'Gourmet Store',
-    businessCategory: 'Grocery',
-    businessLocation: 'Marsa',
-    rating: 3,
-    text: 'Decent selection but prices are quite high compared to alternatives.',
-    timeAgo: '1 week ago',
-    hearts: 5,
-    views: 45,
-    businessImage: null,
-  },
-];
+const MOCK_REVIEWS: ReviewItem[] = [];
 
 const NEON_PURPLE = colors.neonPurple;
 const SLATE_600 = '#475569';
@@ -320,40 +295,46 @@ const EmptyState = () => {
   const { t } = useTranslation();
 
   return (
-    <View
+    <Card
       style={{
-        flex: 1,
         alignItems: 'center',
-        justifyContent: 'center',
         paddingHorizontal: 32,
-        paddingVertical: 64,
+        paddingVertical: 40,
+        marginBottom: 12,
       }}
     >
       <View
         style={{
-          width: 80,
-          height: 80,
-          borderRadius: 40,
-          backgroundColor: `${NEON_PURPLE}15`,
+          width: 72,
+          height: 72,
+          borderRadius: 36,
+          backgroundColor: `${NEON_PURPLE}20`,
+          borderWidth: 1,
+          borderColor: `${NEON_PURPLE}40`,
           alignItems: 'center',
           justifyContent: 'center',
-          marginBottom: 20,
+          marginBottom: 16,
+          shadowColor: NEON_PURPLE,
+          shadowOffset: { width: 0, height: 0 },
+          shadowOpacity: 0.4,
+          shadowRadius: 12,
+          elevation: 6,
         }}
       >
         <MaterialCommunityIcons
-          name="silverware-fork-knife"
-          size={36}
-          color={colors.textSlate500}
+          name="star-outline"
+          size={32}
+          color={NEON_PURPLE}
         />
       </View>
 
       <AppText
         style={{
-          fontSize: 18,
+          fontSize: 16,
           fontWeight: '700',
           color: colors.white,
           textAlign: 'center',
-          marginBottom: 8,
+          marginBottom: 6,
         }}
       >
         {t('myReviews.emptyTitle')}
@@ -361,11 +342,11 @@ const EmptyState = () => {
 
       <AppText
         style={{
-          fontSize: 14,
+          fontSize: 13,
           color: colors.textSlate400,
           textAlign: 'center',
-          lineHeight: 20,
-          marginBottom: 24,
+          lineHeight: 19,
+          marginBottom: 20,
         }}
       >
         {t('myReviews.emptyDescription')}
@@ -374,13 +355,13 @@ const EmptyState = () => {
       <AppButton
         title={t('myReviews.writeReview')}
         variant="primary"
-        size="lg"
+        size="md"
         shape="pill"
         accessibilityLabel="Write a review"
         accessibilityRole="button"
-        style={{ minWidth: 180 }}
+        style={{ minWidth: 160 }}
       />
-    </View>
+    </Card>
   );
 };
 

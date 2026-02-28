@@ -55,6 +55,39 @@ export class BusinessRepositoryImpl implements BusinessRepository {
     }
   }
 
+  async getNewBusinesses(): Promise<Either<Failure, BusinessEntity[]>> {
+    const isOnline = await this.network.isConnected();
+
+    try {
+      if (isOnline) {
+        const models = await this.remote.getNewBusinesses();
+        const userId = auth.currentUser?.uid;
+        const favoriteIds = userId ? await this.remote.getUserFavoriteIds(userId) : [];
+        const entities = models.map((m) => BusinessMapper.toEntity(m, favoriteIds.includes(m.id)));
+        await this.local.cacheBusinesses('new', models).catch(() => {});
+        return right(entities);
+      } else {
+        const cached = await this.local.getCachedBusinesses('new');
+        if (!cached) {
+          return left(new NetworkFailure('No internet connection and no cached data available'));
+        }
+        return right(cached.map((m) => BusinessMapper.toEntity(m, false)));
+      }
+    } catch (error) {
+      if (error instanceof ServerException) {
+        return left(new ServerFailure(error.message));
+      }
+      if (error instanceof NetworkException) {
+        const cached = await this.local.getCachedBusinesses('new').catch(() => null);
+        if (cached) {
+          return right(cached.map((m) => BusinessMapper.toEntity(m, false)));
+        }
+        return left(new NetworkFailure(error.message));
+      }
+      return left(new ServerFailure('An unexpected error occurred'));
+    }
+  }
+
   async getBusinessesByCategory(categoryId: string): Promise<Either<Failure, BusinessEntity[]>> {
     const isOnline = await this.network.isConnected();
     const cacheKey = `category_${categoryId}`;

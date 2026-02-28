@@ -28,9 +28,13 @@ export default function AllCategoriesScreen() {
   const handleCategoryPress = useCallback(
     (categoryId: string) => {
       selectCategory(categoryId);
-      router.back();
+      const category = categories.find((c) => c.id === categoryId);
+      router.push({
+        pathname: '/(main)/(feed)/sub-category',
+        params: { categoryId, categoryName: category?.name ?? categoryId },
+      });
     },
-    [selectCategory, router],
+    [selectCategory, router, categories],
   );
 
   const handleBack = useCallback(() => {

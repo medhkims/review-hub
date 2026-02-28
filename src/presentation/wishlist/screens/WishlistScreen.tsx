@@ -149,9 +149,9 @@ export default function WishlistScreen() {
     [user?.id, removeFromWishlist]
   );
 
-  const handleReview = useCallback((_item: WishlistItemEntity) => {
-    // TODO: navigate to place details / review screen when available
-  }, []);
+  const handleReview = useCallback((item: WishlistItemEntity) => {
+    router.push(`/(main)/(feed)/business/${item.placeId}`);
+  }, [router]);
 
   const renderItem = useCallback(
     ({ item }: ListRenderItemInfo<WishlistItemEntity>) => (

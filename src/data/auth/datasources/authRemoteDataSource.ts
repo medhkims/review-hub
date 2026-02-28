@@ -8,9 +8,12 @@ import {
   reauthenticateWithCredential,
   EmailAuthProvider,
   GoogleAuthProvider,
-  getRedirectResult,
-  signInWithRedirect,
+  signInWithCredential,
+  signInWithPopup,
 } from 'firebase/auth';
+import { User as FirebaseUser } from 'firebase/auth';
+import { GoogleSignin, isSuccessResponse, isErrorWithCode, statusCodes } from '@react-native-google-signin/google-signin';
+import { Platform } from 'react-native';
 import { doc, setDoc, getDoc, serverTimestamp } from 'firebase/firestore';
 import { UserModel } from '../models/userModel';
 import { UserMapper } from '../mappers/userMapper';
@@ -139,44 +142,58 @@ export class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
   }
 
   async signInWithGoogle(): Promise<UserModel> {
+    if (Platform.OS === 'web') {
+      return this._signInWithGoogleWeb();
+    }
+    return this._signInWithGoogleNative();
+  }
+
+  private async _signInWithGoogleWeb(): Promise<UserModel> {
     try {
       const googleProvider = new GoogleAuthProvider();
-      googleProvider.setCustomParameters({
-        prompt: 'select_account',
-      });
+      googleProvider.setCustomParameters({ prompt: 'select_account' });
+      const result = await signInWithPopup(auth, googleProvider);
+      return this._ensureProfileAndReturn(result.user);
+    } catch (error: unknown) {
+      const firebaseError = error as { message?: string; code?: string };
+      throw new AuthException(
+        firebaseError.message || 'Google sign in failed',
+        firebaseError.code
+      );
+    }
+  }
 
-      const result = await getRedirectResult(auth);
-
-      if (result && result.user) {
-        // Ensure profile document exists for Google sign-in users
-        const profileRef = doc(firestore, 'profiles', result.user.uid);
-        const profileSnap = await getDoc(profileRef);
-        if (!profileSnap.exists()) {
-          await setDoc(profileRef, {
-            id: result.user.uid,
-            user_id: result.user.uid,
-            display_name: result.user.displayName || 'Anonymous User',
-            email: result.user.email || '',
-            phone_number: result.user.phoneNumber || null,
-            bio: '',
-            avatar_url: result.user.photoURL || null,
-            followers_count: 0,
-            following_count: 0,
-            role: DEFAULT_ROLE,
-            created_at: serverTimestamp(),
-            updated_at: serverTimestamp(),
-          });
-        }
-        return UserMapper.fromFirebaseUser(result.user);
+  private async _signInWithGoogleNative(): Promise<UserModel> {
+    try {
+      if (Platform.OS === 'android') {
+        await GoogleSignin.hasPlayServices({ showPlayServicesUpdateDialog: true });
       }
 
-      await signInWithRedirect(auth, googleProvider);
+      const response = await GoogleSignin.signIn();
 
-      throw new AuthException('Redirecting to Google...');
+      if (!isSuccessResponse(response)) {
+        throw new AuthException('Google sign in was cancelled');
+      }
+
+      const idToken = response.data?.idToken;
+      if (!idToken) {
+        throw new AuthException('No ID token received from Google');
+      }
+
+      const credential = GoogleAuthProvider.credential(idToken);
+      const result = await signInWithCredential(auth, credential);
+      return this._ensureProfileAndReturn(result.user);
     } catch (error: unknown) {
       if (error instanceof AuthException) {
-        if (error.message === 'Redirecting to Google...') {
-          throw error;
+        throw error;
+      }
+      if (isErrorWithCode(error)) {
+        if (error.code === statusCodes.SIGN_IN_CANCELLED) {
+          throw new AuthException('Google sign in was cancelled');
+        } else if (error.code === statusCodes.IN_PROGRESS) {
+          throw new AuthException('Google sign in is already in progress');
+        } else if (error.code === statusCodes.PLAY_SERVICES_NOT_AVAILABLE) {
+          throw new AuthException('Google Play Services not available');
         }
       }
       const firebaseError = error as { message?: string; code?: string };
@@ -185,5 +202,27 @@ export class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
         firebaseError.code
       );
     }
+  }
+
+  private async _ensureProfileAndReturn(user: FirebaseUser): Promise<UserModel> {
+    const profileRef = doc(firestore, 'profiles', user.uid);
+    const profileSnap = await getDoc(profileRef);
+    if (!profileSnap.exists()) {
+      await setDoc(profileRef, {
+        id: user.uid,
+        user_id: user.uid,
+        display_name: user.displayName || 'Anonymous User',
+        email: user.email || '',
+        phone_number: user.phoneNumber || null,
+        bio: '',
+        avatar_url: user.photoURL || null,
+        followers_count: 0,
+        following_count: 0,
+        role: DEFAULT_ROLE,
+        created_at: serverTimestamp(),
+        updated_at: serverTimestamp(),
+      });
+    }
+    return UserMapper.fromFirebaseUser(user);
   }
 }

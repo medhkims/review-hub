@@ -7,20 +7,28 @@ import { BusinessEntity } from '@/domain/business/entities/businessEntity';
 import { AnalyticsHelper } from '@/core/analytics/analyticsHelper';
 import { AnalyticsEvents, AnalyticsParams } from '@/core/analytics/analyticsKeys';
 
+const MAX_RECENT_SEARCHES = 5;
+
 export const useHome = () => {
   const {
     businesses,
+    newBusinesses,
+    recentSearches,
     categories,
     selectedCategoryId,
     searchQuery,
     isLoading,
+    isNewBusinessesLoading,
     isCategoryLoading,
     error,
     setBusinesses,
+    setNewBusinesses,
+    setRecentSearches,
     setCategories,
     setSelectedCategoryId,
     setSearchQuery,
     setLoading,
+    setNewBusinessesLoading,
     setCategoryLoading,
     setError,
     updateBusinessFavorite,
@@ -38,6 +46,16 @@ export const useHome = () => {
     );
     setCategoryLoading(false);
   }, [setCategoryLoading, setError, setCategories]);
+
+  const loadNewBusinesses = useCallback(async () => {
+    setNewBusinessesLoading(true);
+    const result = await container.getNewBusinessesUseCase.execute();
+    result.fold(
+      (failure) => setError(failure.message),
+      (data) => setNewBusinesses(data),
+    );
+    setNewBusinessesLoading(false);
+  }, [setNewBusinessesLoading, setError, setNewBusinesses]);
 
   const loadFeaturedBusinesses = useCallback(async () => {
     setLoading(true);
@@ -72,6 +90,11 @@ export const useHome = () => {
     }
   }, [setSelectedCategoryId, loadBusinessesByCategory, loadFeaturedBusinesses]);
 
+  const addToRecentSearches = useCallback((results: BusinessEntity[]) => {
+    if (results.length === 0) return;
+    setRecentSearches(results.slice(0, MAX_RECENT_SEARCHES));
+  }, [setRecentSearches]);
+
   const search = useCallback((query: string) => {
     setSearchQuery(query);
     if (searchTimeoutRef.current) {
@@ -93,11 +116,14 @@ export const useHome = () => {
       const result = await container.searchBusinessesUseCase.execute(query);
       result.fold(
         (failure) => setError(failure.message),
-        (data) => setBusinesses(data),
+        (data) => {
+          setBusinesses(data);
+          addToRecentSearches(data);
+        },
       );
       setLoading(false);
     }, 500);
-  }, [selectedCategoryId, loadBusinessesByCategory, loadFeaturedBusinesses, setSearchQuery, setLoading, setError, setBusinesses]);
+  }, [selectedCategoryId, loadBusinessesByCategory, loadFeaturedBusinesses, setSearchQuery, setLoading, setError, setBusinesses, addToRecentSearches]);
 
   const toggleFavorite = useCallback(async (businessId: string) => {
     if (!user) return;
@@ -119,7 +145,6 @@ export const useHome = () => {
     const alreadySaved = isWishlisted(business.id);
 
     if (alreadySaved) {
-      // Remove: itemId == placeId (document ID = placeId)
       removeWishlistItem(business.id);
       AnalyticsHelper.sendEvent(AnalyticsEvents.REMOVE_FROM_WISHLIST, {
         [AnalyticsParams.BUSINESS_ID]: business.id,
@@ -150,15 +175,19 @@ export const useHome = () => {
 
   useEffect(() => {
     loadCategories();
+    loadNewBusinesses();
     loadFeaturedBusinesses();
-  }, [loadCategories, loadFeaturedBusinesses]);
+  }, [loadCategories, loadNewBusinesses, loadFeaturedBusinesses]);
 
   return {
     businesses,
+    newBusinesses,
+    recentSearches,
     categories,
     selectedCategoryId,
     searchQuery,
     isLoading,
+    isNewBusinessesLoading,
     isCategoryLoading,
     error,
     isWishlisted,
@@ -167,5 +196,6 @@ export const useHome = () => {
     toggleFavorite,
     toggleWishlist,
     refresh: loadFeaturedBusinesses,
+    refreshNewBusinesses: loadNewBusinesses,
   };
 };

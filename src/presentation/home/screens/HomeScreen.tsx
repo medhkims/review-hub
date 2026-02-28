@@ -23,13 +23,14 @@ export default function HomeScreen() {
 
   const {
     businesses,
+    newBusinesses,
+    recentSearches,
     categories,
-    selectedCategoryId,
     searchQuery,
     isLoading,
+    isNewBusinessesLoading,
     error,
     isWishlisted,
-    selectCategory,
     search,
     toggleFavorite,
     toggleWishlist,
@@ -63,24 +64,75 @@ export default function HomeScreen() {
     />
   ), [handleBusinessPress, toggleFavorite, toggleWishlist, isWishlisted]);
 
+  const renderCompactCard = useCallback(({ item }: { item: BusinessEntity }) => (
+    <Pressable
+      onPress={() => handleBusinessPress(item.id)}
+      accessibilityLabel={item.name}
+      accessibilityRole="button"
+      style={{
+        width: 160,
+        marginRight: 12,
+        borderRadius: 12,
+        backgroundColor: colors.cardBackground ?? '#1e1e2e',
+        overflow: 'hidden',
+      }}
+    >
+      {item.coverImageUrl ? (
+        // eslint-disable-next-line @typescript-eslint/no-var-requires
+        <View
+          style={{
+            width: '100%',
+            height: 90,
+            backgroundColor: colors.surface ?? '#2a2a3e',
+          }}
+        />
+      ) : (
+        <View
+          style={{
+            width: '100%',
+            height: 90,
+            backgroundColor: colors.surface ?? '#2a2a3e',
+            alignItems: 'center',
+            justifyContent: 'center',
+          }}
+        >
+          <AppText style={{ fontSize: 28 }}>🔍</AppText>
+        </View>
+      )}
+      <View style={{ padding: 8 }}>
+        <AppText
+          numberOfLines={1}
+          style={{ color: colors.white, fontSize: 13, fontWeight: '600' }}
+        >
+          {item.name}
+        </AppText>
+        <AppText
+          numberOfLines={1}
+          style={{ color: colors.textSlate400, fontSize: 11, marginTop: 2 }}
+        >
+          {item.categoryName}
+        </AppText>
+      </View>
+    </Pressable>
+  ), [handleBusinessPress]);
+
+  const renderRecentSearchCard = renderCompactCard;
+
   const keyExtractor = useCallback((item: BusinessEntity) => item.id, []);
 
   const ListHeader = useCallback(() => (
     <View>
       {/* Header */}
       <View
-        className="flex-row justify-between items-start px-6 pt-2 pb-4"
         style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start', paddingHorizontal: 24, paddingTop: 8, paddingBottom: 16 }}
       >
         <View style={{ flex: 1 }}>
           <AppText
-            className="text-3xl font-bold text-white tracking-tight"
             style={{ fontSize: 28, fontWeight: '700', color: colors.white, letterSpacing: -0.5 }}
           >
             {t('home.title')}
           </AppText>
           <AppText
-            className="text-slate-400 mt-1 text-sm font-medium"
             style={{ color: colors.textSlate400, marginTop: 4, fontSize: 14, fontWeight: '500' }}
           >
             {t('home.subtitle')}
@@ -101,7 +153,7 @@ export default function HomeScreen() {
       </View>
 
       {/* Search */}
-      <View className="px-6 pb-4" style={{ paddingHorizontal: 24, paddingBottom: 16 }}>
+      <View style={{ paddingHorizontal: 24, paddingBottom: 16 }}>
         <SearchBar
           value={searchQuery}
           onChangeText={search}
@@ -111,11 +163,9 @@ export default function HomeScreen() {
 
       {/* Categories Header */}
       <View
-        className="flex-row justify-between items-center px-6 pb-2"
         style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingHorizontal: 24, paddingBottom: 8 }}
       >
         <AppText
-          className="text-xl font-bold text-white"
           style={{ fontSize: 20, fontWeight: '700', color: colors.white }}
         >
           {t('home.categoriesSection')}
@@ -126,7 +176,6 @@ export default function HomeScreen() {
           accessibilityRole="button"
         >
           <AppText
-            className="text-neon-purple text-sm font-semibold"
             style={{ color: colors.neonPurple, fontSize: 14, fontWeight: '600' }}
           >
             {t('home.seeAll')}
@@ -144,28 +193,84 @@ export default function HomeScreen() {
         renderItem={({ item }) => (
           <CategoryChip
             category={item}
-            isSelected={selectedCategoryId === item.id}
-            onPress={() => selectCategory(
-              selectedCategoryId === item.id ? null : item.id
-            )}
+            isSelected={false}
+            onPress={() =>
+              router.push({
+                pathname: '/(main)/(feed)/sub-category',
+                params: { categoryId: item.id, categoryName: item.name },
+              })
+            }
           />
         )}
       />
 
-      {/* Featured Section Header */}
+      {/* New Added Businesses Section */}
       <View
-        className="flex-row justify-between items-center px-6 pt-4 pb-3"
+        style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingHorizontal: 24, paddingTop: 16, paddingBottom: 8 }}
+      >
+        <AppText
+          style={{ fontSize: 20, fontWeight: '700', color: colors.white }}
+        >
+          {t('home.newAddedSection')}
+        </AppText>
+        <Pressable accessibilityLabel="See all new businesses" accessibilityRole="button">
+          <AppText
+            style={{ color: colors.neonPurple, fontSize: 14, fontWeight: '600' }}
+          >
+            {t('home.seeAll')}
+          </AppText>
+        </Pressable>
+      </View>
+
+      {isNewBusinessesLoading ? (
+        <View style={{ paddingVertical: 20, alignItems: 'center' }}>
+          <ActivityIndicator size="small" color={colors.neonPurple} />
+        </View>
+      ) : (
+        <FlatList
+          data={newBusinesses}
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          contentContainerStyle={{ paddingHorizontal: 24, paddingBottom: 8 }}
+          keyExtractor={(item) => item.id}
+          renderItem={renderCompactCard}
+        />
+      )}
+
+      {/* Last Searches Section */}
+      {recentSearches.length > 0 && (
+        <>
+          <View
+            style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingHorizontal: 24, paddingTop: 16, paddingBottom: 8 }}
+          >
+            <AppText
+              style={{ fontSize: 20, fontWeight: '700', color: colors.white }}
+            >
+              {t('home.lastSearchesSection')}
+            </AppText>
+          </View>
+          <FlatList
+            data={recentSearches}
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            contentContainerStyle={{ paddingHorizontal: 24, paddingBottom: 8 }}
+            keyExtractor={(item) => `recent_${item.id}`}
+            renderItem={renderRecentSearchCard}
+          />
+        </>
+      )}
+
+      {/* Businesses Section Header */}
+      <View
         style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingHorizontal: 24, paddingTop: 16, paddingBottom: 12 }}
       >
         <AppText
-          className="text-xl font-bold text-white"
           style={{ fontSize: 20, fontWeight: '700', color: colors.white }}
         >
-          {selectedCategoryId ? t('home.businessesSection') : t('home.featuredSection')}
+          {t('home.businessesSection')}
         </AppText>
         <Pressable accessibilityLabel="See all businesses" accessibilityRole="button">
           <AppText
-            className="text-neon-purple text-sm font-semibold"
             style={{ color: colors.neonPurple, fontSize: 14, fontWeight: '600' }}
           >
             {t('home.seeAll')}
@@ -173,7 +278,7 @@ export default function HomeScreen() {
         </Pressable>
       </View>
     </View>
-  ), [t, user, searchQuery, search, categories, selectedCategoryId, selectCategory, handleAvatarPress]);
+  ), [t, user, searchQuery, search, categories, handleAvatarPress, router, newBusinesses, isNewBusinessesLoading, recentSearches, renderCompactCard]);
 
   const ListEmpty = useCallback(() => {
     if (isLoading) {
@@ -186,7 +291,6 @@ export default function HomeScreen() {
     return (
       <View style={{ paddingVertical: 40, alignItems: 'center' }}>
         <AppText
-          className="text-slate-500 text-base"
           style={{ color: colors.textSlate500, fontSize: 16 }}
         >
           {error || t('home.noResults')}
