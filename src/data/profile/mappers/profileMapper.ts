@@ -1,5 +1,5 @@
 import { ProfileModel } from '../models/profileModel';
-import { ProfileEntity } from '@/domain/profile/entities/profileEntity';
+import { ProfileEntity, Gender } from '@/domain/profile/entities/profileEntity';
 import { isValidRole, DEFAULT_ROLE } from '@/domain/profile/entities/userRole';
 import { Timestamp } from 'firebase/firestore';
 
@@ -16,6 +16,7 @@ export class ProfileMapper {
       followersCount: model.followers_count,
       followingCount: model.following_count,
       role: isValidRole(model.role) ? model.role : DEFAULT_ROLE,
+      gender: (model.gender === 'male' || model.gender === 'female') ? model.gender as Gender : null,
       updatedAt: model.updated_at.toDate(),
     };
   }
@@ -32,6 +33,7 @@ export class ProfileMapper {
       followers_count: entity.followersCount,
       following_count: entity.followingCount,
       role: entity.role,
+      gender: entity.gender,
     };
   }
 
@@ -46,6 +48,7 @@ export class ProfileMapper {
     if (updates.followersCount !== undefined) model.followers_count = updates.followersCount;
     if (updates.followingCount !== undefined) model.following_count = updates.followingCount;
     if (updates.role !== undefined) model.role = updates.role;
+    if (updates.gender !== undefined) model.gender = updates.gender;
 
     return model;
   }

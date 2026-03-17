@@ -1,43 +1,26 @@
-import { useCallback, useEffect } from 'react';
+import { useCallback } from 'react';
+import { useFocusEffect } from 'expo-router';
 import { useAdminStore } from '../store/adminStore';
-import { UserRole } from '@/domain/profile/entities/userRole';
-
-// Mock data for the dashboard until backend queries are implemented
-const MOCK_STATS = {
-  totalUsers: 156,
-  byRole: {
-    simple_user: 142,
-    business_owner: 10,
-    moderator: 3,
-    admin: 1,
-  },
-  recentSignups: [
-    { id: '1', name: 'Ahmed Ben Ali', email: 'ahmed@example.com', role: 'simple_user' as UserRole, date: '2 hours ago' },
-    { id: '2', name: 'Fatma Trabelsi', email: 'fatma@example.com', role: 'simple_user' as UserRole, date: '5 hours ago' },
-    { id: '3', name: 'Mohamed Souissi', email: 'mohamed@example.com', role: 'business_owner' as UserRole, date: '1 day ago' },
-  ],
-};
+import { container } from '@/core/di/container';
 
 export const useAdminDashboard = () => {
-  const { isLoading, error, setLoading, setTotalUsers } = useAdminStore();
+  const { stats, isLoading, error, setStats, setLoading, setError } = useAdminStore();
 
-  const loadDashboard = useCallback(async () => {
+  const load = useCallback(async () => {
     setLoading(true);
-    // TODO: Replace with real Firestore queries
-    setTotalUsers(MOCK_STATS.totalUsers);
+    const result = await container.getAdminDashboardStatsUseCase.execute();
+    result.fold(
+      (failure) => setError(failure.message),
+      (data) => setStats(data),
+    );
     setLoading(false);
-  }, []);
+  }, [setLoading, setError, setStats]);
 
-  useEffect(() => {
-    loadDashboard();
-  }, [loadDashboard]);
+  useFocusEffect(
+    useCallback(() => {
+      load();
+    }, [load]),
+  );
 
-  return {
-    totalUsers: MOCK_STATS.totalUsers,
-    usersByRole: MOCK_STATS.byRole,
-    recentSignups: MOCK_STATS.recentSignups,
-    isLoading,
-    error,
-    refresh: loadDashboard,
-  };
+  return { stats, isLoading, error, refresh: load };
 };

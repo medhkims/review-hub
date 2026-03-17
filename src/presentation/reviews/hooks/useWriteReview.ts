@@ -1,31 +1,56 @@
-import { useCallback } from 'react';
+import { useCallback, useRef } from 'react';
 import { useReviewStore } from '../store/reviewStore';
 import { useAuthStore } from '@/presentation/auth/store/authStore';
 import { CreateReviewInput } from '@/domain/reviews/entities/createReviewInput';
+import { SelectedPhoto } from '../components/PhotoPicker';
 
 // TODO: Use container use cases when wired in DI container
 import { ReviewRemoteDataSourceImpl } from '@/data/reviews/datasources/reviewRemoteDataSource';
 import { ReviewRepositoryImpl } from '@/data/reviews/repositories/reviewRepositoryImpl';
 import { CreateReviewUseCase } from '@/domain/reviews/usecases/createReviewUseCase';
+import { ReviewImageRemoteDataSourceImpl } from '@/data/reviews/datasources/reviewImageRemoteDataSource';
 
 const reviewRemote = new ReviewRemoteDataSourceImpl();
 const reviewRepo = new ReviewRepositoryImpl(reviewRemote);
 const createReviewUseCase = new CreateReviewUseCase(reviewRepo);
+const reviewImageDataSource = new ReviewImageRemoteDataSourceImpl();
 
 export const useWriteReview = (businessId: string, businessName: string) => {
   const { isSubmitting, submitSuccess, error, setSubmitting, setSubmitSuccess, setError, reset } =
     useReviewStore();
   const { user } = useAuthStore();
+  const inFlightRef = useRef(false);
 
   const submitReview = useCallback(
-    async (ratings: Record<string, number>, reviewText: string, photoUrls: string[]) => {
+    async (ratings: Record<string, number>, reviewText: string, photos: SelectedPhoto[]) => {
+      if (inFlightRef.current) return;
+      inFlightRef.current = true;
+
       if (!user) {
         setError('You must be signed in to submit a review');
+        inFlightRef.current = false;
         return;
       }
 
       setSubmitting(true);
       setError(null);
+
+      // Upload photos to Firebase Storage first
+      let photoUrls: string[] = [];
+      if (photos.length > 0) {
+        try {
+          photoUrls = await Promise.all(
+            photos.map((photo) =>
+              reviewImageDataSource.uploadReviewImage(user.id, photo.uri, photo.mimeType),
+            ),
+          );
+        } catch {
+          setError('Failed to upload one or more photos. Please try again.');
+          setSubmitting(false);
+          inFlightRef.current = false;
+          return;
+        }
+      }
 
       const ratingValues = Object.values(ratings);
       const overallRating =
@@ -48,10 +73,12 @@ export const useWriteReview = (businessId: string, businessName: string) => {
         (failure) => {
           setError(failure.message);
           setSubmitting(false);
+          inFlightRef.current = false;
         },
         (_reviewId) => {
           setSubmitSuccess(true);
           setSubmitting(false);
+          inFlightRef.current = false;
         },
       );
     },

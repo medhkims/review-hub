@@ -1,23 +1,26 @@
-import React, { useMemo, useState } from 'react';
-import { View, Pressable, TextInput, Platform } from 'react-native';
+import React, { useMemo, useRef, useState } from 'react';
+import { View, Pressable, TextInput, Platform, ScrollView } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { AppText } from '@/presentation/shared/components/ui/AppText';
 import { AppButton } from '@/presentation/shared/components/ui/AppButton';
+import { SubcategoryPickerModal } from '@/presentation/shared/components/ui/SubcategoryPickerModal';
 import { colors } from '@/core/theme/colors';
 import { CATEGORIES_DATA } from '@/core/constants/categoriesData';
 
 interface CompanySignUpStep1Props {
-  onNext: (data: CompanyStep1Data) => void;
+  onNext: () => void;
   onBack: () => void;
   isLoading?: boolean;
+  formData: CompanyStep1Data;
+  onFormChange: (updates: Partial<CompanyStep1Data>) => void;
 }
 
 export interface CompanyStep1Data {
   businessName: string;
   category: string;
-  subCategory: string;
+  subCategories: string[];
   email: string;
   phone: string;
   password: string;
@@ -127,32 +130,71 @@ const IconInputField: React.FC<IconInputFieldProps> = ({
   );
 };
 
-// --- Custom select dropdown ---
+// --- Searchable select dropdown ---
 
-interface SelectFieldProps {
+interface SearchableSelectFieldProps {
   label: string;
   placeholder: string;
   value: string;
   options: { label: string; value: string }[];
   onSelect: (value: string) => void;
   icon: keyof typeof MaterialCommunityIcons.glyphMap;
-  dimmed?: boolean;
+  disabled?: boolean;
 }
 
-const SelectField: React.FC<SelectFieldProps> = ({
+const SearchableSelectField: React.FC<SearchableSelectFieldProps> = ({
   label,
   placeholder,
   value,
   options,
   onSelect,
   icon,
-  dimmed = false,
+  disabled = false,
 }) => {
+  const inputRef = useRef<TextInput>(null);
   const [isOpen, setIsOpen] = useState(false);
+  const [searchText, setSearchText] = useState('');
+
   const selectedLabel = options.find((o) => o.value === value)?.label;
 
+  const filteredOptions = useMemo(() => {
+    const otherOption = options.find((o) => o.value === 'other');
+    const mainOptions = options.filter((o) => o.value !== 'other');
+    if (!searchText.trim()) {
+      return otherOption ? [...mainOptions, otherOption] : mainOptions;
+    }
+    const lower = searchText.toLowerCase();
+    const matches = mainOptions.filter((o) => o.label.toLowerCase().includes(lower));
+    return otherOption ? [...matches, otherOption] : matches;
+  }, [options, searchText]);
+
+  const handleFocus = () => {
+    if (!disabled) {
+      setSearchText('');
+      setIsOpen(true);
+    }
+  };
+
+  // Delay close so an option tap registers before the dropdown disappears
+  const handleBlur = () => {
+    setTimeout(() => {
+      setSearchText('');
+      setIsOpen(false);
+    }, 200);
+  };
+
+  const handleSelect = (optionValue: string) => {
+    onSelect(optionValue);
+    setSearchText('');
+    setIsOpen(false);
+    inputRef.current?.blur();
+  };
+
+  // While open, show what the user is typing; while closed, show the selected label
+  const displayValue = isOpen ? searchText : (selectedLabel ?? '');
+
   return (
-    <View style={{ opacity: dimmed && !value ? 0.6 : 1 }}>
+    <View style={{ opacity: disabled ? 0.6 : 1 }}>
       <AppText
         style={{
           color: colors.textSlate200,
@@ -164,12 +206,7 @@ const SelectField: React.FC<SelectFieldProps> = ({
       >
         {label}
       </AppText>
-      <Pressable
-        onPress={() => {
-          if (!dimmed || value) setIsOpen(!isOpen);
-        }}
-        accessibilityRole="button"
-        accessibilityLabel={label}
+      <View
         style={{
           flexDirection: 'row',
           alignItems: 'center',
@@ -187,21 +224,40 @@ const SelectField: React.FC<SelectFieldProps> = ({
           color={colors.textSlate400}
           style={{ marginRight: 12 }}
         />
-        <AppText
+        <TextInput
+          ref={inputRef}
+          value={displayValue}
+          onChangeText={setSearchText}
+          onFocus={handleFocus}
+          onBlur={handleBlur}
+          placeholder={placeholder}
+          placeholderTextColor={colors.textSlate500}
+          editable={!disabled}
+          accessibilityLabel={label}
           style={{
             flex: 1,
+            color: colors.textWhite,
             fontSize: 16,
-            color: selectedLabel ? colors.textWhite : colors.textSlate500,
+            paddingVertical: 0,
           }}
-        >
-          {selectedLabel || placeholder}
-        </AppText>
-        <MaterialCommunityIcons
-          name={isOpen ? 'chevron-up' : 'chevron-down'}
-          size={20}
-          color={colors.textSlate500}
         />
-      </Pressable>
+        {isOpen && searchText.length > 0 ? (
+          <Pressable
+            onPress={() => setSearchText('')}
+            hitSlop={8}
+            accessibilityRole="button"
+            accessibilityLabel="Clear"
+          >
+            <MaterialCommunityIcons name="close-circle" size={18} color={colors.textSlate500} />
+          </Pressable>
+        ) : (
+          <MaterialCommunityIcons
+            name={isOpen ? 'chevron-up' : 'chevron-down'}
+            size={20}
+            color={colors.textSlate500}
+          />
+        )}
+      </View>
       {isOpen && (
         <View
           style={{
@@ -212,41 +268,44 @@ const SelectField: React.FC<SelectFieldProps> = ({
             marginTop: 4,
             overflow: 'hidden',
           }}
+          // @ts-expect-error: web-only — prevents TextInput blur before onPress fires
+          onMouseDown={(e: { preventDefault: () => void }) => e.preventDefault()}
         >
-          {options.map((option, index) => (
-            <Pressable
-              key={option.value}
-              onPress={() => {
-                onSelect(option.value);
-                setIsOpen(false);
-              }}
-              accessibilityRole="menuitem"
-              accessibilityLabel={option.label}
-              style={{
-                paddingHorizontal: 16,
-                paddingVertical: 12,
-                backgroundColor:
-                  value === option.value ? 'rgba(168, 85, 247, 0.1)' : 'transparent',
-                borderBottomWidth: index < options.length - 1 ? 1 : 0,
-                borderBottomColor: colors.borderDark,
-              }}
-            >
-              <AppText
+          <ScrollView style={{ maxHeight: 200 }} keyboardShouldPersistTaps="handled">
+            {filteredOptions.map((option, index) => (
+              <Pressable
+                key={option.value}
+                onPress={() => handleSelect(option.value)}
+                accessibilityRole="menuitem"
+                accessibilityLabel={option.label}
                 style={{
-                  fontSize: 15,
-                  color: value === option.value ? colors.neonPurple : colors.textSlate200,
-                  fontWeight: value === option.value ? '600' : '400',
+                  paddingHorizontal: 16,
+                  paddingVertical: 12,
+                  backgroundColor:
+                    value === option.value ? 'rgba(168, 85, 247, 0.1)' : 'transparent',
+                  borderBottomWidth: index < filteredOptions.length - 1 ? 1 : 0,
+                  borderBottomColor: colors.borderDark,
                 }}
               >
-                {option.label}
-              </AppText>
-            </Pressable>
-          ))}
+                <AppText
+                  style={{
+                    fontSize: 15,
+                    color: value === option.value ? colors.neonPurple : colors.textSlate200,
+                    fontWeight: value === option.value ? '600' : '400',
+                  }}
+                >
+                  {option.label}
+                </AppText>
+              </Pressable>
+            ))}
+          </ScrollView>
         </View>
       )}
     </View>
   );
 };
+
+// (MultiSelectField removed — subcategory selection now uses SubcategoryPickerModal popup)
 
 // --- Section header ---
 
@@ -299,17 +358,15 @@ export const CompanySignUpStep1: React.FC<CompanySignUpStep1Props> = ({
   onNext,
   onBack,
   isLoading = false,
+  formData,
+  onFormChange,
 }) => {
   const router = useRouter();
   const { t } = useTranslation();
-  const [businessName, setBusinessName] = useState('');
-  const [category, setCategory] = useState('');
-  const [subCategory, setSubCategory] = useState('');
-  const [email, setEmail] = useState('');
-  const [phone, setPhone] = useState('');
-  const [password, setPassword] = useState('');
-  const [confirmPassword, setConfirmPassword] = useState('');
+  const { businessName, category, subCategories, email, phone, password, confirmPassword } = formData;
+  const [subcategoryPickerVisible, setSubcategoryPickerVisible] = useState(false);
   const [formError, setFormError] = useState<string | null>(null);
+  const [subcategoryError, setSubcategoryError] = useState<string | null>(null);
 
   const availableSubCategories = useMemo(
     () => (category ? SUB_CATEGORY_OPTIONS[category] ?? [] : []),
@@ -327,12 +384,21 @@ export const CompanySignUpStep1: React.FC<CompanySignUpStep1Props> = ({
       setFormError(t('auth.companySignUp.categoryRequired'));
       return;
     }
+    if (availableSubCategories.length > 0 && subCategories.length === 0) {
+      setSubcategoryError(t('businessOwner.companyProfile.subcategoryRequired'));
+      return;
+    }
+    setSubcategoryError(null);
     if (!email.trim()) {
       setFormError(t('auth.companySignUp.emailRequired'));
       return;
     }
     if (!phone.trim()) {
       setFormError(t('auth.companySignUp.phoneRequired'));
+      return;
+    }
+    if (phone.replace(/\D/g, '').length < 8) {
+      setFormError(t('auth.companySignUp.phoneMinLength'));
       return;
     }
     if (password.length < 6) {
@@ -344,26 +410,20 @@ export const CompanySignUpStep1: React.FC<CompanySignUpStep1Props> = ({
       return;
     }
 
-    onNext({
-      businessName: businessName.trim(),
-      category,
-      subCategory,
-      email: email.trim(),
-      phone: phone.trim(),
-      password,
-      confirmPassword,
-    });
+    onNext();
   };
 
   const isFormValid =
     businessName.trim().length > 0 &&
     category.length > 0 &&
+    (availableSubCategories.length === 0 || subCategories.length > 0) &&
     email.trim().length > 0 &&
-    phone.trim().length > 0 &&
+    phone.replace(/\D/g, '').length >= 8 &&
     password.length >= 6 &&
     confirmPassword === password;
 
   return (
+    <>
     <View style={{ flex: 1 }}>
       {/* Header: Back button + Step badge */}
       <View
@@ -462,32 +522,86 @@ export const CompanySignUpStep1: React.FC<CompanySignUpStep1Props> = ({
             icon="storefront-outline"
             placeholder="Search or type new name"
             value={businessName}
-            onChangeText={setBusinessName}
+            onChangeText={(val) => onFormChange({ businessName: val })}
             autoCapitalize="words"
             rightIcon="magnify"
           />
 
-          <SelectField
+          <SearchableSelectField
             label="Category"
             placeholder="Select industry"
             value={category}
             options={CATEGORY_OPTIONS}
             onSelect={(val) => {
-              setCategory(val);
-              setSubCategory('');
+              onFormChange({ category: val, subCategories: [] });
+              setSubcategoryError(null);
             }}
             icon="shape-outline"
           />
 
-          <SelectField
-            label="Sub-Category"
-            placeholder="Select specific field"
-            value={subCategory}
-            options={availableSubCategories}
-            onSelect={setSubCategory}
-            icon="subdirectory-arrow-right"
-            dimmed={!category}
-          />
+          {availableSubCategories.length > 0 && (
+            <View>
+              <AppText
+                style={{
+                  color: colors.textSlate200,
+                  fontSize: 14,
+                  fontWeight: '500',
+                  marginBottom: 6,
+                  marginLeft: 4,
+                }}
+              >
+                Sub-Category
+              </AppText>
+              <Pressable
+                onPress={() => setSubcategoryPickerVisible(true)}
+                accessibilityRole="button"
+                accessibilityLabel="Sub-Category"
+                style={{
+                  flexDirection: 'row',
+                  alignItems: 'center',
+                  backgroundColor: colors.cardDark,
+                  borderWidth: 1,
+                  borderColor: subcategoryError ? '#EF4444' : colors.borderDark,
+                  borderRadius: 16,
+                  paddingHorizontal: 16,
+                  height: 52,
+                }}
+              >
+                <MaterialCommunityIcons
+                  name="subdirectory-arrow-right"
+                  size={20}
+                  color={colors.textSlate400}
+                  style={{ marginRight: 12 }}
+                />
+                <AppText
+                  style={{
+                    flex: 1,
+                    fontSize: 16,
+                    color: subCategories.length > 0 ? colors.textWhite : colors.textSlate500,
+                  }}
+                >
+                  {subCategories.length === 0
+                    ? 'Select one or more sub-categories'
+                    : subCategories.length === 1
+                    ? availableSubCategories.find((o) => o.value === subCategories[0])?.label ?? ''
+                    : `${subCategories.length} sub-categories selected`}
+                </AppText>
+                <MaterialCommunityIcons name="chevron-down" size={20} color={colors.textSlate500} />
+              </Pressable>
+              {subcategoryError && (
+                <AppText
+                  style={{
+                    color: '#EF4444',
+                    fontSize: 12,
+                    marginTop: 6,
+                    marginLeft: 4,
+                  }}
+                >
+                  {subcategoryError}
+                </AppText>
+              )}
+            </View>
+          )}
         </View>
       </View>
 
@@ -502,7 +616,7 @@ export const CompanySignUpStep1: React.FC<CompanySignUpStep1Props> = ({
             icon="email-outline"
             placeholder="name@example.com"
             value={email}
-            onChangeText={setEmail}
+            onChangeText={(val) => onFormChange({ email: val })}
             keyboardType="email-address"
             autoCapitalize="none"
             autoComplete="email"
@@ -568,7 +682,7 @@ export const CompanySignUpStep1: React.FC<CompanySignUpStep1Props> = ({
               <TextInput
                 placeholder="XX XXX XXX"
                 value={phone}
-                onChangeText={setPhone}
+                onChangeText={(val) => onFormChange({ phone: val })}
                 keyboardType="phone-pad"
                 placeholderTextColor={colors.textSlate500}
                 accessibilityLabel="Phone Number"
@@ -596,7 +710,7 @@ export const CompanySignUpStep1: React.FC<CompanySignUpStep1Props> = ({
             icon="lock-outline"
             placeholder="Create a strong password"
             value={password}
-            onChangeText={setPassword}
+            onChangeText={(val) => onFormChange({ password: val })}
             secureTextEntry
             autoComplete="new-password"
             textContentType="newPassword"
@@ -607,7 +721,7 @@ export const CompanySignUpStep1: React.FC<CompanySignUpStep1Props> = ({
             icon="lock-reset"
             placeholder="Re-enter password"
             value={confirmPassword}
-            onChangeText={setConfirmPassword}
+            onChangeText={(val) => onFormChange({ confirmPassword: val })}
             secureTextEntry
           />
         </View>
@@ -677,5 +791,19 @@ export const CompanySignUpStep1: React.FC<CompanySignUpStep1Props> = ({
         </View>
       </View>
     </View>
+
+    <SubcategoryPickerModal
+      visible={subcategoryPickerVisible}
+      title="Sub-Category"
+      options={availableSubCategories}
+      values={subCategories}
+      onClose={() => setSubcategoryPickerVisible(false)}
+      onConfirm={(vals) => {
+        onFormChange({ subCategories: vals });
+        if (vals.length > 0) setSubcategoryError(null);
+        setSubcategoryPickerVisible(false);
+      }}
+    />
+    </>
   );
 };

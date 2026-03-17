@@ -1,5 +1,7 @@
 import { useCallback, useEffect, useState } from 'react';
+import { Alert } from 'react-native';
 import { useProfileStore } from '../store/profileStore';
+import { useAuthStore } from '@/presentation/auth/store/authStore';
 import { container } from '@/core/di/container';
 import { ProfileEntity } from '@/domain/profile/entities/profileEntity';
 import { AnalyticsHelper } from '@/core/analytics/analyticsHelper';
@@ -7,6 +9,7 @@ import { AnalyticsEvents } from '@/core/analytics/analyticsKeys';
 
 export const useProfile = (userId?: string) => {
   const { profile, isLoading, error, setProfile, setLoading, setError } = useProfileStore();
+  const { user: authUser, setUser: setAuthUser } = useAuthStore();
   const [uploadProgress, setUploadProgress] = useState<number>(0);
   const [isUploading, setIsUploading] = useState(false);
 
@@ -50,12 +53,15 @@ export const useProfile = (userId?: string) => {
         },
         (updatedProfile) => {
           setProfile(updatedProfile);
+          if (authUser) {
+            setAuthUser({ ...authUser, displayName: updatedProfile.displayName });
+          }
           AnalyticsHelper.sendEvent(AnalyticsEvents.UPDATE_PROFILE);
           setLoading(false);
         }
       );
     },
-    [updateProfileUseCase, setLoading, setError, setProfile]
+    [updateProfileUseCase, setLoading, setError, setProfile, authUser, setAuthUser]
   );
 
   const updateEmail = useCallback(
@@ -86,31 +92,40 @@ export const useProfile = (userId?: string) => {
       setUploadProgress(0);
       setError(null);
 
-      const result = await uploadAvatarUseCase.execute(
-        targetUserId,
-        imageUri,
-        mimeType,
-        (progress) => setUploadProgress(progress),
-      );
+      try {
+        const result = await uploadAvatarUseCase.execute(
+          targetUserId,
+          imageUri,
+          mimeType,
+          (progress) => setUploadProgress(progress),
+        );
 
-      result.fold(
-        (failure) => {
-          setError(failure.message);
-          setIsUploading(false);
-          setUploadProgress(0);
-        },
-        (avatarUrl) => {
-          // Optimistically update the profile in the store
-          if (profile) {
-            setProfile({ ...profile, avatarUrl });
-          }
-          AnalyticsHelper.sendEvent(AnalyticsEvents.UPLOAD_AVATAR);
-          setIsUploading(false);
-          setUploadProgress(0);
-        },
-      );
+        result.fold(
+          (failure) => {
+            setError(failure.message);
+            Alert.alert('Upload Failed', failure.message, [{ text: 'OK' }]);
+          },
+          (avatarUrl) => {
+            // Optimistically update the profile in the store
+            if (profile) {
+              setProfile({ ...profile, avatarUrl });
+            }
+            if (authUser) {
+              setAuthUser({ ...authUser, avatarUrl });
+            }
+            AnalyticsHelper.sendEvent(AnalyticsEvents.UPLOAD_AVATAR);
+          },
+        );
+      } catch (err) {
+        const message = err instanceof Error ? err.message : 'Failed to upload profile picture. Please try again.';
+        setError(message);
+        Alert.alert('Upload Failed', message, [{ text: 'OK' }]);
+      } finally {
+        setIsUploading(false);
+        setUploadProgress(0);
+      }
     },
-    [uploadAvatarUseCase, profile, setError, setProfile],
+    [uploadAvatarUseCase, profile, setError, setProfile, authUser, setAuthUser],
   );
 
   // Auto-fetch profile when userId is provided

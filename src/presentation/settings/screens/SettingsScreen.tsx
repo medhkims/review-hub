@@ -10,6 +10,7 @@ import { SettingRow } from '@/presentation/shared/components/ui/SettingRow';
 import { useSettingsStore } from '@/presentation/settings/store/settingsStore';
 import { useAuthStore } from '@/presentation/auth/store/authStore';
 import { useAuth } from '@/presentation/auth/hooks/useAuth';
+import { useRoleStore } from '@/presentation/auth/store/roleStore';
 import { useAnalyticsScreen } from '@/presentation/shared/hooks/useAnalyticsScreen';
 import { AnalyticsScreens } from '@/core/analytics/analyticsKeys';
 import { colors } from '@/core/theme/colors';
@@ -22,6 +23,9 @@ export default function SettingsScreen() {
   const setSettings = useSettingsStore((state) => state.setSettings);
   const { user } = useAuthStore();
   const { signOut } = useAuth();
+  const { role } = useRoleStore();
+  const isAdmin = role === 'admin';
+  const isAdminOrModerator = role === 'admin' || role === 'moderator';
 
   const notificationsEnabled = settings?.notificationsEnabled ?? true;
   const darkModeEnabled = settings?.theme === 'dark';
@@ -48,7 +52,7 @@ export default function SettingsScreen() {
   };
 
   const navigateToPersonalInfo = useCallback(() => {
-    router.push('/(main)/(profile)/personal-info');
+    router.push('/(main)/(settings)/personal-info');
   }, [router]);
 
   const displayUser = user || {
@@ -122,13 +126,13 @@ export default function SettingsScreen() {
               iconName="heart"
               iconColor="pink"
               label={t('settings.wishlist')}
-              onPress={() => router.push('/(main)/(profile)/wishlist')}
+              onPress={() => router.push('/(main)/(settings)/wishlist')}
             />
             <SettingRow
               iconName="shield-check"
               iconColor="green"
               label={t('settings.verifyAccount')}
-              onPress={() => router.push('/(main)/(profile)/personal-info')}
+              onPress={() => router.push('/(main)/(settings)/personal-info')}
               isLast
             />
           </View>
@@ -169,6 +173,60 @@ export default function SettingsScreen() {
               isLast
             />
           </View>
+
+          {isAdminOrModerator && (
+            <>
+              <SectionHeader title={t('settings.adminSection')} />
+              <View
+                style={{
+                  backgroundColor: colors.cardDark,
+                  borderRadius: 16,
+                  borderWidth: 1,
+                  borderColor: 'rgba(51, 65, 85, 0.3)',
+                  overflow: 'hidden',
+                  width: '100%',
+                }}
+              >
+                <SettingRow
+                  iconName="clock-check-outline"
+                  iconColor="yellow"
+                  label={t('settings.pendingBusinesses')}
+                  onPress={() => router.push('/(main)/(settings)/pending-businesses')}
+                />
+                {isAdmin && (
+                  <SettingRow
+                    iconName="image-multiple"
+                    iconColor="purple"
+                    label={t('settings.manageBanners')}
+                    onPress={() => router.push('/(main)/(settings)/manage-banners')}
+                  />
+                )}
+                {isAdmin && (
+                  <SettingRow
+                    iconName="shape"
+                    iconColor="emerald"
+                    label={t('settings.manageCategories')}
+                    onPress={() => router.push('/(main)/(settings)/manage-categories')}
+                  />
+                )}
+                {isAdmin && (
+                  <SettingRow
+                    iconName="account-circle-outline"
+                    iconColor="cyan"
+                    label={t('settings.adminInfo')}
+                    onPress={() => router.push('/(main)/(settings)/admin-info')}
+                  />
+                )}
+                <SettingRow
+                  iconName="shield-account"
+                  iconColor="blue"
+                  label={t('settings.adminDashboard')}
+                  onPress={() => {}}
+                  isLast
+                />
+              </View>
+            </>
+          )}
 
           <SectionHeader title={t('settings.support')} />
           <View

@@ -5,11 +5,22 @@ import { useTranslation } from 'react-i18next';
 import { AppText } from '@/presentation/shared/components/ui/AppText';
 import { colors } from '@/core/theme/colors';
 import { SectionCard } from './SectionCard';
-import { ContactInfo } from '@/domain/business/entities/businessDetailEntity';
+import { ContactInfo, OpeningHours, DayKey } from '@/domain/business/entities/businessDetailEntity';
+import { trackProfileClick } from '@/core/utils/premiumTracking';
+
+const DAY_KEYS: DayKey[] = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'];
+const SHORT_KEYS: Record<DayKey, string> = {
+  monday: 'mon', tuesday: 'tue', wednesday: 'wed', thursday: 'thu',
+  friday: 'fri', saturday: 'sat', sunday: 'sun',
+};
 
 interface InformationSectionProps {
   location: string;
   contact: ContactInfo;
+  isOnline?: boolean;
+  businessId?: string;
+  openingHours?: OpeningHours;
+  openingHoursVisible?: boolean;
 }
 
 interface ContactRowData {
@@ -24,6 +35,10 @@ interface ContactRowData {
 export const InformationSection: React.FC<InformationSectionProps> = ({
   location,
   contact,
+  isOnline = false,
+  businessId,
+  openingHours,
+  openingHoursVisible,
 }) => {
   const { t } = useTranslation();
 
@@ -91,7 +106,8 @@ export const InformationSection: React.FC<InformationSectionProps> = ({
     });
   }
 
-  const handlePress = (url: string) => {
+  const handlePress = (url: string, type: string) => {
+    if (businessId) trackProfileClick(businessId, type);
     Linking.openURL(url).catch(() => {});
   };
 
@@ -103,25 +119,108 @@ export const InformationSection: React.FC<InformationSectionProps> = ({
         {t('businessDetail.location')}
       </AppText>
 
-      <View
-        style={{
-          width: '100%',
-          height: 160,
-          borderRadius: 16,
-          overflow: 'hidden',
-          marginBottom: 24,
-          borderWidth: 1,
-          borderColor: 'rgba(255, 255, 255, 0.1)',
-          backgroundColor: '#0b101e',
-          alignItems: 'center',
-          justifyContent: 'center',
-        }}
-      >
-        <MaterialCommunityIcons name="map-marker-outline" size={32} color={colors.neonPurple} />
-        <AppText style={{ fontSize: 12, color: colors.textSlate400, marginTop: 8 }}>
-          {location}
-        </AppText>
-      </View>
+      {isOnline ? (
+        <View
+          style={{
+            width: '100%',
+            borderRadius: 16,
+            marginBottom: 24,
+            borderWidth: 1,
+            borderColor: `${colors.neonPurple}40`,
+            backgroundColor: `${colors.neonPurple}10`,
+            flexDirection: 'row',
+            alignItems: 'center',
+            gap: 14,
+            paddingHorizontal: 18,
+            paddingVertical: 16,
+          }}
+        >
+          <View
+            style={{
+              width: 44,
+              height: 44,
+              borderRadius: 22,
+              backgroundColor: `${colors.neonPurple}20`,
+              alignItems: 'center',
+              justifyContent: 'center',
+            }}
+          >
+            <MaterialCommunityIcons name="web" size={24} color={colors.neonPurple} />
+          </View>
+          <View style={{ flex: 1 }}>
+            <AppText style={{ fontSize: 15, fontWeight: '700', color: colors.white }}>
+              {t('businessDetail.onlineBusiness')}
+            </AppText>
+            <AppText style={{ fontSize: 12, color: colors.textSlate400, marginTop: 2 }}>
+              {t('businessDetail.onlineBusinessDescription')}
+            </AppText>
+          </View>
+        </View>
+      ) : (
+        <View
+          style={{
+            width: '100%',
+            height: 160,
+            borderRadius: 16,
+            overflow: 'hidden',
+            marginBottom: 24,
+            borderWidth: 1,
+            borderColor: 'rgba(255, 255, 255, 0.1)',
+            backgroundColor: '#0b101e',
+            alignItems: 'center',
+            justifyContent: 'center',
+          }}
+        >
+          <MaterialCommunityIcons name="map-marker-outline" size={32} color={colors.neonPurple} />
+          <AppText style={{ fontSize: 12, color: colors.textSlate400, marginTop: 8 }}>
+            {location}
+          </AppText>
+        </View>
+      )}
+
+      {/* Opening Hours */}
+      {openingHours && openingHoursVisible !== false && (
+        <View style={{ marginBottom: 24 }}>
+          <AppText style={{ fontWeight: '700', fontSize: 14, color: colors.white, marginBottom: 12 }}>
+            {t('businessDetail.openingHours')}
+          </AppText>
+          <View style={{ gap: 8 }}>
+            {DAY_KEYS.map((day) => {
+              const schedule = openingHours[day];
+              const isOpen = schedule?.isOpen ?? false;
+              return (
+                <View
+                  key={day}
+                  style={{
+                    flexDirection: 'row',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                    paddingVertical: 8,
+                    paddingHorizontal: 14,
+                    borderRadius: 12,
+                    backgroundColor: isOpen ? `${colors.neonPurple}10` : 'rgba(255,255,255,0.03)',
+                    borderWidth: 1,
+                    borderColor: isOpen ? `${colors.neonPurple}30` : 'rgba(255,255,255,0.06)',
+                  }}
+                >
+                  <AppText style={{ fontSize: 13, fontWeight: '600', color: isOpen ? colors.white : colors.textSlate500, width: 36 }}>
+                    {t(`businessOwner.companyProfile.${SHORT_KEYS[day]}`)}
+                  </AppText>
+                  {isOpen && schedule ? (
+                    <AppText style={{ fontSize: 13, color: colors.textSlate400 }}>
+                      {schedule.openTime} – {schedule.closeTime}
+                    </AppText>
+                  ) : (
+                    <AppText style={{ fontSize: 12, color: colors.textSlate500 }}>
+                      {t('businessDetail.closedDay')}
+                    </AppText>
+                  )}
+                </View>
+              );
+            })}
+          </View>
+        </View>
+      )}
 
       {/* Contact & Socials */}
       {contactRows.length > 0 && (
@@ -134,7 +233,7 @@ export const InformationSection: React.FC<InformationSectionProps> = ({
             {contactRows.map((row) => (
               <Pressable
                 key={row.type}
-                onPress={() => handlePress(row.url)}
+                onPress={() => handlePress(row.url, row.type)}
                 accessibilityLabel={`${row.label}: ${row.value}`}
                 accessibilityRole="link"
                 style={({ pressed }) => ({

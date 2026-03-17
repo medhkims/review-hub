@@ -18,7 +18,7 @@ export const ScreenLayout: React.FC<ScreenLayoutProps> = ({
   const content = (
     <View
       className="flex-1 bg-midnight"
-      style={{ flex: 1, backgroundColor: colors.midnight, paddingTop: insets.top }}
+      style={{ flex: 1, backgroundColor: colors.midnight, paddingTop: insets.top, paddingBottom: insets.bottom }}
     >
       <NetworkBanner />
       {children}

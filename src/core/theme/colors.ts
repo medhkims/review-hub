@@ -1,6 +1,6 @@
 export const colors = {
   // Primary colors
-  primary: '#3B82F6',
+  primary: '#A855F7',
   neonPurple: '#A855F7',
 
   // Backgrounds

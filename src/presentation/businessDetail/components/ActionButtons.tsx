@@ -6,20 +6,20 @@ import { AppText } from '@/presentation/shared/components/ui/AppText';
 import { colors } from '@/core/theme/colors';
 
 interface ActionButtonsProps {
-  isFavorite: boolean;
+  isWishlisted: boolean;
   onAddReview: () => void;
-  onToggleFavorite: () => void;
+  onToggleWishlist: () => void;
 }
 
 export const ActionButtons: React.FC<ActionButtonsProps> = ({
-  isFavorite,
+  isWishlisted,
   onAddReview,
-  onToggleFavorite,
+  onToggleWishlist,
 }) => {
   const { t } = useTranslation();
 
   return (
-    <View style={{ flexDirection: 'row', gap: 16, paddingHorizontal: 24, marginTop: 24, marginBottom: 32 }}>
+    <View style={{ flexDirection: 'row', gap: 12, paddingHorizontal: 24, marginTop: 24, marginBottom: 32 }}>
       <Pressable
         onPress={onAddReview}
         accessibilityLabel={t('businessDetail.addReview')}
@@ -49,8 +49,8 @@ export const ActionButtons: React.FC<ActionButtonsProps> = ({
       </Pressable>
 
       <Pressable
-        onPress={onToggleFavorite}
-        accessibilityLabel={isFavorite ? t('businessDetail.removeFromFavorites') : t('businessDetail.addToFavorites')}
+        onPress={onToggleWishlist}
+        accessibilityLabel={isWishlisted ? t('businessDetail.removeFromWishlist') : t('businessDetail.addToWishlist')}
         accessibilityRole="button"
         style={({ pressed }) => ({
           width: 56,
@@ -59,14 +59,14 @@ export const ActionButtons: React.FC<ActionButtonsProps> = ({
           alignItems: 'center',
           justifyContent: 'center',
           borderWidth: 1,
-          borderColor: 'rgba(255, 255, 255, 0.1)',
+          borderColor: isWishlisted ? 'rgba(239, 68, 68, 0.4)' : 'rgba(255, 255, 255, 0.1)',
           transform: [{ scale: pressed ? 0.95 : 1 }],
         })}
       >
         <MaterialCommunityIcons
-          name={isFavorite ? 'heart' : 'heart-outline'}
+          name={isWishlisted ? 'heart' : 'heart-outline'}
           size={24}
-          color={isFavorite ? colors.error : colors.white}
+          color={isWishlisted ? colors.error : colors.white}
         />
       </Pressable>
     </View>

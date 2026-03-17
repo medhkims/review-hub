@@ -16,7 +16,7 @@ export const ErrorView: React.FC<ErrorViewProps> = ({ message, onRetry }) => {
       {onRetry && (
         <Pressable
           onPress={onRetry}
-          className="bg-indigo-500 px-6 py-3 rounded-xl"
+          className="bg-neon-purple px-6 py-3 rounded-xl"
           accessibilityRole="button"
           accessibilityLabel="Retry"
         >

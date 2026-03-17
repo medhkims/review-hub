@@ -15,6 +15,11 @@ export default function FeedLayout() {
       <Stack.Screen name="sub-category" />
       <Stack.Screen name="business-insights" />
       <Stack.Screen name="all-businesses" />
+      <Stack.Screen name="review-success" />
+      <Stack.Screen name="multi-category" />
+      <Stack.Screen name="banner/[bannerId]" />
+      <Stack.Screen name="business-pending" />
+      <Stack.Screen name="engagement-details" />
     </Stack>
   );
 }

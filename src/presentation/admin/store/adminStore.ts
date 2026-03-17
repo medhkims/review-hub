@@ -1,26 +1,22 @@
 import { create } from 'zustand';
-import { ProfileEntity } from '@/domain/profile/entities/profileEntity';
+import { AdminDashboardStats } from '@/domain/admin/entities/adminDashboardEntity';
 
 interface AdminState {
-  users: ProfileEntity[];
-  totalUsers: number;
+  stats: AdminDashboardStats | null;
   isLoading: boolean;
   error: string | null;
-  setUsers: (users: ProfileEntity[]) => void;
-  setTotalUsers: (count: number) => void;
+  setStats: (stats: AdminDashboardStats) => void;
   setLoading: (loading: boolean) => void;
   setError: (error: string | null) => void;
   reset: () => void;
 }
 
 export const useAdminStore = create<AdminState>((set) => ({
-  users: [],
-  totalUsers: 0,
+  stats: null,
   isLoading: false,
   error: null,
-  setUsers: (users) => set({ users, error: null }),
-  setTotalUsers: (totalUsers) => set({ totalUsers }),
+  setStats: (stats) => set({ stats, error: null }),
   setLoading: (isLoading) => set({ isLoading }),
   setError: (error) => set({ error, isLoading: false }),
-  reset: () => set({ users: [], totalUsers: 0, isLoading: false, error: null }),
+  reset: () => set({ stats: null, isLoading: false, error: null }),
 }));

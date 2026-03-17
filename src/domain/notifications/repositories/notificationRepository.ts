@@ -1,4 +1,4 @@
-import { NotificationEntity } from '../entities/notificationEntity';
+import { NotificationEntity, CreateNotificationParams } from '../entities/notificationEntity';
 import { Either } from '@/core/types/either';
 import { Failure } from '@/core/error/failures';
 
@@ -7,4 +7,5 @@ export interface NotificationRepository {
   markAsRead(notificationId: string): Promise<Either<Failure, void>>;
   markAllAsRead(userId: string): Promise<Either<Failure, void>>;
   getUnreadCount(userId: string): Promise<Either<Failure, number>>;
+  createNotification(params: CreateNotificationParams): Promise<Either<Failure, void>>;
 }

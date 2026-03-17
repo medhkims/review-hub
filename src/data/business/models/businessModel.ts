@@ -6,12 +6,27 @@ export interface BusinessModel {
   description: string;
   category_id: string;
   category_name: string;
+  sub_category?: string;
+  sub_categories?: string[];
   location: string;
   cover_image_url: string | null;
+  logo_url: string | null;
   rating: number;
   review_count: number;
   is_featured: boolean;
   owner_id: string;
+  status?: 'pending' | 'active' | 'rejected' | 'blocked';
+  /** True when the business owner has claimed / registered the account */
+  is_verified?: boolean;
+  // Premium subscription
+  is_premium?: boolean;
+  premium_expires_at?: Timestamp | null;
+  // Engagement counters
+  visit_count?: number;
+  search_count?: number;
+  // Opening hours
+  opening_hours?: Record<string, { is_open: boolean; open_time: string; close_time: string }>;
+  opening_hours_visible?: boolean;
   created_at: Timestamp;
   updated_at: Timestamp;
 }

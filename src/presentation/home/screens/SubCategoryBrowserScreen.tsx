@@ -4,11 +4,10 @@ import {
   FlatList,
   TextInput,
   Pressable,
-  Image,
   RefreshControl,
   ScrollView,
 } from 'react-native';
-import { useRouter, useLocalSearchParams } from 'expo-router';
+import { useRouter, useLocalSearchParams, useFocusEffect } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { ScreenLayout } from '@/presentation/shared/layouts/ScreenLayout';
@@ -22,6 +21,9 @@ import { container } from '@/core/di/container';
 import { useAuthStore } from '@/presentation/auth/store/authStore';
 import { useHomeStore } from '../store/homeStore';
 import { BusinessEntity } from '@/domain/business/entities/businessEntity';
+import { CATEGORY_MAP } from '@/core/constants/categoriesData';
+import { BusinessCard } from '../components/BusinessCard';
+import { trackSubcategoryEvent } from '@/core/utils/premiumTracking';
 
 // ── Helper ───────────────────────────────────────────────────────────────────
 
@@ -65,137 +67,6 @@ const SubCategoryTab: React.FC<SubCategoryTabProps> = ({ label, isSelected, onPr
   </Pressable>
 );
 
-// ── Business Card ─────────────────────────────────────────────────────────────
-
-interface BusinessCardProps {
-  item: BusinessEntity;
-  onPress: (id: string) => void;
-  onFavorite: (id: string) => void;
-}
-
-const BusinessCard: React.FC<BusinessCardProps> = React.memo(
-  ({ item, onPress, onFavorite }) => {
-    const handlePress = useCallback(() => onPress(item.id), [item.id, onPress]);
-    const handleFavorite = useCallback(() => onFavorite(item.id), [item.id, onFavorite]);
-
-    return (
-      <Pressable
-        onPress={handlePress}
-        style={({ pressed }) => ({
-          marginBottom: 14,
-          borderRadius: 16,
-          backgroundColor: colors.cardDark,
-          overflow: 'hidden',
-          opacity: pressed ? 0.9 : 1,
-          flexDirection: 'row',
-          alignItems: 'center',
-          padding: 14,
-        })}
-        accessibilityLabel={item.name}
-        accessibilityRole="button"
-      >
-        {/* Avatar / Cover Image */}
-        <View style={{ position: 'relative', marginRight: 14 }}>
-          <View
-            style={{
-              width: 72,
-              height: 72,
-              borderRadius: 36,
-              backgroundColor: colors.borderDark,
-              alignItems: 'center',
-              justifyContent: 'center',
-              overflow: 'hidden',
-            }}
-          >
-            {item.coverImageUrl ? (
-              <Image
-                source={{ uri: item.coverImageUrl }}
-                style={{ width: '100%', height: '100%' }}
-                accessibilityLabel={item.name}
-              />
-            ) : (
-              <MaterialCommunityIcons name="store" size={32} color={colors.textSlate500} />
-            )}
-          </View>
-
-          {/* Rating Badge */}
-          <View
-            style={{
-              position: 'absolute',
-              bottom: 0,
-              left: -2,
-              flexDirection: 'row',
-              alignItems: 'center',
-              backgroundColor: colors.neonPurple,
-              borderRadius: 10,
-              paddingHorizontal: 5,
-              paddingVertical: 2,
-            }}
-          >
-            <MaterialCommunityIcons name="star" size={10} color={colors.white} />
-            <AppText
-              style={{ fontSize: 10, fontWeight: '700', color: colors.white, marginLeft: 2 }}
-            >
-              {item.rating.toFixed(1)}
-            </AppText>
-          </View>
-        </View>
-
-        {/* Info */}
-        <View style={{ flex: 1 }}>
-          <AppText
-            style={{ fontSize: 16, fontWeight: '700', color: colors.white, marginBottom: 3 }}
-            numberOfLines={1}
-          >
-            {item.name}
-          </AppText>
-          <AppText
-            style={{ fontSize: 13, color: colors.neonPurple, fontWeight: '500', marginBottom: 6 }}
-            numberOfLines={1}
-          >
-            {item.categoryName}
-          </AppText>
-          <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-            <MaterialCommunityIcons
-              name="map-marker-outline"
-              size={13}
-              color={colors.textSlate400}
-            />
-            <AppText
-              style={{ fontSize: 12, color: colors.textSlate400, marginLeft: 3 }}
-              numberOfLines={1}
-            >
-              {item.location}
-            </AppText>
-          </View>
-        </View>
-
-        {/* Favorite Button */}
-        <Pressable
-          onPress={handleFavorite}
-          style={({ pressed }) => ({
-            width: 36,
-            height: 36,
-            alignItems: 'center',
-            justifyContent: 'center',
-            opacity: pressed ? 0.7 : 1,
-          })}
-          accessibilityLabel={`Favorite ${item.name}`}
-          accessibilityRole="button"
-        >
-          <MaterialCommunityIcons
-            name={item.isFavorite ? 'heart' : 'heart-outline'}
-            size={22}
-            color={item.isFavorite ? colors.neonPurple : colors.textSlate400}
-          />
-        </Pressable>
-      </Pressable>
-    );
-  },
-);
-
-BusinessCard.displayName = 'BusinessCard';
-
 // ── Main Screen ───────────────────────────────────────────────────────────────
 
 export default function SubCategoryBrowserScreen() {
@@ -231,25 +102,42 @@ export default function SubCategoryBrowserScreen() {
     setIsRefreshing(false);
   }, [resolvedCategoryId]);
 
-  useEffect(() => {
-    loadBusinesses();
-  }, [loadBusinesses]);
+  // Reload on focus so stale Firestore query-cache (e.g. after image uploads)
+  // is bypassed and the latest business data is always shown.
+  useFocusEffect(
+    useCallback(() => {
+      loadBusinesses();
+    }, [loadBusinesses]),
+  );
 
   const handleRefresh = useCallback(() => {
     setIsRefreshing(true);
     loadBusinesses();
   }, [loadBusinesses]);
 
-  // Use subcategories from the category entity definition (not derived from business data)
+  // Use subcategories from the store when it has entries, otherwise fall back
+  // to the bundled CATEGORY_MAP (store may filter them all out when no business
+  // has a matching sub_category field yet).
   const subCategories = useMemo(() => {
-    const cat = storeCategories.find((c) => c.id === resolvedCategoryId);
-    return cat?.subcategories ?? [];
+    const storeCat = storeCategories.find((c) => c.id === resolvedCategoryId);
+    if (storeCat && storeCat.subcategories.length > 0) return storeCat.subcategories;
+    const fallback = CATEGORY_MAP[resolvedCategoryId];
+    if (!fallback) return [];
+    return fallback.subcategories.map((sub) => ({
+      id: sub.id,
+      name: sub.name,
+      categoryId: resolvedCategoryId,
+    }));
   }, [storeCategories, resolvedCategoryId]);
 
   const filteredData = useMemo(() => {
     let data = businesses;
     if (selectedSubCategory) {
-      data = data.filter((b) => b.categoryName === selectedSubCategory);
+      data = data.filter(
+        (b) =>
+          b.subCategory === selectedSubCategory ||
+          b.subCategories?.includes(selectedSubCategory),
+      );
     }
     if (searchQuery.trim()) {
       const query = searchQuery.toLowerCase();
@@ -262,11 +150,29 @@ export default function SubCategoryBrowserScreen() {
     router.back();
   }, [router]);
 
+  const handleSubCategorySelect = useCallback(
+    (subId: string | null) => {
+      setSelectedSubCategory(subId);
+      if (subId && businesses.length > 0) {
+        const sub = subCategories.find((s) => s.id === subId);
+        const subName = sub?.name ?? subId;
+        businesses
+          .filter((b) => b.subCategory === subId || b.subCategories?.includes(subId))
+          .forEach((b) => trackSubcategoryEvent(b.id, subName, false));
+      }
+    },
+    [businesses, subCategories],
+  );
+
   const handleItemPress = useCallback(
     (id: string) => {
+      if (selectedSubCategory) {
+        const sub = subCategories.find((s) => s.id === selectedSubCategory);
+        trackSubcategoryEvent(id, sub?.name ?? selectedSubCategory, true);
+      }
       router.push({ pathname: '/(main)/(feed)/business/[businessId]', params: { businessId: id } });
     },
-    [router],
+    [router, selectedSubCategory, subCategories],
   );
 
   const handleFavorite = useCallback(
@@ -291,16 +197,26 @@ export default function SubCategoryBrowserScreen() {
 
   const renderItem = useCallback(
     ({ item }: { item: BusinessEntity }) => (
-      <BusinessCard item={item} onPress={handleItemPress} onFavorite={handleFavorite} />
+      <BusinessCard
+        business={item}
+        onPress={() => handleItemPress(item.id)}
+        onWishlistPress={() => handleFavorite(item.id)}
+        isWishlisted={item.isFavorite}
+        variant="compact"
+      />
     ),
     [handleItemPress, handleFavorite],
   );
 
   const keyExtractor = useCallback((item: BusinessEntity) => item.id, []);
 
-  const emptyMessage = selectedSubCategory
+  const selectedSubCategoryName = selectedSubCategory
+    ? (subCategories.find((s) => s.id === selectedSubCategory)?.name ?? selectedSubCategory)
+    : null;
+
+  const emptyMessage = selectedSubCategoryName
     ? t('subCategory.emptySubCategory', {
-        subCategory: selectedSubCategory,
+        subCategory: selectedSubCategoryName,
         category: categoryDisplayName,
       })
     : t('subCategory.emptyCategory', { category: categoryDisplayName });
@@ -442,14 +358,14 @@ export default function SubCategoryBrowserScreen() {
           <SubCategoryTab
             label={t('subCategory.all')}
             isSelected={selectedSubCategory === null}
-            onPress={() => setSelectedSubCategory(null)}
+            onPress={() => handleSubCategorySelect(null)}
           />
           {subCategories.map((sub) => (
             <SubCategoryTab
               key={sub.id}
               label={sub.name}
-              isSelected={selectedSubCategory === sub.name}
-              onPress={() => setSelectedSubCategory(sub.name)}
+              isSelected={selectedSubCategory === sub.id}
+              onPress={() => handleSubCategorySelect(sub.id)}
             />
           ))}
         </ScrollView>

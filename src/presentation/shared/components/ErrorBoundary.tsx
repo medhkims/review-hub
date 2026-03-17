@@ -40,7 +40,7 @@ export class ErrorBoundary extends Component<Props, State> {
           <AppText className="text-red-500 text-lg mb-4">Something went wrong</AppText>
           <Pressable
             onPress={this.handleReset}
-            className="bg-indigo-500 px-6 py-3 rounded-xl"
+            className="bg-neon-purple px-6 py-3 rounded-xl"
             accessibilityRole="button"
             accessibilityLabel="Try again"
           >

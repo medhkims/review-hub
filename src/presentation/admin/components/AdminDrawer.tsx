@@ -1,0 +1,343 @@
+import React, { useEffect, useRef } from 'react';
+import {
+  View,
+  Animated,
+  Pressable,
+  ScrollView,
+  Platform,
+} from 'react-native';
+import { router, usePathname } from 'expo-router';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { MaterialCommunityIcons } from '@expo/vector-icons';
+import { colors } from '@/core/theme/colors';
+import { AppText } from '@/presentation/shared/components/ui/AppText';
+import { useAdminDrawerStore } from '../store/adminDrawerStore';
+import { useAuth } from '@/presentation/auth/hooks/useAuth';
+
+const DRAWER_WIDTH = 280;
+
+interface MenuItem {
+  key: string;
+  label: string;
+  icon: keyof typeof MaterialCommunityIcons.glyphMap;
+  route: string;
+  pathMatch: string;
+}
+
+// Items whose routes are route-group indexes (pathname resolves to '/')
+// and need explicit activeKey tracking instead of pathname matching.
+const INDEX_ROUTE_KEYS = new Set(['insight', 'chat']);
+
+const MENU_ITEMS: MenuItem[] = [
+  {
+    key: 'dashboard',
+    label: 'Dashboard',
+    icon: 'view-dashboard-outline',
+    route: '/(main)/(admin)/global-insights',
+    pathMatch: '/global-insights',
+  },
+  {
+    key: 'insight',
+    label: 'Insight',
+    icon: 'chart-line',
+    route: '/(main)/(feed)',
+    pathMatch: '/',
+  },
+  {
+    key: 'verification',
+    label: 'Verification',
+    icon: 'shield-check-outline',
+    route: '/(main)/(settings)/pending-businesses',
+    pathMatch: '/pending-businesses',
+  },
+  {
+    key: 'categories',
+    label: 'Categories',
+    icon: 'tag-multiple-outline',
+    route: '/(main)/(feed)/categories',
+    pathMatch: '/categories',
+  },
+  {
+    key: 'media',
+    label: 'Media Control',
+    icon: 'image-multiple-outline',
+    route: '/(main)/(settings)/media-control',
+    pathMatch: '/media-control',
+  },
+  {
+    key: 'chat',
+    label: 'Chat',
+    icon: 'chat-outline',
+    route: '/(main)/(chat)',
+    pathMatch: '/',
+  },
+  {
+    key: 'boost',
+    label: 'Sub & Boost',
+    icon: 'rocket-launch-outline',
+    route: '/(main)/(admin)/boost-management',
+    pathMatch: '/boost-management',
+  },
+  {
+    key: 'help',
+    label: 'Help Center',
+    icon: 'help-circle-outline',
+    route: '/(main)/(settings)',
+    pathMatch: '/settings',
+  },
+  {
+    key: 'info',
+    label: 'Admin Info',
+    icon: 'account-circle-outline',
+    route: '/(main)/(settings)/admin-info',
+    pathMatch: '/admin-info',
+  },
+];
+
+export const AdminDrawer: React.FC = () => {
+  const { isOpen, close, activeKey, setActiveKey } = useAdminDrawerStore();
+  const { signOut } = useAuth();
+  const { top } = useSafeAreaInsets();
+  const pathname = usePathname();
+  const translateX = useRef(new Animated.Value(-DRAWER_WIDTH)).current;
+  const overlayOpacity = useRef(new Animated.Value(0)).current;
+
+  useEffect(() => {
+    if (isOpen) {
+      Animated.parallel([
+        Animated.spring(translateX, {
+          toValue: 0,
+          useNativeDriver: true,
+          tension: 65,
+          friction: 11,
+        }),
+        Animated.timing(overlayOpacity, {
+          toValue: 1,
+          duration: 200,
+          useNativeDriver: true,
+        }),
+      ]).start();
+    } else {
+      Animated.parallel([
+        Animated.timing(translateX, {
+          toValue: -DRAWER_WIDTH,
+          duration: 250,
+          useNativeDriver: true,
+        }),
+        Animated.timing(overlayOpacity, {
+          toValue: 0,
+          duration: 200,
+          useNativeDriver: true,
+        }),
+      ]).start();
+    }
+  }, [isOpen, overlayOpacity, translateX]);
+
+  const handleNavigate = (key: string, route: string) => {
+    setActiveKey(key);
+    close();
+    setTimeout(() => {
+      router.navigate(route as Parameters<typeof router.navigate>[0]);
+    }, 300);
+  };
+
+  return (
+    <>
+      {/* Overlay */}
+      <Animated.View
+        pointerEvents={isOpen ? 'auto' : 'none'}
+        style={{
+          position: 'absolute',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          backgroundColor: 'rgba(0,0,0,0.6)',
+          opacity: overlayOpacity,
+          zIndex: 100,
+        }}
+      >
+        <Pressable
+          style={{ flex: 1 }}
+          onPress={close}
+          accessibilityLabel="Close menu"
+          accessibilityRole="button"
+        />
+      </Animated.View>
+
+      {/* Drawer Panel */}
+      <Animated.View
+        style={{
+          position: 'absolute',
+          top: 0,
+          left: 0,
+          bottom: 0,
+          width: DRAWER_WIDTH,
+          backgroundColor: colors.cardDark,
+          transform: [{ translateX }],
+          zIndex: 101,
+          borderRightWidth: 1,
+          borderRightColor: colors.borderDark,
+        }}
+      >
+        {/* Header */}
+        <View
+          style={{
+            paddingTop: top + 20,
+            paddingBottom: 20,
+            paddingHorizontal: 20,
+            borderBottomWidth: 1,
+            borderBottomColor: colors.borderDark,
+            backgroundColor: `${colors.neonPurple}12`,
+          }}
+        >
+          <View
+            style={{
+              width: 52,
+              height: 52,
+              borderRadius: 26,
+              backgroundColor: `${colors.neonPurple}20`,
+              borderWidth: 2,
+              borderColor: `${colors.neonPurple}50`,
+              justifyContent: 'center',
+              alignItems: 'center',
+              marginBottom: 12,
+            }}
+          >
+            <MaterialCommunityIcons name="shield-crown" size={26} color={colors.neonPurple} />
+          </View>
+          <AppText style={{ fontSize: 16, fontWeight: '700', color: colors.white }}>
+            Administrator
+          </AppText>
+          <AppText style={{ fontSize: 12, color: colors.textSlate400, marginTop: 2 }}>
+            Admin Panel
+          </AppText>
+        </View>
+
+        {/* Menu Items */}
+        <ScrollView style={{ flex: 1 }} showsVerticalScrollIndicator={false}>
+          <View style={{ paddingVertical: 8 }}>
+            {MENU_ITEMS.map((item) => {
+              let active: boolean;
+              if (INDEX_ROUTE_KEYS.has(item.key)) {
+                // Index routes all resolve to '/' — use stored activeKey.
+                // Fall back to 'insight' when no key is stored yet.
+                active = (activeKey ?? 'insight') === item.key;
+              } else {
+                active = pathname.endsWith(item.pathMatch);
+              }
+              return (
+                <Pressable
+                  key={item.key}
+                  onPress={() => handleNavigate(item.key, item.route)}
+                  accessibilityRole="menuitem"
+                  accessibilityLabel={item.label}
+                  accessibilityState={{ selected: active }}
+                  style={({ pressed }) => ({
+                    flexDirection: 'row',
+                    alignItems: 'center',
+                    gap: 14,
+                    paddingHorizontal: 20,
+                    paddingVertical: 14,
+                    marginHorizontal: 8,
+                    borderRadius: 12,
+                    backgroundColor: active
+                      ? `${colors.neonPurple}22`
+                      : pressed
+                      ? `${colors.neonPurple}10`
+                      : 'transparent',
+                    borderWidth: active ? 1 : 0,
+                    borderColor: active ? `${colors.neonPurple}50` : 'transparent',
+                  })}
+                >
+                  {active && (
+                    <View style={{
+                      position: 'absolute',
+                      left: 0,
+                      top: 8,
+                      bottom: 8,
+                      width: 3,
+                      borderRadius: 2,
+                      backgroundColor: colors.neonPurple,
+                    }} />
+                  )}
+                  <View
+                    style={{
+                      width: 38,
+                      height: 38,
+                      borderRadius: 10,
+                      backgroundColor: active ? `${colors.neonPurple}30` : `${colors.neonPurple}15`,
+                      justifyContent: 'center',
+                      alignItems: 'center',
+                    }}
+                  >
+                    <MaterialCommunityIcons
+                      name={item.icon}
+                      size={20}
+                      color={active ? colors.neonPurple : colors.textSlate400}
+                    />
+                  </View>
+                  <AppText style={{
+                    fontSize: 14,
+                    fontWeight: active ? '700' : '500',
+                    color: active ? colors.white : colors.textSlate200,
+                  }}>
+                    {item.label}
+                  </AppText>
+                  {active && (
+                    <View style={{ flex: 1, alignItems: 'flex-end' }}>
+                      <View style={{
+                        width: 6,
+                        height: 6,
+                        borderRadius: 3,
+                        backgroundColor: colors.neonPurple,
+                      }} />
+                    </View>
+                  )}
+                </Pressable>
+              );
+            })}
+          </View>
+        </ScrollView>
+
+        {/* Logout */}
+        <Pressable
+          onPress={() => { close(); signOut(); }}
+          accessibilityRole="button"
+          accessibilityLabel="Log out"
+          style={({ pressed }) => ({
+            flexDirection: 'row',
+            alignItems: 'center',
+            gap: 12,
+            paddingHorizontal: 20,
+            paddingVertical: 14,
+            borderTopWidth: 1,
+            borderTopColor: colors.borderDark,
+            opacity: pressed ? 0.7 : 1,
+          })}
+        >
+          <MaterialCommunityIcons name="logout" size={20} color="#EF4444" />
+          <AppText style={{ fontSize: 14, color: '#EF4444', fontWeight: '600' }}>Log Out</AppText>
+        </Pressable>
+
+        {/* Close */}
+        <Pressable
+          onPress={close}
+          accessibilityRole="button"
+          accessibilityLabel="Close menu"
+          style={({ pressed }) => ({
+            flexDirection: 'row',
+            alignItems: 'center',
+            gap: 12,
+            paddingHorizontal: 20,
+            paddingVertical: Platform.OS === 'ios' ? 20 : 16,
+            opacity: pressed ? 0.7 : 1,
+          })}
+        >
+          <MaterialCommunityIcons name="close" size={20} color={colors.textSlate400} />
+          <AppText style={{ fontSize: 14, color: colors.textSlate400 }}>Close</AppText>
+        </Pressable>
+      </Animated.View>
+    </>
+  );
+};

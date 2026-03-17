@@ -6,7 +6,7 @@ import { Failure } from '@/core/error/failures';
 export class SignInWithGoogleUseCase {
   constructor(private readonly authRepository: AuthRepository) {}
 
-  async execute(): Promise<Either<Failure, UserEntity>> {
-    return this.authRepository.signInWithGoogle();
+  async execute(loginHint?: string): Promise<Either<Failure, UserEntity>> {
+    return this.authRepository.signInWithGoogle(loginHint);
   }
 }

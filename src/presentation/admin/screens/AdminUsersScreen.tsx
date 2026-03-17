@@ -8,6 +8,7 @@ import { AnalyticsScreens } from '@/core/analytics/analyticsKeys';
 import { colors } from '@/core/theme/colors';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { UserRole, USER_ROLES } from '@/domain/profile/entities/userRole';
+import { AdminMenuButton } from '../components/AdminMenuButton';
 
 interface UserItem {
   id: string;
@@ -127,7 +128,8 @@ export default function AdminUsersScreen() {
   return (
     <ScreenLayout>
       {/* Header */}
-      <View style={{ paddingHorizontal: 24, paddingTop: 8, paddingBottom: 16 }}>
+      <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12, paddingHorizontal: 24, paddingTop: 8, paddingBottom: 16 }}>
+        <AdminMenuButton />
         <AppText style={{ fontSize: 28, fontWeight: '700', color: colors.white, letterSpacing: -0.5 }}>
           {t('admin.users.title')}
         </AppText>

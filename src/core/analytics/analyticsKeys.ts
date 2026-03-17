@@ -13,6 +13,7 @@ export class AnalyticsScreens {
   static readonly ADD_BUSINESS = 'add_business_screen';
   static readonly CATEGORY_SELECTION = 'category_selection_screen';
   static readonly ALL_BUSINESSES = 'all_businesses_screen';
+  static readonly MULTI_CATEGORY_RESULTS = 'multi_category_results_screen';
 
   // Profile
   static readonly PROFILE = 'profile_screen';

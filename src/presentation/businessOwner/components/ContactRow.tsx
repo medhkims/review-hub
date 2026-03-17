@@ -29,22 +29,8 @@ export const ContactRow: React.FC<ContactRowProps> = ({
   const { t } = useTranslation();
 
   if (populated) {
-    return (
-      <Pressable
-        onPress={onPress}
-        accessibilityLabel={label}
-        accessibilityRole="button"
-        style={({ pressed }) => ({
-          flexDirection: 'row',
-          alignItems: 'center',
-          justifyContent: 'space-between',
-          padding: 14,
-          borderRadius: 16,
-          backgroundColor: colors.midnight,
-          borderWidth: 1,
-          borderColor: pressed ? `${colors.neonPurple}30` : 'rgba(255, 255, 255, 0.05)',
-        })}
-      >
+    const rowContent = (
+      <>
         <View style={{ flexDirection: 'row', alignItems: 'center', gap: 16, flex: 1 }}>
           <View
             style={{
@@ -82,8 +68,7 @@ export const ContactRow: React.FC<ContactRowProps> = ({
             )}
           </View>
         </View>
-
-        {manageable ? (
+        {onPress && (manageable ? (
           <View
             style={{
               paddingHorizontal: 8,
@@ -98,8 +83,47 @@ export const ContactRow: React.FC<ContactRowProps> = ({
           </View>
         ) : (
           <MaterialCommunityIcons name="pencil" size={14} color={colors.textSlate500} />
-        )}
-      </Pressable>
+        ))}
+      </>
+    );
+
+    if (onPress) {
+      return (
+        <Pressable
+          onPress={onPress}
+          accessibilityLabel={label}
+          accessibilityRole="button"
+          style={({ pressed }) => ({
+            flexDirection: 'row',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            padding: 14,
+            borderRadius: 16,
+            backgroundColor: colors.midnight,
+            borderWidth: 1,
+            borderColor: pressed ? `${colors.neonPurple}30` : 'rgba(255, 255, 255, 0.05)',
+          })}
+        >
+          {rowContent}
+        </Pressable>
+      );
+    }
+
+    return (
+      <View
+        style={{
+          flexDirection: 'row',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          padding: 14,
+          borderRadius: 16,
+          backgroundColor: colors.midnight,
+          borderWidth: 1,
+          borderColor: 'rgba(255, 255, 255, 0.05)',
+        }}
+      >
+        {rowContent}
+      </View>
     );
   }
 

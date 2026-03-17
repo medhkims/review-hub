@@ -27,10 +27,7 @@ export const DescriptionCard: React.FC<DescriptionCardProps> = ({ description, o
         }}
       >
         {/* Header */}
-        <Pressable
-          onPress={() => setExpanded(!expanded)}
-          accessibilityLabel={t('businessOwner.companyProfile.description')}
-          accessibilityRole="button"
+        <View
           style={{
             backgroundColor: `${colors.neonPurple}08`,
             paddingHorizontal: 24,
@@ -42,23 +39,53 @@ export const DescriptionCard: React.FC<DescriptionCardProps> = ({ description, o
             borderLeftColor: colors.neonPurple,
           }}
         >
-          <AppText style={{ fontSize: 18, fontWeight: '700', color: colors.neonPurple, letterSpacing: 0.5 }}>
-            {t('businessOwner.companyProfile.description')}
-          </AppText>
-          <MaterialCommunityIcons
-            name={expanded ? 'chevron-up' : 'chevron-down'}
-            size={24}
-            color={colors.neonPurple}
-          />
-        </Pressable>
+          <Pressable
+            onPress={() => setExpanded(!expanded)}
+            accessibilityLabel={t('businessOwner.companyProfile.description')}
+            accessibilityRole="button"
+            style={{ flex: 1 }}
+          >
+            <AppText style={{ fontSize: 18, fontWeight: '700', color: colors.neonPurple, letterSpacing: 0.5 }}>
+              {t('businessOwner.companyProfile.description')}
+            </AppText>
+          </Pressable>
+          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
+            {onPress && (
+              <Pressable
+                onPress={onPress}
+                accessibilityLabel={t('businessOwner.companyProfile.editProfile')}
+                accessibilityRole="button"
+              >
+                <MaterialCommunityIcons name="pencil" size={18} color={colors.neonPurple} />
+              </Pressable>
+            )}
+            <Pressable
+              onPress={() => setExpanded(!expanded)}
+              accessibilityLabel={expanded ? 'Collapse' : 'Expand'}
+              accessibilityRole="button"
+            >
+              <MaterialCommunityIcons
+                name={expanded ? 'chevron-up' : 'chevron-down'}
+                size={24}
+                color={colors.neonPurple}
+              />
+            </Pressable>
+          </View>
+        </View>
 
         {/* Content */}
         {expanded && (
-          <View style={{ padding: 24 }}>
+          <Pressable
+            onPress={onPress}
+            disabled={!onPress}
+            accessibilityLabel={t('businessOwner.companyProfile.description')}
+            accessibilityRole={onPress ? 'button' : 'text'}
+            style={{ padding: 24 }}
+          >
             <AppText style={{ fontSize: 14, color: colors.textSlate200, lineHeight: 22, fontWeight: '300' }}>
               {description || t('businessOwner.companyProfile.descriptionPlaceholder')}
             </AppText>
-          </View>
+          </Pressable>
         )}
       </View>
     );

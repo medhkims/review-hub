@@ -5,10 +5,12 @@ import {
   getDocs,
   deleteDoc,
   setDoc,
-  serverTimestamp,
+  addDoc,
+  Timestamp,
   query,
   orderBy,
-  getDoc,
+  where,
+  limit,
 } from 'firebase/firestore';
 import { WishlistItemModel } from '../models/wishlistItemModel';
 import { WishlistAddInput } from '@/domain/wishlist/repositories/wishlistRepository';
@@ -51,6 +53,8 @@ export class WishlistRemoteDataSourceImpl implements WishlistRemoteDataSource {
       // Use placeId as document ID to prevent duplicates
       const itemRef = doc(firestore, 'users', userId, 'wishlist', input.placeId);
 
+      const addedAt = Timestamp.fromDate(new Date());
+
       await setDoc(itemRef, {
         user_id: userId,
         place_id: input.placeId,
@@ -59,11 +63,27 @@ export class WishlistRemoteDataSourceImpl implements WishlistRemoteDataSource {
         rating: input.rating,
         review_count: input.reviewCount,
         location: input.location,
-        added_at: serverTimestamp(),
+        added_at: addedAt,
       });
 
-      const snap = await getDoc(itemRef);
-      return { id: snap.id, ...snap.data() } as WishlistItemModel;
+      // Also write to top-level favorites collection so business owners can count saves
+      addDoc(collection(firestore, 'favorites'), {
+        user_id: userId,
+        business_id: input.placeId,
+        added_at: addedAt,
+      }).catch(() => {});
+
+      return {
+        id: input.placeId,
+        user_id: userId,
+        place_id: input.placeId,
+        place_name: input.placeName,
+        place_image_url: input.placeImageUrl,
+        rating: input.rating,
+        review_count: input.reviewCount,
+        location: input.location,
+        added_at: addedAt,
+      };
     } catch (error: unknown) {
       const err = error as { message?: string; code?: string };
       throw new ServerException(
@@ -77,6 +97,16 @@ export class WishlistRemoteDataSourceImpl implements WishlistRemoteDataSource {
     try {
       const itemRef = doc(firestore, 'users', userId, 'wishlist', itemId);
       await deleteDoc(itemRef);
+
+      // Also remove the corresponding favorites doc (fire-and-forget)
+      getDocs(query(
+        collection(firestore, 'favorites'),
+        where('user_id', '==', userId),
+        where('business_id', '==', itemId),
+        limit(1),
+      )).then(snap => {
+        snap.forEach(d => deleteDoc(d.ref).catch(() => {}));
+      }).catch(() => {});
     } catch (error: unknown) {
       const err = error as { message?: string; code?: string };
       throw new ServerException(

@@ -50,6 +50,8 @@ export default ({ config }: ConfigContext): ExpoConfig => {
         measurementId: process.env.FIREBASE_MEASUREMENT_ID ?? '',
         webClientId: process.env.FIREBASE_WEB_CLIENT_ID ?? '',
       },
+      googleMapsApiKey: process.env.GOOGLE_MAPS_API_KEY ?? '',
+      foursquareApiKey: process.env.FOURSQUARE_API_KEY ?? '',
     },
   };
 };

@@ -1,5 +1,7 @@
 import { UserRole } from './userRole';
 
+export type Gender = 'male' | 'female';
+
 export interface ProfileEntity {
   id: string;
   userId: string;
@@ -11,5 +13,6 @@ export interface ProfileEntity {
   followersCount: number;
   followingCount: number;
   role: UserRole;
+  gender: Gender | null;
   updatedAt: Date;
 }

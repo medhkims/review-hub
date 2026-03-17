@@ -8,6 +8,7 @@ import { SectionHeader } from '@/presentation/shared/components/ui/SectionHeader
 import { useAnalyticsScreen } from '@/presentation/shared/hooks/useAnalyticsScreen';
 import { AnalyticsScreens } from '@/core/analytics/analyticsKeys';
 import { colors } from '@/core/theme/colors';
+import { AdminMenuButton } from '../components/AdminMenuButton';
 import { GlobalInsightsStatCard } from '../components/GlobalInsightsStatCard';
 import { Top5CompaniesSection, MOCK_TOP_COMPANIES } from '../components/Top5CompaniesSection';
 import { UserActivitySection, MOCK_USER_ACTIVITY_METRICS } from '../components/UserActivitySection';
@@ -219,12 +220,15 @@ export default function AdminGlobalInsightsScreen() {
             paddingBottom: 8,
           }}
         >
-          <AppText style={{ fontSize: 20, fontWeight: '700', color: colors.white }}>
-            {'Hello, '}
-            <AppText style={{ fontSize: 20, fontWeight: '700', color: colors.neonPurple }}>
-              {t('roles.admin', { defaultValue: 'Admin' })}
+          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
+            <AdminMenuButton />
+            <AppText style={{ fontSize: 20, fontWeight: '700', color: colors.white }}>
+              {'Hello, '}
+              <AppText style={{ fontSize: 20, fontWeight: '700', color: colors.neonPurple }}>
+                {t('roles.admin', { defaultValue: 'Admin' })}
+              </AppText>
             </AppText>
-          </AppText>
+          </View>
           <Pressable
             accessibilityRole="button"
             accessibilityLabel={t('notifications.title', { defaultValue: 'Notifications' })}

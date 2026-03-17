@@ -1,17 +1,21 @@
-import React from 'react';
-import { View, Image, Pressable } from 'react-native';
-import { LinearGradient } from 'expo-linear-gradient';
+import React, { useState } from 'react';
+import { View, Image, Pressable, Platform } from 'react-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useTranslation } from 'react-i18next';
 import { AppText } from '@/presentation/shared/components/ui/AppText';
 import { colors } from '@/core/theme/colors';
+import { getCategoryDefaultCover, getCategoryDefaultLogo } from '@/core/utils/categoryDefaultImages';
+import { ImageSourcePropType } from 'react-native';
+import { useCategoryDefaultStore } from '@/presentation/shared/store/categoryDefaultStore';
 
 interface BusinessCoverSectionProps {
   coverImageUrl: string | null;
   logoUrl: string | null;
+  categoryId: string;
   name: string;
   categoryName: string;
-  isOpen: boolean;
+  /** null = no badge; true/false = open/closed badge */
+  openStatus: boolean | null;
   rating: number;
   reviewCount: number;
   onBackPress: () => void;
@@ -40,33 +44,51 @@ export { StarRating };
 export const BusinessCoverSection: React.FC<BusinessCoverSectionProps> = ({
   coverImageUrl,
   logoUrl,
+  categoryId,
   name,
   categoryName,
-  isOpen,
+  openStatus,
   rating,
   reviewCount,
   onBackPress,
 }) => {
   const { t } = useTranslation();
+  const [coverError, setCoverError] = useState(false);
+  const [logoError, setLogoError] = useState(false);
+  const remoteDefaults = useCategoryDefaultStore((s) => s.defaults[categoryId]);
+
+  const isValidUrl = (url: string | null): boolean =>
+    !!url && (url.startsWith('http://') || url.startsWith('https://'));
+
+  const coverSource: ImageSourcePropType | null = isValidUrl(coverImageUrl)
+    ? { uri: coverImageUrl! }
+    : remoteDefaults?.coverImageUrl
+      ? { uri: remoteDefaults.coverImageUrl }
+      : getCategoryDefaultCover(categoryId);
+
+  const logoSource: ImageSourcePropType | null = isValidUrl(logoUrl)
+    ? { uri: logoUrl! }
+    : remoteDefaults?.profileImageUrl
+      ? { uri: remoteDefaults.profileImageUrl }
+      : getCategoryDefaultLogo(categoryId);
 
   return (
     <View style={{ alignItems: 'center' }}>
       {/* Cover Photo */}
-      <View style={{ width: '100%', height: 256, overflow: 'hidden' }}>
-        {coverImageUrl ? (
+      <View style={Platform.OS === 'web'
+        ? { width: '100%', aspectRatio: 16 / 9, maxHeight: 320, overflow: 'hidden', backgroundColor: colors.cardDark }
+        : { width: '100%', height: 256, overflow: 'hidden', backgroundColor: colors.cardDark }}>
+        {coverSource !== null && !coverError ? (
           <Image
-            source={{ uri: coverImageUrl }}
+            source={coverSource}
             style={{ width: '100%', height: '100%' }}
-            resizeMode="cover"
+            resizeMode={Platform.OS === 'web' ? 'cover' : 'contain'}
             accessibilityLabel={t('businessDetail.coverPhoto')}
+            onError={() => setCoverError(true)}
           />
         ) : (
           <View style={{ width: '100%', height: '100%', backgroundColor: colors.cardDark }} />
         )}
-        <LinearGradient
-          colors={['transparent', 'rgba(15, 23, 42, 0.6)', colors.midnight]}
-          style={{ position: 'absolute', left: 0, right: 0, bottom: 0, height: '100%' }}
-        />
 
         {/* Back Button */}
         <Pressable
@@ -120,12 +142,13 @@ export const BusinessCoverSection: React.FC<BusinessCoverSectionProps> = ({
             justifyContent: 'center',
           }}
         >
-          {logoUrl ? (
+          {logoSource !== null && !logoError ? (
             <Image
-              source={{ uri: logoUrl }}
+              source={logoSource}
               style={{ width: '100%', height: '100%' }}
               resizeMode="cover"
               accessibilityLabel={`${name} logo`}
+              onError={() => setLogoError(true)}
             />
           ) : (
             <MaterialCommunityIcons name="store" size={32} color={colors.neonPurple} />
@@ -152,10 +175,14 @@ export const BusinessCoverSection: React.FC<BusinessCoverSectionProps> = ({
         <AppText style={{ fontSize: 14, fontWeight: '300', color: colors.textSlate400 }}>
           {categoryName}
         </AppText>
-        <View style={{ width: 4, height: 4, borderRadius: 2, backgroundColor: colors.textSlate600 }} />
-        <AppText style={{ fontSize: 14, fontWeight: '500', color: isOpen ? colors.success : colors.error }}>
-          {isOpen ? t('businessDetail.openNow') : t('businessDetail.closed')}
-        </AppText>
+        {openStatus !== null && (
+          <>
+            <View style={{ width: 4, height: 4, borderRadius: 2, backgroundColor: colors.textSlate600 }} />
+            <AppText style={{ fontSize: 14, fontWeight: '500', color: openStatus ? colors.success : colors.error }}>
+              {openStatus ? t('businessDetail.openNow') : t('businessDetail.closed')}
+            </AppText>
+          </>
+        )}
       </View>
 
       {/* Rating */}

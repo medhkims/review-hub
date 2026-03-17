@@ -6,7 +6,7 @@ import { Failure } from '@/core/error/failures';
 export class SearchBusinessesUseCase {
   constructor(private readonly businessRepository: BusinessRepository) {}
 
-  async execute(query: string): Promise<Either<Failure, BusinessEntity[]>> {
-    return this.businessRepository.searchBusinesses(query);
+  async execute(query: string, categoryId?: string | null): Promise<Either<Failure, BusinessEntity[]>> {
+    return this.businessRepository.searchBusinesses(query, categoryId);
   }
 }

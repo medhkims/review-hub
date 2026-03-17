@@ -7,6 +7,7 @@ export interface NetworkInfo {
 export class NetworkInfoImpl implements NetworkInfo {
   async isConnected(): Promise<boolean> {
     const state = await NetInfo.fetch();
-    return state.isConnected ?? false;
+    // Treat null/unknown as connected (matches useNetworkStatus behaviour)
+    return state.isConnected !== false;
   }
 }

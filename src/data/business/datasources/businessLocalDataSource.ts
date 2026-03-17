@@ -10,7 +10,7 @@ export interface BusinessLocalDataSource {
 }
 
 export class BusinessLocalDataSourceImpl implements BusinessLocalDataSource {
-  private readonly CACHE_PREFIX = '@business_cache_';
+  private readonly CACHE_PREFIX = '@business_cache_v2_';
 
   async getCachedBusinesses(key: string): Promise<BusinessModel[] | null> {
     try {

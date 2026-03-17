@@ -1,6 +1,9 @@
-import { useCallback, useEffect, useRef } from 'react';
+import { useCallback, useRef } from 'react';
+import { useFocusEffect } from 'expo-router';
 import { useBusinessDetailStore } from '../store/businessDetailStore';
 import { useAuthStore } from '@/presentation/auth/store/authStore';
+import { useWishlistStore } from '@/presentation/wishlist/store/wishlistStore';
+import { useRoleStore } from '@/presentation/auth/store/roleStore';
 import { container } from '@/core/di/container';
 import { AnalyticsHelper } from '@/core/analytics/analyticsHelper';
 import { AnalyticsEvents, AnalyticsParams } from '@/core/analytics/analyticsKeys';
@@ -22,13 +25,15 @@ export const useBusinessDetail = (businessId: string) => {
   } = useBusinessDetailStore();
 
   const { user } = useAuthStore();
+  const { role } = useRoleStore();
+  const { isWishlisted, addItem: addWishlistItem, removeItem: removeWishlistItem } = useWishlistStore();
   const isMountedRef = useRef(true);
 
   const fetchDetail = useCallback(async () => {
     setLoading(true);
     setError(null);
 
-    const result = await container.getBusinessDetailUseCase.execute(businessId);
+    const result = await container.getBusinessDetailUseCase.execute(businessId, role === 'admin');
     if (!isMountedRef.current) return;
 
     result.fold(
@@ -51,7 +56,7 @@ export const useBusinessDetail = (businessId: string) => {
     );
 
     setLoading(false);
-  }, [businessId, setBusiness, setReviews, setLoading, setError, setReviewsError]);
+  }, [businessId, role, setBusiness, setReviews, setLoading, setError, setReviewsError]);
 
   const toggleFavorite = useCallback(async () => {
     if (!user || !business) return;
@@ -71,14 +76,58 @@ export const useBusinessDetail = (businessId: string) => {
     );
   }, [user, business, setFavorite]);
 
-  useEffect(() => {
-    isMountedRef.current = true;
-    fetchDetail();
-    return () => {
-      isMountedRef.current = false;
-      reset();
-    };
-  }, [businessId]);
+  const toggleWishlist = useCallback(async () => {
+    if (!user || !business) return;
+    const alreadySaved = isWishlisted(business.id);
+
+    if (alreadySaved) {
+      removeWishlistItem(business.id);
+      AnalyticsHelper.sendEvent(AnalyticsEvents.REMOVE_FROM_WISHLIST, {
+        [AnalyticsParams.BUSINESS_ID]: business.id,
+        [AnalyticsParams.BUSINESS_NAME]: business.name,
+      });
+      await container.removeFromWishlistUseCase.execute(user.id, business.id);
+    } else {
+      const result = await container.addToWishlistUseCase.execute(user.id, {
+        placeId: business.id,
+        placeName: business.name,
+        placeImageUrl: business.coverImageUrl,
+        rating: business.rating,
+        reviewCount: business.reviewCount,
+        location: business.location,
+      });
+      result.fold(
+        () => {},
+        (newItem) => {
+          addWishlistItem(newItem);
+          AnalyticsHelper.sendEvent(AnalyticsEvents.ADD_TO_WISHLIST, {
+            [AnalyticsParams.BUSINESS_ID]: business.id,
+            [AnalyticsParams.BUSINESS_NAME]: business.name,
+          });
+        },
+      );
+    }
+  }, [user, business, isWishlisted, removeWishlistItem, addWishlistItem]);
+
+  useFocusEffect(
+    useCallback(() => {
+      isMountedRef.current = true;
+      fetchDetail();
+      return () => {
+        isMountedRef.current = false;
+        reset();
+      };
+    }, [fetchDetail, reset]),
+  );
+
+  const checkHasReviewed = useCallback(async (): Promise<boolean> => {
+    if (!user || !business) return false;
+    const result = await container.getUserReviewsUseCase.execute(user.id);
+    return result.fold(
+      () => false,
+      (userReviews) => userReviews.some((r) => r.businessId === business.id),
+    );
+  }, [user, business]);
 
   return {
     business,
@@ -87,6 +136,9 @@ export const useBusinessDetail = (businessId: string) => {
     error,
     reviewsError,
     toggleFavorite,
+    toggleWishlist,
+    isWishlisted,
+    checkHasReviewed,
     refresh: fetchDetail,
   };
 };

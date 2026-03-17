@@ -1,198 +1,198 @@
 import React, { useState, useCallback } from 'react';
-import { View, ScrollView, Pressable, TextInput } from 'react-native';
+import { View, ScrollView, Pressable, TextInput, ActivityIndicator } from 'react-native';
+import { router } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 import { ScreenLayout } from '@/presentation/shared/layouts/ScreenLayout';
 import { AppText } from '@/presentation/shared/components/ui/AppText';
-import { SectionHeader } from '@/presentation/shared/components/ui/SectionHeader';
 import { Card } from '@/presentation/shared/components/ui/Card';
 import { useAnalyticsScreen } from '@/presentation/shared/hooks/useAnalyticsScreen';
 import { AnalyticsScreens } from '@/core/analytics/analyticsKeys';
 import { colors } from '@/core/theme/colors';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
+import { useAdminDashboard } from '../hooks/useAdminDashboard';
+import { CompanyRankItem } from '@/domain/admin/entities/adminDashboardEntity';
+import { AdminMenuButton } from '../components/AdminMenuButton';
 
-// ── Types ────────────────────────────────────────────────────────────────────
+// ── Types ─────────────────────────────────────────────────────────────────────
 type TabKey = 'COMPANY' | 'MODERATOR' | 'GLOBAL' | 'FINANCIAL';
 type IconName = keyof typeof MaterialCommunityIcons.glyphMap;
-interface StatItem { label: string; value: string; change: string; positive: boolean; accent: string; icon: IconName }
-interface CompanyItem { id: string; name: string; verified: boolean; views: string; searches: string; reviews: string }
-interface EngagementItem { label: string; value: string; accent: string; icon: IconName }
-interface CompanyListSection { title: string; badgeLabel: string; badgeColor: string; companies: CompanyItem[] }
 
-// ── Mock Data ────────────────────────────────────────────────────────────────
-const TABS: TabKey[] = ['COMPANY', 'MODERATOR', 'GLOBAL', 'FINANCIAL'];
+// ── Helpers ───────────────────────────────────────────────────────────────────
+function formatCount(n: number): string {
+  if (n >= 1_000_000) return `${(n / 1_000_000).toFixed(1)}M`;
+  if (n >= 1_000) return `${(n / 1_000).toFixed(1)}k`;
+  return String(n);
+}
 
-const MAIN_STAT: StatItem = {
-  label: 'Total Companies', value: '1,248', change: '+12%', positive: true, accent: colors.neonPurple, icon: 'office-building',
-};
-const GRID_STATS: StatItem[] = [
-  { label: 'Verified', value: '856', change: '+8%', positive: true, accent: colors.green, icon: 'check-decagram' },
-  { label: 'Unverified', value: '392', change: '-2%', positive: false, accent: colors.yellow, icon: 'alert-decagram' },
-  { label: 'Premium', value: '124', change: '+15%', positive: true, accent: colors.red, icon: 'crown' },
-  { label: 'Verif. Basic', value: '732', change: '+4%', positive: true, accent: colors.blue, icon: 'shield-check' },
-];
-const ENGAGEMENT: EngagementItem[] = [
-  { label: 'Total Visits', value: '45.2k', accent: colors.cyan, icon: 'eye' },
-  { label: 'Searches', value: '12.8k', accent: colors.orange, icon: 'magnify' },
-  { label: 'Reviews', value: '3.4k', accent: colors.pink, icon: 'star' },
-];
-const LISTS: CompanyListSection[] = [
-  { title: 'TOP TOTAL COMPANIES', badgeLabel: 'Top 4', badgeColor: colors.textSlate400, companies: [
-    { id: '1', name: 'Pasta Cosi', verified: true, views: '12.4k', searches: '8.2k', reviews: '128' },
-    { id: '2', name: 'Le Malouf', verified: true, views: '10.1k', searches: '6.5k', reviews: '94' },
-    { id: '3', name: 'Dar El Jeld', verified: false, views: '9.8k', searches: '5.1k', reviews: '82' },
-    { id: '4', name: 'Bella Spa', verified: true, views: '8.5k', searches: '4.3k', reviews: '65' },
-  ]},
-  { title: 'TOP VERIFIED', badgeLabel: 'Active', badgeColor: colors.green, companies: [
-    { id: '5', name: 'Cafe Culture', verified: true, views: '15.2k', searches: '9.1k', reviews: '210' },
-    { id: '6', name: 'Tunis Tech', verified: true, views: '11.5k', searches: '7.2k', reviews: '145' },
-    { id: '7', name: 'Oasis Gym', verified: true, views: '9.3k', searches: '4.8k', reviews: '88' },
-    { id: '8', name: 'Sfax Motors', verified: true, views: '8.9k', searches: '5.5k', reviews: '76' },
-  ]},
-  { title: 'TOP UNVERIFIED', badgeLabel: 'Pending', badgeColor: colors.textSlate400, companies: [
-    { id: '9', name: 'Bizerte Bakery', verified: false, views: '4.2k', searches: '1.2k', reviews: '12' },
-    { id: '10', name: 'Hammamet Souk', verified: false, views: '3.8k', searches: '980', reviews: '8' },
-    { id: '11', name: 'Kairouan Carpets', verified: false, views: '2.5k', searches: '650', reviews: '5' },
-    { id: '12', name: 'Monastir Textiles', verified: false, views: '1.9k', searches: '420', reviews: '2' },
-  ]},
-  { title: 'TOP PREMIUM', badgeLabel: 'Elite', badgeColor: colors.red, companies: [
-    { id: '13', name: 'Royal Hotel', verified: true, views: '22.4k', searches: '14.2k', reviews: '450' },
-    { id: '14', name: 'Golden Mall', verified: true, views: '18.1k', searches: '10.5k', reviews: '320' },
-    { id: '15', name: 'Luxury Rides', verified: true, views: '14.8k', searches: '8.9k', reviews: '215' },
-    { id: '16', name: 'Elite Consulting', verified: true, views: '12.2k', searches: '6.8k', reviews: '180' },
-  ]},
-  { title: 'TOP VERIFIED BASIC', badgeLabel: 'Standard', badgeColor: colors.blue, companies: [
-    { id: '17', name: 'Djerba Delights', verified: true, views: '6.5k', searches: '3.2k', reviews: '45' },
-    { id: '18', name: 'Tozeur Handicrafts', verified: true, views: '5.8k', searches: '2.9k', reviews: '38' },
-    { id: '19', name: 'Nabeul Souvenirs', verified: true, views: '5.1k', searches: '2.5k', reviews: '32' },
-    { id: '20', name: 'Gafsa Electronics', verified: true, views: '4.5k', searches: '2.1k', reviews: '28' },
-  ]},
-];
+// ── Shared primitives ─────────────────────────────────────────────────────────
+const AccentBar: React.FC<{ color: string; side?: 'left' | 'bottom' }> = ({ color, side = 'left' }) =>
+  side === 'left' ? (
+    <View style={{ position: 'absolute', left: 0, top: 0, bottom: 0, width: 3, backgroundColor: color }} />
+  ) : (
+    <View style={{ position: 'absolute', bottom: 0, left: 0, right: 0, height: 2, backgroundColor: `${color}80` }} />
+  );
 
-// ── Helpers ──────────────────────────────────────────────────────────────────
-const AccentBar: React.FC<{ color: string; side?: 'left' | 'bottom' }> = ({ color, side = 'left' }) => (
-  <View style={{
-    position: 'absolute', backgroundColor: `${color}${side === 'bottom' ? '80' : 'FF'}`,
-    shadowColor: color, shadowOffset: { width: 0, height: 0 }, shadowOpacity: 0.7, shadowRadius: 8,
-    ...(side === 'left' ? { left: 0, top: 0, bottom: 0, width: 3 } : { bottom: 0, left: 0, right: 0, height: 2 }),
-  }} />
-);
-
-const TabPill: React.FC<{ label: string; active: boolean; onPress: () => void }> = ({ label, active, onPress }) => (
-  <Pressable onPress={onPress} accessibilityRole="tab" accessibilityLabel={label}
+interface TabPillProps { label: string; active: boolean; onPress: () => void }
+const TabPill: React.FC<TabPillProps> = ({ label, active, onPress }) => (
+  <Pressable
+    onPress={onPress}
+    accessibilityRole="tab"
+    accessibilityLabel={label}
     accessibilityState={{ selected: active }}
     style={{
-      flex: 1, borderRadius: 9999, borderWidth: 1, paddingVertical: 10, paddingHorizontal: 4,
+      flex: 1, borderRadius: 9999, borderWidth: 1, paddingVertical: 10,
       alignItems: 'center', justifyContent: 'center',
       borderColor: active ? colors.neonPurple : colors.borderDark,
       backgroundColor: active ? `${colors.neonPurple}1A` : colors.cardDark,
-    }}>
-    <AppText style={{ fontSize: 10, fontWeight: active ? '700' : '500', color: active ? colors.neonPurple : colors.textSlate400, textAlign: 'center' }}>
+    }}
+  >
+    <AppText style={{ fontSize: 10, fontWeight: active ? '700' : '500', color: active ? colors.neonPurple : colors.textSlate400 }}>
       {label}
     </AppText>
   </Pressable>
 );
 
-const ChangeBadge: React.FC<{ change: string; positive: boolean }> = ({ change, positive }) => (
-  <View style={{
-    flexDirection: 'row', alignItems: 'center', paddingHorizontal: 6, paddingVertical: 2, borderRadius: 9999, borderWidth: 1,
-    backgroundColor: positive ? `${colors.green}1A` : `${colors.red}1A`,
-    borderColor: positive ? `${colors.green}33` : `${colors.red}33`,
-  }}>
-    <MaterialCommunityIcons name={positive ? 'trending-up' : 'trending-down'} size={10} color={positive ? colors.green : colors.red} />
-    <AppText style={{ fontSize: 10, fontWeight: '500', color: positive ? colors.green : colors.red, marginLeft: 2 }}>{change}</AppText>
-  </View>
-);
-
-const StatCard: React.FC<{ stat: StatItem; large?: boolean }> = ({ stat, large = false }) => (
-  <View accessibilityRole="summary" accessibilityLabel={`${stat.label}: ${stat.value}, ${stat.change}`}
-    style={{ flex: large ? undefined : 1, backgroundColor: colors.cardDark, borderRadius: 12, padding: large ? 20 : 16, overflow: 'hidden' }}>
-    <AccentBar color={stat.accent} />
-    <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-      <View style={{
-        width: large ? 40 : 32, height: large ? 40 : 32, borderRadius: 10,
-        backgroundColor: `${stat.accent}1A`, borderWidth: 1, borderColor: `${stat.accent}33`,
-        justifyContent: 'center', alignItems: 'center',
-      }}>
-        <MaterialCommunityIcons name={stat.icon} size={large ? 22 : 18} color={stat.accent} />
-      </View>
-      <ChangeBadge change={stat.change} positive={stat.positive} />
+interface StatCardProps { label: string; value: string; icon: IconName; accent: string; large?: boolean; onPress?: () => void }
+const StatCard: React.FC<StatCardProps> = ({ label, value, icon, accent, large = false, onPress }) => (
+  <Pressable
+    onPress={onPress}
+    accessibilityRole="button"
+    accessibilityLabel={`${label}: ${value}`}
+    style={({ pressed }) => ({ flex: large ? undefined : 1, backgroundColor: colors.cardDark, borderRadius: 12, padding: large ? 20 : 16, overflow: 'hidden', opacity: pressed ? 0.8 : 1 })}
+  >
+    <AccentBar color={accent} />
+    <View style={{ width: large ? 40 : 32, height: large ? 40 : 32, borderRadius: 10, backgroundColor: `${accent}1A`, borderWidth: 1, borderColor: `${accent}33`, justifyContent: 'center', alignItems: 'center' }}>
+      <MaterialCommunityIcons name={icon} size={large ? 22 : 18} color={accent} />
     </View>
     <View style={{ marginTop: large ? 16 : 12 }}>
       <AppText style={{ fontSize: 10, fontWeight: '500', color: colors.textSlate400, textTransform: 'uppercase', letterSpacing: 1 }}>
-        {stat.label}
+        {label}
       </AppText>
-      <AppText style={{ fontSize: large ? 24 : 20, fontWeight: '700', color: colors.white, marginTop: 4 }}>{stat.value}</AppText>
+      <AppText style={{ fontSize: large ? 24 : 20, fontWeight: '700', color: colors.white, marginTop: 4 }}>
+        {value}
+      </AppText>
     </View>
-  </View>
+  </Pressable>
 );
 
-const EngagementCard: React.FC<{ item: EngagementItem }> = ({ item }) => (
-  <View accessibilityRole="summary" accessibilityLabel={`${item.label}: ${item.value}`}
-    style={{ flex: 1, backgroundColor: colors.cardDark, borderRadius: 12, padding: 12, alignItems: 'center',
-      justifyContent: 'center', borderWidth: 1, borderColor: 'rgba(255,255,255,0.05)', overflow: 'hidden' }}>
-    <AccentBar color={item.accent} side="bottom" />
-    <View style={{
-      width: 32, height: 32, borderRadius: 16, backgroundColor: `${item.accent}1A`,
-      borderWidth: 1, borderColor: `${item.accent}33`, justifyContent: 'center', alignItems: 'center', marginBottom: 8,
-    }}>
-      <MaterialCommunityIcons name={item.icon} size={16} color={item.accent} />
+interface EngagementCardProps { label: string; value: string; accent: string; icon: IconName }
+const EngagementCard: React.FC<EngagementCardProps> = ({ label, value, accent, icon }) => (
+  <View style={{ flex: 1, backgroundColor: colors.cardDark, borderRadius: 12, padding: 12, alignItems: 'center', justifyContent: 'center', borderWidth: 1, borderColor: 'rgba(255,255,255,0.05)', overflow: 'hidden' }}>
+    <AccentBar color={accent} side="bottom" />
+    <View style={{ width: 32, height: 32, borderRadius: 16, backgroundColor: `${accent}1A`, borderWidth: 1, borderColor: `${accent}33`, justifyContent: 'center', alignItems: 'center', marginBottom: 8 }}>
+      <MaterialCommunityIcons name={icon} size={16} color={accent} />
     </View>
-    <AppText style={{ fontSize: 10, fontWeight: '500', color: colors.textSlate400, textAlign: 'center' }}>{item.label}</AppText>
-    <AppText style={{ fontSize: 14, fontWeight: '700', color: colors.white, marginTop: 4 }}>{item.value}</AppText>
+    <AppText style={{ fontSize: 10, fontWeight: '500', color: colors.textSlate400, textAlign: 'center' }}>{label}</AppText>
+    <AppText style={{ fontSize: 14, fontWeight: '700', color: colors.white, marginTop: 4 }}>{value}</AppText>
   </View>
 );
 
-const MetricChip: React.FC<{ icon: IconName; value: string }> = ({ icon, value }) => (
-  <View style={{ flexDirection: 'row', alignItems: 'center', gap: 3 }}>
-    <MaterialCommunityIcons name={icon} size={10} color={colors.textSlate400} />
-    <AppText style={{ fontSize: 10, color: colors.textSlate400 }}>{value}</AppText>
-  </View>
-);
-
-const CompanyRow: React.FC<{ company: CompanyItem; isLast: boolean }> = ({ company, isLast }) => (
-  <View accessibilityLabel={`${company.name}, ${company.verified ? 'verified' : 'unverified'}`}
-    style={{ flexDirection: 'row', alignItems: 'center', gap: 12, paddingBottom: isLast ? 0 : 12,
-      marginBottom: isLast ? 0 : 12, borderBottomWidth: isLast ? 0 : 1, borderBottomColor: 'rgba(255,255,255,0.05)' }}>
+interface CompanyRowProps { company: CompanyRankItem; isLast: boolean }
+const CompanyRow: React.FC<CompanyRowProps> = ({ company, isLast }) => (
+  <Pressable
+    onPress={() => router.push(`/(main)/(feed)/business/${company.id}`)}
+    accessibilityRole="button"
+    accessibilityLabel={company.name}
+    style={({ pressed }) => ({ flexDirection: 'row', alignItems: 'center', gap: 12, paddingBottom: isLast ? 0 : 12, marginBottom: isLast ? 0 : 12, borderBottomWidth: isLast ? 0 : 1, borderBottomColor: 'rgba(255,255,255,0.05)', opacity: pressed ? 0.7 : 1 })}
+  >
     <View style={{ width: 40, height: 40, borderRadius: 20, backgroundColor: colors.borderDark, justifyContent: 'center', alignItems: 'center' }}>
       <MaterialCommunityIcons name="domain" size={20} color={colors.textSlate400} />
     </View>
     <View style={{ flex: 1, minWidth: 0 }}>
       <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
-        <AppText style={{ fontSize: 14, fontWeight: '600', color: company.verified ? colors.white : colors.textSlate200 }} numberOfLines={1}>
+        <AppText style={{ fontSize: 14, fontWeight: '600', color: colors.white }} numberOfLines={1}>
           {company.name}
         </AppText>
-        <MaterialCommunityIcons name={company.verified ? 'check-decagram' : 'shield-off-outline'} size={14}
-          color={company.verified ? colors.green : colors.textSlate500} />
+        <MaterialCommunityIcons
+          name={company.isOwnerVerified ? 'check-decagram' : 'shield-off-outline'}
+          size={14}
+          color={company.isOwnerVerified ? colors.cyan : colors.textSlate500}
+        />
+        {company.isPremium && <MaterialCommunityIcons name="crown" size={13} color={colors.yellow} />}
       </View>
       <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12, marginTop: 4 }}>
-        <MetricChip icon="eye-outline" value={company.views} />
-        <MetricChip icon="magnify" value={company.searches} />
-        <MetricChip icon="star-outline" value={company.reviews} />
+        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 3 }}>
+          <MaterialCommunityIcons name="eye-outline" size={10} color={colors.textSlate400} />
+          <AppText style={{ fontSize: 10, color: colors.textSlate400 }}>{formatCount(company.visits)}</AppText>
+        </View>
+        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 3 }}>
+          <MaterialCommunityIcons name="magnify" size={10} color={colors.textSlate400} />
+          <AppText style={{ fontSize: 10, color: colors.textSlate400 }}>{formatCount(company.searches)}</AppText>
+        </View>
+        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 3 }}>
+          <MaterialCommunityIcons name="star-outline" size={10} color={colors.textSlate400} />
+          <AppText style={{ fontSize: 10, color: colors.textSlate400 }}>{formatCount(company.reviews)}</AppText>
+        </View>
       </View>
     </View>
+    <AppText style={{ fontSize: 11, fontWeight: '700', color: colors.neonPurple }}>
+      {company.rating.toFixed(1)}★
+    </AppText>
+  </Pressable>
+);
+
+interface CompanyListSectionProps { title: string; badgeLabel: string; badgeColor: string; companies: CompanyRankItem[]; onSeeAll: () => void }
+const CompanyListSection: React.FC<CompanyListSectionProps> = ({ title, badgeLabel, badgeColor, companies, onSeeAll }) => (
+  <View style={{ paddingHorizontal: 16, marginBottom: 20 }}>
+    <Card style={{ overflow: 'hidden' }}>
+      <AccentBar color={colors.neonPurple} />
+      <View style={{ padding: 20 }}>
+        <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
+          <AppText style={{ fontSize: 13, fontWeight: '700', color: colors.white, letterSpacing: 0.5 }}>{title}</AppText>
+          <View style={{ paddingHorizontal: 8, paddingVertical: 3, borderRadius: 9999, backgroundColor: `${badgeColor}1A`, borderWidth: 1, borderColor: `${badgeColor}33` }}>
+            <AppText style={{ fontSize: 10, fontWeight: '600', color: badgeColor }}>{badgeLabel}</AppText>
+          </View>
+        </View>
+        {companies.length === 0 ? (
+          <AppText style={{ fontSize: 13, color: colors.textSlate500, textAlign: 'center', paddingVertical: 12 }}>
+            No data yet
+          </AppText>
+        ) : (
+          companies.map((c, i) => <CompanyRow key={c.id} company={c} isLast={i === companies.length - 1} />)
+        )}
+        <Pressable
+          onPress={onSeeAll}
+          accessibilityRole="button"
+          accessibilityLabel={`See all ${title}`}
+          style={{ marginTop: 16, borderRadius: 9999, borderWidth: 1, borderColor: `${colors.neonPurple}4D`, backgroundColor: `${colors.neonPurple}1A`, paddingVertical: 10, alignItems: 'center' }}
+        >
+          <AppText style={{ fontSize: 12, fontWeight: '600', color: colors.neonPurple }}>See All</AppText>
+        </Pressable>
+      </View>
+    </Card>
   </View>
 );
 
-// ── Main Screen ──────────────────────────────────────────────────────────────
+const ComingSoonTab: React.FC<{ label: string }> = ({ label }) => (
+  <View style={{ alignItems: 'center', justifyContent: 'center', paddingTop: 80, gap: 12 }}>
+    <MaterialCommunityIcons name="tools" size={48} color={colors.textSlate600} />
+    <AppText style={{ fontSize: 16, fontWeight: '700', color: colors.textSlate400 }}>{label}</AppText>
+    <AppText style={{ fontSize: 13, color: colors.textSlate600 }}>Coming soon</AppText>
+  </View>
+);
+
+// ── Main Screen ───────────────────────────────────────────────────────────────
+const TABS: TabKey[] = ['COMPANY', 'MODERATOR', 'GLOBAL', 'FINANCIAL'];
+
 export default function AdminHomeScreen() {
   useAnalyticsScreen(AnalyticsScreens.ADMIN_DASHBOARD);
   const { t } = useTranslation();
   const [activeTab, setActiveTab] = useState<TabKey>('COMPANY');
-  const handleTabPress = useCallback((tab: TabKey) => { setActiveTab(tab); }, []);
+  const handleTabPress = useCallback((tab: TabKey) => setActiveTab(tab), []);
+  const { stats, isLoading, error, refresh } = useAdminDashboard();
 
   return (
     <ScreenLayout>
       <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 100 }}>
+
         {/* Header */}
-        <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'center', paddingHorizontal: 16, paddingTop: 12, paddingBottom: 8 }}>
+        <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 16, paddingTop: 12, paddingBottom: 8 }}>
+          <AdminMenuButton />
           <AppText style={{ fontSize: 18, fontWeight: '700', color: colors.white, letterSpacing: -0.3 }}>
             {t('admin.home.title', { defaultValue: 'Admin Dashboard' })}
           </AppText>
-          <Pressable accessibilityRole="button" accessibilityLabel={t('notifications.title', { defaultValue: 'Notifications' })}
-            style={{ position: 'absolute', right: 16, padding: 8 }}>
+          <Pressable accessibilityRole="button" accessibilityLabel="Notifications" style={{ padding: 8 }}>
             <MaterialCommunityIcons name="bell-outline" size={24} color={colors.textSlate400} />
-            <View style={{ position: 'absolute', top: 8, right: 8, width: 8, height: 8, borderRadius: 4,
-              backgroundColor: colors.red, shadowColor: colors.red, shadowOffset: { width: 0, height: 0 }, shadowOpacity: 0.6, shadowRadius: 4 }} />
           </Pressable>
         </View>
 
@@ -208,14 +208,13 @@ export default function AdminHomeScreen() {
 
         {/* Search */}
         <View style={{ paddingHorizontal: 16, marginBottom: 16 }}>
-          <View style={{ flexDirection: 'row', alignItems: 'center', backgroundColor: colors.cardDark, borderRadius: 12,
-            borderWidth: 1, borderColor: 'rgba(255,255,255,0.1)', paddingHorizontal: 12 }}>
+          <View style={{ flexDirection: 'row', alignItems: 'center', backgroundColor: colors.cardDark, borderRadius: 12, borderWidth: 1, borderColor: 'rgba(255,255,255,0.1)', paddingHorizontal: 12 }}>
             <MaterialCommunityIcons name="magnify" size={20} color={colors.textSlate400} />
             <TextInput
               placeholder={t('admin.home.searchPlaceholder', { defaultValue: 'Search companies, users or reports...' })}
               placeholderTextColor={colors.textSlate500}
               style={{ flex: 1, paddingVertical: 12, paddingLeft: 8, fontSize: 14, color: colors.textSlate200 }}
-              accessibilityLabel={t('admin.home.searchPlaceholder', { defaultValue: 'Search companies, users or reports...' })}
+              accessibilityLabel="Search"
             />
           </View>
         </View>
@@ -227,61 +226,134 @@ export default function AdminHomeScreen() {
           ))}
         </View>
 
-        {/* Stats */}
-        <View style={{ paddingHorizontal: 16, marginBottom: 16 }}>
-          <SectionHeader title={t('admin.home.companyStats', { defaultValue: 'Company Statistics' })} />
-          <StatCard stat={MAIN_STAT} large />
-        </View>
-        <View style={{ flexDirection: 'row', paddingHorizontal: 16, gap: 12, marginBottom: 12 }}>
-          <StatCard stat={GRID_STATS[0]} />
-          <StatCard stat={GRID_STATS[1]} />
-        </View>
-        <View style={{ flexDirection: 'row', paddingHorizontal: 16, gap: 12, marginBottom: 24 }}>
-          <StatCard stat={GRID_STATS[2]} />
-          <StatCard stat={GRID_STATS[3]} />
-        </View>
-
-        {/* Global Engagement */}
-        <View style={{ paddingHorizontal: 16, marginBottom: 16 }}>
-          <AppText style={{ fontSize: 16, fontWeight: '700', color: colors.white, marginBottom: 12 }}>
-            {t('admin.home.globalEngagement', { defaultValue: 'Global Engagement' })}
-          </AppText>
-          <View style={{ flexDirection: 'row', gap: 12, marginBottom: 16 }}>
-            {ENGAGEMENT.map((item) => <EngagementCard key={item.label} item={item} />)}
-          </View>
-          <Pressable accessibilityRole="button"
-            accessibilityLabel={t('admin.home.viewMoreDetails', { defaultValue: 'View More Details' })}
-            style={{ borderRadius: 9999, borderWidth: 1, borderColor: `${colors.neonPurple}4D`, backgroundColor: `${colors.neonPurple}1A`,
-              paddingVertical: 12, alignItems: 'center', shadowColor: colors.neonPurple, shadowOffset: { width: 0, height: 0 },
-              shadowOpacity: 0.15, shadowRadius: 10 }}>
-            <AppText style={{ fontSize: 13, fontWeight: '600', color: colors.neonPurple }}>
-              {t('admin.home.viewMoreDetails', { defaultValue: 'View More Details' })}
-            </AppText>
-          </Pressable>
-        </View>
-
-        {/* Company Lists */}
-        {LISTS.map((section) => (
-          <View key={section.title} style={{ paddingHorizontal: 16, marginBottom: 20 }}>
-            <Card style={{ overflow: 'hidden' }}>
-              <AccentBar color={colors.neonPurple} />
-              <View style={{ padding: 20 }}>
-                <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
-                  <AppText style={{ fontSize: 14, fontWeight: '700', color: colors.white, letterSpacing: 1 }}>{section.title}</AppText>
-                  <View style={{
-                    paddingHorizontal: 8, paddingVertical: 3, borderRadius: 9999,
-                    backgroundColor: section.badgeColor === colors.textSlate400 ? 'rgba(255,255,255,0.05)' : `${section.badgeColor}1A`,
-                    borderWidth: section.badgeColor === colors.textSlate400 ? 0 : 1, borderColor: `${section.badgeColor}33`,
-                  }}>
-                    <AppText style={{ fontSize: 10, fontWeight: '500', color: section.badgeColor }}>{section.badgeLabel}</AppText>
-                  </View>
-                </View>
-                {section.companies.map((c, i) => <CompanyRow key={c.id} company={c} isLast={i === section.companies.length - 1} />)}
+        {/* ── COMPANY tab ──────────────────────────────────────────────────── */}
+        {activeTab === 'COMPANY' && (
+          <>
+            {isLoading && (
+              <View style={{ alignItems: 'center', paddingVertical: 40 }}>
+                <ActivityIndicator size="large" color={colors.neonPurple} />
               </View>
-            </Card>
-          </View>
-        ))}
+            )}
+
+            {!isLoading && !!error && (
+              <View style={{ alignItems: 'center', paddingVertical: 40, gap: 12 }}>
+                <MaterialCommunityIcons name="alert-circle-outline" size={40} color={colors.red} />
+                <AppText style={{ fontSize: 14, color: colors.textSlate400, textAlign: 'center' }}>{error}</AppText>
+                <Pressable
+                  onPress={refresh}
+                  accessibilityRole="button"
+                  accessibilityLabel="Retry"
+                  style={{ paddingHorizontal: 24, paddingVertical: 10, borderRadius: 9999, backgroundColor: `${colors.neonPurple}1A`, borderWidth: 1, borderColor: `${colors.neonPurple}33` }}
+                >
+                  <AppText style={{ fontSize: 13, fontWeight: '600', color: colors.neonPurple }}>Retry</AppText>
+                </Pressable>
+              </View>
+            )}
+
+            {/* Add Company Row */}
+            <View style={{ paddingHorizontal: 16, marginBottom: 16 }}>
+              <Pressable
+                onPress={() => router.push('/(main)/(feed)/add-business?isAdmin=true')}
+                accessibilityRole="button"
+                accessibilityLabel="Add New Company"
+                style={({ pressed }) => ({
+                  flexDirection: 'row',
+                  alignItems: 'center',
+                  gap: 10,
+                  backgroundColor: `${colors.neonPurple}1A`,
+                  borderWidth: 1,
+                  borderColor: `${colors.neonPurple}4D`,
+                  borderRadius: 12,
+                  paddingVertical: 12,
+                  paddingHorizontal: 16,
+                  opacity: pressed ? 0.75 : 1,
+                })}
+              >
+                <View style={{ width: 28, height: 28, borderRadius: 14, backgroundColor: colors.neonPurple, alignItems: 'center', justifyContent: 'center' }}>
+                  <MaterialCommunityIcons name="plus" size={18} color={colors.white} />
+                </View>
+                <AppText style={{ fontSize: 13, fontWeight: '600', color: colors.neonPurple }}>
+                  Add New Company
+                </AppText>
+              </Pressable>
+            </View>
+
+            {!isLoading && !error && !!stats && (
+              <>
+                {/* Total + Active */}
+                <View style={{ flexDirection: 'row', paddingHorizontal: 16, gap: 12, marginBottom: 16 }}>
+                  <StatCard label="Total Companies" value={formatCount(stats.totalCompanies)} icon="office-building" accent={colors.neonPurple} onPress={() => router.push('/(main)/(feed)/admin-companies?filter=all')} />
+                  <StatCard label="Active" value={formatCount(stats.active)} icon="check-circle-outline" accent={colors.green} onPress={() => router.push('/(main)/(feed)/admin-companies?filter=active')} />
+                </View>
+
+                {/* Approval Status */}
+                <View style={{ paddingHorizontal: 20, marginBottom: 8 }}>
+                  <AppText style={{ fontSize: 11, fontWeight: '600', color: colors.textSlate500, textTransform: 'uppercase', letterSpacing: 1 }}>Approval Status</AppText>
+                </View>
+                <View style={{ flexDirection: 'row', paddingHorizontal: 16, gap: 12, marginBottom: 20 }}>
+                  <StatCard label="Suspended" value={formatCount(stats.suspended)} icon="cancel" accent={colors.red} onPress={() => router.push('/(main)/(feed)/admin-companies?filter=suspended')} />
+                  <StatCard label="Pending" value={formatCount(stats.pending)} icon="clock-outline" accent={colors.yellow} onPress={() => router.push('/(main)/(feed)/admin-companies?filter=pending')} />
+                </View>
+
+                {/* Owner Account */}
+                <View style={{ paddingHorizontal: 20, marginBottom: 8 }}>
+                  <AppText style={{ fontSize: 11, fontWeight: '600', color: colors.textSlate500, textTransform: 'uppercase', letterSpacing: 1 }}>Owner Account</AppText>
+                </View>
+                <View style={{ flexDirection: 'row', paddingHorizontal: 16, gap: 12, marginBottom: 20 }}>
+                  <StatCard label="Verified" value={formatCount(stats.ownerVerified)} icon="check-decagram" accent={colors.cyan} onPress={() => router.push('/(main)/(feed)/admin-companies?filter=ownerVerified')} />
+                  <StatCard label="Unclaimed" value={formatCount(stats.ownerUnverified)} icon="shield-off-outline" accent={colors.textSlate400} onPress={() => router.push('/(main)/(feed)/admin-companies?filter=ownerUnverified')} />
+                </View>
+
+                {/* Subscription */}
+                <View style={{ paddingHorizontal: 20, marginBottom: 8 }}>
+                  <AppText style={{ fontSize: 11, fontWeight: '600', color: colors.textSlate500, textTransform: 'uppercase', letterSpacing: 1 }}>Subscription</AppText>
+                </View>
+                <View style={{ flexDirection: 'row', paddingHorizontal: 16, gap: 12, marginBottom: 24 }}>
+                  <StatCard label="Premium" value={formatCount(stats.premium)} icon="crown" accent={colors.pink} onPress={() => router.push('/(main)/(feed)/admin-companies?filter=premium')} />
+                  <StatCard label="Basic" value={formatCount(stats.verifiedBasic)} icon="shield-check" accent={colors.blue} onPress={() => router.push('/(main)/(feed)/admin-companies?filter=verifiedBasic')} />
+                </View>
+
+                {/* Global Engagement */}
+                <View style={{ paddingHorizontal: 16, marginBottom: 16 }}>
+                  <View style={{ flexDirection: 'row', alignItems: 'baseline', gap: 8, marginBottom: 12 }}>
+                    <AppText style={{ fontSize: 16, fontWeight: '700', color: colors.white }}>
+                      Global Engagement
+                    </AppText>
+                    <AppText style={{ fontSize: 11, color: colors.textSlate500 }}>All time</AppText>
+                  </View>
+                  <View style={{ flexDirection: 'row', gap: 12, marginBottom: 16 }}>
+                    <EngagementCard label="Total Visits" value={formatCount(stats.totalVisits)} accent={colors.cyan} icon="eye" />
+                    <EngagementCard label="Searches" value={formatCount(stats.totalSearches)} accent={colors.orange} icon="magnify" />
+                    <EngagementCard label="Reviews" value={formatCount(stats.totalReviews)} accent={colors.pink} icon="star" />
+                  </View>
+                  <Pressable
+                    onPress={() => router.push('/(main)/(feed)/engagement-details')}
+                    accessibilityRole="button"
+                    accessibilityLabel="View More Details"
+                    style={{ borderRadius: 9999, borderWidth: 1, borderColor: `${colors.neonPurple}4D`, backgroundColor: `${colors.neonPurple}1A`, paddingVertical: 12, alignItems: 'center' }}
+                  >
+                    <AppText style={{ fontSize: 13, fontWeight: '600', color: colors.neonPurple }}>View More Details</AppText>
+                  </Pressable>
+                </View>
+
+                {/* Top 5 company lists */}
+                <CompanyListSection title="TOP COMPANIES" badgeLabel="Top 5" badgeColor={colors.textSlate400} companies={stats.topTotal} onSeeAll={() => router.push('/(main)/(feed)/admin-companies?filter=all')} />
+                <CompanyListSection title="TOP ACTIVE" badgeLabel="Active" badgeColor={colors.green} companies={stats.topActive} onSeeAll={() => router.push('/(main)/(feed)/admin-companies?filter=active')} />
+                <CompanyListSection title="TOP PENDING" badgeLabel="Pending" badgeColor={colors.yellow} companies={stats.topPending} onSeeAll={() => router.push('/(main)/(feed)/admin-companies?filter=pending')} />
+                <CompanyListSection title="TOP OWNER VERIFIED" badgeLabel="Claimed" badgeColor={colors.cyan} companies={stats.topOwnerVerified} onSeeAll={() => router.push('/(main)/(feed)/admin-companies?filter=ownerVerified')} />
+                <CompanyListSection title="TOP PREMIUM" badgeLabel="Elite" badgeColor={colors.pink} companies={stats.topPremium} onSeeAll={() => router.push('/(main)/(feed)/admin-companies?filter=premium')} />
+              </>
+            )}
+          </>
+        )}
+
+        {/* ── Empty tabs ────────────────────────────────────────────────── */}
+        {activeTab === 'MODERATOR' && <ComingSoonTab label="Moderator Panel" />}
+        {activeTab === 'GLOBAL' && <ComingSoonTab label="Global Insights" />}
+        {activeTab === 'FINANCIAL' && <ComingSoonTab label="Financial Overview" />}
+
       </ScrollView>
+
     </ScreenLayout>
   );
 }

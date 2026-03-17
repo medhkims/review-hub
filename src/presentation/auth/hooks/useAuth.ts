@@ -1,17 +1,32 @@
 import { useCallback, useEffect, useRef } from 'react';
 import { useAuthStore } from '../store/authStore';
 import { useRoleStore } from '../store/roleStore';
+import { useSavedAccountsStore } from '../store/savedAccountsStore';
+import { useHomeStore } from '@/presentation/home/store/homeStore';
 import { container } from '@/core/di/container';
-import { useRouter } from 'expo-router';
+import { router } from 'expo-router';
 import { RegisterBusinessParams } from '@/domain/business/usecases/registerBusinessUseCase';
 import { AnalyticsHelper } from '@/core/analytics/analyticsHelper';
 import { AnalyticsEvents, AnalyticsParams, AnalyticsValues } from '@/core/analytics/analyticsKeys';
+import { UserEntity } from '@/domain/auth/entities/userEntity';
 
 export const useAuth = () => {
-  const { user, isLoading, isAuthenticated, error, setUser, setLoading, setError, reset } = useAuthStore();
+  const { user, isLoading, isAuthenticated, error, setUser, setLoading, setError, setProvider, reset } = useAuthStore();
   const { setRole, reset: resetRole } = useRoleStore();
-  const router = useRouter();
+  const resetHome = useHomeStore((s) => s.reset);
+  const saveAccount = useSavedAccountsStore((s) => s.save);
   const hasLoadedRef = useRef(false);
+
+  const persistAccount = useCallback((u: UserEntity, role: string, provider: 'email' | 'google' | 'facebook' | 'apple' = 'email') => {
+    saveAccount({
+      id: u.id,
+      email: u.email,
+      displayName: u.displayName,
+      avatarUrl: u.avatarUrl,
+      type: role === 'business_owner' ? 'business' : role === 'moderator' ? 'moderator' : role === 'admin' ? 'admin' : 'user',
+      provider,
+    });
+  }, [saveAccount]);
 
   const getCurrentUserUseCase = container.getCurrentUserUseCase;
   const signInUseCase = container.signInUseCase;
@@ -38,17 +53,20 @@ export const useAuth = () => {
         setUser(null);
         resetRole();
       },
-      (currentUser) => {
+      async (currentUser) => {
         setUser(currentUser);
         if (currentUser) {
-          loadRole(currentUser.id);
+          setProvider(currentUser.provider);
+          await loadRole(currentUser.id);
+          const role = useRoleStore.getState().role ?? 'simple_user';
+          persistAccount(currentUser, role, currentUser.provider);
         } else {
           resetRole();
         }
       }
     );
     setLoading(false);
-  }, [getCurrentUserUseCase, setLoading, setError, setUser, resetRole, loadRole]);
+  }, [getCurrentUserUseCase, setLoading, setError, setUser, setProvider, resetRole, loadRole, persistAccount]);
 
   // Load current user on mount (once)
   useEffect(() => {
@@ -71,7 +89,10 @@ export const useAuth = () => {
       },
       async (loggedInUser) => {
         setUser(loggedInUser);
+        setProvider(loggedInUser.provider);
         await loadRole(loggedInUser.id);
+        const role = useRoleStore.getState().role ?? 'simple_user';
+        persistAccount(loggedInUser, role, loggedInUser.provider);
         AnalyticsHelper.sendEvent(AnalyticsEvents.LOGIN, {
           [AnalyticsParams.METHOD]: AnalyticsValues.METHOD_EMAIL,
         });
@@ -79,13 +100,13 @@ export const useAuth = () => {
         router.replace('/(main)/(feed)');
       }
     );
-  }, [router, signInUseCase, setLoading, setError, setUser, loadRole]);
+  }, [signInUseCase, setLoading, setError, setUser, setProvider, loadRole, persistAccount]);
 
-  const signUp = useCallback(async (email: string, password: string, displayName: string) => {
+  const signUp = useCallback(async (email: string, password: string, displayName: string, gender?: 'male' | 'female') => {
     setLoading(true);
     setError(null);
 
-    const result = await signUpUseCase.execute(email, password, displayName);
+    const result = await signUpUseCase.execute(email, password, displayName, undefined, undefined, gender);
 
     result.fold(
       (failure) => {
@@ -95,6 +116,7 @@ export const useAuth = () => {
       (newUser) => {
         setUser(newUser);
         setRole('simple_user');
+        persistAccount(newUser, 'simple_user');
         AnalyticsHelper.sendEvent(AnalyticsEvents.SIGN_UP, {
           [AnalyticsParams.METHOD]: AnalyticsValues.METHOD_EMAIL,
         });
@@ -102,7 +124,7 @@ export const useAuth = () => {
         router.replace('/(main)/(feed)');
       }
     );
-  }, [router, signUpUseCase, setLoading, setError, setUser, setRole]);
+  }, [signUpUseCase, setLoading, setError, setUser, setRole, persistAccount]);
 
   const signUpAsBusinessOwner = useCallback(async (
     email: string,
@@ -151,6 +173,7 @@ export const useAuth = () => {
     businessResult.fold(
       (failure) => {
         setRole('business_owner');
+        persistAccount(newUser, 'business_owner');
         setError(failure.message);
         AnalyticsHelper.sendEvent(AnalyticsEvents.SIGN_UP_BUSINESS_OWNER, {
           [AnalyticsParams.SUCCESS]: false,
@@ -160,6 +183,7 @@ export const useAuth = () => {
       },
       () => {
         setRole('business_owner');
+        persistAccount(newUser, 'business_owner');
         AnalyticsHelper.sendEvent(AnalyticsEvents.SIGN_UP_BUSINESS_OWNER, {
           [AnalyticsParams.SUCCESS]: true,
         });
@@ -167,7 +191,7 @@ export const useAuth = () => {
         router.replace('/(main)/(feed)');
       },
     );
-  }, [router, signUpUseCase, registerBusinessUseCase, setLoading, setError, setUser, setRole]);
+  }, [signUpUseCase, registerBusinessUseCase, setLoading, setError, setUser, setRole, persistAccount]);
 
   const signOut = useCallback(async () => {
     setLoading(true);
@@ -184,16 +208,17 @@ export const useAuth = () => {
         AnalyticsHelper.sendEvent(AnalyticsEvents.LOGOUT);
         reset();
         resetRole();
+        resetHome();
         router.replace('/(auth)/sign-in');
       }
     );
-  }, [router, signOutUseCase, setLoading, setError, reset, resetRole]);
+  }, [signOutUseCase, setLoading, setError, reset, resetRole, resetHome]);
 
-  const signInWithGoogle = useCallback(async () => {
+  const signInWithGoogle = useCallback(async (loginHint?: string) => {
     setLoading(true);
     setError(null);
 
-    const result = await signInWithGoogleUseCase.execute();
+    const result = await signInWithGoogleUseCase.execute(loginHint);
 
     result.fold(
       (failure) => {
@@ -202,7 +227,10 @@ export const useAuth = () => {
       },
       async (loggedInUser) => {
         setUser(loggedInUser);
+        setProvider(loggedInUser.provider);
         await loadRole(loggedInUser.id);
+        const role = useRoleStore.getState().role ?? 'simple_user';
+        persistAccount(loggedInUser, role, loggedInUser.provider);
         AnalyticsHelper.sendEvent(AnalyticsEvents.LOGIN_GOOGLE, {
           [AnalyticsParams.METHOD]: AnalyticsValues.METHOD_GOOGLE,
         });
@@ -210,7 +238,7 @@ export const useAuth = () => {
         router.replace('/(main)/(feed)');
       }
     );
-  }, [router, signInWithGoogleUseCase, setLoading, setError, setUser, loadRole]);
+  }, [signInWithGoogleUseCase, setLoading, setError, setUser, setProvider, loadRole, persistAccount]);
 
   return {
     user,

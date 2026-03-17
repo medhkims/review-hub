@@ -6,12 +6,13 @@ import {
   Image,
   ActivityIndicator,
   ListRenderItemInfo,
+  StyleSheet,
+  Text,
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useTranslation } from 'react-i18next';
 import { ScreenLayout } from '@/presentation/shared/layouts/ScreenLayout';
-import { AppText } from '@/presentation/shared/components/ui/AppText';
 import { useWishlist } from '../hooks/useWishlist';
 import { useAuthStore } from '@/presentation/auth/store/authStore';
 import { useAnalyticsScreen } from '@/presentation/shared/hooks/useAnalyticsScreen';
@@ -19,96 +20,75 @@ import { AnalyticsScreens } from '@/core/analytics/analyticsKeys';
 import { WishlistItemEntity } from '@/domain/wishlist/entities/wishlistItemEntity';
 
 const NEON_PURPLE = '#A855F7';
+const MIDNIGHT = '#0F172A';
+const CARD_BG = '#1E293B';
+const BORDER = '#334155';
 
 // ─── Wishlist Card ────────────────────────────────────────────────────────────
 
 interface WishlistCardProps {
   item: WishlistItemEntity;
   onRemove: (itemId: string) => void;
-  onReview: (item: WishlistItemEntity) => void;
+  onPress: (item: WishlistItemEntity) => void;
 }
 
-const WishlistCard = React.memo(({ item, onRemove, onReview }: WishlistCardProps) => {
+const WishlistCard = React.memo(({ item, onRemove, onPress }: WishlistCardProps) => {
   return (
-    <View
-      className="bg-card-dark rounded-xl p-2.5 flex-row gap-3 mb-3 border border-border-dark/30 items-center"
-      style={{
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 4 },
-        shadowOpacity: 0.25,
-        shadowRadius: 8,
-        elevation: 4,
-      }}
+    <Pressable
+      onPress={() => onPress(item)}
+      style={({ pressed }) => [styles.card, pressed && { opacity: 0.75 }]}
+      accessibilityLabel={`View ${item.placeName}`}
+      accessibilityRole="button"
     >
       {/* Place image */}
-      <View className="w-16 h-16 rounded-lg overflow-hidden bg-slate-800 shrink-0">
+      <View style={styles.imageContainer}>
         {item.placeImageUrl ? (
           <Image
             source={{ uri: item.placeImageUrl }}
-            className="w-full h-full"
+            style={styles.image}
             resizeMode="cover"
             accessibilityLabel={item.placeName}
           />
         ) : (
-          <View className="w-full h-full items-center justify-center bg-slate-700">
-            <MaterialCommunityIcons name="store" size={28} color="#64748B" />
+          <View style={styles.imagePlaceholder}>
+            <MaterialCommunityIcons name="store" size={24} color="#64748B" />
           </View>
         )}
       </View>
 
       {/* Info */}
-      <View className="flex-1 min-w-0 gap-0.5">
-        <AppText
-          className="text-sm font-bold text-white leading-tight"
-          numberOfLines={1}
-        >
+      <View style={styles.infoContainer}>
+        <Text style={styles.placeName} numberOfLines={1}>
           {item.placeName}
-        </AppText>
+        </Text>
 
         {/* Rating row */}
-        <View className="flex-row items-center gap-1">
-          <MaterialCommunityIcons name="star" size={12} color="#FBBF24" />
-          <AppText className="text-xs font-bold text-white">{item.rating.toFixed(1)}</AppText>
-          <AppText className="text-xs text-slate-400">({item.reviewCount})</AppText>
+        <View style={styles.ratingRow}>
+          <MaterialCommunityIcons name="star" size={10} color="#FBBF24" />
+          <Text style={styles.ratingText}>{item.rating.toFixed(1)}</Text>
+          <Text style={styles.reviewCountText}>({item.reviewCount})</Text>
         </View>
 
         {/* Location row */}
-        <View className="flex-row items-start gap-0.5">
-          <MaterialCommunityIcons
-            name="map-marker"
-            size={12}
-            color="#64748B"
-            style={{ marginTop: 1 }}
-          />
-          <AppText className="text-xs text-slate-400 flex-1" numberOfLines={2}>
+        <View style={styles.locationRow}>
+          <MaterialCommunityIcons name="map-marker" size={10} color="#64748B" style={{ marginTop: 1 }} />
+          <Text style={styles.locationText} numberOfLines={1}>
             {item.location}
-          </AppText>
+          </Text>
         </View>
       </View>
 
-      {/* Action button */}
+      {/* Heart / remove button */}
       <Pressable
-        onPress={() => onReview(item)}
-        onLongPress={() => onRemove(item.id)}
-        className="w-[50px] h-[50px] rounded-lg items-center justify-center shrink-0"
-        style={{
-          backgroundColor: NEON_PURPLE,
-          shadowColor: NEON_PURPLE,
-          shadowOffset: { width: 0, height: 0 },
-          shadowOpacity: 0.4,
-          shadowRadius: 10,
-          elevation: 6,
-        }}
-        accessibilityLabel={`Review ${item.placeName}`}
+        onPress={() => onRemove(item.id)}
+        style={({ pressed }) => [styles.heartButton, pressed && { opacity: 0.7 }]}
+        accessibilityLabel={`Remove ${item.placeName} from wishlist`}
         accessibilityRole="button"
-        accessibilityHint="Long press to remove from wishlist"
+        hitSlop={6}
       >
-        <MaterialCommunityIcons name="bookmark" size={18} color="#FFFFFF" />
-        <AppText className="text-white leading-none mt-0.5" style={{ fontSize: 8 }}>
-          Review
-        </AppText>
+        <MaterialCommunityIcons name="heart" size={20} color="#FFFFFF" />
       </Pressable>
-    </View>
+    </Pressable>
   );
 });
 
@@ -119,14 +99,10 @@ WishlistCard.displayName = 'WishlistCard';
 const EmptyState = () => {
   const { t } = useTranslation();
   return (
-    <View className="flex-1 items-center justify-center px-8 py-16">
+    <View style={styles.emptyContainer}>
       <MaterialCommunityIcons name="heart-off-outline" size={64} color="#334155" />
-      <AppText className="text-white font-bold text-lg mt-4 text-center">
-        {t('wishlist.empty')}
-      </AppText>
-      <AppText className="text-slate-400 text-sm mt-2 text-center leading-relaxed">
-        {t('wishlist.emptyDescription')}
-      </AppText>
+      <Text style={styles.emptyTitle}>{t('wishlist.empty')}</Text>
+      <Text style={styles.emptyDesc}>{t('wishlist.emptyDescription')}</Text>
     </View>
   );
 };
@@ -149,15 +125,18 @@ export default function WishlistScreen() {
     [user?.id, removeFromWishlist]
   );
 
-  const handleReview = useCallback((item: WishlistItemEntity) => {
-    router.push(`/(main)/(feed)/business/${item.placeId}`);
-  }, [router]);
+  const handlePress = useCallback(
+    (item: WishlistItemEntity) => {
+      router.push(`/(main)/(feed)/business/${item.placeId}`);
+    },
+    [router]
+  );
 
   const renderItem = useCallback(
     ({ item }: ListRenderItemInfo<WishlistItemEntity>) => (
-      <WishlistCard item={item} onRemove={handleRemove} onReview={handleReview} />
+      <WishlistCard item={item} onRemove={handleRemove} onPress={handlePress} />
     ),
-    [handleRemove, handleReview]
+    [handleRemove, handlePress]
   );
 
   const keyExtractor = useCallback((item: WishlistItemEntity) => item.id, []);
@@ -165,74 +144,48 @@ export default function WishlistScreen() {
   return (
     <ScreenLayout>
       {/* Header */}
-      <View className="px-6 pt-3 pb-4 flex-row items-center justify-between">
+      <View style={styles.header}>
         <Pressable
           onPress={() => router.back()}
-          className="p-1 rounded-full bg-slate-800/30 active:bg-slate-800/50"
+          style={({ pressed }) => [styles.backButton, pressed && { backgroundColor: '#1E293B' }]}
           accessibilityLabel="Go back"
           accessibilityRole="button"
         >
           <MaterialCommunityIcons name="chevron-left" size={24} color="#FFFFFF" />
         </Pressable>
-        <AppText className="text-white font-semibold" style={{ fontSize: 17 }}>
-          {t('wishlist.title')}
-        </AppText>
-        <View className="w-8" />
+        <Text style={styles.headerTitle}>{t('wishlist.title')}</Text>
+        <View style={{ width: 32 }} />
       </View>
 
-      {/* Neon heart hero */}
-      <View className="items-center py-6">
-        <View className="relative">
-          {/* Glow blur layer */}
-          <View
-            className="absolute rounded-full bg-neon-purple/20"
-            style={{
-              width: 120,
-              height: 120,
-              top: -12,
-              left: -12,
-            }}
-          />
-          {/* Icon container */}
-          <View
-            className="w-24 h-24 rounded-full border border-neon-purple/50 bg-midnight items-center justify-center"
-            style={{
-              shadowColor: NEON_PURPLE,
-              shadowOffset: { width: 0, height: 0 },
-              shadowOpacity: 0.6,
-              shadowRadius: 20,
-              elevation: 10,
-            }}
-          >
-            <MaterialCommunityIcons name="heart" size={40} color={NEON_PURPLE} />
-          </View>
+      {/* Heart hero */}
+      <View style={styles.heroContainer}>
+        <View style={styles.heroCircle}>
+          <MaterialCommunityIcons name="heart" size={40} color={NEON_PURPLE} />
         </View>
       </View>
 
       {/* Content */}
       {isLoading ? (
-        <View className="flex-1 items-center justify-center">
+        <View style={styles.centered}>
           <ActivityIndicator size="large" color={NEON_PURPLE} />
         </View>
       ) : error ? (
-        <View className="flex-1 items-center justify-center px-8">
+        <View style={styles.centered}>
           <MaterialCommunityIcons name="alert-circle-outline" size={48} color="#64748B" />
-          <AppText className="text-slate-400 text-sm mt-3 text-center">{error}</AppText>
+          <Text style={styles.errorText}>{error}</Text>
         </View>
       ) : (
-        <View className="flex-1 px-5">
+        <View style={styles.listWrapper}>
           {/* Section header */}
           {items.length > 0 && (
-            <View className="flex-row items-center justify-between mb-5 px-1">
-              <AppText className="text-xl font-bold text-white tracking-tight">
-                {t('wishlist.allResults')}
-              </AppText>
+            <View style={styles.sectionHeader}>
+              <Text style={styles.sectionTitle}>{t('wishlist.allResults')}</Text>
               <Pressable
-                className="p-2 rounded-lg bg-card-dark border border-border-dark/50"
+                style={({ pressed }) => [styles.filterButton, pressed && { opacity: 0.7 }]}
                 accessibilityLabel="Filter wishlist"
                 accessibilityRole="button"
               >
-                <MaterialCommunityIcons name="tune" size={20} color={NEON_PURPLE} />
+                <MaterialCommunityIcons name="tune" size={18} color={NEON_PURPLE} />
               </Pressable>
             </View>
           )}
@@ -243,10 +196,204 @@ export default function WishlistScreen() {
             keyExtractor={keyExtractor}
             ListEmptyComponent={<EmptyState />}
             showsVerticalScrollIndicator={false}
-            contentContainerStyle={items.length === 0 ? { flex: 1 } : { paddingBottom: 100 }}
+            contentContainerStyle={
+              items.length === 0 ? { flex: 1 } : { paddingBottom: 100 }
+            }
           />
         </View>
       )}
     </ScreenLayout>
   );
 }
+
+// ─── Styles ───────────────────────────────────────────────────────────────────
+
+const styles = StyleSheet.create({
+  // Header
+  header: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: 24,
+    paddingTop: 12,
+    paddingBottom: 16,
+  },
+  backButton: {
+    padding: 4,
+    borderRadius: 20,
+    backgroundColor: 'rgba(30,41,59,0.5)',
+  },
+  headerTitle: {
+    fontSize: 17,
+    fontWeight: '600',
+    color: '#FFFFFF',
+  },
+
+  // Hero
+  heroContainer: {
+    alignItems: 'center',
+    paddingTop: 8,
+    paddingBottom: 24,
+  },
+  heroCircle: {
+    width: 80,
+    height: 80,
+    borderRadius: 40,
+    backgroundColor: 'rgba(168,85,247,0.2)',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+
+  // Section header
+  listWrapper: {
+    flex: 1,
+    paddingHorizontal: 20,
+  },
+  sectionHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: 16,
+    paddingHorizontal: 4,
+  },
+  sectionTitle: {
+    fontSize: 18,
+    fontWeight: '700',
+    color: '#FFFFFF',
+    letterSpacing: -0.3,
+  },
+  filterButton: {
+    padding: 6,
+    borderRadius: 8,
+    backgroundColor: CARD_BG,
+    borderWidth: 1,
+    borderColor: BORDER,
+  },
+
+  // Card
+  card: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: CARD_BG,
+    borderRadius: 12,
+    padding: 8,
+    marginBottom: 10,
+    borderWidth: 1,
+    borderColor: 'rgba(51,65,85,0.3)',
+    gap: 12,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.25,
+    shadowRadius: 8,
+    elevation: 4,
+  },
+  imageContainer: {
+    width: 48,
+    height: 48,
+    borderRadius: 8,
+    overflow: 'hidden',
+    backgroundColor: '#1E293B',
+    flexShrink: 0,
+  },
+  image: {
+    width: '100%',
+    height: '100%',
+  },
+  imagePlaceholder: {
+    width: '100%',
+    height: '100%',
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#334155',
+  },
+  infoContainer: {
+    flex: 1,
+    minWidth: 0,
+    gap: 2,
+  },
+  placeName: {
+    fontSize: 13,
+    fontWeight: '700',
+    color: '#FFFFFF',
+    lineHeight: 18,
+  },
+  ratingRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+  },
+  ratingText: {
+    fontSize: 11,
+    fontWeight: '700',
+    color: '#FFFFFF',
+  },
+  reviewCountText: {
+    fontSize: 9,
+    color: '#94A3B8',
+    marginLeft: 2,
+  },
+  locationRow: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    gap: 4,
+  },
+  locationText: {
+    fontSize: 9,
+    color: '#94A3B8',
+    flex: 1,
+    lineHeight: 13,
+  },
+
+  // Heart button
+  heartButton: {
+    width: 40,
+    height: 40,
+    borderRadius: 8,
+    backgroundColor: NEON_PURPLE,
+    alignItems: 'center',
+    justifyContent: 'center',
+    flexShrink: 0,
+    shadowColor: NEON_PURPLE,
+    shadowOffset: { width: 0, height: 0 },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 6,
+  },
+
+  // States
+  centered: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingHorizontal: 32,
+  },
+  errorText: {
+    fontSize: 14,
+    color: '#94A3B8',
+    textAlign: 'center',
+    marginTop: 12,
+  },
+
+  // Empty
+  emptyContainer: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingHorizontal: 32,
+    paddingVertical: 64,
+  },
+  emptyTitle: {
+    fontSize: 18,
+    fontWeight: '700',
+    color: '#FFFFFF',
+    marginTop: 16,
+    textAlign: 'center',
+  },
+  emptyDesc: {
+    fontSize: 14,
+    color: '#94A3B8',
+    marginTop: 8,
+    textAlign: 'center',
+    lineHeight: 20,
+  },
+});

@@ -12,6 +12,7 @@ import { AnalyticsScreens } from '@/core/analytics/analyticsKeys';
 import { colors } from '@/core/theme/colors';
 import { CATEGORY_MAP, RatingCriterionDef } from '@/core/constants/categoriesData';
 import { useWriteReview } from '../hooks/useWriteReview';
+import { PhotoPicker, SelectedPhoto } from '../components/PhotoPicker';
 
 const MAX_CHARS = 500;
 
@@ -68,8 +69,13 @@ export default function WriteReviewScreen() {
 
   const ratingCriteria = useMemo<RatingCriterionDef[]>(() => {
     if (!categoryId) return FALLBACK_CRITERIA;
-    return CATEGORY_MAP[categoryId]?.ratingCriteria ?? FALLBACK_CRITERIA;
+    const criteria = CATEGORY_MAP[categoryId]?.ratingCriteria;
+    if (criteria === undefined) return FALLBACK_CRITERIA;
+    return criteria; // empty array for 'other' → general rating mode
   }, [categoryId]);
+
+  // True when the category has no sub-criteria (e.g. 'other')
+  const isGeneralRating = ratingCriteria.length === 0;
 
   const initialRatings = useMemo<RatingsState>(
     () => Object.fromEntries(ratingCriteria.map((c) => [c.key, 0])),
@@ -77,7 +83,9 @@ export default function WriteReviewScreen() {
   );
 
   const [ratings, setRatings] = useState<RatingsState>(initialRatings);
+  const [generalRating, setGeneralRating] = useState(0);
   const [reviewText, setReviewText] = useState('');
+  const [photos, setPhotos] = useState<SelectedPhoto[]>([]);
 
   const handleRate = useCallback((key: string, val: number) => {
     setRatings((prev) => ({ ...prev, [key]: val }));
@@ -88,22 +96,26 @@ export default function WriteReviewScreen() {
   }, []);
 
   const handleSubmit = useCallback(() => {
-    submitReview(ratings, reviewText, []);
-  }, [ratings, reviewText, submitReview]);
+    if (isGeneralRating) {
+      submitReview({ general: generalRating }, reviewText, photos);
+    } else {
+      submitReview(ratings, reviewText, photos);
+    }
+  }, [isGeneralRating, generalRating, ratings, reviewText, photos, submitReview]);
 
   useEffect(() => {
     if (submitSuccess) {
-      Alert.alert('Success', 'Your review has been submitted!', [
-        {
-          text: 'OK',
-          onPress: () => {
-            reset();
-            router.back();
-          },
+      reset();
+      router.replace({
+        pathname: '/(main)/(feed)/review-success',
+        params: {
+          businessName: resolvedBusinessName,
+          ratings: JSON.stringify(ratings),
+          reviewText,
         },
-      ]);
+      });
     }
-  }, [submitSuccess, reset, router]);
+  }, [submitSuccess, reset, router, resolvedBusinessName, ratings, reviewText]);
 
   useEffect(() => {
     if (error) {
@@ -111,7 +123,10 @@ export default function WriteReviewScreen() {
     }
   }, [error]);
 
-  const isSubmitDisabled = isSubmitting || !reviewText.trim() || Object.values(ratings).some((r) => r === 0);
+  const isSubmitDisabled =
+    isSubmitting ||
+    !reviewText.trim() ||
+    (isGeneralRating ? generalRating === 0 : Object.values(ratings).some((r) => r === 0));
 
   return (
     <ScreenLayout withKeyboardAvoid>
@@ -156,43 +171,70 @@ export default function WriteReviewScreen() {
           </AppText>
         </View>
 
-        {/* Rating Criteria */}
+        {/* Rating Section — general (1-5 stars) or per-criterion */}
         <View style={{ paddingHorizontal: 20, marginBottom: 24 }}>
           <Card style={{ backgroundColor: colors.cardDark, borderRadius: 16, padding: 20 }}>
-            {ratingCriteria.map((criterion, idx) => (
-              <View
-                key={criterion.key}
-                style={{
-                  flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
-                  paddingVertical: 14, borderBottomWidth: idx < ratingCriteria.length - 1 ? 1 : 0,
-                  borderBottomColor: colors.borderDark,
-                }}
-              >
-                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12, flex: 1 }}>
-                  <View style={{
-                    width: 36, height: 36, borderRadius: 18, backgroundColor: `${colors.neonPurple}15`,
-                    alignItems: 'center', justifyContent: 'center',
-                  }}>
-                    <MaterialCommunityIcons
-                      name={criterion.icon as React.ComponentProps<typeof MaterialCommunityIcons>['name']}
-                      size={18}
-                      color={colors.neonPurple}
-                    />
-                  </View>
-                  <View>
-                    <AppText style={{ fontSize: 15, fontWeight: '600', color: colors.textWhite }}>
-                      {criterion.label}
-                    </AppText>
-                    {ratings[criterion.key] === 0 && (
-                      <AppText style={{ fontSize: 11, color: colors.textSlate400, marginTop: 2 }}>
-                        {t('writeReview.tapToRate')}
-                      </AppText>
-                    )}
-                  </View>
+            {isGeneralRating ? (
+              /* General rating mode for 'other' category */
+              <View style={{ alignItems: 'center', paddingVertical: 8 }}>
+                <View style={{
+                  width: 56, height: 56, borderRadius: 28, backgroundColor: `${colors.neonPurple}15`,
+                  alignItems: 'center', justifyContent: 'center', marginBottom: 12,
+                }}>
+                  <MaterialCommunityIcons name="star-circle-outline" size={28} color={colors.neonPurple} />
                 </View>
-                <StarRating rating={ratings[criterion.key] ?? 0} onRate={(v) => handleRate(criterion.key, v)} />
+                <AppText style={{ fontSize: 16, fontWeight: '700', color: colors.textWhite, marginBottom: 4 }}>
+                  {t('writeReview.overallRating')}
+                </AppText>
+                {generalRating === 0 && (
+                  <AppText style={{ fontSize: 12, color: colors.textSlate400, marginBottom: 16 }}>
+                    {t('writeReview.tapToRate')}
+                  </AppText>
+                )}
+                {generalRating > 0 && (
+                  <AppText style={{ fontSize: 12, color: colors.textSlate400, marginBottom: 16 }}>
+                    {generalRating} / 5
+                  </AppText>
+                )}
+                <StarRating rating={generalRating} onRate={setGeneralRating} />
               </View>
-            ))}
+            ) : (
+              /* Per-criterion rating mode */
+              ratingCriteria.map((criterion, idx) => (
+                <View
+                  key={criterion.key}
+                  style={{
+                    flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
+                    paddingVertical: 14, borderBottomWidth: idx < ratingCriteria.length - 1 ? 1 : 0,
+                    borderBottomColor: colors.borderDark,
+                  }}
+                >
+                  <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12, flex: 1 }}>
+                    <View style={{
+                      width: 36, height: 36, borderRadius: 18, backgroundColor: `${colors.neonPurple}15`,
+                      alignItems: 'center', justifyContent: 'center',
+                    }}>
+                      <MaterialCommunityIcons
+                        name={criterion.icon as React.ComponentProps<typeof MaterialCommunityIcons>['name']}
+                        size={18}
+                        color={colors.neonPurple}
+                      />
+                    </View>
+                    <View>
+                      <AppText style={{ fontSize: 15, fontWeight: '600', color: colors.textWhite }}>
+                        {criterion.label}
+                      </AppText>
+                      {ratings[criterion.key] === 0 && (
+                        <AppText style={{ fontSize: 11, color: colors.textSlate400, marginTop: 2 }}>
+                          {t('writeReview.tapToRate')}
+                        </AppText>
+                      )}
+                    </View>
+                  </View>
+                  <StarRating rating={ratings[criterion.key] ?? 0} onRate={(v) => handleRate(criterion.key, v)} />
+                </View>
+              ))
+            )}
           </Card>
         </View>
 
@@ -226,20 +268,7 @@ export default function WriteReviewScreen() {
           <AppText style={{ fontSize: 17, fontWeight: '700', color: colors.textWhite, marginBottom: 12 }}>
             {t('writeReview.addPhotos')}
           </AppText>
-          <Pressable
-            accessibilityLabel={t('writeReview.uploadPhotos')}
-            accessibilityRole="button"
-            style={{
-              borderWidth: 1.5, borderColor: colors.borderDark, borderStyle: 'dashed',
-              borderRadius: 14, paddingVertical: 28, alignItems: 'center',
-              justifyContent: 'center', backgroundColor: `${colors.cardDark}80`,
-            }}
-          >
-            <MaterialCommunityIcons name="camera-plus-outline" size={32} color={colors.textSlate400} />
-            <AppText style={{ fontSize: 13, color: colors.textSlate400, marginTop: 8 }}>
-              {t('writeReview.uploadPhotos')}
-            </AppText>
-          </Pressable>
+          <PhotoPicker photos={photos} onChange={setPhotos} />
         </View>
 
         {/* Submit Button */}

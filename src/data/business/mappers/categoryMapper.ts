@@ -9,9 +9,11 @@ export class CategoryMapper {
       id: model.id,
       name: model.name,
       icon: model.icon,
-      sortOrder: index,
+      logoUrl: model.logo_url,
+      sortOrder: model.sort_order ?? index,
       subcategories: (model.subcategories ?? []).map(CategoryMapper.subcategoryToEntity),
       ratingCriteria: (model.rating_criteria ?? []).map(CategoryMapper.ratingCriterionToEntity),
+      isDeleted: model.is_deleted,
     };
   }
 
@@ -20,6 +22,8 @@ export class CategoryMapper {
       id: entity.id,
       name: entity.name,
       icon: entity.icon,
+      logo_url: entity.logoUrl,
+      sort_order: entity.sortOrder,
       subcategories: entity.subcategories.map(CategoryMapper.subcategoryToModel),
       rating_criteria: entity.ratingCriteria.map(CategoryMapper.ratingCriterionToModel),
     };
@@ -30,6 +34,7 @@ export class CategoryMapper {
       id: model.id,
       name: model.name,
       categoryId: model.category_id,
+      isDeleted: model.is_deleted,
     };
   }
 

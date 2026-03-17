@@ -65,33 +65,46 @@ export const Avatar: React.FC<AvatarProps> = ({
   const { container, image } = sizeMap[size];
 
   return (
-    <View className="relative" style={{ width: container, height: container }}>
-      {/* Outer glow container */}
-      {withGlow && (
-        <View className="absolute inset-0 rounded-full bg-neon-purple/20 blur-3xl scale-150" />
-      )}
-
-      {/* Avatar container with border */}
+    <View style={{ width: container, height: container }}>
+      {/* Avatar container */}
       <Animated.View
-        className="relative bg-midnight rounded-full border-2 border-neon-purple p-1 items-center justify-center"
-        style={[{ width: container, height: container }, glowStyle]}
+        style={[
+          {
+            width: container,
+            height: container,
+            borderRadius: container / 2,
+            borderWidth: 2,
+            borderColor: '#A855F7',
+            overflow: 'hidden',
+            alignItems: 'center',
+            justifyContent: 'center',
+          },
+          glowStyle,
+        ]}
       >
         {imageUrl ? (
           <Image
             source={{ uri: imageUrl }}
-            className="rounded-full"
-            style={{ width: image, height: image }}
+            style={{ width: container, height: container, borderRadius: container / 2 }}
             resizeMode="cover"
           />
         ) : (
           <View
-            className="rounded-full bg-slate-700 items-center justify-center"
-            style={{ width: image, height: image }}
+            style={{
+              width: container,
+              height: container,
+              borderRadius: container / 2,
+              backgroundColor: '#334155',
+              alignItems: 'center',
+              justifyContent: 'center',
+            }}
           >
             {initials ? (
-              <AppText className="text-2xl font-bold text-white">{initials}</AppText>
+              <AppText style={{ fontSize: container * 0.28, fontWeight: '700', color: '#FFFFFF' }}>
+                {initials}
+              </AppText>
             ) : (
-              <MaterialCommunityIcons name="account" size={image * 0.6} color="#94A3B8" />
+              <MaterialCommunityIcons name="account" size={container * 0.6} color="#94A3B8" />
             )}
           </View>
         )}
@@ -101,10 +114,24 @@ export const Avatar: React.FC<AvatarProps> = ({
       {onEditPress && (
         <Pressable
           onPress={onEditPress}
-          className="absolute bottom-1 right-1 bg-primary rounded-full p-1.5 border-4 border-midnight active:bg-blue-600"
-          style={{ shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.3, shadowRadius: 4 }}
+          style={{
+            position: 'absolute',
+            bottom: 2,
+            right: 2,
+            backgroundColor: '#A855F7',
+            borderRadius: 9999,
+            padding: 6,
+            borderWidth: 3,
+            borderColor: '#0F172A',
+            shadowColor: '#000',
+            shadowOffset: { width: 0, height: 2 },
+            shadowOpacity: 0.3,
+            shadowRadius: 4,
+          }}
+          accessibilityRole="button"
+          accessibilityLabel="Edit profile photo"
         >
-          <MaterialCommunityIcons name="pencil" size={16} color="#FFFFFF" />
+          <MaterialCommunityIcons name="pencil" size={14} color="#FFFFFF" />
         </Pressable>
       )}
     </View>

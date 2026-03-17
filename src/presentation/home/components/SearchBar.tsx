@@ -8,6 +8,8 @@ interface SearchBarProps {
   onChangeText: (text: string) => void;
   placeholder?: string;
   onFilterPress?: () => void;
+  onFocus?: () => void;
+  onBlur?: () => void;
 }
 
 export const SearchBar: React.FC<SearchBarProps> = ({
@@ -15,6 +17,8 @@ export const SearchBar: React.FC<SearchBarProps> = ({
   onChangeText,
   placeholder = 'Search...',
   onFilterPress,
+  onFocus,
+  onBlur,
 }) => {
   return (
     <View
@@ -43,6 +47,8 @@ export const SearchBar: React.FC<SearchBarProps> = ({
         onChangeText={onChangeText}
         placeholder={placeholder}
         placeholderTextColor={colors.textSlate500}
+        onFocus={onFocus}
+        onBlur={onBlur}
         accessibilityLabel="Search businesses"
         accessibilityRole="search"
       />

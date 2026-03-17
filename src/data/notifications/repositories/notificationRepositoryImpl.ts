@@ -1,5 +1,5 @@
 import { NotificationRepository } from '@/domain/notifications/repositories/notificationRepository';
-import { NotificationEntity } from '@/domain/notifications/entities/notificationEntity';
+import { NotificationEntity, CreateNotificationParams } from '@/domain/notifications/entities/notificationEntity';
 import { NotificationRemoteDataSource } from '../datasources/notificationRemoteDataSource';
 import { NotificationMapper } from '../mappers/notificationMapper';
 import { NetworkInfo } from '@/core/network/networkInfo';
@@ -75,6 +75,21 @@ export class NotificationRepositoryImpl implements NotificationRepository {
     try {
       const count = await this.remote.getUnreadCount(userId);
       return right(count);
+    } catch (error) {
+      if (error instanceof ServerException) {
+        return left(new ServerFailure(error.message));
+      }
+      if (error instanceof NetworkException) {
+        return left(new NetworkFailure(error.message));
+      }
+      return left(new ServerFailure('An unexpected error occurred'));
+    }
+  }
+
+  async createNotification(params: CreateNotificationParams): Promise<Either<Failure, void>> {
+    try {
+      await this.remote.createNotification(params);
+      return right(undefined);
     } catch (error) {
       if (error instanceof ServerException) {
         return left(new ServerFailure(error.message));

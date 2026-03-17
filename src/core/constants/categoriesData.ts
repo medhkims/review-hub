@@ -45,6 +45,7 @@ export const CATEGORIES_DATA: CategoryDef[] = [
       { id: 'mexican', name: 'Mexican' },
       { id: 'indian', name: 'Indian' },
       { id: 'syrian', name: 'Syrian' },
+      { id: 'other', name: 'Other' },
     ],
     ratingCriteria: [
       { key: 'service', label: 'Service', icon: 'shield-account' },
@@ -63,6 +64,7 @@ export const CATEGORIES_DATA: CategoryDef[] = [
       { id: 'fitness_gym', name: 'Fitness Gym' },
       { id: 'women_only_gym', name: 'Women Only Gym' },
       { id: 'personal_training', name: 'Personal Training' },
+      { id: 'other', name: 'Other' },
     ],
     ratingCriteria: [
       { key: 'service', label: 'Service', icon: 'shield-account' },
@@ -96,6 +98,7 @@ export const CATEGORIES_DATA: CategoryDef[] = [
       { id: 'clinic', name: 'Clinic' },
       { id: 'pharmacy', name: 'Pharmacy' },
       { id: 'parapharmacy', name: 'Parapharmacy' },
+      { id: 'other', name: 'Other' },
     ],
     ratingCriteria: [
       { key: 'service', label: 'Service', icon: 'shield-account' },
@@ -129,6 +132,7 @@ export const CATEGORIES_DATA: CategoryDef[] = [
       { id: 'endocrinology', name: 'Endocrinology' },
       { id: 'gastroenterology', name: 'Gastroenterology' },
       { id: 'pulmonology', name: 'Pulmonology' },
+      { id: 'other', name: 'Other' },
     ],
     ratingCriteria: [
       { key: 'communication', label: 'Communication', icon: 'message-text' },
@@ -147,6 +151,7 @@ export const CATEGORIES_DATA: CategoryDef[] = [
       { id: 'hotel', name: 'Hotel' },
       { id: 'house', name: 'House' },
       { id: 'guest_house', name: 'Guest House' },
+      { id: 'other', name: 'Other' },
     ],
     ratingCriteria: [
       { key: 'service', label: 'Service', icon: 'shield-account' },
@@ -168,6 +173,7 @@ export const CATEGORIES_DATA: CategoryDef[] = [
       { id: 'high_school', name: 'High School' },
       { id: 'university', name: 'University' },
       { id: 'training_center', name: 'Training Center' },
+      { id: 'other', name: 'Other' },
     ],
     ratingCriteria: [
       { key: 'service', label: 'Service', icon: 'shield-account' },
@@ -190,6 +196,7 @@ export const CATEGORIES_DATA: CategoryDef[] = [
       { id: 'jewelry', name: 'Jewelry' },
       { id: 'electronics', name: 'Electronics' },
       { id: 'mall', name: 'Mall' },
+      { id: 'other', name: 'Other' },
     ],
     ratingCriteria: [
       { key: 'service', label: 'Service', icon: 'shield-account' },
@@ -239,6 +246,7 @@ export const CATEGORIES_DATA: CategoryDef[] = [
       { id: 'electrician', name: 'Electrician' },
       { id: 'mechanic', name: 'Mechanic' },
       { id: 'engineer', name: 'Engineer' },
+      { id: 'other', name: 'Other' },
     ],
     ratingCriteria: [
       { key: 'punctuality', label: 'Punctuality', icon: 'clock-check' },
@@ -257,11 +265,24 @@ export const CATEGORIES_DATA: CategoryDef[] = [
       { id: 'food_delivery', name: 'Food Delivery' },
       { id: 'parcel_delivery', name: 'Parcel Delivery' },
       { id: 'international_shipping', name: 'International Shipping' },
+      { id: 'other', name: 'Other' },
     ],
     ratingCriteria: [
       { key: 'service', label: 'Service', icon: 'shield-account' },
       { key: 'promptness', label: 'Promptness', icon: 'timer' },
     ],
+  },
+
+  // ── 13. Other ──────────────────────────────────────────────────────────────
+  // Businesses in this category receive a single general 1–5 star rating
+  // instead of per-criterion sub-ratings.
+  {
+    id: 'other',
+    name: 'Other',
+    icon: 'dots-horizontal-circle-outline',
+    sortOrder: 13,
+    subcategories: [],
+    ratingCriteria: [], // intentionally empty → triggers general rating mode
   },
 ];
 

@@ -1,34 +1,41 @@
 import React, { useState, useCallback } from 'react';
-import { View, Image, ScrollView, Pressable } from 'react-native';
+import { View, Image, ScrollView, Pressable, Modal } from 'react-native';
+import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useTranslation } from 'react-i18next';
 import { AppText } from '@/presentation/shared/components/ui/AppText';
 import { colors } from '@/core/theme/colors';
 import { SectionCard } from './SectionCard';
 import { MenuCategory, MenuItem } from '@/domain/business/entities/businessDetailEntity';
+import { trackMenuItemClick } from '@/core/utils/premiumTracking';
 
 interface MenuSectionProps {
   menuCategories: MenuCategory[];
+  businessId?: string;
 }
 
-const MenuItemRow: React.FC<{ item: MenuItem }> = React.memo(({ item }) => (
-  <View
-    style={{
+const MenuItemRow: React.FC<{ item: MenuItem; onPress: (item: MenuItem) => void }> = React.memo(({ item, onPress }) => (
+  <Pressable
+    onPress={() => onPress(item)}
+    accessibilityLabel={item.name}
+    accessibilityRole="button"
+    style={({ pressed }) => ({
       flexDirection: 'row',
       alignItems: 'center',
       justifyContent: 'space-between',
-      paddingVertical: 8,
+      paddingVertical: 10,
       borderBottomWidth: 1,
       borderBottomColor: 'rgba(255, 255, 255, 0.05)',
-    }}
+      opacity: pressed ? 0.75 : 1,
+    })}
   >
     <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12, flex: 1 }}>
       {item.imageUrl ? (
         <Image
           source={{ uri: item.imageUrl }}
           style={{
-            width: 40,
-            height: 40,
-            borderRadius: 8,
+            width: 56,
+            height: 56,
+            borderRadius: 10,
             borderWidth: 1,
             borderColor: 'rgba(255, 255, 255, 0.1)',
           }}
@@ -38,39 +45,36 @@ const MenuItemRow: React.FC<{ item: MenuItem }> = React.memo(({ item }) => (
       ) : (
         <View
           style={{
-            width: 40,
-            height: 40,
-            borderRadius: 8,
-            backgroundColor: colors.cardDark,
-            borderWidth: 1,
-            borderColor: 'rgba(255, 255, 255, 0.1)',
+            width: 56,
+            height: 56,
+            borderRadius: 10,
+            backgroundColor: `${colors.neonPurple}1A`,
             alignItems: 'center',
             justifyContent: 'center',
           }}
         >
-          <AppText style={{ fontSize: 16 }}>🍽</AppText>
+          <MaterialCommunityIcons name="food" size={24} color={colors.neonPurple} />
         </View>
       )}
-      <View style={{ flex: 1 }}>
-        <AppText style={{ fontSize: 14, fontWeight: '500', color: colors.white }}>
-          {item.name}
-        </AppText>
-        {item.description ? (
-          <AppText style={{ fontSize: 10, color: colors.textSlate500, marginTop: 2 }} numberOfLines={1}>
-            {item.description}
-          </AppText>
-        ) : null}
-      </View>
+      <AppText style={{ fontSize: 14, fontWeight: '500', color: colors.white, flex: 1 }}>
+        {item.name}
+      </AppText>
     </View>
     <AppText style={{ fontSize: 14, fontWeight: '700', color: colors.neonPurple }}>
       {item.currency}{item.price.toFixed(2)}
     </AppText>
-  </View>
+  </Pressable>
 ));
 
-export const MenuSection: React.FC<MenuSectionProps> = ({ menuCategories }) => {
+export const MenuSection: React.FC<MenuSectionProps> = ({ menuCategories, businessId }) => {
   const { t } = useTranslation();
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
+  const [detailItem, setDetailItem] = useState<MenuItem | null>(null);
+
+  const handleItemPress = useCallback((item: MenuItem, categoryName: string) => {
+    if (businessId) trackMenuItemClick(businessId, item.id, item.name, categoryName);
+    setDetailItem(item);
+  }, [businessId]);
 
   const allCategoryNames = menuCategories.map((mc) => mc.name);
 
@@ -85,7 +89,66 @@ export const MenuSection: React.FC<MenuSectionProps> = ({ menuCategories }) => {
   if (menuCategories.length === 0) return null;
 
   return (
-    <SectionCard title={t('businessDetail.menu')} defaultExpanded={false}>
+    <>
+      <Modal
+        visible={!!detailItem}
+        transparent
+        animationType="fade"
+        onRequestClose={() => setDetailItem(null)}
+      >
+        <View style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.75)', justifyContent: 'flex-end' }}>
+          <Pressable
+            style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0 }}
+            onPress={() => setDetailItem(null)}
+            accessibilityLabel={t('common.cancel')}
+            accessibilityRole="button"
+          />
+          {detailItem && (
+            <View style={{ backgroundColor: colors.cardDark, borderTopLeftRadius: 28, borderTopRightRadius: 28, overflow: 'hidden' }}>
+              {/* Image container */}
+              <View style={{ width: '100%', height: 200, backgroundColor: `${colors.neonPurple}10`, alignItems: 'center', justifyContent: 'center' }}>
+                {detailItem.imageUrl ? (
+                  <Image
+                    source={{ uri: detailItem.imageUrl }}
+                    style={{ width: '70%', height: '90%' }}
+                    resizeMode="contain"
+                    accessibilityLabel={detailItem.name}
+                  />
+                ) : (
+                  <MaterialCommunityIcons name="food" size={64} color={`${colors.neonPurple}66`} />
+                )}
+              </View>
+              <View style={{ padding: 24, gap: 12, paddingBottom: 36 }}>
+                <View style={{ flexDirection: 'row', alignItems: 'flex-start', justifyContent: 'space-between', gap: 12 }}>
+                  <AppText style={{ fontSize: 18, fontWeight: '700', color: colors.white, flex: 1 }}>
+                    {detailItem.name}
+                  </AppText>
+                  <Pressable
+                    onPress={() => setDetailItem(null)}
+                    accessibilityLabel={t('common.cancel')}
+                    accessibilityRole="button"
+                  >
+                    <MaterialCommunityIcons name="close" size={20} color={colors.textSlate400} />
+                  </Pressable>
+                </View>
+                <AppText style={{ fontSize: 22, fontWeight: '800', color: colors.neonPurple }}>
+                  {detailItem.currency}{detailItem.price.toFixed(2)}
+                </AppText>
+                {!!detailItem.description && (
+                  <>
+                    <View style={{ height: 1, backgroundColor: 'rgba(255,255,255,0.07)' }} />
+                    <AppText style={{ fontSize: 14, color: colors.textSlate400, lineHeight: 22 }}>
+                      {detailItem.description}
+                    </AppText>
+                  </>
+                )}
+              </View>
+            </View>
+          )}
+        </View>
+      </Modal>
+
+      <SectionCard title={t('businessDetail.menu')} defaultExpanded={true}>
       {/* Category Filter Tabs */}
       <ScrollView
         horizontal
@@ -178,12 +241,13 @@ export const MenuSection: React.FC<MenuSectionProps> = ({ menuCategories }) => {
 
             <View style={{ gap: 4 }}>
               {category.items.map((item) => (
-                <MenuItemRow key={item.id} item={item} />
+                <MenuItemRow key={item.id} item={item} onPress={(i) => handleItemPress(i, category.name)} />
               ))}
             </View>
           </View>
         ))}
       </View>
     </SectionCard>
+    </>
   );
 };

@@ -1,9 +1,10 @@
-import React, { useState } from 'react';
+import React, { useState, useCallback } from 'react';
 import { View, Pressable, Image, Platform } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
-import * as ImagePicker from 'expo-image-picker';
 import { AppText } from '@/presentation/shared/components/ui/AppText';
+import { ImageCropModal } from '@/presentation/shared/components/ui/ImageCropModal';
+import { useImagePickerWithPreview } from '@/presentation/shared/hooks/useImagePickerWithPreview';
 import { AppButton } from '@/presentation/shared/components/ui/AppButton';
 import { colors } from '@/core/theme/colors';
 
@@ -11,6 +12,7 @@ interface CompanySignUpStep3Props {
   onFinish: (data: CompanyStep3Data) => void;
   onBack: () => void;
   isLoading?: boolean;
+  error?: string | null;
 }
 
 export interface CompanyStep3Data {
@@ -55,7 +57,6 @@ const ImageUploadBox: React.FC<ImageUploadBoxProps> = ({
     </AppText>
     <Pressable
       onPress={onPick}
-      accessibilityRole="button"
       accessibilityLabel={selectText}
       style={{
         width: '100%',
@@ -130,26 +131,23 @@ export const CompanySignUpStep3: React.FC<CompanySignUpStep3Props> = ({
   onFinish,
   onBack,
   isLoading = false,
+  error,
 }) => {
   const { t } = useTranslation();
   const [logoUri, setLogoUri] = useState<string | null>(null);
   const [coverUri, setCoverUri] = useState<string | null>(null);
 
-  const pickImage = async (
-    setter: (uri: string | null) => void,
-    aspect: [number, number],
-  ) => {
-    const result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ['images'],
-      allowsEditing: true,
-      aspect,
-      quality: 0.8,
-    });
+  const logoPicker = useImagePickerWithPreview({
+    aspect: [1, 1],
+    quality: 0.8,
+    onSelected: useCallback((uri: string) => { setLogoUri(uri); }, []),
+  });
 
-    if (!result.canceled && result.assets.length > 0) {
-      setter(result.assets[0].uri);
-    }
-  };
+  const coverPicker = useImagePickerWithPreview({
+    aspect: [16, 9],
+    quality: 0.8,
+    onSelected: useCallback((uri: string) => { setCoverUri(uri); }, []),
+  });
 
   const handleFinish = () => {
     onFinish({ logoUri, coverUri });
@@ -235,13 +233,34 @@ export const CompanySignUpStep3: React.FC<CompanySignUpStep3Props> = ({
 
       {/* Upload fields */}
       <View style={{ gap: 24 }}>
+        <ImageCropModal
+          visible={logoPicker.isPreviewVisible}
+          imageUri={logoPicker.pendingUri}
+          onConfirm={logoPicker.confirmImage}
+          onRetake={logoPicker.retakeImage}
+          onCancel={logoPicker.cancelPreview}
+          originalWidth={logoPicker.pendingWidth}
+          originalHeight={logoPicker.pendingHeight}
+          aspect={logoPicker.aspect}
+        />
+        <ImageCropModal
+          visible={coverPicker.isPreviewVisible}
+          imageUri={coverPicker.pendingUri}
+          onConfirm={coverPicker.confirmImage}
+          onRetake={coverPicker.retakeImage}
+          onCancel={coverPicker.cancelPreview}
+          originalWidth={coverPicker.pendingWidth}
+          originalHeight={coverPicker.pendingHeight}
+          aspect={coverPicker.aspect}
+        />
+
         <ImageUploadBox
           label="Business Logo"
           icon="image-outline"
           selectText="Select logo"
           hintText="PNG, JPG up to 2MB"
           imageUri={logoUri}
-          onPick={() => pickImage(setLogoUri, [1, 1])}
+          onPick={logoPicker.pickImage}
           onRemove={() => setLogoUri(null)}
           height={160}
         />
@@ -252,7 +271,7 @@ export const CompanySignUpStep3: React.FC<CompanySignUpStep3Props> = ({
           selectText="Select cover photo"
           hintText="16:9 ratio recommended"
           imageUri={coverUri}
-          onPick={() => pickImage(setCoverUri, [16, 9])}
+          onPick={coverPicker.pickImage}
           onRemove={() => setCoverUri(null)}
           height={192}
         />
@@ -276,6 +295,20 @@ export const CompanySignUpStep3: React.FC<CompanySignUpStep3Props> = ({
           paddingBottom: Platform.OS === 'ios' ? 36 : 24,
         }}
       >
+        {error && (
+          <View
+            style={{
+              backgroundColor: 'rgba(239,68,68,0.1)',
+              borderWidth: 1,
+              borderColor: 'rgba(239,68,68,0.3)',
+              borderRadius: 12,
+              padding: 12,
+              marginBottom: 12,
+            }}
+          >
+            <AppText style={{ color: '#F87171', fontSize: 14 }}>{error}</AppText>
+          </View>
+        )}
         <AppButton
           title="Finish"
           onPress={handleFinish}

@@ -12,9 +12,11 @@ import { ScreenLayout } from '@/presentation/shared/layouts/ScreenLayout';
 import { AppText } from '@/presentation/shared/components/ui/AppText';
 import { LoadingIndicator } from '@/presentation/shared/components/ui/LoadingIndicator';
 import { ErrorView } from '@/presentation/shared/components/ui/ErrorView';
+import { AdminMenuButton } from '@/presentation/admin/components/AdminMenuButton';
 import { useConversations } from '../hooks/useConversations';
 import { ConversationEntity } from '@/domain/chat/entities/conversationEntity';
 import { colors } from '@/core/theme/colors';
+import { useRoleStore } from '@/presentation/auth/store/roleStore';
 
 // ---- Helpers ----------------------------------------------------------------
 
@@ -150,6 +152,7 @@ const EmptyState = () => {
 export default function ConversationsScreen() {
   const router = useRouter();
   const { conversations, isLoading, error, refresh } = useConversations();
+  const role = useRoleStore((s) => s.role);
 
   const handleConversationPress = useCallback(
     (conversationId: string) => {
@@ -184,17 +187,36 @@ export default function ConversationsScreen() {
     [],
   );
 
+  const Header = () => (
+    <View
+      style={{
+        flexDirection: 'row',
+        alignItems: 'center',
+        paddingHorizontal: 16,
+        paddingTop: 8,
+        paddingBottom: 16,
+        gap: 12,
+      }}
+    >
+      {role === 'admin' && <AdminMenuButton />}
+      <AppText
+        style={{
+          flex: 1,
+          color: colors.textWhite,
+          fontSize: 17,
+          fontWeight: '700',
+          textAlign: role === 'admin' ? 'left' : 'center',
+        }}
+      >
+        Messages
+      </AppText>
+    </View>
+  );
+
   if (isLoading && conversations.length === 0) {
     return (
       <ScreenLayout>
-        <View className="px-6 pt-3 pb-4">
-          <AppText
-            className="font-bold text-center"
-            style={{ color: colors.textWhite, fontSize: 17, fontWeight: '700' }}
-          >
-            Messages
-          </AppText>
-        </View>
+        <Header />
         <LoadingIndicator />
       </ScreenLayout>
     );
@@ -203,14 +225,7 @@ export default function ConversationsScreen() {
   if (error && conversations.length === 0) {
     return (
       <ScreenLayout>
-        <View className="px-6 pt-3 pb-4">
-          <AppText
-            className="font-bold text-center"
-            style={{ color: colors.textWhite, fontSize: 17, fontWeight: '700' }}
-          >
-            Messages
-          </AppText>
-        </View>
+        <Header />
         <ErrorView message={error} onRetry={refresh} />
       </ScreenLayout>
     );
@@ -219,14 +234,7 @@ export default function ConversationsScreen() {
   return (
     <ScreenLayout>
       {/* Header */}
-      <View className="px-6 pt-3 pb-4">
-        <AppText
-          className="font-bold text-center"
-          style={{ color: colors.textWhite, fontSize: 17, fontWeight: '700' }}
-        >
-          Messages
-        </AppText>
-      </View>
+      <Header />
 
       {/* Conversation list */}
       <FlatList

@@ -70,6 +70,26 @@ const NOTIFICATION_TYPE_CONFIG: Record<NotificationType, NotificationTypeConfig>
     color: colors.green,
     bgColor: 'rgba(34, 197, 94, 0.1)',
   },
+  business_approved: {
+    icon: 'check-circle',
+    color: colors.success,
+    bgColor: 'rgba(34, 197, 94, 0.1)',
+  },
+  business_rejected: {
+    icon: 'close-circle',
+    color: '#EF4444',
+    bgColor: 'rgba(239, 68, 68, 0.1)',
+  },
+  review_approved: {
+    icon: 'star-check',
+    color: colors.success,
+    bgColor: 'rgba(34, 197, 94, 0.1)',
+  },
+  review_rejected: {
+    icon: 'star-remove',
+    color: '#EF4444',
+    bgColor: 'rgba(239, 68, 68, 0.1)',
+  },
 };
 
 // -- Pulse Dot ----------------------------------------------------------------

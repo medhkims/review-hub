@@ -4,4 +4,5 @@ export interface UserEntity {
   displayName: string;
   avatarUrl: string | null;
   createdAt: Date;
+  provider: 'email' | 'google' | 'facebook' | 'apple';
 }

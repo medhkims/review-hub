@@ -1,6 +1,6 @@
 import React, { useCallback, useState } from 'react';
-import { View, FlatList, Pressable, Image, RefreshControl } from 'react-native';
-import { useRouter } from 'expo-router';
+import { View, FlatList, Pressable, RefreshControl, ActivityIndicator } from 'react-native';
+import { useRouter, useLocalSearchParams } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { ScreenLayout } from '@/presentation/shared/layouts/ScreenLayout';
@@ -14,101 +14,7 @@ import { useAnalyticsScreen } from '@/presentation/shared/hooks/useAnalyticsScre
 import { AnalyticsScreens } from '@/core/analytics/analyticsKeys';
 import { BusinessEntity } from '@/domain/business/entities/businessEntity';
 import { colors } from '@/core/theme/colors';
-
-// ── Compact Row Card ─────────────────────────────────────────────────────────
-
-interface BusinessRowProps {
-  business: BusinessEntity;
-  onPress: () => void;
-  onWishlistPress: () => void;
-  isWishlisted: boolean;
-}
-
-const BusinessRow = React.memo(({ business, onPress, onWishlistPress, isWishlisted }: BusinessRowProps) => (
-  <Pressable
-    onPress={onPress}
-    style={{
-      flexDirection: 'row',
-      alignItems: 'center',
-      backgroundColor: colors.cardDark,
-      borderRadius: 16,
-      padding: 12,
-      marginBottom: 10,
-      gap: 14,
-    }}
-    accessibilityLabel={business.name}
-    accessibilityRole="button"
-  >
-    {/* Thumbnail */}
-    <View
-      style={{
-        width: 60,
-        height: 60,
-        borderRadius: 12,
-        overflow: 'hidden',
-        backgroundColor: colors.borderDark,
-      }}
-    >
-      {business.coverImageUrl ? (
-        <Image
-          source={{ uri: business.coverImageUrl }}
-          style={{ width: '100%', height: '100%' }}
-          resizeMode="cover"
-          accessibilityLabel={business.name}
-        />
-      ) : (
-        <View style={{ width: '100%', height: '100%', alignItems: 'center', justifyContent: 'center' }}>
-          <MaterialCommunityIcons name="store" size={28} color={colors.textSlate500} />
-        </View>
-      )}
-    </View>
-
-    {/* Info */}
-    <View style={{ flex: 1, minWidth: 0, gap: 2 }}>
-      <AppText
-        style={{ fontSize: 15, fontWeight: '700', color: colors.textWhite }}
-        numberOfLines={1}
-      >
-        {business.name}
-      </AppText>
-
-      {/* Rating row */}
-      <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
-        <MaterialCommunityIcons name="star" size={14} color={colors.ratingGold} />
-        <AppText style={{ fontSize: 13, fontWeight: '600', color: colors.textWhite }}>
-          {business.rating.toFixed(1)}
-        </AppText>
-        <AppText style={{ fontSize: 12, color: colors.textSlate400 }}>
-          ({business.reviewCount})
-        </AppText>
-      </View>
-
-      {/* Location + Category */}
-      <AppText
-        style={{ fontSize: 12, color: colors.textSlate400 }}
-        numberOfLines={1}
-      >
-        {business.location} {business.categoryName ? `• ${business.categoryName}` : ''}
-      </AppText>
-    </View>
-
-    {/* Wishlist heart */}
-    <Pressable
-      onPress={onWishlistPress}
-      hitSlop={8}
-      accessibilityLabel={isWishlisted ? 'Remove from wishlist' : 'Add to wishlist'}
-      accessibilityRole="button"
-    >
-      <MaterialCommunityIcons
-        name={isWishlisted ? 'heart' : 'heart-outline'}
-        size={22}
-        color={isWishlisted ? colors.red : colors.textSlate500}
-      />
-    </Pressable>
-  </Pressable>
-));
-
-BusinessRow.displayName = 'BusinessRow';
+import { BusinessCard } from '../components/BusinessCard';
 
 // ── Main Screen ──────────────────────────────────────────────────────────────
 
@@ -116,17 +22,33 @@ export default function AllBusinessesScreen() {
   useAnalyticsScreen(AnalyticsScreens.ALL_BUSINESSES);
   const { t } = useTranslation();
   const router = useRouter();
+  const { source } = useLocalSearchParams<{ source?: string }>();
+  const isNewSource = source === 'new';
+  const isRecentSource = source === 'recent';
 
   const {
     businesses,
+    newBusinesses,
+    recentSearches,
     searchQuery,
     isLoading,
-    error,
+    isNewBusinessesLoading,
+    isFuzzySearching,
+    fuzzyMatch,
     isWishlisted,
     search,
     toggleWishlist,
     refresh,
+    refreshNewBusinesses,
   } = useHome();
+
+  const displayedBusinesses = isRecentSource
+    ? recentSearches
+    : isNewSource
+      ? newBusinesses
+      : businesses;
+  const displayedLoading = isNewSource ? isNewBusinessesLoading : (isRecentSource ? false : isLoading);
+  const handleRefresh = isNewSource ? refreshNewBusinesses : refresh;
 
   const [showFilter, setShowFilter] = useState(false);
   const [showSort, setShowSort] = useState(false);
@@ -141,11 +63,12 @@ export default function AllBusinessesScreen() {
 
   const renderItem = useCallback(
     ({ item }: { item: BusinessEntity }) => (
-      <BusinessRow
+      <BusinessCard
         business={item}
         onPress={() => handleBusinessPress(item.id)}
         onWishlistPress={() => toggleWishlist(item)}
         isWishlisted={isWishlisted(item.id)}
+        variant="compact"
       />
     ),
     [handleBusinessPress, toggleWishlist, isWishlisted],
@@ -188,12 +111,16 @@ export default function AllBusinessesScreen() {
             marginLeft: 4,
           }}
         >
-          {t('home.allBusinesses')}
+          {isRecentSource
+            ? t('home.lastSearchesSection')
+            : isNewSource
+              ? t('home.newAddedSection')
+              : t('home.allBusinesses')}
         </AppText>
       </View>
 
-      {/* Search + Sort + Filter row */}
-      <View
+      {/* Search + Sort + Filter row — hidden for recent searches (local, static) */}
+      {!isRecentSource && <View
         style={{
           flexDirection: 'row',
           alignItems: 'center',
@@ -247,11 +174,18 @@ export default function AllBusinessesScreen() {
         >
           <MaterialCommunityIcons name="tune-variant" size={22} color={colors.neonPurple} />
         </Pressable>
-      </View>
+      </View>}
+
+      {/* Loading indicator */}
+      {displayedLoading && displayedBusinesses.length === 0 && (
+        <View style={{ paddingVertical: 40, alignItems: 'center' }}>
+          <ActivityIndicator size="large" color={colors.neonPurple} />
+        </View>
+      )}
 
       {/* Business List */}
       <FlatList
-        data={businesses}
+        data={displayedBusinesses}
         renderItem={renderItem}
         keyExtractor={keyExtractor}
         contentContainerStyle={{
@@ -261,17 +195,20 @@ export default function AllBusinessesScreen() {
         }}
         showsVerticalScrollIndicator={false}
         ListEmptyComponent={
-          !isLoading ? (
+          !displayedLoading ? (
             <NoResultsView
               searchQuery={searchQuery}
+              fuzzyMatch={fuzzyMatch}
+              isFuzzySearching={isFuzzySearching}
+              onOpenSuggestion={(business) => handleBusinessPress(business.id)}
               onAddNew={handleAddBusiness}
             />
           ) : null
         }
         refreshControl={
           <RefreshControl
-            refreshing={isLoading && businesses.length > 0}
-            onRefresh={refresh}
+            refreshing={displayedLoading && displayedBusinesses.length > 0}
+            onRefresh={handleRefresh}
             tintColor={colors.neonPurple}
             colors={[colors.neonPurple]}
           />

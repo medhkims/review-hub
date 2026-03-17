@@ -34,9 +34,9 @@ export class AuthRepositoryImpl implements AuthRepository {
     }
   }
 
-  async signUp(email: string, password: string, displayName: string, role?: UserRole, phoneNumber?: string): Promise<Either<Failure, UserEntity>> {
+  async signUp(email: string, password: string, displayName: string, role?: UserRole, phoneNumber?: string, gender?: 'male' | 'female'): Promise<Either<Failure, UserEntity>> {
     try {
-      const model = await this.remoteDataSource.signUp(email, password, displayName, role, phoneNumber);
+      const model = await this.remoteDataSource.signUp(email, password, displayName, role, phoneNumber, gender);
       const entity = UserMapper.toEntity(model);
 
       // Cache the user
@@ -118,9 +118,9 @@ export class AuthRepositoryImpl implements AuthRepository {
     }
   }
 
-  async signInWithGoogle(): Promise<Either<Failure, UserEntity>> {
+  async signInWithGoogle(loginHint?: string): Promise<Either<Failure, UserEntity>> {
     try {
-      const model = await this.remoteDataSource.signInWithGoogle();
+      const model = await this.remoteDataSource.signInWithGoogle(loginHint);
       const entity = UserMapper.toEntity(model);
 
       // Cache the user
@@ -135,6 +135,30 @@ export class AuthRepositoryImpl implements AuthRepository {
         return left(new ServerFailure(error.message));
       }
       return left(new NetworkFailure('Google sign in failed'));
+    }
+  }
+
+  async sendPhoneOtp(phone: string): Promise<Either<Failure, void>> {
+    try {
+      await this.remoteDataSource.sendPhoneOtp(phone);
+      return right(undefined);
+    } catch (error) {
+      if (error instanceof ServerException) {
+        return left(new ServerFailure(error.message));
+      }
+      return left(new NetworkFailure('Failed to send verification code'));
+    }
+  }
+
+  async verifyPhoneOtp(businessId: string, code: string): Promise<Either<Failure, void>> {
+    try {
+      await this.remoteDataSource.verifyPhoneOtp(businessId, code);
+      return right(undefined);
+    } catch (error) {
+      if (error instanceof ServerException) {
+        return left(new ServerFailure(error.message));
+      }
+      return left(new NetworkFailure('Verification failed'));
     }
   }
 }

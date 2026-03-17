@@ -11,13 +11,22 @@ import { useAnalyticsScreen } from '@/presentation/shared/hooks/useAnalyticsScre
 import { AnalyticsScreens } from '@/core/analytics/analyticsKeys';
 import { CategoryEntity } from '@/domain/business/entities/categoryEntity';
 import { colors } from '@/core/theme/colors';
+import { useRoleStore } from '@/presentation/auth/store/roleStore';
+import { AdminMenuButton } from '@/presentation/admin/components/AdminMenuButton';
 
 export default function AllCategoriesScreen() {
   useAnalyticsScreen(AnalyticsScreens.ALL_CATEGORIES);
   const { t } = useTranslation();
   const router = useRouter();
-  const { categories, isCategoryLoading, selectCategory } = useHome();
+  const { categories, isCategoryLoading } = useHome();
+  const role = useRoleStore((s) => s.role);
+
+  if (role === 'admin') {
+    router.replace('/(main)/(settings)/manage-categories');
+    return null;
+  }
   const [searchQuery, setSearchQuery] = useState('');
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
 
   const filteredCategories = searchQuery.trim()
     ? categories.filter((cat) =>
@@ -25,17 +34,29 @@ export default function AllCategoriesScreen() {
       )
     : categories;
 
-  const handleCategoryPress = useCallback(
-    (categoryId: string) => {
-      selectCategory(categoryId);
-      const category = categories.find((c) => c.id === categoryId);
-      router.push({
-        pathname: '/(main)/(feed)/sub-category',
-        params: { categoryId, categoryName: category?.name ?? categoryId },
-      });
-    },
-    [selectCategory, router, categories],
-  );
+  const handleCategoryPress = useCallback((categoryId: string) => {
+    setSelectedIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(categoryId)) {
+        next.delete(categoryId);
+      } else {
+        next.add(categoryId);
+      }
+      return next;
+    });
+  }, []);
+
+  const handleConfirm = useCallback(() => {
+    const ids = Array.from(selectedIds);
+    const names = ids.map((id) => categories.find((c) => c.id === id)?.name ?? id);
+    router.push({
+      pathname: '/(main)/(feed)/multi-category',
+      params: {
+        categoryIds: ids.join(','),
+        categoryNames: names.join(','),
+      },
+    });
+  }, [selectedIds, categories, router]);
 
   const handleBack = useCallback(() => {
     router.back();
@@ -53,14 +74,20 @@ export default function AllCategoriesScreen() {
             marginBottom: 12,
           }}
         >
-          <CategoryCard category={item} onPress={handleCategoryPress} />
+          <CategoryCard
+            category={item}
+            onPress={handleCategoryPress}
+            isSelected={selectedIds.has(item.id)}
+          />
         </View>
       );
     },
-    [handleCategoryPress],
+    [handleCategoryPress, selectedIds],
   );
 
   const keyExtractor = useCallback((item: CategoryEntity) => item.id, []);
+
+  const hasSelection = selectedIds.size > 0;
 
   return (
     <ScreenLayout>
@@ -74,27 +101,31 @@ export default function AllCategoriesScreen() {
           paddingBottom: 16,
         }}
       >
-        <Pressable
-          onPress={handleBack}
-          style={({ pressed }) => ({
-            width: 40,
-            height: 40,
-            borderRadius: 20,
-            backgroundColor: pressed
-              ? 'rgba(255,255,255,0.1)'
-              : 'rgba(30,41,59,0.5)',
-            alignItems: 'center',
-            justifyContent: 'center',
-          })}
-          accessibilityLabel={t('common.cancel')}
-          accessibilityRole="button"
-        >
-          <MaterialCommunityIcons
-            name="chevron-left"
-            size={28}
-            color={colors.white}
-          />
-        </Pressable>
+        {role === 'admin' ? (
+          <AdminMenuButton />
+        ) : (
+          <Pressable
+            onPress={handleBack}
+            style={({ pressed }) => ({
+              width: 40,
+              height: 40,
+              borderRadius: 20,
+              backgroundColor: pressed
+                ? 'rgba(255,255,255,0.1)'
+                : 'rgba(30,41,59,0.5)',
+              alignItems: 'center',
+              justifyContent: 'center',
+            })}
+            accessibilityLabel={t('common.cancel')}
+            accessibilityRole="button"
+          >
+            <MaterialCommunityIcons
+              name="chevron-left"
+              size={28}
+              color={colors.white}
+            />
+          </Pressable>
+        )}
         <AppText
           style={{
             fontSize: 20,
@@ -152,7 +183,10 @@ export default function AllCategoriesScreen() {
           renderItem={renderItem}
           keyExtractor={keyExtractor}
           numColumns={2}
-          contentContainerStyle={{ paddingHorizontal: 24, paddingBottom: 100 }}
+          contentContainerStyle={{
+            paddingHorizontal: 24,
+            paddingBottom: hasSelection ? 120 : 100,
+          }}
           showsVerticalScrollIndicator={false}
           ListEmptyComponent={
             <View style={{ paddingVertical: 40, alignItems: 'center' }}>
@@ -162,6 +196,48 @@ export default function AllCategoriesScreen() {
             </View>
           }
         />
+      )}
+
+      {/* Confirm button — appears when at least one category is selected */}
+      {hasSelection && (
+        <View
+          style={{
+            position: 'absolute',
+            bottom: 0,
+            left: 0,
+            right: 0,
+            paddingHorizontal: 24,
+            paddingVertical: 20,
+            paddingBottom: 32,
+            backgroundColor: colors.midnight,
+            borderTopWidth: 1,
+            borderTopColor: colors.borderDark,
+          }}
+        >
+          <Pressable
+            onPress={handleConfirm}
+            style={({ pressed }) => ({
+              backgroundColor: pressed ? 'rgba(168,85,247,0.85)' : colors.neonPurple,
+              borderRadius: 16,
+              paddingVertical: 16,
+              alignItems: 'center',
+              justifyContent: 'center',
+            })}
+            accessibilityLabel={t('common.confirm')}
+            accessibilityRole="button"
+          >
+            <AppText
+              style={{
+                fontSize: 16,
+                fontWeight: '700',
+                color: colors.white,
+                letterSpacing: 0.3,
+              }}
+            >
+              {t('common.confirm')}
+            </AppText>
+          </Pressable>
+        </View>
       )}
     </ScreenLayout>
   );

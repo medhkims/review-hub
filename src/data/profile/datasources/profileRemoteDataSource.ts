@@ -1,6 +1,6 @@
 import { firestore, auth } from '@/core/firebase/firebaseConfig';
 import { doc, getDoc, setDoc, serverTimestamp } from 'firebase/firestore';
-import { updateEmail as firebaseUpdateEmail } from 'firebase/auth';
+import { updateEmail as firebaseUpdateEmail, updateProfile as firebaseUpdateProfile } from 'firebase/auth';
 import { ProfileModel } from '../models/profileModel';
 import { ServerException, AuthException } from '@/core/error/exceptions';
 
@@ -41,6 +41,11 @@ export class ProfileRemoteDataSourceImpl implements ProfileRemoteDataSource {
       };
 
       await setDoc(profileRef, updateData, { merge: true });
+
+      // Sync display name to Firebase Auth so getCurrentUser returns the latest name
+      if (updates.display_name !== undefined && auth.currentUser?.uid === userId) {
+        await firebaseUpdateProfile(auth.currentUser, { displayName: updates.display_name });
+      }
 
       // Fetch and return the updated profile
       return this.getProfile(userId);

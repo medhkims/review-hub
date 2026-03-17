@@ -8,8 +8,11 @@ import {
   doc,
   updateDoc,
   writeBatch,
+  addDoc,
+  serverTimestamp,
 } from 'firebase/firestore';
 import { NotificationModel } from '../models/notificationModel';
+import { CreateNotificationParams } from '@/domain/notifications/entities/notificationEntity';
 import { ServerException } from '@/core/error/exceptions';
 
 export interface NotificationRemoteDataSource {
@@ -17,6 +20,7 @@ export interface NotificationRemoteDataSource {
   markAsRead(notificationId: string): Promise<void>;
   markAllAsRead(userId: string): Promise<void>;
   getUnreadCount(userId: string): Promise<number>;
+  createNotification(params: CreateNotificationParams): Promise<void>;
 }
 
 export class NotificationRemoteDataSourceImpl implements NotificationRemoteDataSource {
@@ -96,6 +100,28 @@ export class NotificationRemoteDataSourceImpl implements NotificationRemoteDataS
       const err = error as { message?: string; code?: string };
       throw new ServerException(
         err.message || 'Failed to get unread count',
+        err.code,
+      );
+    }
+  }
+
+  async createNotification(params: CreateNotificationParams): Promise<void> {
+    try {
+      await addDoc(collection(firestore, 'notifications'), {
+        user_id: params.userId,
+        type: params.type,
+        title: params.title,
+        body: params.body,
+        image_url: params.imageUrl ?? null,
+        is_read: false,
+        reference_id: params.referenceId,
+        reference_type: params.referenceType,
+        created_at: serverTimestamp(),
+      });
+    } catch (error: unknown) {
+      const err = error as { message?: string; code?: string };
+      throw new ServerException(
+        err.message || 'Failed to create notification',
         err.code,
       );
     }

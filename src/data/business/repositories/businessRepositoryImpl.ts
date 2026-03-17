@@ -2,7 +2,8 @@ import { BusinessRepository } from '@/domain/business/repositories/businessRepos
 import { BusinessEntity } from '@/domain/business/entities/businessEntity';
 import { BusinessDetailEntity } from '@/domain/business/entities/businessDetailEntity';
 import { ReviewEntity } from '@/domain/business/entities/reviewEntity';
-import { RegisterBusinessParams } from '@/domain/business/repositories/businessRepository';
+import { ActiveCategoryInfoEntity } from '@/domain/business/entities/activeCategoryInfoEntity';
+import { RegisterBusinessParams, SubmitBusinessParams, DuplicateCheckResult } from '@/domain/business/repositories/businessRepository';
 import { BusinessRemoteDataSource } from '../datasources/businessRemoteDataSource';
 import { BusinessLocalDataSource } from '../datasources/businessLocalDataSource';
 import { BusinessMapper } from '../mappers/businessMapper';
@@ -122,9 +123,9 @@ export class BusinessRepositoryImpl implements BusinessRepository {
     }
   }
 
-  async searchBusinesses(queryStr: string): Promise<Either<Failure, BusinessEntity[]>> {
+  async searchBusinesses(queryStr: string, categoryId?: string | null): Promise<Either<Failure, BusinessEntity[]>> {
     try {
-      const models = await this.remote.searchBusinesses(queryStr);
+      const models = await this.remote.searchBusinesses(queryStr, categoryId);
       const userId = auth.currentUser?.uid;
       const favoriteIds = userId ? await this.remote.getUserFavoriteIds(userId) : [];
       return right(models.map((m) => BusinessMapper.toEntity(m, favoriteIds.includes(m.id))));
@@ -154,9 +155,9 @@ export class BusinessRepositoryImpl implements BusinessRepository {
     }
   }
 
-  async getBusinessDetail(businessId: string): Promise<Either<Failure, BusinessDetailEntity>> {
+  async getBusinessDetail(businessId: string, skipTracking?: boolean): Promise<Either<Failure, BusinessDetailEntity>> {
     try {
-      const model = await this.remote.getBusinessDetail(businessId);
+      const model = await this.remote.getBusinessDetail(businessId, skipTracking);
       const userId = auth.currentUser?.uid;
       const isFavorite = userId ? await this.remote.isFavorite(businessId, userId) : false;
       const entity = BusinessDetailMapper.toEntity(model, isFavorite);
@@ -219,6 +220,186 @@ export class BusinessRepositoryImpl implements BusinessRepository {
         return left(new ServerFailure(error.message));
       }
       return left(new ServerFailure('Failed to update business'));
+    }
+  }
+
+  async getActiveCategoryInfo(): Promise<Either<Failure, ActiveCategoryInfoEntity>> {
+    try {
+      const info = await this.remote.getActiveCategoryInfo();
+      return right(info);
+    } catch (error) {
+      if (error instanceof ServerException) {
+        return left(new ServerFailure(error.message));
+      }
+      return left(new ServerFailure('Failed to fetch active category info'));
+    }
+  }
+
+  async fuzzySearchBusiness(
+    queryStr: string,
+    categoryId?: string | null,
+  ): Promise<Either<Failure, BusinessEntity | null>> {
+    try {
+      const model = await this.remote.fuzzySearchBusiness(queryStr, categoryId);
+      if (!model) return right(null);
+      const entity = BusinessMapper.toEntity(model, false);
+      return right(entity);
+    } catch (error) {
+      if (error instanceof ServerException) {
+        return left(new ServerFailure(error.message));
+      }
+      return left(new ServerFailure('Fuzzy search failed'));
+    }
+  }
+
+  async submitBusiness(params: SubmitBusinessParams): Promise<Either<Failure, string>> {
+    try {
+      const id = await this.remote.submitBusiness(params);
+      return right(id);
+    } catch (error) {
+      if (error instanceof ServerException) {
+        return left(new ServerFailure(error.message));
+      }
+      return left(new ServerFailure('Failed to submit business'));
+    }
+  }
+
+  async checkBusinessDuplicate(
+    name: string,
+    categoryId: string,
+  ): Promise<Either<Failure, DuplicateCheckResult>> {
+    try {
+      const result = await this.remote.checkBusinessDuplicate(name, categoryId);
+      return right(result);
+    } catch (error) {
+      if (error instanceof ServerException) {
+        return left(new ServerFailure(error.message));
+      }
+      return left(new ServerFailure('Duplicate check failed'));
+    }
+  }
+
+  async uploadBusinessImage(businessId: string, imageUri: string, type: 'cover' | 'logo' | 'menu'): Promise<Either<Failure, string>> {
+    try {
+      const downloadUrl = await this.remote.uploadBusinessImage(businessId, imageUri, type);
+      return right(downloadUrl);
+    } catch (error) {
+      if (error instanceof ServerException) {
+        return left(new ServerFailure(error.message));
+      }
+      return left(new ServerFailure('Failed to upload image'));
+    }
+  }
+
+  async getPendingBusinesses(): Promise<Either<Failure, BusinessDetailEntity[]>> {
+    try {
+      const models = await this.remote.getPendingBusinesses();
+      const entities = models.map((m) => BusinessDetailMapper.toEntity(m, false));
+      return right(entities);
+    } catch (error) {
+      if (error instanceof ServerException) {
+        return left(new ServerFailure(error.message));
+      }
+      return left(new ServerFailure('Failed to fetch pending businesses'));
+    }
+  }
+
+  async getApprovedBusinesses(): Promise<Either<Failure, BusinessDetailEntity[]>> {
+    try {
+      const models = await this.remote.getApprovedBusinesses();
+      const entities = models.map((m) => BusinessDetailMapper.toEntity(m, false));
+      return right(entities);
+    } catch (error) {
+      if (error instanceof ServerException) return left(new ServerFailure(error.message));
+      return left(new ServerFailure('Failed to fetch approved businesses'));
+    }
+  }
+
+  async getRejectedBusinesses(): Promise<Either<Failure, BusinessDetailEntity[]>> {
+    try {
+      const models = await this.remote.getRejectedBusinesses();
+      const entities = models.map((m) => BusinessDetailMapper.toEntity(m, false));
+      return right(entities);
+    } catch (error) {
+      if (error instanceof ServerException) return left(new ServerFailure(error.message));
+      return left(new ServerFailure('Failed to fetch rejected businesses'));
+    }
+  }
+
+  async acceptBusiness(businessId: string): Promise<Either<Failure, void>> {
+    try {
+      await this.remote.acceptBusiness(businessId);
+      return right(undefined);
+    } catch (error) {
+      if (error instanceof ServerException) {
+        return left(new ServerFailure(error.message));
+      }
+      return left(new ServerFailure('Failed to accept business'));
+    }
+  }
+
+  async rejectBusiness(businessId: string): Promise<Either<Failure, void>> {
+    try {
+      await this.remote.rejectBusiness(businessId);
+      return right(undefined);
+    } catch (error) {
+      if (error instanceof ServerException) {
+        return left(new ServerFailure(error.message));
+      }
+      return left(new ServerFailure('Failed to reject business'));
+    }
+  }
+
+  async suspendBusiness(businessId: string): Promise<Either<Failure, void>> {
+    try {
+      await this.remote.suspendBusiness(businessId);
+      return right(undefined);
+    } catch (error) {
+      if (error instanceof ServerException) {
+        return left(new ServerFailure(error.message));
+      }
+      return left(new ServerFailure('Failed to suspend business'));
+    }
+  }
+
+  async reApproveBusiness(businessId: string): Promise<Either<Failure, void>> {
+    try {
+      await this.remote.reApproveBusiness(businessId);
+      return right(undefined);
+    } catch (error) {
+      if (error instanceof ServerException) {
+        return left(new ServerFailure(error.message));
+      }
+      return left(new ServerFailure('Failed to re-approve business'));
+    }
+  }
+
+  async getSuspendedBusinesses(): Promise<Either<Failure, BusinessDetailEntity[]>> {
+    try {
+      const models = await this.remote.getSuspendedBusinesses();
+      const entities = models.map((m) => BusinessDetailMapper.toEntity(m, false));
+      return right(entities);
+    } catch (error) {
+      if (error instanceof ServerException) return left(new ServerFailure(error.message));
+      return left(new ServerFailure('Failed to fetch suspended businesses'));
+    }
+  }
+
+  async incrementSearchCount(businessId: string): Promise<Either<Failure, void>> {
+    try {
+      await this.remote.incrementSearchCount(businessId);
+      return right(undefined);
+    } catch {
+      return right(undefined);
+    }
+  }
+
+  async incrementGlobalSearchCount(): Promise<Either<Failure, void>> {
+    try {
+      await this.remote.incrementGlobalSearchCount();
+      return right(undefined);
+    } catch {
+      return right(undefined);
     }
   }
 }

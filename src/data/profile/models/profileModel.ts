@@ -11,5 +11,6 @@ export interface ProfileModel {
   followers_count: number;
   following_count: number;
   role: string;
+  gender: string | null;
   updated_at: Timestamp;
 }

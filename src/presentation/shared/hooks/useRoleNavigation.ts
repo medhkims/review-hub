@@ -13,25 +13,26 @@ const TABS_BY_ROLE: Record<UserRole, TabConfig[]> = {
     { name: '(feed)', title: 'tabs.home', icon: 'home-outline', iconFocused: 'home' },
     { name: '(notifications)', title: 'tabs.notifications', icon: 'bell-outline', iconFocused: 'bell' },
     { name: '(reviews)', title: 'tabs.myReviews', icon: 'star-outline', iconFocused: 'star' },
-    { name: 'settings', title: 'tabs.settings', icon: 'cog-outline', iconFocused: 'cog' },
+    { name: '(settings)', title: 'tabs.settings', icon: 'cog-outline', iconFocused: 'cog' },
   ],
   admin: [
     { name: '(feed)', title: 'tabs.dashboard', icon: 'view-dashboard-outline', iconFocused: 'view-dashboard' },
     { name: '(admin)', title: 'tabs.users', icon: 'account-group-outline', iconFocused: 'account-group' },
     { name: '(notifications)', title: 'tabs.notifications', icon: 'bell-outline', iconFocused: 'bell' },
-    { name: 'settings', title: 'tabs.settings', icon: 'cog-outline', iconFocused: 'cog' },
+    { name: '(settings)', title: 'tabs.settings', icon: 'cog-outline', iconFocused: 'cog' },
   ],
   moderator: [
     { name: '(feed)', title: 'tabs.queue', icon: 'clipboard-list-outline', iconFocused: 'clipboard-list' },
     { name: '(notifications)', title: 'tabs.notifications', icon: 'bell-outline', iconFocused: 'bell' },
     { name: '(reviews)', title: 'tabs.activity', icon: 'history', iconFocused: 'history' },
-    { name: 'settings', title: 'tabs.settings', icon: 'cog-outline', iconFocused: 'cog' },
+    { name: '(settings)', title: 'tabs.settings', icon: 'cog-outline', iconFocused: 'cog' },
   ],
   business_owner: [
     { name: '(feed)', title: 'tabs.myBusiness', icon: 'store-outline', iconFocused: 'store' },
-    { name: '(reviews)', title: 'tabs.reviews', icon: 'star-outline', iconFocused: 'star' },
     { name: '(notifications)', title: 'tabs.notifications', icon: 'bell-outline', iconFocused: 'bell' },
-    { name: 'settings', title: 'tabs.settings', icon: 'cog-outline', iconFocused: 'cog' },
+    { name: '(insights)', title: 'tabs.insights', icon: 'chart-line', iconFocused: 'chart-line' },
+    { name: '(reviews)', title: 'tabs.myReviews', icon: 'star-outline', iconFocused: 'star' },
+    { name: '(settings)', title: 'tabs.settings', icon: 'cog-outline', iconFocused: 'cog' },
   ],
 };
 

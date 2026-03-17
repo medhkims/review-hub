@@ -1,6 +1,7 @@
+// ---- Core ----
 import { NetworkInfoImpl } from '@/core/network/networkInfo';
 
-// Auth
+// ---- Auth ----
 import { AuthRemoteDataSourceImpl } from '@/data/auth/datasources/authRemoteDataSource';
 import { AuthLocalDataSourceImpl } from '@/data/auth/datasources/authLocalDataSource';
 import { AuthRepositoryImpl } from '@/data/auth/repositories/authRepositoryImpl';
@@ -10,14 +11,16 @@ import { SignOutUseCase } from '@/domain/auth/usecases/signOutUseCase';
 import { GetCurrentUserUseCase } from '@/domain/auth/usecases/getCurrentUserUseCase';
 import { ChangePasswordUseCase } from '@/domain/auth/usecases/changePasswordUseCase';
 import { SignInWithGoogleUseCase } from '@/domain/auth/usecases/signInWithGoogleUseCase';
+import { SendPhoneOtpUseCase } from '@/domain/auth/usecases/sendPhoneOtpUseCase';
+import { VerifyPhoneOtpUseCase } from '@/domain/auth/usecases/verifyPhoneOtpUseCase';
 
-// Settings
+// ---- Settings ----
 import { SettingsLocalDataSourceImpl } from '@/data/settings/datasources/settingsLocalDataSource';
 import { SettingsRepositoryImpl } from '@/data/settings/repositories/settingsRepositoryImpl';
 import { GetSettingsUseCase } from '@/domain/settings/usecases/getSettingsUseCase';
 import { UpdateSettingsUseCase } from '@/domain/settings/usecases/updateSettingsUseCase';
 
-// Profile
+// ---- Profile ----
 import { ProfileRemoteDataSourceImpl } from '@/data/profile/datasources/profileRemoteDataSource';
 import { ProfileLocalDataSourceImpl } from '@/data/profile/datasources/profileLocalDataSource';
 import { AvatarRemoteDataSourceImpl } from '@/data/profile/datasources/avatarRemoteDataSource';
@@ -29,8 +32,129 @@ import { UploadAvatarUseCase } from '@/domain/profile/usecases/uploadAvatarUseCa
 import { GetUserRoleUseCase } from '@/domain/profile/usecases/getUserRoleUseCase';
 import { UpdateUserRoleUseCase } from '@/domain/profile/usecases/updateUserRoleUseCase';
 
-// ---- Shared ----
+// ---- Notifications ----
+import { NotificationRemoteDataSourceImpl } from '@/data/notifications/datasources/notificationRemoteDataSource';
+import { NotificationRepositoryImpl } from '@/data/notifications/repositories/notificationRepositoryImpl';
+import { GetNotificationsUseCase } from '@/domain/notifications/usecases/getNotificationsUseCase';
+import { MarkNotificationReadUseCase } from '@/domain/notifications/usecases/markNotificationReadUseCase';
+
+// ---- Wishlist ----
+import { WishlistRemoteDataSourceImpl } from '@/data/wishlist/datasources/wishlistRemoteDataSource';
+import { WishlistLocalDataSourceImpl } from '@/data/wishlist/datasources/wishlistLocalDataSource';
+import { WishlistRepositoryImpl } from '@/data/wishlist/repositories/wishlistRepositoryImpl';
+import { GetWishlistUseCase } from '@/domain/wishlist/usecases/getWishlistUseCase';
+import { AddToWishlistUseCase } from '@/domain/wishlist/usecases/addToWishlistUseCase';
+import { RemoveFromWishlistUseCase } from '@/domain/wishlist/usecases/removeFromWishlistUseCase';
+
+// ---- Business ----
+import { BusinessRemoteDataSourceImpl } from '@/data/business/datasources/businessRemoteDataSource';
+import { BusinessLocalDataSourceImpl } from '@/data/business/datasources/businessLocalDataSource';
+import { CategoryRemoteDataSourceImpl } from '@/data/business/datasources/categoryRemoteDataSource';
+import { CategoryFirestoreDataSourceImpl } from '@/data/business/datasources/categoryFirestoreDataSource';
+import { BusinessRepositoryImpl } from '@/data/business/repositories/businessRepositoryImpl';
+import { CategoryRepositoryImpl } from '@/data/business/repositories/categoryRepositoryImpl';
+import { GetFeaturedBusinessesUseCase } from '@/domain/business/usecases/getFeaturedBusinessesUseCase';
+import { GetNewBusinessesUseCase } from '@/domain/business/usecases/getNewBusinessesUseCase';
+import { GetCategoriesUseCase } from '@/domain/business/usecases/getCategoriesUseCase';
+import { SearchBusinessesUseCase } from '@/domain/business/usecases/searchBusinessesUseCase';
+import { ToggleFavoriteUseCase } from '@/domain/business/usecases/toggleFavoriteUseCase';
+import { GetBusinessesByCategoryUseCase } from '@/domain/business/usecases/getBusinessesByCategoryUseCase';
+import { GetBusinessDetailUseCase } from '@/domain/business/usecases/getBusinessDetailUseCase';
+import { GetBusinessReviewsUseCase } from '@/domain/business/usecases/getBusinessReviewsUseCase';
+import { RegisterBusinessUseCase } from '@/domain/business/usecases/registerBusinessUseCase';
+import { GetOwnerBusinessUseCase } from '@/domain/business/usecases/getOwnerBusinessUseCase';
+import { UpdateBusinessUseCase } from '@/domain/business/usecases/updateBusinessUseCase';
+import { GetActiveCategoriesUseCase } from '@/domain/business/usecases/getActiveCategoriesUseCase';
+import { GetCategoriesForAdminUseCase } from '@/domain/business/usecases/getCategoriesForAdminUseCase';
+import { AddCategoryUseCase } from '@/domain/business/usecases/addCategoryUseCase';
+import { RemoveCategoryUseCase } from '@/domain/business/usecases/removeCategoryUseCase';
+import { AddSubcategoryUseCase } from '@/domain/business/usecases/addSubcategoryUseCase';
+import { RemoveSubcategoryUseCase } from '@/domain/business/usecases/removeSubcategoryUseCase';
+import { UpdateCategoryUseCase } from '@/domain/business/usecases/updateCategoryUseCase';
+import { UpdateSubcategoryUseCase } from '@/domain/business/usecases/updateSubcategoryUseCase';
+import { SoftDeleteCategoryUseCase } from '@/domain/business/usecases/softDeleteCategoryUseCase';
+import { SoftDeleteSubcategoryUseCase } from '@/domain/business/usecases/softDeleteSubcategoryUseCase';
+import { RecoverCategoryUseCase } from '@/domain/business/usecases/recoverCategoryUseCase';
+import { RecoverSubcategoryUseCase } from '@/domain/business/usecases/recoverSubcategoryUseCase';
+import { GetDeletedCategoryItemsUseCase } from '@/domain/business/usecases/getDeletedCategoryItemsUseCase';
+import { FuzzySearchBusinessUseCase } from '@/domain/business/usecases/fuzzySearchBusinessUseCase';
+import { SubmitBusinessUseCase } from '@/domain/business/usecases/submitBusinessUseCase';
+import { CheckBusinessDuplicateUseCase } from '@/domain/business/usecases/checkBusinessDuplicateUseCase';
+import { UploadBusinessImageUseCase } from '@/domain/business/usecases/uploadBusinessImageUseCase';
+import { GetPendingBusinessesUseCase } from '@/domain/business/usecases/getPendingBusinessesUseCase';
+import { GetApprovedBusinessesUseCase } from '@/domain/business/usecases/getApprovedBusinessesUseCase';
+import { GetRejectedBusinessesUseCase } from '@/domain/business/usecases/getRejectedBusinessesUseCase';
+import { AcceptBusinessUseCase } from '@/domain/business/usecases/acceptBusinessUseCase';
+import { RejectBusinessUseCase } from '@/domain/business/usecases/rejectBusinessUseCase';
+import { SuspendBusinessUseCase } from '@/domain/business/usecases/suspendBusinessUseCase';
+import { ReApproveBusinessUseCase } from '@/domain/business/usecases/reApproveBusinessUseCase';
+import { GetSuspendedBusinessesUseCase } from '@/domain/business/usecases/getSuspendedBusinessesUseCase';
+import { IncrementSearchCountUseCase } from '@/domain/business/usecases/incrementSearchCountUseCase';
+import { IncrementGlobalSearchCountUseCase } from '@/domain/business/usecases/incrementGlobalSearchCountUseCase';
+
+// ---- Feed ----
+import { FeedRemoteDataSourceImpl } from '@/data/feed/datasources/feedRemoteDataSource';
+import { FeedLocalDataSourceImpl } from '@/data/feed/datasources/feedLocalDataSource';
+import { FeedRepositoryImpl } from '@/data/feed/repositories/feedRepositoryImpl';
+import { GetPostsUseCase } from '@/domain/feed/usecases/getPostsUseCase';
+import { CreatePostUseCase } from '@/domain/feed/usecases/createPostUseCase';
+import { LikePostUseCase } from '@/domain/feed/usecases/likePostUseCase';
+
+// ---- Reviews ----
+import { ReviewRemoteDataSourceImpl } from '@/data/reviews/datasources/reviewRemoteDataSource';
+import { ReviewRepositoryImpl } from '@/data/reviews/repositories/reviewRepositoryImpl';
+import { CreateReviewUseCase } from '@/domain/reviews/usecases/createReviewUseCase';
+import { GetUserReviewsUseCase } from '@/domain/reviews/usecases/getUserReviewsUseCase';
+import { DeleteReviewUseCase } from '@/domain/reviews/usecases/deleteReviewUseCase';
+import { GetPendingReviewsUseCase } from '@/domain/reviews/usecases/getPendingReviewsUseCase';
+import { GetApprovedReviewsUseCase } from '@/domain/reviews/usecases/getApprovedReviewsUseCase';
+import { GetRejectedReviewsUseCase } from '@/domain/reviews/usecases/getRejectedReviewsUseCase';
+import { ApproveReviewUseCase } from '@/domain/reviews/usecases/approveReviewUseCase';
+import { RejectReviewUseCase } from '@/domain/reviews/usecases/rejectReviewUseCase';
+
+// ---- Chat ----
+import { ChatRemoteDataSourceImpl } from '@/data/chat/datasources/chatRemoteDataSource';
+import { ChatLocalDataSourceImpl } from '@/data/chat/datasources/chatLocalDataSource';
+import { ChatRepositoryImpl } from '@/data/chat/repositories/chatRepositoryImpl';
+import { GetConversationsUseCase } from '@/domain/chat/usecases/getConversationsUseCase';
+import { GetMessagesUseCase } from '@/domain/chat/usecases/getMessagesUseCase';
+import { SendMessageUseCase } from '@/domain/chat/usecases/sendMessageUseCase';
+
+// ---- Category Defaults ----
+import { CategoryDefaultRemoteDataSourceImpl } from '@/data/categoryDefaults/datasources/categoryDefaultRemoteDataSource';
+import { CategoryDefaultRepositoryImpl } from '@/data/categoryDefaults/repositories/categoryDefaultRepositoryImpl';
+import { GetCategoryDefaultsUseCase } from '@/domain/categoryDefaults/usecases/getCategoryDefaultsUseCase';
+import { UpdateCategoryDefaultUseCase } from '@/domain/categoryDefaults/usecases/updateCategoryDefaultUseCase';
+
+// ---- Banner ----
+import { BannerRemoteDataSourceImpl } from '@/data/banner/datasources/bannerRemoteDataSource';
+import { BannerRepositoryImpl } from '@/data/banner/repositories/bannerRepositoryImpl';
+import { GetBannersUseCase } from '@/domain/banner/usecases/getBannersUseCase';
+import { GetAllBannersUseCase } from '@/domain/banner/usecases/getAllBannersUseCase';
+import { CreateBannerUseCase } from '@/domain/banner/usecases/createBannerUseCase';
+import { UpdateBannerUseCase } from '@/domain/banner/usecases/updateBannerUseCase';
+import { DeleteBannerUseCase } from '@/domain/banner/usecases/deleteBannerUseCase';
+
+// ---- Admin ----
+import { AdminRemoteDataSourceImpl } from '@/data/admin/datasources/adminRemoteDataSource';
+import { AdminRepositoryImpl } from '@/data/admin/repositories/adminRepositoryImpl';
+import { GetAdminDashboardStatsUseCase } from '@/domain/admin/usecases/getAdminDashboardStatsUseCase';
+import { GetAdminCompanyListUseCase } from '@/domain/admin/usecases/getAdminCompanyListUseCase';
+import { AdminInfoRemoteDataSourceImpl } from '@/data/admin/datasources/adminInfoRemoteDataSource';
+import { AdminInfoRepositoryImpl } from '@/data/admin/repositories/adminInfoRepositoryImpl';
+import { GetAdminInfoUseCase } from '@/domain/admin/usecases/getAdminInfoUseCase';
+import { UpdateAdminInfoUseCase } from '@/domain/admin/usecases/updateAdminInfoUseCase';
+import { UploadAdminPictureUseCase } from '@/domain/admin/usecases/uploadAdminPictureUseCase';
+
+// ============================================================
+// Instantiation
+// ============================================================
+
 const networkInfo = new NetworkInfoImpl();
+
+// ---- Notifications (instantiated early — injected into business & review use cases) ----
+const notificationRemoteDataSource = new NotificationRemoteDataSourceImpl();
+const notificationRepository = new NotificationRepositoryImpl(notificationRemoteDataSource, networkInfo);
 
 // ---- Auth ----
 const authRemoteDataSource = new AuthRemoteDataSourceImpl();
@@ -43,6 +167,8 @@ const signOutUseCase = new SignOutUseCase(authRepository);
 const getCurrentUserUseCase = new GetCurrentUserUseCase(authRepository);
 const changePasswordUseCase = new ChangePasswordUseCase(authRepository);
 const signInWithGoogleUseCase = new SignInWithGoogleUseCase(authRepository);
+const sendPhoneOtpUseCase = new SendPhoneOtpUseCase(authRepository);
+const verifyPhoneOtpUseCase = new VerifyPhoneOtpUseCase(authRepository);
 
 // ---- Settings ----
 const settingsLocalDataSource = new SettingsLocalDataSourceImpl();
@@ -70,13 +196,6 @@ const getUserRoleUseCase = new GetUserRoleUseCase(profileRepository);
 const updateUserRoleUseCase = new UpdateUserRoleUseCase(profileRepository);
 
 // ---- Wishlist ----
-import { WishlistRemoteDataSourceImpl } from '@/data/wishlist/datasources/wishlistRemoteDataSource';
-import { WishlistLocalDataSourceImpl } from '@/data/wishlist/datasources/wishlistLocalDataSource';
-import { WishlistRepositoryImpl } from '@/data/wishlist/repositories/wishlistRepositoryImpl';
-import { GetWishlistUseCase } from '@/domain/wishlist/usecases/getWishlistUseCase';
-import { AddToWishlistUseCase } from '@/domain/wishlist/usecases/addToWishlistUseCase';
-import { RemoveFromWishlistUseCase } from '@/domain/wishlist/usecases/removeFromWishlistUseCase';
-
 const wishlistRemoteDataSource = new WishlistRemoteDataSourceImpl();
 const wishlistLocalDataSource = new WishlistLocalDataSourceImpl();
 const wishlistRepository = new WishlistRepositoryImpl(
@@ -90,28 +209,12 @@ const addToWishlistUseCase = new AddToWishlistUseCase(wishlistRepository);
 const removeFromWishlistUseCase = new RemoveFromWishlistUseCase(wishlistRepository);
 
 // ---- Business ----
-import { BusinessRemoteDataSourceImpl } from '@/data/business/datasources/businessRemoteDataSource';
-import { BusinessLocalDataSourceImpl } from '@/data/business/datasources/businessLocalDataSource';
-import { CategoryRemoteDataSourceImpl } from '@/data/business/datasources/categoryRemoteDataSource';
-import { BusinessRepositoryImpl } from '@/data/business/repositories/businessRepositoryImpl';
-import { CategoryRepositoryImpl } from '@/data/business/repositories/categoryRepositoryImpl';
-import { GetFeaturedBusinessesUseCase } from '@/domain/business/usecases/getFeaturedBusinessesUseCase';
-import { GetNewBusinessesUseCase } from '@/domain/business/usecases/getNewBusinessesUseCase';
-import { GetCategoriesUseCase } from '@/domain/business/usecases/getCategoriesUseCase';
-import { SearchBusinessesUseCase } from '@/domain/business/usecases/searchBusinessesUseCase';
-import { ToggleFavoriteUseCase } from '@/domain/business/usecases/toggleFavoriteUseCase';
-import { GetBusinessesByCategoryUseCase } from '@/domain/business/usecases/getBusinessesByCategoryUseCase';
-import { GetBusinessDetailUseCase } from '@/domain/business/usecases/getBusinessDetailUseCase';
-import { GetBusinessReviewsUseCase } from '@/domain/business/usecases/getBusinessReviewsUseCase';
-import { RegisterBusinessUseCase } from '@/domain/business/usecases/registerBusinessUseCase';
-import { GetOwnerBusinessUseCase } from '@/domain/business/usecases/getOwnerBusinessUseCase';
-import { UpdateBusinessUseCase } from '@/domain/business/usecases/updateBusinessUseCase';
-
 const businessRemoteDataSource = new BusinessRemoteDataSourceImpl();
 const businessLocalDataSource = new BusinessLocalDataSourceImpl();
 const categoryRemoteDataSource = new CategoryRemoteDataSourceImpl();
+const categoryFirestoreDataSource = new CategoryFirestoreDataSourceImpl();
 const businessRepository = new BusinessRepositoryImpl(businessRemoteDataSource, businessLocalDataSource, networkInfo);
-const categoryRepository = new CategoryRepositoryImpl(categoryRemoteDataSource);
+const categoryRepository = new CategoryRepositoryImpl(categoryRemoteDataSource, categoryFirestoreDataSource);
 
 const getFeaturedBusinessesUseCase = new GetFeaturedBusinessesUseCase(businessRepository);
 const getNewBusinessesUseCase = new GetNewBusinessesUseCase(businessRepository);
@@ -124,27 +227,33 @@ const getBusinessReviewsUseCase = new GetBusinessReviewsUseCase(businessReposito
 const registerBusinessUseCase = new RegisterBusinessUseCase(businessRepository);
 const getOwnerBusinessUseCase = new GetOwnerBusinessUseCase(businessRepository);
 const updateBusinessUseCase = new UpdateBusinessUseCase(businessRepository);
-
-// ---- Feed ----
-import { FeedRemoteDataSourceImpl } from '@/data/feed/datasources/feedRemoteDataSource';
-import { FeedLocalDataSourceImpl } from '@/data/feed/datasources/feedLocalDataSource';
-import { FeedRepositoryImpl } from '@/data/feed/repositories/feedRepositoryImpl';
-import { GetPostsUseCase } from '@/domain/feed/usecases/getPostsUseCase';
-import { CreatePostUseCase } from '@/domain/feed/usecases/createPostUseCase';
-import { LikePostUseCase } from '@/domain/feed/usecases/likePostUseCase';
-
-// ---- Reviews ----
-import { ReviewRemoteDataSourceImpl } from '@/data/reviews/datasources/reviewRemoteDataSource';
-import { ReviewRepositoryImpl } from '@/data/reviews/repositories/reviewRepositoryImpl';
-import { CreateReviewUseCase } from '@/domain/reviews/usecases/createReviewUseCase';
-
-// ---- Chat ----
-import { ChatRemoteDataSourceImpl } from '@/data/chat/datasources/chatRemoteDataSource';
-import { ChatLocalDataSourceImpl } from '@/data/chat/datasources/chatLocalDataSource';
-import { ChatRepositoryImpl } from '@/data/chat/repositories/chatRepositoryImpl';
-import { GetConversationsUseCase } from '@/domain/chat/usecases/getConversationsUseCase';
-import { GetMessagesUseCase } from '@/domain/chat/usecases/getMessagesUseCase';
-import { SendMessageUseCase } from '@/domain/chat/usecases/sendMessageUseCase';
+const getActiveCategoriesUseCase = new GetActiveCategoriesUseCase(categoryRepository, businessRepository);
+const getCategoriesForAdminUseCase = new GetCategoriesForAdminUseCase(categoryRepository);
+const addCategoryUseCase = new AddCategoryUseCase(categoryRepository);
+const removeCategoryUseCase = new RemoveCategoryUseCase(categoryRepository);
+const addSubcategoryUseCase = new AddSubcategoryUseCase(categoryRepository);
+const removeSubcategoryUseCase = new RemoveSubcategoryUseCase(categoryRepository);
+const updateCategoryUseCase = new UpdateCategoryUseCase(categoryRepository);
+const updateSubcategoryUseCase = new UpdateSubcategoryUseCase(categoryRepository);
+const softDeleteCategoryUseCase = new SoftDeleteCategoryUseCase(categoryRepository);
+const softDeleteSubcategoryUseCase = new SoftDeleteSubcategoryUseCase(categoryRepository);
+const recoverCategoryUseCase = new RecoverCategoryUseCase(categoryRepository);
+const recoverSubcategoryUseCase = new RecoverSubcategoryUseCase(categoryRepository);
+const getDeletedCategoryItemsUseCase = new GetDeletedCategoryItemsUseCase(categoryRepository);
+const fuzzySearchBusinessUseCase = new FuzzySearchBusinessUseCase(businessRepository);
+const submitBusinessUseCase = new SubmitBusinessUseCase(businessRepository);
+const checkBusinessDuplicateUseCase = new CheckBusinessDuplicateUseCase(businessRepository);
+const uploadBusinessImageUseCase = new UploadBusinessImageUseCase(businessRepository);
+const getPendingBusinessesUseCase = new GetPendingBusinessesUseCase(businessRepository);
+const getApprovedBusinessesUseCase = new GetApprovedBusinessesUseCase(businessRepository);
+const getRejectedBusinessesUseCase = new GetRejectedBusinessesUseCase(businessRepository);
+const acceptBusinessUseCase = new AcceptBusinessUseCase(businessRepository, notificationRepository);
+const rejectBusinessUseCase = new RejectBusinessUseCase(businessRepository, notificationRepository);
+const suspendBusinessUseCase = new SuspendBusinessUseCase(businessRepository, notificationRepository);
+const reApproveBusinessUseCase = new ReApproveBusinessUseCase(businessRepository, notificationRepository);
+const getSuspendedBusinessesUseCase = new GetSuspendedBusinessesUseCase(businessRepository);
+const incrementSearchCountUseCase = new IncrementSearchCountUseCase(businessRepository);
+const incrementGlobalSearchCountUseCase = new IncrementGlobalSearchCountUseCase(businessRepository);
 
 // ---- Feed ----
 const feedRemoteDataSource = new FeedRemoteDataSourceImpl();
@@ -160,6 +269,13 @@ const reviewRemoteDataSource = new ReviewRemoteDataSourceImpl();
 const reviewRepository = new ReviewRepositoryImpl(reviewRemoteDataSource);
 
 const createReviewUseCase = new CreateReviewUseCase(reviewRepository);
+const getUserReviewsUseCase = new GetUserReviewsUseCase(reviewRepository);
+const deleteReviewUseCase = new DeleteReviewUseCase(reviewRepository);
+const getPendingReviewsUseCase = new GetPendingReviewsUseCase(reviewRepository);
+const getApprovedReviewsUseCase = new GetApprovedReviewsUseCase(reviewRepository);
+const getRejectedReviewsUseCase = new GetRejectedReviewsUseCase(reviewRepository);
+const approveReviewUseCase = new ApproveReviewUseCase(reviewRepository, notificationRepository);
+const rejectReviewUseCase = new RejectReviewUseCase(reviewRepository, notificationRepository);
 
 // ---- Chat ----
 const chatRemoteDataSource = new ChatRemoteDataSourceImpl();
@@ -170,15 +286,36 @@ const getConversationsUseCase = new GetConversationsUseCase(chatRepository);
 const getMessagesUseCase = new GetMessagesUseCase(chatRepository);
 const sendMessageUseCase = new SendMessageUseCase(chatRepository);
 
-// ---- Notifications ----
-import { NotificationRemoteDataSourceImpl } from '@/data/notifications/datasources/notificationRemoteDataSource';
-import { NotificationRepositoryImpl } from '@/data/notifications/repositories/notificationRepositoryImpl';
-import { GetNotificationsUseCase } from '@/domain/notifications/usecases/getNotificationsUseCase';
-import { MarkNotificationReadUseCase } from '@/domain/notifications/usecases/markNotificationReadUseCase';
+// ---- Category Defaults ----
+const categoryDefaultRemoteDataSource = new CategoryDefaultRemoteDataSourceImpl();
+const categoryDefaultRepository = new CategoryDefaultRepositoryImpl(categoryDefaultRemoteDataSource);
+const getCategoryDefaultsUseCase = new GetCategoryDefaultsUseCase(categoryDefaultRepository);
+const updateCategoryDefaultUseCase = new UpdateCategoryDefaultUseCase(categoryDefaultRepository);
 
-const notificationRemoteDataSource = new NotificationRemoteDataSourceImpl();
-const notificationRepository = new NotificationRepositoryImpl(notificationRemoteDataSource, networkInfo);
+// ---- Banner ----
+const bannerRemoteDataSource = new BannerRemoteDataSourceImpl();
+const bannerRepository = new BannerRepositoryImpl(bannerRemoteDataSource);
 
+const getBannersUseCase = new GetBannersUseCase(bannerRepository);
+const getAllBannersUseCase = new GetAllBannersUseCase(bannerRepository);
+const createBannerUseCase = new CreateBannerUseCase(bannerRepository);
+const updateBannerUseCase = new UpdateBannerUseCase(bannerRepository);
+const deleteBannerUseCase = new DeleteBannerUseCase(bannerRepository);
+
+// ---- Admin ----
+const adminRemoteDataSource = new AdminRemoteDataSourceImpl();
+const adminRepository = new AdminRepositoryImpl(adminRemoteDataSource);
+const getAdminDashboardStatsUseCase = new GetAdminDashboardStatsUseCase(adminRepository);
+const getAdminCompanyListUseCase = new GetAdminCompanyListUseCase(adminRepository);
+
+// ---- Admin Info ----
+const adminInfoRemoteDataSource = new AdminInfoRemoteDataSourceImpl();
+const adminInfoRepository = new AdminInfoRepositoryImpl(adminInfoRemoteDataSource);
+const getAdminInfoUseCase = new GetAdminInfoUseCase(adminInfoRepository);
+const updateAdminInfoUseCase = new UpdateAdminInfoUseCase(adminInfoRepository);
+const uploadAdminPictureUseCase = new UploadAdminPictureUseCase(adminInfoRepository);
+
+// ---- Notifications (use cases) ----
 const getNotificationsUseCase = new GetNotificationsUseCase(notificationRepository);
 const markNotificationReadUseCase = new MarkNotificationReadUseCase(notificationRepository);
 
@@ -191,6 +328,8 @@ export const container = {
   getCurrentUserUseCase,
   changePasswordUseCase,
   signInWithGoogleUseCase,
+  sendPhoneOtpUseCase,
+  verifyPhoneOtpUseCase,
   // Settings use cases
   getSettingsUseCase,
   updateSettingsUseCase,
@@ -209,6 +348,19 @@ export const container = {
   getFeaturedBusinessesUseCase,
   getNewBusinessesUseCase,
   getCategoriesUseCase,
+  getActiveCategoriesUseCase,
+  getCategoriesForAdminUseCase,
+  addCategoryUseCase,
+  removeCategoryUseCase,
+  addSubcategoryUseCase,
+  removeSubcategoryUseCase,
+  updateCategoryUseCase,
+  updateSubcategoryUseCase,
+  softDeleteCategoryUseCase,
+  softDeleteSubcategoryUseCase,
+  recoverCategoryUseCase,
+  recoverSubcategoryUseCase,
+  getDeletedCategoryItemsUseCase,
   searchBusinessesUseCase,
   toggleFavoriteUseCase,
   getBusinessesByCategoryUseCase,
@@ -217,12 +369,33 @@ export const container = {
   registerBusinessUseCase,
   getOwnerBusinessUseCase,
   updateBusinessUseCase,
+  fuzzySearchBusinessUseCase,
+  submitBusinessUseCase,
+  checkBusinessDuplicateUseCase,
+  uploadBusinessImageUseCase,
+  getPendingBusinessesUseCase,
+  getApprovedBusinessesUseCase,
+  getRejectedBusinessesUseCase,
+  acceptBusinessUseCase,
+  rejectBusinessUseCase,
+  suspendBusinessUseCase,
+  reApproveBusinessUseCase,
+  getSuspendedBusinessesUseCase,
+  incrementSearchCountUseCase,
+  incrementGlobalSearchCountUseCase,
   // Feed use cases
   getPostsUseCase,
   createPostUseCase,
   likePostUseCase,
   // Review use cases
   createReviewUseCase,
+  getUserReviewsUseCase,
+  deleteReviewUseCase,
+  getPendingReviewsUseCase,
+  getApprovedReviewsUseCase,
+  getRejectedReviewsUseCase,
+  approveReviewUseCase,
+  rejectReviewUseCase,
   // Chat use cases
   getConversationsUseCase,
   getMessagesUseCase,
@@ -230,4 +403,19 @@ export const container = {
   // Notification use cases
   getNotificationsUseCase,
   markNotificationReadUseCase,
+  // Banner use cases
+  getBannersUseCase,
+  getAllBannersUseCase,
+  createBannerUseCase,
+  updateBannerUseCase,
+  deleteBannerUseCase,
+  // Admin use cases
+  getAdminDashboardStatsUseCase,
+  getAdminCompanyListUseCase,
+  getAdminInfoUseCase,
+  updateAdminInfoUseCase,
+  uploadAdminPictureUseCase,
+  // Category default use cases
+  getCategoryDefaultsUseCase,
+  updateCategoryDefaultUseCase,
 };

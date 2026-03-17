@@ -9,6 +9,7 @@ import { SectionHeader } from '@/presentation/shared/components/ui/SectionHeader
 import { useAnalyticsScreen } from '@/presentation/shared/hooks/useAnalyticsScreen';
 import { AnalyticsScreens } from '@/core/analytics/analyticsKeys';
 import { colors } from '@/core/theme/colors';
+import { AdminMenuButton } from '../components/AdminMenuButton';
 
 // ── Types ────────────────────────────────────────────────────────────────────
 type MainTab = 'BOOST' | 'SUBSCRIPTION';
@@ -240,10 +241,7 @@ export default function AdminBoostManagementScreen() {
       <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 100 }}>
         {/* Header */}
         <View style={{ flexDirection: 'row', alignItems: 'center', paddingHorizontal: 16, paddingTop: 12, paddingBottom: 12 }}>
-          <Pressable onPress={() => router.back()} accessibilityRole="button"
-            accessibilityLabel={t('common.back', { defaultValue: 'Go back' })} style={{ padding: 4 }}>
-            <MaterialCommunityIcons name="arrow-left" size={24} color={colors.white} />
-          </Pressable>
+          <AdminMenuButton />
           <View style={{ flex: 1, alignItems: 'center' }}>
             <AppText style={{ fontSize: 17, fontWeight: '700', color: colors.white }}>
               {t('admin.boost.title', { defaultValue: 'Boost & Promotions' })}

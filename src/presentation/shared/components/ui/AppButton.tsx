@@ -1,5 +1,5 @@
 import React from 'react';
-import { Pressable, PressableProps, ActivityIndicator, View } from 'react-native';
+import { Pressable, PressableProps, ActivityIndicator } from 'react-native';
 import { AppText } from './AppText';
 import { colors } from '@/core/theme/colors';
 
@@ -77,13 +77,14 @@ export const AppButton: React.FC<AppButtonProps> = ({
       {isLoading ? (
         <ActivityIndicator color={variant === 'ghost' ? colors.primary : colors.textWhite} />
       ) : (
-        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+        <>
           {typeof content === 'string' ? (
             <AppText
               style={{
                 fontWeight: '700',
                 fontSize: sizeFontSize[normalizedSize],
                 color: variantTextColors[variant],
+                marginRight: icon ? 8 : 0,
               }}
             >
               {content}
@@ -92,7 +93,7 @@ export const AppButton: React.FC<AppButtonProps> = ({
             content
           )}
           {icon}
-        </View>
+        </>
       )}
     </Pressable>
   );

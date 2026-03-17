@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useCallback, useState } from 'react';
 import { View, Pressable, ScrollView } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useTranslation } from 'react-i18next';
@@ -114,15 +114,29 @@ export default function SignUpScreen() {
   useAnalyticsScreen(AnalyticsScreens.SIGN_UP);
   const router = useRouter();
   const { t } = useTranslation();
-  const { signUp, signUpAsBusinessOwner, isLoading, error } = useAuth();
+  const { signUp, signUpAsBusinessOwner, signInWithGoogle, isLoading, error } = useAuth();
 
   const [userType, setUserType] = useState<UserType>('simple');
   const [companyStep, setCompanyStep] = useState(1);
-  const [companyStep1Data, setCompanyStep1Data] = useState<CompanyStep1Data | null>(null);
+  const [maxCompanyStep, setMaxCompanyStep] = useState(1);
+  const [step1Form, setStep1Form] = useState<CompanyStep1Data>({
+    businessName: '',
+    category: '',
+    subCategories: [],
+    email: '',
+    phone: '',
+    password: '',
+    confirmPassword: '',
+  });
+  const updateStep1Form = useCallback((updates: Partial<CompanyStep1Data>) => {
+    setStep1Form((prev) => ({ ...prev, ...updates }));
+  }, []);
   const [companyStep2Data, setCompanyStep2Data] = useState<CompanyStep2Data | null>(null);
   const [displayName, setDisplayName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [gender, setGender] = useState<'male' | 'female' | null>(null);
+  const [genderDropdownOpen, setGenderDropdownOpen] = useState(false);
   const [agreedToTerms, setAgreedToTerms] = useState(false);
   const [confirmError, setConfirmError] = useState<string | null>(null);
 
@@ -133,36 +147,37 @@ export default function SignUpScreen() {
       setConfirmError(t('auth.passwordMinLength'));
       return;
     }
-    signUp(email.trim(), password, displayName.trim());
+    signUp(email.trim(), password, displayName.trim(), gender || undefined);
   };
 
-  const handleCompanyStep1Next = (data: CompanyStep1Data) => {
-    setCompanyStep1Data(data);
+  const handleCompanyStep1Next = () => {
     setCompanyStep(2);
+    setMaxCompanyStep((prev) => Math.max(prev, 2));
   };
 
   const handleCompanyStep2Next = (data: CompanyStep2Data) => {
     setCompanyStep2Data(data);
     setCompanyStep(3);
+    setMaxCompanyStep((prev) => Math.max(prev, 3));
   };
 
   const handleCompanyStep2Skip = () => {
     setCompanyStep2Data(null);
     setCompanyStep(3);
+    setMaxCompanyStep((prev) => Math.max(prev, 3));
   };
 
   const handleCompanyStep3Finish = (_data: CompanyStep3Data) => {
-    if (!companyStep1Data) return;
-
     signUpAsBusinessOwner(
-      companyStep1Data.email,
-      companyStep1Data.password,
-      companyStep1Data.businessName,
+      step1Form.email,
+      step1Form.password,
+      step1Form.businessName,
       {
-        businessName: companyStep1Data.businessName,
-        category: companyStep1Data.category,
-        subCategory: companyStep1Data.subCategory,
-        phone: companyStep1Data.phone,
+        businessName: step1Form.businessName,
+        category: step1Form.category,
+        subCategories: step1Form.subCategories,
+        email: step1Form.email,
+        phone: step1Form.phone,
         location: companyStep2Data?.location ?? '',
         website: companyStep2Data?.website ?? '',
         facebook: companyStep2Data?.facebook ?? '',
@@ -252,41 +267,37 @@ export default function SignUpScreen() {
         {/* ===== COMPANY OWNER FORM ===== */}
         {userType === 'company' ? (
           <View style={{ paddingHorizontal: 24, paddingTop: 16, flex: 1 }}>
-            {error && (
-              <View
-                style={{
-                  backgroundColor: 'rgba(239,68,68,0.1)',
-                  borderWidth: 1,
-                  borderColor: 'rgba(239,68,68,0.3)',
-                  borderRadius: 12,
-                  padding: 12,
-                  marginBottom: 16,
-                }}
-              >
-                <AppText style={{ color: '#F87171', fontSize: 14 }}>
-                  {error}
-                </AppText>
-              </View>
-            )}
-            {companyStep === 1 ? (
+            {/* Steps are kept mounted once visited to preserve all entered data */}
+            <View style={{ display: companyStep === 1 ? 'flex' : 'none', flex: 1 }}>
               <CompanySignUpStep1
                 onNext={handleCompanyStep1Next}
                 onBack={() => setUserType('simple')}
                 isLoading={isLoading}
+                formData={step1Form}
+                onFormChange={updateStep1Form}
               />
-            ) : companyStep === 2 ? (
-              <CompanySignUpStep2
-                onNext={handleCompanyStep2Next}
-                onBack={() => setCompanyStep(1)}
-                onSkip={handleCompanyStep2Skip}
-                isLoading={isLoading}
-              />
-            ) : (
-              <CompanySignUpStep3
-                onFinish={handleCompanyStep3Finish}
-                onBack={() => setCompanyStep(2)}
-                isLoading={isLoading}
-              />
+            </View>
+
+            {maxCompanyStep >= 2 && (
+              <View style={{ display: companyStep === 2 ? 'flex' : 'none', flex: 1 }}>
+                <CompanySignUpStep2
+                  onNext={handleCompanyStep2Next}
+                  onBack={() => setCompanyStep(1)}
+                  onSkip={handleCompanyStep2Skip}
+                  isLoading={isLoading}
+                />
+              </View>
+            )}
+
+            {maxCompanyStep >= 3 && (
+              <View style={{ display: companyStep === 3 ? 'flex' : 'none', flex: 1 }}>
+                <CompanySignUpStep3
+                  onFinish={handleCompanyStep3Finish}
+                  onBack={() => setCompanyStep(2)}
+                  isLoading={isLoading}
+                  error={error}
+                />
+              </View>
             )}
           </View>
         ) : (
@@ -303,7 +314,7 @@ export default function SignUpScreen() {
             >
               <View style={{ flexDirection: 'row', justifyContent: 'center', gap: 16 }}>
                 <SocialButton
-                  onPress={() => {}}
+                  onPress={signInWithGoogle}
                   accessibilityLabel="Sign up with Google"
                   icon={<MaterialCommunityIcons name="google" size={24} color="#DB4437" />}
                 />
@@ -367,7 +378,7 @@ export default function SignUpScreen() {
             )}
 
             {/* Form Fields */}
-            <View style={{ paddingHorizontal: 24, gap: 16 }}>
+            <View style={{ paddingHorizontal: 24 }}>
               <AppInput
                 placeholder={t('auth.signUp.displayName')}
                 value={displayName}
@@ -377,6 +388,100 @@ export default function SignUpScreen() {
                 textContentType="name"
                 accessibilityLabel={t('auth.signUp.displayName')}
               />
+
+              {/* Gender Dropdown */}
+              <View style={{ marginBottom: 16 }}>
+                <Pressable
+                  onPress={() => setGenderDropdownOpen((v) => !v)}
+                  accessibilityRole="button"
+                  accessibilityLabel={t('auth.signUp.gender')}
+                  style={{
+                    flexDirection: 'row',
+                    alignItems: 'center',
+                    height: 52,
+                    borderRadius: 14,
+                    borderWidth: 1,
+                    borderColor: genderDropdownOpen ? colors.neonPurple : colors.borderDark,
+                    backgroundColor: colors.cardDark,
+                    paddingHorizontal: 16,
+                    gap: 10,
+                  }}
+                >
+                  {gender ? (
+                    <MaterialCommunityIcons
+                      name={gender === 'male' ? 'gender-male' : 'gender-female'}
+                      size={18}
+                      color={colors.neonPurple}
+                    />
+                  ) : (
+                    <MaterialCommunityIcons name="gender-male-female" size={18} color={colors.textSlate500} />
+                  )}
+                  <AppText style={{
+                    flex: 1,
+                    fontSize: 15,
+                    color: gender ? colors.textWhite : colors.textSlate500,
+                  }}>
+                    {gender
+                      ? t(`auth.signUp.gender${gender === 'male' ? 'Male' : 'Female'}`)
+                      : t('auth.signUp.gender')}
+                  </AppText>
+                  <MaterialCommunityIcons
+                    name={genderDropdownOpen ? 'chevron-up' : 'chevron-down'}
+                    size={20}
+                    color={colors.textSlate400}
+                  />
+                </Pressable>
+
+                {genderDropdownOpen && (
+                  <View style={{
+                    borderRadius: 14,
+                    borderWidth: 1,
+                    borderColor: colors.borderDark,
+                    backgroundColor: colors.cardDark,
+                    marginTop: 4,
+                    overflow: 'hidden',
+                  }}>
+                    {(['male', 'female'] as const).map((g, index) => {
+                      const isSelected = gender === g;
+                      return (
+                        <Pressable
+                          key={g}
+                          onPress={() => { setGender(g); setGenderDropdownOpen(false); }}
+                          accessibilityRole="button"
+                          accessibilityLabel={t(`auth.signUp.gender${g === 'male' ? 'Male' : 'Female'}`)}
+                          style={{
+                            flexDirection: 'row',
+                            alignItems: 'center',
+                            gap: 12,
+                            paddingHorizontal: 16,
+                            paddingVertical: 13,
+                            borderTopWidth: index === 0 ? 0 : 1,
+                            borderTopColor: colors.borderDark,
+                            backgroundColor: isSelected ? 'rgba(168,85,247,0.1)' : 'transparent',
+                          }}
+                        >
+                          <MaterialCommunityIcons
+                            name={g === 'male' ? 'gender-male' : 'gender-female'}
+                            size={18}
+                            color={isSelected ? colors.neonPurple : colors.textSlate400}
+                          />
+                          <AppText style={{
+                            flex: 1,
+                            fontSize: 15,
+                            fontWeight: isSelected ? '600' : '400',
+                            color: isSelected ? colors.neonPurple : colors.textSlate200,
+                          }}>
+                            {t(`auth.signUp.gender${g === 'male' ? 'Male' : 'Female'}`)}
+                          </AppText>
+                          {isSelected && (
+                            <MaterialCommunityIcons name="check" size={16} color={colors.neonPurple} />
+                          )}
+                        </Pressable>
+                      );
+                    })}
+                  </View>
+                )}
+              </View>
 
               <AppInput
                 placeholder={t('auth.signUp.email')}

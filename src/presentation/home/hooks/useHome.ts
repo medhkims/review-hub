@@ -1,13 +1,16 @@
-import { useCallback, useEffect, useRef } from 'react';
+import { useCallback, useRef, useEffect } from 'react';
+import { useFocusEffect } from 'expo-router';
 import { useHomeStore } from '../store/homeStore';
 import { useAuthStore } from '@/presentation/auth/store/authStore';
 import { useWishlistStore } from '@/presentation/wishlist/store/wishlistStore';
+import { useRoleStore } from '@/presentation/auth/store/roleStore';
 import { container } from '@/core/di/container';
 import { BusinessEntity } from '@/domain/business/entities/businessEntity';
 import { AnalyticsHelper } from '@/core/analytics/analyticsHelper';
 import { AnalyticsEvents, AnalyticsParams } from '@/core/analytics/analyticsKeys';
+import { SubmitBusinessParams } from '@/domain/business/repositories/businessRepository';
+import { trackKeywordEvent } from '@/core/utils/premiumTracking';
 
-const MAX_RECENT_SEARCHES = 5;
 
 export const useHome = () => {
   const {
@@ -15,31 +18,53 @@ export const useHome = () => {
     newBusinesses,
     recentSearches,
     categories,
+    banners,
     selectedCategoryId,
     searchQuery,
     isLoading,
     isNewBusinessesLoading,
     isCategoryLoading,
+    isBannersLoading,
+    isFuzzySearching,
+    fuzzyMatch,
     error,
     setBusinesses,
     setNewBusinesses,
-    setRecentSearches,
+    addRecentlyViewed,
     setCategories,
+    setBanners,
     setSelectedCategoryId,
     setSearchQuery,
     setLoading,
     setNewBusinessesLoading,
     setCategoryLoading,
+    setBannersLoading,
+    setFuzzySearching,
+    setFuzzyMatch,
     setError,
     updateBusinessFavorite,
   } = useHomeStore();
   const { user } = useAuthStore();
+  const { role } = useRoleStore();
   const { isWishlisted, addItem: addWishlistItem, removeItem: removeWishlistItem } = useWishlistStore();
   const searchTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  // Ref so useFocusEffect always reads the latest searchQuery without it as a dependency
+  const searchQueryRef = useRef(searchQuery);
+  useEffect(() => { searchQueryRef.current = searchQuery; }, [searchQuery]);
+
+  const loadBanners = useCallback(async () => {
+    setBannersLoading(true);
+    const result = await container.getBannersUseCase.execute();
+    result.fold(
+      () => setBannersLoading(false),
+      (data) => setBanners(data),
+    );
+    setBannersLoading(false);
+  }, [setBannersLoading, setBanners]);
 
   const loadCategories = useCallback(async () => {
     setCategoryLoading(true);
-    const result = await container.getCategoriesUseCase.execute();
+    const result = await container.getActiveCategoriesUseCase.execute();
     result.fold(
       (failure) => setError(failure.message),
       (data) => setCategories(data),
@@ -90,13 +115,9 @@ export const useHome = () => {
     }
   }, [setSelectedCategoryId, loadBusinessesByCategory, loadFeaturedBusinesses]);
 
-  const addToRecentSearches = useCallback((results: BusinessEntity[]) => {
-    if (results.length === 0) return;
-    setRecentSearches(results.slice(0, MAX_RECENT_SEARCHES));
-  }, [setRecentSearches]);
-
   const search = useCallback((query: string) => {
     setSearchQuery(query);
+    setFuzzyMatch(null);
     if (searchTimeoutRef.current) {
       clearTimeout(searchTimeoutRef.current);
     }
@@ -113,17 +134,40 @@ export const useHome = () => {
       AnalyticsHelper.sendEvent(AnalyticsEvents.SEARCH, {
         [AnalyticsParams.SEARCH_QUERY]: query,
       });
-      const result = await container.searchBusinessesUseCase.execute(query);
+      if (role !== 'admin') {
+        container.incrementGlobalSearchCountUseCase.execute();
+      }
+      const result = await container.searchBusinessesUseCase.execute(query, selectedCategoryId);
+      let errorMsg: string | null = null;
+      let data: BusinessEntity[] = [];
       result.fold(
-        (failure) => setError(failure.message),
-        (data) => {
-          setBusinesses(data);
-          addToRecentSearches(data);
-        },
+        (failure) => { errorMsg = failure.message; },
+        (items) => { data = items; },
       );
+      if (errorMsg) {
+        setError(errorMsg);
+        setLoading(false);
+        return;
+      }
+      setBusinesses(data);
       setLoading(false);
+      // Track keyword find-events (business appeared in search results)
+      data.slice(0, 10).forEach(biz => trackKeywordEvent(biz.id, query, false));
+      // When exact search returns nothing, attempt fuzzy matching
+      if (data.length === 0) {
+        setFuzzySearching(true);
+        const fuzzyResult = await container.fuzzySearchBusinessUseCase.execute(
+          query,
+          selectedCategoryId,
+        );
+        fuzzyResult.fold(
+          () => setFuzzyMatch(null),
+          (match) => setFuzzyMatch(match),
+        );
+        setFuzzySearching(false);
+      }
     }, 500);
-  }, [selectedCategoryId, loadBusinessesByCategory, loadFeaturedBusinesses, setSearchQuery, setLoading, setError, setBusinesses, addToRecentSearches]);
+  }, [role, selectedCategoryId, loadBusinessesByCategory, loadFeaturedBusinesses, setSearchQuery, setLoading, setError, setBusinesses, setFuzzyMatch, setFuzzySearching]);
 
   const toggleFavorite = useCallback(async (businessId: string) => {
     if (!user) return;
@@ -173,29 +217,77 @@ export const useHome = () => {
     }
   }, [user, isWishlisted, removeWishlistItem, addWishlistItem, setError]);
 
-  useEffect(() => {
-    loadCategories();
-    loadNewBusinesses();
-    loadFeaturedBusinesses();
-  }, [loadCategories, loadNewBusinesses, loadFeaturedBusinesses]);
+  // Refresh every time this screen comes into focus so ratings (and other
+  // fields updated after review submissions) are always up-to-date.
+  // If the user has an active search query we do NOT overwrite the business
+  // list — that would replace search results with featured businesses while
+  // the search bar still shows the query, causing wrong results to appear.
+  useFocusEffect(
+    useCallback(() => {
+      loadBanners();
+      loadCategories();
+      loadNewBusinesses();
+      if (searchQueryRef.current.trim()) return; // keep existing search results
+      if (selectedCategoryId) {
+        loadBusinessesByCategory(selectedCategoryId);
+      } else {
+        loadFeaturedBusinesses();
+      }
+    }, [loadBanners, loadCategories, loadNewBusinesses, loadFeaturedBusinesses, loadBusinessesByCategory, selectedCategoryId]),
+  );
+
+  const submitBusiness = useCallback(
+    async (params: SubmitBusinessParams): Promise<string | null> => {
+      const result = await container.submitBusinessUseCase.execute(params);
+      return result.fold(
+        (failure) => { setError(failure.message); return null; },
+        (id) => id,
+      );
+    },
+    [setError],
+  );
+
+  const checkBusinessDuplicate = useCallback(
+    (name: string, categoryId: string) =>
+      container.checkBusinessDuplicateUseCase.execute(name, categoryId),
+    [],
+  );
+
+  const refresh = useCallback(async () => {
+    if (searchQueryRef.current.trim()) {
+      // Re-run the current search instead of loading featured businesses
+      search(searchQueryRef.current);
+    } else if (selectedCategoryId) {
+      await loadBusinessesByCategory(selectedCategoryId);
+    } else {
+      await loadFeaturedBusinesses();
+    }
+  }, [search, selectedCategoryId, loadBusinessesByCategory, loadFeaturedBusinesses]);
 
   return {
     businesses,
     newBusinesses,
     recentSearches,
     categories,
+    banners,
     selectedCategoryId,
     searchQuery,
     isLoading,
     isNewBusinessesLoading,
     isCategoryLoading,
+    isBannersLoading,
+    isFuzzySearching,
+    fuzzyMatch,
     error,
     isWishlisted,
     selectCategory,
     search,
     toggleFavorite,
     toggleWishlist,
-    refresh: loadFeaturedBusinesses,
+    addRecentlyViewed,
+    submitBusiness,
+    checkBusinessDuplicate,
+    refresh,
     refreshNewBusinesses: loadNewBusinesses,
   };
 };

@@ -60,20 +60,34 @@ export class AvatarRemoteDataSourceImpl implements AvatarRemoteDataSource {
           contentType,
         });
 
+        // Cancel if upload stalls for 60 seconds with no progress callbacks
+        const timeoutId = setTimeout(() => {
+          uploadTask.cancel();
+          reject(new ServerException('Upload timed out. Please check your connection and try again.', 'storage/timeout'));
+        }, 60000);
+
         uploadTask.on(
           'state_changed',
           (snapshot) => {
+            clearTimeout(timeoutId);
             if (onProgress) {
               const progress = snapshot.bytesTransferred / snapshot.totalBytes;
               onProgress(progress);
             }
           },
           (error) => {
+            clearTimeout(timeoutId);
             reject(new ServerException(error.message || 'Upload failed', error.code));
           },
           async () => {
-            const downloadURL = await getDownloadURL(uploadTask.snapshot.ref);
-            resolve(downloadURL);
+            clearTimeout(timeoutId);
+            try {
+              const downloadURL = await getDownloadURL(uploadTask.snapshot.ref);
+              resolve(downloadURL);
+            } catch (err: unknown) {
+              const firebaseError = err as { message?: string; code?: string };
+              reject(new ServerException(firebaseError.message || 'Failed to get download URL', firebaseError.code));
+            }
           },
         );
       });

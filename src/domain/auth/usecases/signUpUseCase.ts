@@ -13,7 +13,8 @@ export class SignUpUseCase {
     displayName: string,
     role?: UserRole,
     phoneNumber?: string,
+    gender?: 'male' | 'female',
   ): Promise<Either<Failure, UserEntity>> {
-    return this.authRepository.signUp(email, password, displayName, role, phoneNumber);
+    return this.authRepository.signUp(email, password, displayName, role, phoneNumber, gender);
   }
 }

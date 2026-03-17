@@ -1,13 +1,16 @@
-import React from 'react';
-import { View, Pressable, Linking } from 'react-native';
+import React, { useState } from 'react';
+import { View, Pressable, Linking, Modal } from 'react-native';
+import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useTranslation } from 'react-i18next';
 import { AppText } from '@/presentation/shared/components/ui/AppText';
 import { colors } from '@/core/theme/colors';
 import { SectionCard } from './SectionCard';
 import { DeliveryService } from '@/domain/business/entities/businessDetailEntity';
+import { trackProfileClick } from '@/core/utils/premiumTracking';
 
 interface DeliverySectionProps {
   deliveryServices: DeliveryService[];
+  businessId?: string;
 }
 
 const SERVICE_COLORS: Record<string, { bg: string; text: string; border: string }> = {
@@ -15,35 +18,101 @@ const SERVICE_COLORS: Record<string, { bg: string; text: string; border: string 
   GLO: { bg: 'rgba(234, 179, 8, 0.1)', text: '#EAB308', border: 'rgba(234, 179, 8, 0.3)' },
 };
 
-export const DeliverySection: React.FC<DeliverySectionProps> = ({ deliveryServices }) => {
+export const DeliverySection: React.FC<DeliverySectionProps> = ({ deliveryServices, businessId }) => {
   const { t } = useTranslation();
+  const [choiceService, setChoiceService] = useState<DeliveryService | null>(null);
 
   if (deliveryServices.length === 0) return null;
 
-  const handlePress = (url: string | null) => {
-    if (url) {
-      Linking.openURL(url).catch(() => {});
+  const handlePress = (service: DeliveryService) => {
+    if (businessId) trackProfileClick(businessId, `delivery_${service.abbreviation}`);
+    const hasUrl = !!service.url;
+    const hasPhone = !!service.phone;
+
+    if (hasUrl && hasPhone) {
+      setChoiceService(service);
+    } else if (hasUrl) {
+      Linking.openURL(service.url!).catch(() => {});
+    } else if (hasPhone) {
+      Linking.openURL(`tel:${service.phone}`).catch(() => {});
     }
   };
 
   return (
-    <SectionCard title={t('businessDetail.delivery')} defaultExpanded={false}>
-      <View style={{ flexDirection: 'row', gap: 16 }}>
+    <>
+    <Modal visible={!!choiceService} transparent animationType="fade" onRequestClose={() => setChoiceService(null)}>
+      <Pressable
+        style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.7)', justifyContent: 'center', padding: 24 }}
+        onPress={() => setChoiceService(null)}
+        accessibilityLabel={t('common.cancel')}
+        accessibilityRole="button"
+      >
+        <Pressable
+          onPress={(e) => e.stopPropagation()}
+          accessibilityRole="none"
+          style={{ backgroundColor: colors.cardDark, borderRadius: 20, padding: 24, gap: 16 }}
+        >
+          <AppText style={{ fontSize: 18, fontWeight: '700', color: colors.white }}>{choiceService?.name}</AppText>
+          <AppText style={{ fontSize: 14, color: colors.textSlate400 }}>{t('businessDetail.deliveryOpenWith')}</AppText>
+          <Pressable
+            onPress={() => { Linking.openURL(choiceService!.url!).catch(() => {}); setChoiceService(null); }}
+            accessibilityLabel={t('businessDetail.openWebsite')}
+            accessibilityRole="button"
+            style={({ pressed }) => ({
+              flexDirection: 'row', alignItems: 'center', gap: 12,
+              padding: 16, borderRadius: 14,
+              backgroundColor: pressed ? `${colors.neonPurple}30` : `${colors.neonPurple}15`,
+              borderWidth: 1, borderColor: `${colors.neonPurple}40`,
+            })}
+          >
+            <MaterialCommunityIcons name="web" size={20} color={colors.neonPurple} />
+            <AppText style={{ fontSize: 15, fontWeight: '600', color: colors.neonPurple }}>{t('businessDetail.openWebsite')}</AppText>
+          </Pressable>
+          <Pressable
+            onPress={() => { Linking.openURL(`tel:${choiceService!.phone}`).catch(() => {}); setChoiceService(null); }}
+            accessibilityLabel={t('businessDetail.callNumber')}
+            accessibilityRole="button"
+            style={({ pressed }) => ({
+              flexDirection: 'row', alignItems: 'center', gap: 12,
+              padding: 16, borderRadius: 14,
+              backgroundColor: pressed ? `${colors.success}30` : `${colors.success}15`,
+              borderWidth: 1, borderColor: `${colors.success}40`,
+            })}
+          >
+            <MaterialCommunityIcons name="phone" size={20} color={colors.success} />
+            <AppText style={{ fontSize: 15, fontWeight: '600', color: colors.success }}>{t('businessDetail.callNumber')}</AppText>
+          </Pressable>
+          <Pressable
+            onPress={() => setChoiceService(null)}
+            accessibilityLabel={t('common.cancel')}
+            accessibilityRole="button"
+            style={{ padding: 14, borderRadius: 14, borderWidth: 1, borderColor: colors.borderDark, alignItems: 'center' }}
+          >
+            <AppText style={{ color: colors.textSlate400, fontWeight: '600' }}>{t('common.cancel')}</AppText>
+          </Pressable>
+        </Pressable>
+      </Pressable>
+    </Modal>
+    <SectionCard title={t('businessDetail.delivery')} defaultExpanded={true}>
+      <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 16 }}>
         {deliveryServices.map((service) => {
           const style = SERVICE_COLORS[service.abbreviation] ?? {
             bg: 'rgba(168, 85, 247, 0.1)',
             text: colors.white,
             border: 'rgba(255, 255, 255, 0.05)',
           };
+          const isClickable = !!(service.url || service.phone);
 
           return (
             <Pressable
               key={service.id}
-              onPress={() => handlePress(service.url)}
+              onPress={() => isClickable && handlePress(service)}
               accessibilityLabel={`${t('businessDetail.orderVia')} ${service.name}`}
               accessibilityRole="button"
+              disabled={!isClickable}
               style={({ pressed }) => ({
                 flex: 1,
+                minWidth: '40%',
                 backgroundColor: colors.midnight,
                 padding: 16,
                 borderRadius: 16,
@@ -53,7 +122,8 @@ export const DeliverySection: React.FC<DeliverySectionProps> = ({ deliveryServic
                 gap: 12,
                 position: 'relative',
                 overflow: 'hidden',
-                transform: [{ scale: pressed ? 0.95 : 1 }],
+                transform: [{ scale: pressed && isClickable ? 0.95 : 1 }],
+                opacity: isClickable ? 1 : 0.6,
               })}
             >
               {service.isActive && (
@@ -90,13 +160,29 @@ export const DeliverySection: React.FC<DeliverySectionProps> = ({ deliveryServic
                   {service.abbreviation}
                 </AppText>
               </View>
-              <AppText style={{ fontSize: 14, fontWeight: '600', color: colors.white, letterSpacing: 0.5 }}>
+              <AppText style={{ fontSize: 14, fontWeight: '600', color: colors.white, letterSpacing: 0.5, textAlign: 'center' }}>
                 {t('businessDetail.orderVia')} {service.name}
               </AppText>
+              {/* Hint icons */}
+              {isClickable && (
+                <View style={{ flexDirection: 'row', gap: 6 }}>
+                  {service.url && (
+                    <View style={{ backgroundColor: `${colors.neonPurple}20`, borderRadius: 6, paddingHorizontal: 6, paddingVertical: 3 }}>
+                      <AppText style={{ fontSize: 10, color: colors.neonPurple }}>🌐</AppText>
+                    </View>
+                  )}
+                  {service.phone && (
+                    <View style={{ backgroundColor: `${colors.success}20`, borderRadius: 6, paddingHorizontal: 6, paddingVertical: 3 }}>
+                      <AppText style={{ fontSize: 10, color: colors.success }}>📞</AppText>
+                    </View>
+                  )}
+                </View>
+              )}
             </Pressable>
           );
         })}
       </View>
     </SectionCard>
+    </>
   );
 };
