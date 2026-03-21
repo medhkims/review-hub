@@ -13,7 +13,17 @@
     "success": "Success",
     "back": "Go back",
     "done": "Done",
-    "close": "Close"
+    "close": "Close",
+    "months": {
+      "jan": "Jan", "feb": "Feb", "mar": "Mar", "apr": "Apr",
+      "may": "May", "jun": "Jun", "jul": "Jul", "aug": "Aug",
+      "sep": "Sep", "oct": "Oct", "nov": "Nov", "dec": "Dec"
+    },
+    "date": {
+      "day": "Day",
+      "month": "Month",
+      "year": "Year"
+    }
   },
   "tabs": {
     "home": "Home",
@@ -74,7 +84,9 @@
       "privacyPolicy": "Privacy Policy",
       "gender": "Gender",
       "genderMale": "Male",
-      "genderFemale": "Female"
+      "genderFemale": "Female",
+      "birthday": "Date of Birth",
+      "birthdayPlaceholder": "Select your date of birth"
     },
     "currentPassword": "Current Password",
     "newPassword": "New Password",
@@ -295,7 +307,17 @@
     "justNow": "Just now",
     "minutesAgo": "{{count}}m ago",
     "hoursAgo": "{{count}}h ago",
-    "yesterday": "Yesterday"
+    "yesterday": "Yesterday",
+    "adminChannels": {
+      "business": "Business",
+      "moderator": "Moderator",
+      "businessTitle": "Business Chats",
+      "moderatorTitle": "Moderator Chats",
+      "businessEmpty": "No business conversations",
+      "businessEmptyMessage": "Business owner conversations will appear here",
+      "moderatorEmpty": "No moderator conversations",
+      "moderatorEmptyMessage": "Moderator conversations will appear here"
+    }
   },
   "notifications": {
     "title": "Notifications",
@@ -394,6 +416,11 @@
     "editSubcategory": "Edit Subcategory",
     "tabActive": "My Categories",
     "tabDeleted": "Deleted",
+    "subTabCategory": "Category",
+    "subTabRatingCriteria": "Rating Criteria",
+    "categoryCardDesc": "Manage categories and their subcategories",
+    "ratingCardDesc": "Manage rating criteria per category",
+    "manage": "Manage",
     "deletedCategories": "Deleted Categories",
     "deletedSubcategories": "Deleted Subcategories",
     "emptyDeleted": "Nothing deleted yet",
@@ -403,7 +430,24 @@
     "recoverCategoryOnly": "Category only",
     "recoverCategoryWithSubs": "Category + all subcategories",
     "recoverSubcategoryMessage": "Recover \"{{name}}\" back to \"{{parent}}\"?",
-    "recoverConfirm": "Recover"
+    "recoverConfirm": "Recover",
+    "ratingCriteriaCard": "Rating Criteria",
+    "ratingCriteriaEmpty": "No criteria yet",
+    "addCriterion": "Add Criterion",
+    "editCriterion": "Edit Criterion",
+    "deleteCriterion": "Delete Criterion",
+    "deleteCriterionConfirm": "Delete criterion \"{{label}}\"?",
+    "criterionLabel": "Label",
+    "criterionLabelPlaceholder": "e.g. Food Quality",
+    "criterionKey": "Key (auto-generated)",
+    "criterionKeyPlaceholder": "e.g. food_quality",
+    "criterionIcon": "Icon (Material Community Icons name)",
+    "criterionIconPlaceholder": "e.g. silverware-fork-knife",
+    "tabActiveCriteria": "My Criteria",
+    "tabDeletedCriteria": "Deleted",
+    "deletedCriteriaEmpty": "No deleted criteria",
+    "recoverCriterion": "Recover Criterion",
+    "recoverCriterionMessage": "Recover criterion \"{{label}}\" back to \"{{category}}\"?"
   },
   "support": {
     "helpCenter": "Help Center",
@@ -507,6 +551,10 @@
       "rejectTitle": "Reject Business",
       "rejectConfirm": "Reject \"{{name}}\"? The owner will be notified.",
       "empty": "No pending businesses"
+    },
+    "tickets": {
+      "title": "Tickets",
+      "empty": "No tickets found"
     },
     "banners": {
       "title": "Manage Banners",
@@ -811,12 +859,30 @@
     "onlineBusinessDescription": "This business operates online — no physical location",
     "openingHours": "Opening Hours",
     "closedDay": "Closed",
+    "allReviews": "All Reviews",
+    "noReviews": "No reviews yet",
     "alreadyReviewed": {
       "title": "Review Already Submitted",
       "message": "You have already added a review for {{businessName}}.",
       "goHome": "Go Home",
       "seeMyReview": "See My Review"
-    }
+    },
+    "share": "Share",
+    "report": "Report",
+    "reportBusiness": "Report Business",
+    "reportReasonTitle": "Why are you reporting this business?",
+    "reportReasons": {
+      "spam": "Spam or fake listing",
+      "inappropriate": "Inappropriate content",
+      "wrongInfo": "Wrong or misleading information",
+      "closed": "Business is permanently closed",
+      "other": "Other"
+    },
+    "reportOtherPlaceholder": "Please describe the issue...",
+    "reportSubmit": "Submit Report",
+    "reportSuccess": "Report Submitted",
+    "reportSuccessMessage": "Thank you for your report. Our team will review it shortly.",
+    "reportAlreadySubmitted": "You have already reported this business."
   },
   "permissions": {
     "denied": "Access Denied",
@@ -948,6 +1014,7 @@
     "car_rental": "Car Rental",
     "bank": "Bank",
     "job_freelancer": "Job / Freelancer",
+    "tradesman": "Tradesman",
     "delivery_company": "Delivery Company"
   },
   "subcategories": {
@@ -1002,6 +1069,8 @@
     "mall": "Mall",
     "plumber": "Plumber",
     "painter": "Painter",
+    "carpenter": "Carpenter",
+    "bricklayer": "Bricklayer",
     "developer": "Developer",
     "social_media_manager": "Social Media Manager",
     "electrician": "Electrician",

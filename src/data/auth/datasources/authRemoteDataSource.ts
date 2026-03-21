@@ -15,7 +15,7 @@ import {
 import { User as FirebaseUser } from 'firebase/auth';
 import { GoogleSignin, isSuccessResponse, isErrorWithCode, statusCodes } from '@react-native-google-signin/google-signin';
 import { Platform } from 'react-native';
-import { doc, setDoc, getDoc, serverTimestamp } from 'firebase/firestore';
+import { doc, setDoc, getDoc, serverTimestamp, Timestamp } from 'firebase/firestore';
 import { httpsCallable } from 'firebase/functions';
 import { UserModel } from '../models/userModel';
 import { UserMapper } from '../mappers/userMapper';
@@ -24,7 +24,7 @@ import { UserRole, DEFAULT_ROLE } from '@/core/types/userRole';
 
 export interface AuthRemoteDataSource {
   signIn(email: string, password: string): Promise<UserModel>;
-  signUp(email: string, password: string, displayName: string, role?: UserRole, phoneNumber?: string, gender?: 'male' | 'female'): Promise<UserModel>;
+  signUp(email: string, password: string, displayName: string, role?: UserRole, phoneNumber?: string, gender?: 'male' | 'female', birthday?: Date): Promise<UserModel>;
   signOut(): Promise<void>;
   getCurrentUser(): Promise<UserModel | null>;
   changePassword(currentPassword: string, newPassword: string): Promise<void>;
@@ -83,6 +83,7 @@ export class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
     role: UserRole = DEFAULT_ROLE,
     phoneNumber?: string,
     gender?: 'male' | 'female',
+    birthday?: Date,
   ): Promise<UserModel> {
     try {
       const userCredential = await createUserWithEmailAndPassword(auth, email, password);
@@ -113,6 +114,7 @@ export class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
           following_count: 0,
           role: role,
           gender: gender || null,
+          birthday: birthday ? Timestamp.fromDate(birthday) : null,
           created_at: serverTimestamp(),
           updated_at: serverTimestamp(),
         });

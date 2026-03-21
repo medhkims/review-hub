@@ -1,7 +1,7 @@
 import { useState, useCallback, useEffect, useMemo } from 'react';
 import {
   collection, getDocs, query, where, Timestamp,
-  addDoc, serverTimestamp, orderBy, limit, getDoc, doc,
+  addDoc, serverTimestamp, orderBy, limit, getDoc, doc, documentId,
 } from 'firebase/firestore';
 import { firestore, auth } from '@/core/firebase/firebaseConfig';
 import { useBusinessOwnerStore } from '../store/businessOwnerStore';
@@ -19,6 +19,8 @@ export interface MenuItemStat   { itemId: string; itemName: string; categoryName
 export interface PeakDayStat    { day: string; dayIndex: number; count: number }
 export interface SentimentStat  { label: string; count: number; percentage: number; color: string }
 export interface MonthlyStat    { label: string; thisMonth: number; lastMonth: number; delta: number; deltaSign: 'up'|'down'|'same'; icon: string; accent: string }
+export interface AgeGroupStat   { label: string; count: number; percentage: number; color: string }
+export interface GenderStat     { label: string; count: number; percentage: number; color: string }
 
 const DAYS = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
 const MON  = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
@@ -105,6 +107,10 @@ export const usePremiumInsights = () => {
 
   const [monthlyStats,   setMonthlyStats]    = useState<MonthlyStat[]>([]);
   const [monthlyLoading, setMonthlyLoading]  = useState(false);
+
+  const [ageStats,            setAgeStats]           = useState<AgeGroupStat[]>([]);
+  const [genderStats,         setGenderStats]         = useState<GenderStat[]>([]);
+  const [demographicsLoading, setDemographicsLoading] = useState(false);
 
   // ── Load keywords & subcategory stats ─────────────────────────────────────
   const loadKeywords = useCallback(async () => {
@@ -320,6 +326,63 @@ export const usePremiumInsights = () => {
     }
   }, []);
 
+  // ── Load visitor demographics (age + gender) ───────────────────────────────
+  const loadVisitorDemographics = useCallback(async () => {
+    const biz = useBusinessOwnerStore.getState().business;
+    if (!biz?.id) return;
+    setDemographicsLoading(true);
+    try {
+      const visitSnap = await getDocs(query(collection(firestore,'visit_events'), where('business_id','==',biz.id), limit(500)));
+      const userIds = new Set<string>();
+      visitSnap.forEach(d => { const uid = d.data()['user_id'] as string|undefined; if (uid) userIds.add(uid); });
+
+      if (userIds.size === 0) { setAgeStats([]); setGenderStats([]); return; }
+
+      const uidArr = Array.from(userIds);
+      const chunks: string[][] = [];
+      for (let i = 0; i < uidArr.length; i += 30) chunks.push(uidArr.slice(i, i + 30));
+
+      const todayMs = Date.now();
+      const ageBuckets = { u18: 0, a1824: 0, a2534: 0, a3544: 0, a45p: 0 };
+      let maleCount = 0, femaleCount = 0;
+
+      for (const chunk of chunks) {
+        const profilesSnap = await getDocs(query(collection(firestore,'profiles'), where(documentId(),'in',chunk)));
+        profilesSnap.forEach(d => {
+          const data = d.data();
+          const bdayTs = data['birthday'] as Timestamp|null|undefined;
+          if (bdayTs?.toDate) {
+            const age = Math.floor((todayMs - bdayTs.toDate().getTime()) / (365.25 * 86400000));
+            if      (age < 18) ageBuckets.u18++;
+            else if (age <= 24) ageBuckets.a1824++;
+            else if (age <= 34) ageBuckets.a2534++;
+            else if (age <= 44) ageBuckets.a3544++;
+            else                ageBuckets.a45p++;
+          }
+          const g = data['gender'] as string|null|undefined;
+          if (g === 'male')   maleCount++;
+          else if (g === 'female') femaleCount++;
+        });
+      }
+
+      const totalAge = ageBuckets.u18 + ageBuckets.a1824 + ageBuckets.a2534 + ageBuckets.a3544 + ageBuckets.a45p;
+      setAgeStats([
+        { label: 'Under 18', count: ageBuckets.u18,   percentage: totalAge > 0 ? Math.round((ageBuckets.u18   / totalAge) * 100) : 0, color: '#A855F7' },
+        { label: '18 – 24',  count: ageBuckets.a1824, percentage: totalAge > 0 ? Math.round((ageBuckets.a1824 / totalAge) * 100) : 0, color: '#06B6D4' },
+        { label: '25 – 34',  count: ageBuckets.a2534, percentage: totalAge > 0 ? Math.round((ageBuckets.a2534 / totalAge) * 100) : 0, color: '#F97316' },
+        { label: '35 – 44',  count: ageBuckets.a3544, percentage: totalAge > 0 ? Math.round((ageBuckets.a3544 / totalAge) * 100) : 0, color: '#EC4899' },
+        { label: '45+',      count: ageBuckets.a45p,  percentage: totalAge > 0 ? Math.round((ageBuckets.a45p  / totalAge) * 100) : 0, color: '#EAB308' },
+      ]);
+
+      const totalGender = maleCount + femaleCount;
+      setGenderStats([
+        { label: 'Male',   count: maleCount,   percentage: totalGender > 0 ? Math.round((maleCount   / totalGender) * 100) : 0, color: '#06B6D4' },
+        { label: 'Female', count: femaleCount, percentage: totalGender > 0 ? Math.round((femaleCount / totalGender) * 100) : 0, color: '#EC4899' },
+      ]);
+    } catch { setAgeStats([]); setGenderStats([]); }
+    finally { setDemographicsLoading(false); }
+  }, []);
+
   // ── Activate boost ─────────────────────────────────────────────────────────
   const activateBoost = useCallback(async () => {
     const biz = useBusinessOwnerStore.getState().business;
@@ -337,13 +400,14 @@ export const usePremiumInsights = () => {
     finally { setActivating(false); }
   }, [loadBoostData]);
 
-  useEffect(() => { loadKeywords();         }, [loadKeywords]);
-  useEffect(() => { loadSubcategoryStats(); }, [loadSubcategoryStats]);
-  useEffect(() => { loadBoostData();        }, [loadBoostData]);
-  useEffect(() => { loadProfileClicks();}, [loadProfileClicks]);
-  useEffect(() => { loadMenuItems();    }, [loadMenuItems]);
-  useEffect(() => { loadAdditional();   }, [loadAdditional]);
-  useEffect(() => { loadMonthly();      }, [loadMonthly]);
+  useEffect(() => { loadKeywords();              }, [loadKeywords]);
+  useEffect(() => { loadSubcategoryStats();      }, [loadSubcategoryStats]);
+  useEffect(() => { loadBoostData();             }, [loadBoostData]);
+  useEffect(() => { loadProfileClicks();         }, [loadProfileClicks]);
+  useEffect(() => { loadMenuItems();             }, [loadMenuItems]);
+  useEffect(() => { loadAdditional();            }, [loadAdditional]);
+  useEffect(() => { loadMonthly();               }, [loadMonthly]);
+  useEffect(() => { loadVisitorDemographics();   }, [loadVisitorDemographics]);
 
   const activeBoost = useMemo(() => boostHistory.find(b=>b.status==='active')??null, [boostHistory]);
 
@@ -355,5 +419,6 @@ export const usePremiumInsights = () => {
     menuItems, menuLoading,
     peakDays, sentimentStats, favCount,
     monthlyStats, monthlyLoading,
+    ageStats, genderStats, demographicsLoading,
   };
 };

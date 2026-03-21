@@ -17,6 +17,7 @@ import { ServerException } from '@/core/error/exceptions';
 
 export interface ChatRemoteDataSource {
   getConversations(userId: string): Promise<ConversationModel[]>;
+  getConversationsByType(userId: string, type: string): Promise<ConversationModel[]>;
   getMessages(conversationId: string): Promise<MessageModel[]>;
   sendMessage(conversationId: string, senderId: string, text: string): Promise<MessageModel>;
 }
@@ -39,6 +40,29 @@ export class ChatRemoteDataSourceImpl implements ChatRemoteDataSource {
       const err = error as { message?: string; code?: string };
       throw new ServerException(
         err.message || 'Failed to fetch conversations',
+        err.code,
+      );
+    }
+  }
+
+  async getConversationsByType(userId: string, type: string): Promise<ConversationModel[]> {
+    try {
+      const conversationsRef = collection(firestore, 'conversations');
+      const q = query(
+        conversationsRef,
+        where('participant_ids', 'array-contains', userId),
+        where('conversation_type', '==', type),
+        orderBy('last_message_at', 'desc'),
+      );
+      const snapshot = await getDocs(q);
+
+      return snapshot.docs.map(
+        (d) => ({ id: d.id, ...d.data() }) as ConversationModel,
+      );
+    } catch (error: unknown) {
+      const err = error as { message?: string; code?: string };
+      throw new ServerException(
+        err.message || 'Failed to fetch conversations by type',
         err.code,
       );
     }

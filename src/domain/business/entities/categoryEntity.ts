@@ -9,5 +9,6 @@ export interface CategoryEntity {
   sortOrder: number;
   subcategories: SubcategoryEntity[];
   ratingCriteria: RatingCriterionEntity[];
+  deletedRatingCriteria?: RatingCriterionEntity[];
   isDeleted?: boolean;
 }

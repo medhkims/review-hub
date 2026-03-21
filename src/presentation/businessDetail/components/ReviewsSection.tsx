@@ -82,7 +82,13 @@ export const ReviewsSection: React.FC<ReviewsSectionProps> = ({
         </AppText>
 
         {/* Rating Overview */}
-        <View style={{ flexDirection: 'row', gap: 16, marginBottom: 32 }}>
+        <Pressable
+          onPress={onViewAllReviews}
+          accessibilityLabel={t('businessDetail.allReviews')}
+          accessibilityRole="button"
+          style={{ marginBottom: 32 }}
+        >
+          <View style={{ flexDirection: 'row', gap: 16 }}>
           {/* Big Rating Number */}
           <View
             style={{
@@ -133,11 +139,18 @@ export const ReviewsSection: React.FC<ReviewsSectionProps> = ({
               );
             })}
           </View>
-        </View>
+          </View>
+        </Pressable>
 
         {/* Category Ratings */}
         {categoryRatings.length > 0 && (
-          <View style={{ flexDirection: 'row', gap: 12, marginBottom: 32 }}>
+          <Pressable
+            onPress={onViewAllReviews}
+            accessibilityLabel={t('businessDetail.allReviews')}
+            accessibilityRole="button"
+            style={{ marginBottom: 32 }}
+          >
+          <View style={{ flexDirection: 'row', gap: 12 }}>
             {categoryRatings.map((cr) => (
               <View
                 key={cr.name}
@@ -175,6 +188,7 @@ export const ReviewsSection: React.FC<ReviewsSectionProps> = ({
               </View>
             ))}
           </View>
+          </Pressable>
         )}
 
         {/* Recent Reviews */}

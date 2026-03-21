@@ -6,5 +6,6 @@ export interface UserModel {
   display_name: string;
   avatar_url: string | null;
   created_at: Timestamp;
+  birthday?: Timestamp | null;
   provider?: string;
 }

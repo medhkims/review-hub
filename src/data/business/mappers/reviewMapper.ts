@@ -5,12 +5,16 @@ export class ReviewMapper {
   static toEntity(model: ReviewModel): ReviewEntity {
     return {
       id: model.id,
-      authorId: model.author_id,
-      authorName: model.author_name,
-      authorAvatarUrl: model.author_avatar_url,
-      rating: model.rating,
-      text: model.text,
+      authorId: model.user_id,
+      authorName: model.author_name ?? `User ${model.user_id.slice(0, 6)}`,
+      authorAvatarUrl: model.author_avatar_url ?? null,
+      rating: model.overall_rating,
+      text: model.review_text ?? '',
       createdAt: model.created_at.toDate(),
+      likeCount: model.like_count ?? 0,
+      viewCount: model.view_count ?? 0,
+      commentCount: model.comment_count ?? 0,
+      isLikedByCurrentUser: model.is_liked_by_current_user ?? false,
     };
   }
 }

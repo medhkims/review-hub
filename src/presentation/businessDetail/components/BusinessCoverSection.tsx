@@ -19,6 +19,9 @@ interface BusinessCoverSectionProps {
   rating: number;
   reviewCount: number;
   onBackPress: () => void;
+  onRatingPress?: () => void;
+  onSharePress?: () => void;
+  onReportPress?: () => void;
 }
 
 const StarRating: React.FC<{ rating: number; size?: number; color?: string }> = ({
@@ -51,6 +54,9 @@ export const BusinessCoverSection: React.FC<BusinessCoverSectionProps> = ({
   rating,
   reviewCount,
   onBackPress,
+  onRatingPress,
+  onSharePress,
+  onReportPress,
 }) => {
   const { t } = useTranslation();
   const [coverError, setCoverError] = useState(false);
@@ -93,7 +99,7 @@ export const BusinessCoverSection: React.FC<BusinessCoverSectionProps> = ({
         {/* Back Button */}
         <Pressable
           onPress={onBackPress}
-          accessibilityLabel={t('common.cancel')}
+          accessibilityLabel={t('common.back')}
           accessibilityRole="button"
           style={{
             position: 'absolute',
@@ -111,6 +117,56 @@ export const BusinessCoverSection: React.FC<BusinessCoverSectionProps> = ({
         >
           <MaterialCommunityIcons name="chevron-left" size={24} color={colors.white} />
         </Pressable>
+
+        {/* Top-right action buttons: Share + Report */}
+        <View
+          style={{
+            position: 'absolute',
+            top: 56,
+            right: 20,
+            flexDirection: 'row',
+            gap: 8,
+          }}
+        >
+          {onSharePress && (
+            <Pressable
+              onPress={onSharePress}
+              accessibilityLabel={t('businessDetail.share')}
+              accessibilityRole="button"
+              style={{
+                width: 40,
+                height: 40,
+                borderRadius: 20,
+                backgroundColor: 'rgba(30, 41, 59, 0.6)',
+                alignItems: 'center',
+                justifyContent: 'center',
+                borderWidth: 1,
+                borderColor: 'rgba(255, 255, 255, 0.1)',
+              }}
+            >
+              <MaterialCommunityIcons name="share-variant" size={20} color={colors.white} />
+            </Pressable>
+          )}
+          {onReportPress && (
+            <Pressable
+              onPress={onReportPress}
+              accessibilityLabel={t('businessDetail.report')}
+              accessibilityRole="button"
+              style={{
+                width: 40,
+                height: 40,
+                borderRadius: 20,
+                backgroundColor: 'rgba(30, 41, 59, 0.6)',
+                alignItems: 'center',
+                justifyContent: 'center',
+                borderWidth: 1,
+                borderColor: 'rgba(255, 255, 255, 0.1)',
+              }}
+            >
+              <MaterialCommunityIcons name="flag-outline" size={20} color={colors.white} />
+            </Pressable>
+          )}
+        </View>
       </View>
 
       {/* Logo */}
@@ -186,7 +242,12 @@ export const BusinessCoverSection: React.FC<BusinessCoverSectionProps> = ({
       </View>
 
       {/* Rating */}
-      <View style={{ marginTop: 8, flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+      <Pressable
+        onPress={onRatingPress}
+        accessibilityRole="button"
+        accessibilityLabel={`${rating.toFixed(1)} ${t('businessDetail.reviews')}`}
+        style={{ marginTop: 8, flexDirection: 'row', alignItems: 'center', gap: 6 }}
+      >
         <StarRating rating={rating} />
         <AppText style={{ fontSize: 14, fontWeight: '700', color: colors.white }}>
           {rating.toFixed(1)}
@@ -194,7 +255,7 @@ export const BusinessCoverSection: React.FC<BusinessCoverSectionProps> = ({
         <AppText style={{ fontSize: 12, color: colors.textSlate400 }}>
           ({reviewCount} {t('businessDetail.reviews')})
         </AppText>
-      </View>
+      </Pressable>
     </View>
   );
 };

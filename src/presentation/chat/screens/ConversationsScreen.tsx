@@ -1,4 +1,4 @@
-import React, { useCallback } from 'react';
+import React, { useCallback, useState } from 'react';
 import {
   View,
   FlatList,
@@ -14,7 +14,8 @@ import { LoadingIndicator } from '@/presentation/shared/components/ui/LoadingInd
 import { ErrorView } from '@/presentation/shared/components/ui/ErrorView';
 import { AdminMenuButton } from '@/presentation/admin/components/AdminMenuButton';
 import { useConversations } from '../hooks/useConversations';
-import { ConversationEntity } from '@/domain/chat/entities/conversationEntity';
+import { useAdminConversations } from '../hooks/useAdminConversations';
+import { ConversationEntity, ConversationType } from '@/domain/chat/entities/conversationEntity';
 import { colors } from '@/core/theme/colors';
 import { useRoleStore } from '@/presentation/auth/store/roleStore';
 
@@ -53,7 +54,6 @@ const ConversationCard = React.memo(
         accessibilityLabel={`Conversation with last message: ${conversation.lastMessage}`}
         accessibilityRole="button"
       >
-        {/* Avatar placeholder */}
         <View
           className="w-12 h-12 rounded-full items-center justify-center shrink-0"
           style={{ backgroundColor: colors.cardDark, borderWidth: 1, borderColor: colors.borderDark }}
@@ -61,7 +61,6 @@ const ConversationCard = React.memo(
           <MaterialCommunityIcons name="account" size={24} color={colors.textSlate400} />
         </View>
 
-        {/* Content */}
         <View className="flex-1 ml-3 min-w-0">
           <View className="flex-row items-center justify-between">
             <AppText
@@ -109,7 +108,6 @@ const ConversationCard = React.memo(
                 }}
               >
                 <AppText
-                  className="text-white font-bold"
                   style={{ fontSize: 11, color: colors.textWhite, fontWeight: '700' }}
                 >
                   {conversation.unreadCount > 99 ? '99+' : conversation.unreadCount}
@@ -127,51 +125,108 @@ ConversationCard.displayName = 'ConversationCard';
 
 // ---- Empty State ------------------------------------------------------------
 
-const EmptyState = () => {
-  return (
-    <View className="flex-1 items-center justify-center px-8 py-16">
-      <MaterialCommunityIcons name="chat-outline" size={64} color={colors.borderDark} />
+const EmptyState = () => (
+  <View className="flex-1 items-center justify-center px-8 py-16">
+    <MaterialCommunityIcons name="chat-outline" size={64} color={colors.borderDark} />
+    <AppText
+      className="font-bold text-lg mt-4 text-center"
+      style={{ color: colors.textWhite, fontSize: 18, fontWeight: '700' }}
+    >
+      No conversations yet
+    </AppText>
+    <AppText
+      className="text-sm mt-2 text-center leading-relaxed"
+      style={{ color: colors.textSlate400, fontSize: 14 }}
+    >
+      Start a conversation to connect with others
+    </AppText>
+  </View>
+);
+
+// ---- Admin Tab Switcher -----------------------------------------------------
+
+interface AdminTabsProps {
+  active: ConversationType;
+  onChange: (tab: ConversationType) => void;
+}
+
+const AdminTabs = ({ active, onChange }: AdminTabsProps) => (
+  <View
+    style={{
+      flexDirection: 'row',
+      marginHorizontal: 16,
+      marginBottom: 12,
+      borderRadius: 10,
+      overflow: 'hidden',
+      backgroundColor: colors.cardDark,
+    }}
+  >
+    <Pressable
+      onPress={() => onChange('business')}
+      style={{
+        flex: 1,
+        paddingVertical: 10,
+        alignItems: 'center',
+        backgroundColor: active === 'business' ? colors.neonPurple : 'transparent',
+        borderRadius: 10,
+      }}
+      accessibilityLabel="Business conversations"
+      accessibilityRole="tab"
+    >
       <AppText
-        className="font-bold text-lg mt-4 text-center"
-        style={{ color: colors.textWhite, fontSize: 18, fontWeight: '700' }}
+        style={{
+          fontSize: 14,
+          fontWeight: '600',
+          color: active === 'business' ? colors.textWhite : colors.textSlate400,
+        }}
       >
-        No conversations yet
+        Business
       </AppText>
+    </Pressable>
+
+    <Pressable
+      onPress={() => onChange('moderator')}
+      style={{
+        flex: 1,
+        paddingVertical: 10,
+        alignItems: 'center',
+        backgroundColor: active === 'moderator' ? colors.neonPurple : 'transparent',
+        borderRadius: 10,
+      }}
+      accessibilityLabel="Moderator conversations"
+      accessibilityRole="tab"
+    >
       <AppText
-        className="text-sm mt-2 text-center leading-relaxed"
-        style={{ color: colors.textSlate400, fontSize: 14 }}
+        style={{
+          fontSize: 14,
+          fontWeight: '600',
+          color: active === 'moderator' ? colors.textWhite : colors.textSlate400,
+        }}
       >
-        Start a conversation to connect with others
+        Moderator
       </AppText>
-    </View>
-  );
-};
+    </Pressable>
+  </View>
+);
 
-// ---- ConversationsScreen ----------------------------------------------------
+// ---- Admin Conversation List (tabbed) ---------------------------------------
 
-export default function ConversationsScreen() {
-  const router = useRouter();
-  const { conversations, isLoading, error, refresh } = useConversations();
-  const role = useRoleStore((s) => s.role);
+interface AdminConversationListProps {
+  type: ConversationType;
+  onPress: (id: string) => void;
+}
 
-  const handleConversationPress = useCallback(
-    (conversationId: string) => {
-      router.push(`/(main)/(chat)/${conversationId}`);
-    },
-    [router],
-  );
+const AdminConversationList = ({ type, onPress }: AdminConversationListProps) => {
+  const { conversations, isLoading, error, refresh } = useAdminConversations(type);
 
   const renderItem = useCallback(
     ({ item }: ListRenderItemInfo<ConversationEntity>) => (
-      <ConversationCard conversation={item} onPress={handleConversationPress} />
+      <ConversationCard conversation={item} onPress={onPress} />
     ),
-    [handleConversationPress],
+    [onPress],
   );
 
-  const keyExtractor = useCallback(
-    (item: ConversationEntity) => item.id,
-    [],
-  );
+  const keyExtractor = useCallback((item: ConversationEntity) => item.id, []);
 
   const renderSeparator = useCallback(
     () => (
@@ -187,75 +242,129 @@ export default function ConversationsScreen() {
     [],
   );
 
-  const Header = () => (
-    <View
-      style={{
-        flexDirection: 'row',
-        alignItems: 'center',
-        paddingHorizontal: 16,
-        paddingTop: 8,
-        paddingBottom: 16,
-        gap: 12,
-      }}
-    >
-      {role === 'admin' && <AdminMenuButton />}
-      <AppText
-        style={{
-          flex: 1,
-          color: colors.textWhite,
-          fontSize: 17,
-          fontWeight: '700',
-          textAlign: role === 'admin' ? 'left' : 'center',
-        }}
-      >
-        Messages
-      </AppText>
-    </View>
+  if (isLoading && conversations.length === 0) return <LoadingIndicator />;
+  if (error && conversations.length === 0) return <ErrorView message={error} onRetry={refresh} />;
+
+  return (
+    <FlatList
+      data={conversations}
+      renderItem={renderItem}
+      keyExtractor={keyExtractor}
+      ItemSeparatorComponent={renderSeparator}
+      ListEmptyComponent={<EmptyState />}
+      showsVerticalScrollIndicator={false}
+      contentContainerStyle={
+        conversations.length === 0 ? { flex: 1 } : { paddingBottom: 100 }
+      }
+      refreshControl={
+        <RefreshControl
+          refreshing={isLoading}
+          onRefresh={refresh}
+          tintColor={colors.neonPurple}
+          colors={[colors.neonPurple]}
+        />
+      }
+    />
+  );
+};
+
+// ---- ConversationsScreen ----------------------------------------------------
+
+export default function ConversationsScreen() {
+  const router = useRouter();
+  const { conversations, isLoading, error, refresh } = useConversations();
+  const role = useRoleStore((s) => s.role);
+  const isAdmin = role === 'admin';
+  const [activeTab, setActiveTab] = useState<ConversationType>('business');
+
+  const handleConversationPress = useCallback(
+    (conversationId: string) => {
+      router.push(`/(main)/(chat)/${conversationId}`);
+    },
+    [router],
   );
 
-  if (isLoading && conversations.length === 0) {
-    return (
-      <ScreenLayout>
-        <Header />
-        <LoadingIndicator />
-      </ScreenLayout>
-    );
-  }
+  const renderItem = useCallback(
+    ({ item }: ListRenderItemInfo<ConversationEntity>) => (
+      <ConversationCard conversation={item} onPress={handleConversationPress} />
+    ),
+    [handleConversationPress],
+  );
 
-  if (error && conversations.length === 0) {
-    return (
-      <ScreenLayout>
-        <Header />
-        <ErrorView message={error} onRetry={refresh} />
-      </ScreenLayout>
-    );
-  }
+  const keyExtractor = useCallback((item: ConversationEntity) => item.id, []);
+
+  const renderSeparator = useCallback(
+    () => (
+      <View
+        style={{
+          height: 1,
+          backgroundColor: colors.borderDark,
+          marginLeft: 72,
+          opacity: 0.3,
+        }}
+      />
+    ),
+    [],
+  );
 
   return (
     <ScreenLayout>
       {/* Header */}
-      <Header />
+      <View
+        style={{
+          flexDirection: 'row',
+          alignItems: 'center',
+          paddingHorizontal: 16,
+          paddingTop: 8,
+          paddingBottom: 16,
+          gap: 12,
+        }}
+      >
+        {isAdmin && <AdminMenuButton />}
+        <AppText
+          style={{
+            flex: 1,
+            color: colors.textWhite,
+            fontSize: 17,
+            fontWeight: '700',
+            textAlign: isAdmin ? 'left' : 'center',
+          }}
+        >
+          Messages
+        </AppText>
+      </View>
 
-      {/* Conversation list */}
-      <FlatList
-        data={conversations}
-        renderItem={renderItem}
-        keyExtractor={keyExtractor}
-        ItemSeparatorComponent={renderSeparator}
-        ListEmptyComponent={<EmptyState />}
-        showsVerticalScrollIndicator={false}
-        contentContainerStyle={
-          conversations.length === 0 ? { flex: 1 } : { paddingBottom: 100 }
-        }
-        refreshControl={
-          <RefreshControl
-            refreshing={isLoading}
-            onRefresh={refresh}
-            tintColor={colors.neonPurple}
-            colors={[colors.neonPurple]}
-          />
-        }
-      />
+      {/* Admin tab switcher */}
+      {isAdmin && <AdminTabs active={activeTab} onChange={setActiveTab} />}
+
+      {/* Admin tabbed list */}
+      {isAdmin ? (
+        <AdminConversationList type={activeTab} onPress={handleConversationPress} />
+      ) : isLoading && conversations.length === 0 ? (
+        <LoadingIndicator />
+      ) : error && conversations.length === 0 ? (
+        <ErrorView message={error} onRetry={refresh} />
+      ) : (
+        <FlatList
+          data={conversations}
+          renderItem={renderItem}
+          keyExtractor={keyExtractor}
+          ItemSeparatorComponent={renderSeparator}
+          ListEmptyComponent={<EmptyState />}
+          showsVerticalScrollIndicator={false}
+          contentContainerStyle={
+            conversations.length === 0 ? { flex: 1 } : { paddingBottom: 100 }
+          }
+          refreshControl={
+            <RefreshControl
+              refreshing={isLoading}
+              onRefresh={refresh}
+              tintColor={colors.neonPurple}
+              colors={[colors.neonPurple]}
+            />
+          }
+        />
+      )}
     </ScreenLayout>
   );
 }

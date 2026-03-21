@@ -358,7 +358,7 @@ export function PendingBusinessesScreen() {
     return (
       <Pressable
         onPress={() => { setPreviewPhotoIndex(0); setSelectedReview(item); }}
-        accessibilityRole="button"
+        accessibilityRole="none"
         accessibilityLabel={`View review for ${item.businessName}`}
         style={({ pressed }) => ({
           backgroundColor: colors.cardDark,
@@ -498,7 +498,7 @@ export function PendingBusinessesScreen() {
     return (
       <Pressable
         onPress={() => setSelectedBusiness(item)}
-        accessibilityRole="button"
+        accessibilityRole="none"
         accessibilityLabel={`View details for ${item.name}`}
         style={({ pressed }) => ({
           backgroundColor: colors.cardDark,
@@ -2356,7 +2356,7 @@ export function PendingBusinessesScreen() {
         <Pressable
           style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.6)', justifyContent: 'flex-end' }}
           onPress={() => setShowCategoryMenu(false)}
-          accessibilityRole="button"
+          accessibilityRole="none"
           accessibilityLabel="Close category filter"
         >
           <View
@@ -2469,7 +2469,7 @@ export function PendingBusinessesScreen() {
         <Pressable
           style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.6)', justifyContent: 'flex-end' }}
           onPress={() => setShowSortMenu(false)}
-          accessibilityRole="button"
+          accessibilityRole="none"
           accessibilityLabel="Close sort menu"
         >
           <View

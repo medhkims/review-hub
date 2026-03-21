@@ -13,7 +13,17 @@
     "success": "نجاح",
     "back": "رجوع",
     "done": "تم",
-    "close": "إغلاق"
+    "close": "إغلاق",
+    "months": {
+      "jan": "يناير", "feb": "فبراير", "mar": "مارس", "apr": "أبريل",
+      "may": "مايو", "jun": "يونيو", "jul": "يوليو", "aug": "أغسطس",
+      "sep": "سبتمبر", "oct": "أكتوبر", "nov": "نوفمبر", "dec": "ديسمبر"
+    },
+    "date": {
+      "day": "اليوم",
+      "month": "الشهر",
+      "year": "السنة"
+    }
   },
   "tabs": {
     "home": "الرئيسية",
@@ -74,7 +84,9 @@
       "privacyPolicy": "سياسة الخصوصية",
       "gender": "الجنس",
       "genderMale": "ذكر",
-      "genderFemale": "أنثى"
+      "genderFemale": "أنثى",
+      "birthday": "تاريخ الميلاد",
+      "birthdayPlaceholder": "اختر تاريخ ميلادك"
     },
     "currentPassword": "كلمة المرور الحالية",
     "newPassword": "كلمة المرور الجديدة",
@@ -295,7 +307,17 @@
     "justNow": "الآن",
     "minutesAgo": "منذ {{count}} دقيقة",
     "hoursAgo": "منذ {{count}} ساعة",
-    "yesterday": "أمس"
+    "yesterday": "أمس",
+    "adminChannels": {
+      "business": "الأعمال",
+      "moderator": "المشرفون",
+      "businessTitle": "محادثات الأعمال",
+      "moderatorTitle": "محادثات المشرفين",
+      "businessEmpty": "لا توجد محادثات مع أصحاب الأعمال",
+      "businessEmptyMessage": "ستظهر محادثات أصحاب الأعمال هنا",
+      "moderatorEmpty": "لا توجد محادثات مع المشرفين",
+      "moderatorEmptyMessage": "ستظهر محادثات المشرفين هنا"
+    }
   },
   "notifications": {
     "title": "الإشعارات",
@@ -394,6 +416,11 @@
     "editSubcategory": "تعديل التصنيف الفرعي",
     "tabActive": "تصنيفاتي",
     "tabDeleted": "المحذوفات",
+    "subTabCategory": "التصنيف",
+    "subTabRatingCriteria": "معايير التقييم",
+    "categoryCardDesc": "إدارة التصنيفات والتصنيفات الفرعية",
+    "ratingCardDesc": "إدارة معايير التقييم لكل تصنيف",
+    "manage": "إدارة",
     "deletedCategories": "التصنيفات المحذوفة",
     "deletedSubcategories": "التصنيفات الفرعية المحذوفة",
     "emptyDeleted": "لا يوجد محذوفات",
@@ -403,7 +430,24 @@
     "recoverCategoryOnly": "التصنيف فقط",
     "recoverCategoryWithSubs": "التصنيف + جميع التصنيفات الفرعية",
     "recoverSubcategoryMessage": "استعادة \"{{name}}\" إلى \"{{parent}}\"؟",
-    "recoverConfirm": "استعادة"
+    "recoverConfirm": "استعادة",
+    "ratingCriteriaCard": "معايير التقييم",
+    "ratingCriteriaEmpty": "لا توجد معايير بعد",
+    "addCriterion": "إضافة معيار",
+    "editCriterion": "تعديل المعيار",
+    "deleteCriterion": "حذف المعيار",
+    "deleteCriterionConfirm": "حذف المعيار \"{{label}}\"؟",
+    "criterionLabel": "التسمية",
+    "criterionLabelPlaceholder": "مثال: جودة الطعام",
+    "criterionKey": "المفتاح (يُولَّد تلقائياً)",
+    "criterionKeyPlaceholder": "مثال: food_quality",
+    "criterionIcon": "الأيقونة (اسم أيقونة Material Community Icons)",
+    "criterionIconPlaceholder": "مثال: silverware-fork-knife",
+    "tabActiveCriteria": "معاييري",
+    "tabDeletedCriteria": "المحذوفة",
+    "deletedCriteriaEmpty": "لا توجد معايير محذوفة",
+    "recoverCriterion": "استعادة المعيار",
+    "recoverCriterionMessage": "استعادة المعيار \"{{label}}\" إلى \"{{category}}\"؟"
   },
   "support": {
     "helpCenter": "مركز المساعدة",
@@ -507,6 +551,10 @@
       "rejectTitle": "رفض النشاط التجاري",
       "rejectConfirm": "رفض \"{{name}}\"؟ سيتم إخطار المالك.",
       "empty": "لا توجد أعمال معلقة"
+    },
+    "tickets": {
+      "title": "التذاكر",
+      "empty": "لا توجد تذاكر"
     },
     "banners": {
       "title": "إدارة البانرات",
@@ -811,12 +859,30 @@
     "onlineBusinessDescription": "يعمل هذا النشاط التجاري عبر الإنترنت فقط — لا يوجد موقع فعلي",
     "openingHours": "ساعات العمل",
     "closedDay": "مغلق",
+    "allReviews": "جميع التقييمات",
+    "noReviews": "لا توجد تقييمات بعد",
     "alreadyReviewed": {
       "title": "تم إرسال التقييم مسبقاً",
       "message": "لقد أضفت بالفعل تقييماً لـ {{businessName}}.",
       "goHome": "الرئيسية",
       "seeMyReview": "عرض تقييمي"
-    }
+    },
+    "share": "مشاركة",
+    "report": "إبلاغ",
+    "reportBusiness": "الإبلاغ عن النشاط التجاري",
+    "reportReasonTitle": "لماذا تبلغ عن هذا النشاط التجاري؟",
+    "reportReasons": {
+      "spam": "بريد عشوائي أو قائمة مزيفة",
+      "inappropriate": "محتوى غير لائق",
+      "wrongInfo": "معلومات خاطئة أو مضللة",
+      "closed": "النشاط التجاري مغلق نهائياً",
+      "other": "أخرى"
+    },
+    "reportOtherPlaceholder": "يرجى وصف المشكلة...",
+    "reportSubmit": "إرسال البلاغ",
+    "reportSuccess": "تم إرسال البلاغ",
+    "reportSuccessMessage": "شكراً لك على بلاغك. سيقوم فريقنا بمراجعته قريباً.",
+    "reportAlreadySubmitted": "لقد أبلغت عن هذا النشاط التجاري مسبقاً."
   },
   "permissions": {
     "denied": "تم رفض الوصول",
@@ -948,6 +1014,7 @@
     "car_rental": "تأجير سيارات",
     "bank": "بنك",
     "job_freelancer": "عمل / مستقل",
+    "tradesman": "حِرَفي",
     "delivery_company": "شركة توصيل"
   },
   "subcategories": {
@@ -1002,6 +1069,8 @@
     "mall": "مول",
     "plumber": "سبّاك",
     "painter": "دهّان",
+    "carpenter": "نجّار",
+    "bricklayer": "بنّاء",
     "developer": "مطور برمجيات",
     "social_media_manager": "مدير وسائل التواصل الاجتماعي",
     "electrician": "كهربائي",

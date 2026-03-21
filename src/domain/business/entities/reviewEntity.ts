@@ -6,4 +6,8 @@ export interface ReviewEntity {
   rating: number;
   text: string;
   createdAt: Date;
+  likeCount: number;
+  viewCount: number;
+  commentCount: number;
+  isLikedByCurrentUser: boolean;
 }

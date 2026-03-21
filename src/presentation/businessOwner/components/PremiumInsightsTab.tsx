@@ -1,5 +1,6 @@
 import React from 'react';
 import { View, ScrollView, Pressable, ActivityIndicator, Alert } from 'react-native';
+import Svg, { Path, Circle, Text as SvgText } from 'react-native-svg';
 import { router } from 'expo-router';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { AppText } from '@/presentation/shared/components/ui/AppText';
@@ -8,7 +9,7 @@ import { RangeCalendar } from '@/presentation/shared/components/ui/RangeCalendar
 import { InsightLineChart } from './InsightLineChart';
 import { DonutChart } from './DonutChart';
 import { usePremiumInsights } from '../hooks/usePremiumInsights';
-import type { InsightFilterMode, InsightDateRange, BoostRecord, MonthlyStat } from '../hooks/usePremiumInsights';
+import type { InsightFilterMode, InsightDateRange, BoostRecord, MonthlyStat, AgeGroupStat, GenderStat } from '../hooks/usePremiumInsights';
 
 const MON = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
 const FILTERS: { key: InsightFilterMode; label: string }[] = [
@@ -72,6 +73,80 @@ const BoostHistoryCard: React.FC<{boost: BoostRecord}> = ({ boost }) => {
   );
 };
 
+// ── Gender pie chart helpers ───────────────────────────────────────────────────
+function pieSlicePath(cx: number, cy: number, r: number, start: number, end: number): string {
+  const span = end - start;
+  if (span >= 2 * Math.PI - 0.001) {
+    return `M${cx},${cy} L${cx},${cy - r} A${r},${r} 0 1,1 ${cx - 0.001},${cy - r} Z`;
+  }
+  const sx = cx + r * Math.cos(start), sy = cy + r * Math.sin(start);
+  const ex = cx + r * Math.cos(end),   ey = cy + r * Math.sin(end);
+  return `M${cx},${cy} L${sx},${sy} A${r},${r} 0 ${span > Math.PI ? 1 : 0},1 ${ex},${ey} Z`;
+}
+
+const AgeDistributionCard: React.FC<{ data: AgeGroupStat[] }> = ({ data }) => {
+  const maxCount = Math.max(...data.map(d => d.count), 1);
+  return (
+    <View style={{ gap: 10 }}>
+      {data.map(item => (
+        <View key={item.label} style={{ gap: 4 }}>
+          <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
+            <AppText style={{ fontSize: 12, fontWeight: '600', color: colors.white }}>{item.label}</AppText>
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+              <AppText style={{ fontSize: 11, color: item.color, fontWeight: '700' }}>{item.percentage}%</AppText>
+              <AppText style={{ fontSize: 10, color: colors.textSlate500 }}>({item.count})</AppText>
+            </View>
+          </View>
+          <View style={{ height: 8, borderRadius: 4, backgroundColor: colors.borderDark, overflow: 'hidden' }}>
+            <View style={{ height: 8, borderRadius: 4, backgroundColor: item.color, width: `${maxCount > 0 ? (item.count / maxCount) * 100 : 0}%`, opacity: 0.85 }} />
+          </View>
+        </View>
+      ))}
+    </View>
+  );
+};
+
+const GenderPieChart: React.FC<{ data: GenderStat[] }> = ({ data }) => {
+  const SIZE = 120;
+  const cx = SIZE / 2, cy = SIZE / 2, r = SIZE * 0.4, innerR = SIZE * 0.24;
+  const total = data.reduce((s, d) => s + d.count, 0);
+  let start = -Math.PI / 2;
+  const segments = data.map(item => {
+    const angle = total > 0 ? (item.count / total) * 2 * Math.PI : Math.PI;
+    const seg = { ...item, startAngle: start, endAngle: start + angle };
+    start += angle;
+    return seg;
+  });
+  return (
+    <View style={{ alignItems: 'center', gap: 12 }}>
+      <Svg width={SIZE} height={SIZE}>
+        {segments.map((seg, i) => (
+          <Path key={i} d={pieSlicePath(cx, cy, r, seg.startAngle, seg.endAngle)} fill={seg.color} opacity={0.9} />
+        ))}
+        <Circle cx={cx} cy={cy} r={innerR} fill={colors.cardDark} />
+        <SvgText x={cx} y={cy - 4} fontSize="11" fontWeight="800" fill={colors.white} textAnchor="middle">{total}</SvgText>
+        <SvgText x={cx} y={cy + 9} fontSize="8" fill={colors.textSlate400} textAnchor="middle">visitors</SvgText>
+      </Svg>
+      <View style={{ flexDirection: 'row', gap: 20 }}>
+        {data.map(item => (
+          <View key={item.label} style={{ alignItems: 'center', gap: 4 }}>
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+              <MaterialCommunityIcons
+                name={item.label === 'Male' ? 'gender-male' : 'gender-female'}
+                size={16}
+                color={item.color}
+              />
+              <AppText style={{ fontSize: 13, fontWeight: '700', color: item.color }}>{item.percentage}%</AppText>
+            </View>
+            <AppText style={{ fontSize: 11, color: colors.textSlate400 }}>{item.label}</AppText>
+            <AppText style={{ fontSize: 10, color: colors.textSlate500 }}>{item.count} visitors</AppText>
+          </View>
+        ))}
+      </View>
+    </View>
+  );
+};
+
 // ── Main tab ───────────────────────────────────────────────────────────────────
 export const PremiumInsightsTab: React.FC = () => {
   const {
@@ -81,6 +156,7 @@ export const PremiumInsightsTab: React.FC = () => {
     menuItems, menuLoading,
     peakDays, sentimentStats, favCount,
     monthlyStats, monthlyLoading,
+    ageStats, genderStats, demographicsLoading,
   } = usePremiumInsights();
 
   const displayedKeywords = keywords.slice(0, 3);
@@ -263,6 +339,43 @@ export const PremiumInsightsTab: React.FC = () => {
           </View>
           <AppText style={{ fontSize:11,color:colors.textSlate400,marginTop:8 }}>Based on review activity by day of week</AppText>
         </View>
+
+        {/* ── Visitor Demographics ── */}
+        <SectionTitle icon="account-group" label="Visitor Demographics" accent={colors.indigo} />
+        {demographicsLoading && <ActivityIndicator color={colors.indigo} style={{ marginBottom: 16 }} />}
+        {!demographicsLoading && ageStats.length === 0 && genderStats.length === 0 && (
+          <View style={{ backgroundColor: colors.cardDark, borderRadius: 12, padding: 20, alignItems: 'center', marginBottom: 16, borderWidth: 1, borderColor: colors.borderDark }}>
+            <AppText style={{ fontSize: 13, color: colors.textSlate500 }}>No visitor data yet</AppText>
+          </View>
+        )}
+        {!demographicsLoading && (ageStats.length > 0 || genderStats.length > 0) && (
+          <View style={{ backgroundColor: colors.cardDark, borderRadius: 14, padding: 16, marginBottom: 16, borderWidth: 1, borderColor: colors.borderDark, gap: 20 }}>
+            {/* Age distribution */}
+            {ageStats.length > 0 && (
+              <View>
+                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, marginBottom: 12 }}>
+                  <MaterialCommunityIcons name="chart-bar" size={13} color={colors.indigo} />
+                  <AppText style={{ fontSize: 11, fontWeight: '700', color: colors.textSlate400, textTransform: 'uppercase', letterSpacing: 0.8 }}>Age Distribution</AppText>
+                </View>
+                <AgeDistributionCard data={ageStats} />
+              </View>
+            )}
+            {/* Divider */}
+            {ageStats.length > 0 && genderStats.length > 0 && (
+              <View style={{ height: 1, backgroundColor: colors.borderDark }} />
+            )}
+            {/* Gender distribution */}
+            {genderStats.length > 0 && (
+              <View>
+                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, marginBottom: 12 }}>
+                  <MaterialCommunityIcons name="gender-male-female" size={13} color={colors.indigo} />
+                  <AppText style={{ fontSize: 11, fontWeight: '700', color: colors.textSlate400, textTransform: 'uppercase', letterSpacing: 0.8 }}>Gender Distribution</AppText>
+                </View>
+                <GenderPieChart data={genderStats} />
+              </View>
+            )}
+          </View>
+        )}
 
         {/* ── Wishlist & Sentiment ── */}
         <SectionTitle icon="heart" label="Wishlist & Reviews" accent={colors.pink} />

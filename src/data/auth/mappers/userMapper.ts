@@ -20,6 +20,7 @@ export class UserMapper {
       displayName: model.display_name,
       avatarUrl: model.avatar_url,
       createdAt: model.created_at.toDate(),
+      birthday: model.birthday ? model.birthday.toDate() : null,
       provider: mapProvider(model.provider),
     };
   }
@@ -31,6 +32,7 @@ export class UserMapper {
       display_name: entity.displayName,
       avatar_url: entity.avatarUrl,
       created_at: Timestamp.fromDate(entity.createdAt),
+      birthday: entity.birthday ? Timestamp.fromDate(entity.birthday) : null,
       provider: entity.provider,
     };
   }
@@ -45,6 +47,7 @@ export class UserMapper {
       created_at: firebaseUser.metadata?.creationTime
         ? Timestamp.fromDate(new Date(firebaseUser.metadata.creationTime))
         : Timestamp.now(),
+      birthday: null,
       provider: providerId,
     };
   }

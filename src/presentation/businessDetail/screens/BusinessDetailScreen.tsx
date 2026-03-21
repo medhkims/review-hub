@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { ScrollView, View, RefreshControl, Modal, Pressable } from 'react-native';
+import React, { useState, useCallback } from 'react';
+import { ScrollView, View, RefreshControl, Modal, Pressable, Share, Platform, TextInput } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
@@ -19,6 +19,8 @@ import { useBusinessDetail } from '../hooks/useBusinessDetail';
 import { useAnalyticsScreen } from '@/presentation/shared/hooks/useAnalyticsScreen';
 import { AnalyticsScreens } from '@/core/analytics/analyticsKeys';
 import { OpeningHours, DayKey } from '@/domain/business/entities/businessDetailEntity';
+import { container } from '@/core/di/container';
+import { auth } from '@/core/firebase/firebaseConfig';
 
 const DAY_INDEX: DayKey[] = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
 
@@ -42,6 +44,58 @@ export default function BusinessDetailScreen({ businessId }: BusinessDetailScree
   const { t } = useTranslation();
   const { business, reviews, isLoading, error, toggleWishlist, isWishlisted, checkHasReviewed, refresh } = useBusinessDetail(businessId);
   const [alreadyReviewedVisible, setAlreadyReviewedVisible] = useState(false);
+  const [reportVisible, setReportVisible] = useState(false);
+  const [selectedReason, setSelectedReason] = useState<string | null>(null);
+  const [otherText, setOtherText] = useState('');
+  const [isSubmittingReport, setIsSubmittingReport] = useState(false);
+  const [reportDone, setReportDone] = useState(false);
+
+  const REPORT_REASONS = [
+    { key: 'spam', label: t('businessDetail.reportReasons.spam') },
+    { key: 'inappropriate', label: t('businessDetail.reportReasons.inappropriate') },
+    { key: 'wrongInfo', label: t('businessDetail.reportReasons.wrongInfo') },
+    { key: 'closed', label: t('businessDetail.reportReasons.closed') },
+    { key: 'other', label: t('businessDetail.reportReasons.other') },
+  ];
+
+  const handleShare = useCallback(async () => {
+    if (!business) return;
+    try {
+      await Share.share({
+        title: business.name,
+        message: Platform.OS === 'ios'
+          ? business.name
+          : `${business.name} — ${business.categoryName}`,
+        url: Platform.OS === 'ios' ? `https://reviewhub.app/business/${business.id}` : undefined,
+      });
+    } catch {
+      // user dismissed share sheet — no-op
+    }
+  }, [business]);
+
+  const handleSubmitReport = useCallback(async () => {
+    if (!business || !selectedReason) return;
+    if (selectedReason === 'other' && !otherText.trim()) return;
+    const userId = auth.currentUser?.uid;
+    if (!userId) return;
+    setIsSubmittingReport(true);
+    const finalReason = selectedReason === 'other'
+      ? `other: ${otherText.trim()}`
+      : selectedReason;
+    const currentUser = auth.currentUser;
+    const displayName = currentUser?.displayName
+      || currentUser?.email?.split('@')[0]
+      || 'Anonymous';
+    await container.reportBusinessUseCase.execute({
+      businessId: business.id,
+      businessName: business.name,
+      reason: finalReason,
+      reportedByUserId: userId,
+      reporterDisplayName: displayName,
+    });
+    setIsSubmittingReport(false);
+    setReportDone(true);
+  }, [business, selectedReason, otherText]);
 
   if (isLoading && !business) {
     return (
@@ -66,6 +120,13 @@ export default function BusinessDetailScreen({ businessId }: BusinessDetailScree
     business.openingHours && business.openingHoursVisible !== false
       ? computeIsOpen(business.openingHours)
       : null;
+
+  const handleViewAllReviews = () => {
+    router.push({
+      pathname: '/(main)/(feed)/business-reviews' as const,
+      params: { businessId: business.id, businessName: business.name },
+    } as never);
+  };
 
   const handleAddReview = async () => {
     const hasReviewed = await checkHasReviewed();
@@ -193,6 +254,169 @@ export default function BusinessDetailScreen({ businessId }: BusinessDetailScree
         </View>
       </Modal>
 
+      {/* Report Modal */}
+      <Modal
+        visible={reportVisible}
+        transparent
+        animationType="slide"
+        onRequestClose={() => { setReportVisible(false); setSelectedReason(null); setOtherText(''); setReportDone(false); }}
+        statusBarTranslucent
+      >
+        <View style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.7)', justifyContent: 'flex-end' }}>
+          <View
+            style={{
+              backgroundColor: colors.cardDark,
+              borderTopLeftRadius: 28,
+              borderTopRightRadius: 28,
+              padding: 24,
+              paddingBottom: 40,
+              borderWidth: 1,
+              borderColor: 'rgba(255,255,255,0.08)',
+            }}
+          >
+            {reportDone ? (
+              <View style={{ alignItems: 'center', paddingVertical: 16 }}>
+                <View
+                  style={{
+                    width: 64,
+                    height: 64,
+                    borderRadius: 32,
+                    backgroundColor: `${colors.success}20`,
+                    borderWidth: 1,
+                    borderColor: `${colors.success}40`,
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    marginBottom: 16,
+                  }}
+                >
+                  <MaterialCommunityIcons name="check-circle-outline" size={30} color={colors.success} />
+                </View>
+                <AppText style={{ fontSize: 18, fontWeight: '700', color: colors.white, textAlign: 'center', marginBottom: 8 }}>
+                  {t('businessDetail.reportSuccess')}
+                </AppText>
+                <AppText style={{ fontSize: 14, color: colors.textSlate400, textAlign: 'center', lineHeight: 20, marginBottom: 24 }}>
+                  {t('businessDetail.reportSuccessMessage')}
+                </AppText>
+                <AppButton
+                  title={t('common.close')}
+                  variant="primary"
+                  size="md"
+                  shape="pill"
+                  accessibilityLabel={t('common.close')}
+                  accessibilityRole="button"
+                  onPress={() => { setReportVisible(false); setSelectedReason(null); setOtherText(''); setReportDone(false); }}
+                />
+              </View>
+            ) : (
+              <>
+                <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 20 }}>
+                  <MaterialCommunityIcons name="flag-outline" size={22} color={colors.neonPurple} />
+                  <AppText style={{ fontSize: 18, fontWeight: '700', color: colors.white, marginLeft: 8 }}>
+                    {t('businessDetail.reportBusiness')}
+                  </AppText>
+                </View>
+                <AppText style={{ fontSize: 14, color: colors.textSlate400, marginBottom: 16 }}>
+                  {t('businessDetail.reportReasonTitle')}
+                </AppText>
+                <View style={{ gap: 10, marginBottom: 24 }}>
+                  {REPORT_REASONS.map(({ key, label }) => (
+                    <Pressable
+                      key={key}
+                      onPress={() => setSelectedReason(key)}
+                      accessibilityRole="radio"
+                      accessibilityLabel={label}
+                      style={{
+                        flexDirection: 'row',
+                        alignItems: 'center',
+                        padding: 14,
+                        borderRadius: 12,
+                        borderWidth: 1.5,
+                        borderColor: selectedReason === key ? colors.neonPurple : 'rgba(255,255,255,0.1)',
+                        backgroundColor: selectedReason === key ? `${colors.neonPurple}15` : 'transparent',
+                      }}
+                    >
+                      <View
+                        style={{
+                          width: 20,
+                          height: 20,
+                          borderRadius: 10,
+                          borderWidth: 2,
+                          borderColor: selectedReason === key ? colors.neonPurple : colors.textSlate600,
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          marginRight: 12,
+                        }}
+                      >
+                        {selectedReason === key && (
+                          <View style={{ width: 10, height: 10, borderRadius: 5, backgroundColor: colors.neonPurple }} />
+                        )}
+                      </View>
+                      <AppText style={{ fontSize: 14, color: selectedReason === key ? colors.white : colors.textSlate400, flex: 1 }}>
+                        {label}
+                      </AppText>
+                    </Pressable>
+                  ))}
+                </View>
+
+                {/* "Other" custom text input */}
+                {selectedReason === 'other' && (
+                  <>
+                    <TextInput
+                      value={otherText}
+                      onChangeText={setOtherText}
+                      placeholder={t('businessDetail.reportOtherPlaceholder')}
+                      placeholderTextColor={colors.textSlate600}
+                      multiline
+                      maxLength={200}
+                      accessibilityLabel={t('businessDetail.reportOtherPlaceholder')}
+                      style={{
+                        marginTop: 4,
+                        marginBottom: 4,
+                        backgroundColor: 'rgba(255,255,255,0.05)',
+                        borderWidth: 1.5,
+                        borderColor: otherText.trim() ? colors.neonPurple : 'rgba(255,255,255,0.15)',
+                        borderRadius: 12,
+                        padding: 14,
+                        color: colors.white,
+                        fontSize: 14,
+                        minHeight: 90,
+                        textAlignVertical: 'top',
+                      }}
+                    />
+                    <AppText style={{ fontSize: 12, color: otherText.length >= 200 ? colors.error : colors.textSlate600, textAlign: 'right', marginBottom: 16 }}>
+                      {otherText.length}/200
+                    </AppText>
+                  </>
+                )}
+
+                <View style={{ gap: 10 }}>
+                  <AppButton
+                    title={isSubmittingReport ? t('common.saving') : t('businessDetail.reportSubmit')}
+                    variant="primary"
+                    size="md"
+                    shape="pill"
+                    accessibilityLabel={t('businessDetail.reportSubmit')}
+                    accessibilityRole="button"
+                    onPress={handleSubmitReport}
+                    disabled={!selectedReason || isSubmittingReport || (selectedReason === 'other' && !otherText.trim())}
+                  />
+                  <Pressable
+                    onPress={() => { setReportVisible(false); setSelectedReason(null); setOtherText(''); }}
+                    accessibilityLabel={t('common.cancel')}
+                    accessibilityRole="button"
+                    style={{ paddingVertical: 12, alignItems: 'center' }}
+                  >
+                    <AppText style={{ fontSize: 15, fontWeight: '600', color: colors.textSlate400 }}>
+                      {t('common.cancel')}
+                    </AppText>
+                  </Pressable>
+                </View>
+              </>
+            )}
+          </View>
+        </View>
+      </Modal>
+
       <ScrollView
         showsVerticalScrollIndicator={false}
         contentContainerStyle={{ paddingBottom: 120 }}
@@ -216,6 +440,9 @@ export default function BusinessDetailScreen({ businessId }: BusinessDetailScree
           rating={business.rating}
           reviewCount={business.reviewCount}
           onBackPress={() => router.back()}
+          onRatingPress={handleViewAllReviews}
+          onSharePress={handleShare}
+          onReportPress={() => { setSelectedReason(null); setOtherText(''); setReportDone(false); setReportVisible(true); }}
         />
 
         {/* Action Buttons */}
@@ -236,6 +463,7 @@ export default function BusinessDetailScreen({ businessId }: BusinessDetailScree
             ratingDistribution={business.ratingDistribution}
             categoryRatings={business.categoryRatings}
             reviews={reviews}
+            onViewAllReviews={handleViewAllReviews}
           />
 
           {/* Information Section */}

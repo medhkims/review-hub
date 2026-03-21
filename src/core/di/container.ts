@@ -77,6 +77,9 @@ import { SoftDeleteSubcategoryUseCase } from '@/domain/business/usecases/softDel
 import { RecoverCategoryUseCase } from '@/domain/business/usecases/recoverCategoryUseCase';
 import { RecoverSubcategoryUseCase } from '@/domain/business/usecases/recoverSubcategoryUseCase';
 import { GetDeletedCategoryItemsUseCase } from '@/domain/business/usecases/getDeletedCategoryItemsUseCase';
+import { UpdateRatingCriteriaUseCase } from '@/domain/business/usecases/updateRatingCriteriaUseCase';
+import { SoftDeleteRatingCriterionUseCase } from '@/domain/business/usecases/softDeleteRatingCriterionUseCase';
+import { RecoverRatingCriterionUseCase } from '@/domain/business/usecases/recoverRatingCriterionUseCase';
 import { FuzzySearchBusinessUseCase } from '@/domain/business/usecases/fuzzySearchBusinessUseCase';
 import { SubmitBusinessUseCase } from '@/domain/business/usecases/submitBusinessUseCase';
 import { CheckBusinessDuplicateUseCase } from '@/domain/business/usecases/checkBusinessDuplicateUseCase';
@@ -91,6 +94,13 @@ import { ReApproveBusinessUseCase } from '@/domain/business/usecases/reApproveBu
 import { GetSuspendedBusinessesUseCase } from '@/domain/business/usecases/getSuspendedBusinessesUseCase';
 import { IncrementSearchCountUseCase } from '@/domain/business/usecases/incrementSearchCountUseCase';
 import { IncrementGlobalSearchCountUseCase } from '@/domain/business/usecases/incrementGlobalSearchCountUseCase';
+import { ReportBusinessUseCase } from '@/domain/business/usecases/reportBusinessUseCase';
+
+// ---- Ticket ----
+import { TicketRemoteDataSourceImpl } from '@/data/ticket/datasources/ticketRemoteDataSource';
+import { TicketRepositoryImpl } from '@/data/ticket/repositories/ticketRepositoryImpl';
+import { GetTicketsUseCase } from '@/domain/ticket/usecases/getTicketsUseCase';
+import { UpdateTicketStatusUseCase } from '@/domain/ticket/usecases/updateTicketStatusUseCase';
 
 // ---- Feed ----
 import { FeedRemoteDataSourceImpl } from '@/data/feed/datasources/feedRemoteDataSource';
@@ -240,6 +250,9 @@ const softDeleteSubcategoryUseCase = new SoftDeleteSubcategoryUseCase(categoryRe
 const recoverCategoryUseCase = new RecoverCategoryUseCase(categoryRepository);
 const recoverSubcategoryUseCase = new RecoverSubcategoryUseCase(categoryRepository);
 const getDeletedCategoryItemsUseCase = new GetDeletedCategoryItemsUseCase(categoryRepository);
+const updateRatingCriteriaUseCase = new UpdateRatingCriteriaUseCase(categoryRepository);
+const softDeleteRatingCriterionUseCase = new SoftDeleteRatingCriterionUseCase(categoryRepository);
+const recoverRatingCriterionUseCase = new RecoverRatingCriterionUseCase(categoryRepository);
 const fuzzySearchBusinessUseCase = new FuzzySearchBusinessUseCase(businessRepository);
 const submitBusinessUseCase = new SubmitBusinessUseCase(businessRepository);
 const checkBusinessDuplicateUseCase = new CheckBusinessDuplicateUseCase(businessRepository);
@@ -254,6 +267,13 @@ const reApproveBusinessUseCase = new ReApproveBusinessUseCase(businessRepository
 const getSuspendedBusinessesUseCase = new GetSuspendedBusinessesUseCase(businessRepository);
 const incrementSearchCountUseCase = new IncrementSearchCountUseCase(businessRepository);
 const incrementGlobalSearchCountUseCase = new IncrementGlobalSearchCountUseCase(businessRepository);
+const reportBusinessUseCase = new ReportBusinessUseCase(businessRepository);
+
+// ---- Ticket ----
+const ticketRemoteDataSource = new TicketRemoteDataSourceImpl();
+const ticketRepository = new TicketRepositoryImpl(ticketRemoteDataSource);
+const getTicketsUseCase = new GetTicketsUseCase(ticketRepository);
+const updateTicketStatusUseCase = new UpdateTicketStatusUseCase(ticketRepository);
 
 // ---- Feed ----
 const feedRemoteDataSource = new FeedRemoteDataSourceImpl();
@@ -361,6 +381,9 @@ export const container = {
   recoverCategoryUseCase,
   recoverSubcategoryUseCase,
   getDeletedCategoryItemsUseCase,
+  updateRatingCriteriaUseCase,
+  softDeleteRatingCriterionUseCase,
+  recoverRatingCriterionUseCase,
   searchBusinessesUseCase,
   toggleFavoriteUseCase,
   getBusinessesByCategoryUseCase,
@@ -383,6 +406,9 @@ export const container = {
   getSuspendedBusinessesUseCase,
   incrementSearchCountUseCase,
   incrementGlobalSearchCountUseCase,
+  reportBusinessUseCase,
+  getTicketsUseCase,
+  updateTicketStatusUseCase,
   // Feed use cases
   getPostsUseCase,
   createPostUseCase,

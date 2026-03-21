@@ -2,6 +2,7 @@ import { BusinessRepository } from '@/domain/business/repositories/businessRepos
 import { BusinessEntity } from '@/domain/business/entities/businessEntity';
 import { BusinessDetailEntity } from '@/domain/business/entities/businessDetailEntity';
 import { ReviewEntity } from '@/domain/business/entities/reviewEntity';
+import { CommentEntity, ReplyEntity } from '@/domain/business/entities/commentEntity';
 import { ActiveCategoryInfoEntity } from '@/domain/business/entities/activeCategoryInfoEntity';
 import { RegisterBusinessParams, SubmitBusinessParams, DuplicateCheckResult } from '@/domain/business/repositories/businessRepository';
 import { BusinessRemoteDataSource } from '../datasources/businessRemoteDataSource';
@@ -9,6 +10,7 @@ import { BusinessLocalDataSource } from '../datasources/businessLocalDataSource'
 import { BusinessMapper } from '../mappers/businessMapper';
 import { BusinessDetailMapper } from '../mappers/businessDetailMapper';
 import { ReviewMapper } from '../mappers/reviewMapper';
+import { CommentMapper } from '../mappers/commentMapper';
 import { NetworkInfo } from '@/core/network/networkInfo';
 import { Either, left, right } from '@/core/types/either';
 import { Failure, ServerFailure, NetworkFailure } from '@/core/error/failures';
@@ -400,6 +402,87 @@ export class BusinessRepositoryImpl implements BusinessRepository {
       return right(undefined);
     } catch {
       return right(undefined);
+    }
+  }
+
+  async reportBusiness(params: import('@/domain/business/repositories/businessRepository').ReportBusinessParams): Promise<Either<Failure, void>> {
+    try {
+      await this.remote.reportBusiness(params.businessId, params.businessName, params.reason, params.reportedByUserId, params.reporterDisplayName);
+      return right(undefined);
+    } catch (error) {
+      if (error instanceof ServerException) return left(new ServerFailure(error.message));
+      return left(new ServerFailure('Failed to submit report'));
+    }
+  }
+
+  async likeReview(reviewId: string): Promise<Either<Failure, void>> {
+    const userId = auth.currentUser?.uid;
+    if (!userId) return left(new ServerFailure('Not authenticated'));
+    try {
+      await this.remote.likeReview(reviewId, userId);
+      return right(undefined);
+    } catch (error) {
+      if (error instanceof ServerException) return left(new ServerFailure(error.message));
+      return left(new ServerFailure('Failed to like review'));
+    }
+  }
+
+  async unlikeReview(reviewId: string): Promise<Either<Failure, void>> {
+    const userId = auth.currentUser?.uid;
+    if (!userId) return left(new ServerFailure('Not authenticated'));
+    try {
+      await this.remote.unlikeReview(reviewId, userId);
+      return right(undefined);
+    } catch (error) {
+      if (error instanceof ServerException) return left(new ServerFailure(error.message));
+      return left(new ServerFailure('Failed to unlike review'));
+    }
+  }
+
+  async incrementReviewView(reviewId: string): Promise<Either<Failure, void>> {
+    try {
+      await this.remote.incrementReviewView(reviewId);
+      return right(undefined);
+    } catch {
+      return right(undefined);
+    }
+  }
+
+  async getReviewComments(reviewId: string): Promise<Either<Failure, CommentEntity[]>> {
+    try {
+      const models = await this.remote.getReviewComments(reviewId) as (import('../models/commentModel').CommentModel & { _replies?: import('../models/commentModel').ReplyModel[] })[];
+      const entities = models.map((m) => {
+        const replyEntities = (m._replies ?? []).map((r) => CommentMapper.replyToEntity(r));
+        return CommentMapper.toEntity(m, replyEntities);
+      });
+      return right(entities);
+    } catch (error) {
+      if (error instanceof ServerException) return left(new ServerFailure(error.message));
+      return left(new ServerFailure('Failed to fetch comments'));
+    }
+  }
+
+  async addReviewComment(reviewId: string, text: string): Promise<Either<Failure, CommentEntity>> {
+    const userId = auth.currentUser?.uid;
+    if (!userId) return left(new ServerFailure('Not authenticated'));
+    try {
+      const model = await this.remote.addReviewComment(reviewId, userId, text);
+      return right(CommentMapper.toEntity(model));
+    } catch (error) {
+      if (error instanceof ServerException) return left(new ServerFailure(error.message));
+      return left(new ServerFailure('Failed to add comment'));
+    }
+  }
+
+  async addCommentReply(commentId: string, reviewId: string, text: string): Promise<Either<Failure, ReplyEntity>> {
+    const userId = auth.currentUser?.uid;
+    if (!userId) return left(new ServerFailure('Not authenticated'));
+    try {
+      const model = await this.remote.addCommentReply(commentId, reviewId, userId, text);
+      return right(CommentMapper.replyToEntity(model));
+    } catch (error) {
+      if (error instanceof ServerException) return left(new ServerFailure(error.message));
+      return left(new ServerFailure('Failed to add reply'));
     }
   }
 }

@@ -19,5 +19,6 @@ export interface CategoryModel {
   sort_order: number;
   subcategories: SubcategoryModel[];
   rating_criteria: RatingCriterionModel[];
+  deleted_rating_criteria?: RatingCriterionModel[];
   is_deleted?: boolean;
 }

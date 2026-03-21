@@ -6,4 +6,5 @@ export interface ConversationModel {
   last_message: string;
   last_message_at: Timestamp;
   unread_count: number;
+  conversation_type?: string;
 }

@@ -34,9 +34,9 @@ export class AuthRepositoryImpl implements AuthRepository {
     }
   }
 
-  async signUp(email: string, password: string, displayName: string, role?: UserRole, phoneNumber?: string, gender?: 'male' | 'female'): Promise<Either<Failure, UserEntity>> {
+  async signUp(email: string, password: string, displayName: string, role?: UserRole, phoneNumber?: string, gender?: 'male' | 'female', birthday?: Date): Promise<Either<Failure, UserEntity>> {
     try {
-      const model = await this.remoteDataSource.signUp(email, password, displayName, role, phoneNumber, gender);
+      const model = await this.remoteDataSource.signUp(email, password, displayName, role, phoneNumber, gender, birthday);
       const entity = UserMapper.toEntity(model);
 
       // Cache the user

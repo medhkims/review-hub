@@ -1,5 +1,5 @@
 import { ChatRepository } from '@/domain/chat/repositories/chatRepository';
-import { ConversationEntity } from '@/domain/chat/entities/conversationEntity';
+import { ConversationEntity, ConversationType } from '@/domain/chat/entities/conversationEntity';
 import { MessageEntity } from '@/domain/chat/entities/messageEntity';
 import { ChatRemoteDataSource } from '../datasources/chatRemoteDataSource';
 import { ChatLocalDataSource } from '../datasources/chatLocalDataSource';
@@ -33,6 +33,28 @@ export class ChatRepositoryImpl implements ChatRepository {
         // Ignore cache errors — do not fail the operation
       });
 
+      return right(entities);
+    } catch (error) {
+      if (error instanceof ServerException) {
+        return left(new ServerFailure(error.message));
+      }
+      if (error instanceof NetworkException) {
+        return left(new NetworkFailure(error.message));
+      }
+      return left(new ServerFailure('An unexpected error occurred'));
+    }
+  }
+
+  async getConversationsByType(type: ConversationType): Promise<Either<Failure, ConversationEntity[]>> {
+    const userId = auth.currentUser?.uid;
+
+    if (!userId) {
+      return left(new ServerFailure('User not authenticated'));
+    }
+
+    try {
+      const models = await this.remote.getConversationsByType(userId, type);
+      const entities = models.map(ConversationMapper.toEntity);
       return right(entities);
     } catch (error) {
       if (error instanceof ServerException) {

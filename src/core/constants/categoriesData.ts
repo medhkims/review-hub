@@ -239,11 +239,8 @@ export const CATEGORIES_DATA: CategoryDef[] = [
     icon: 'briefcase-account',
     sortOrder: 11,
     subcategories: [
-      { id: 'plumber', name: 'Plumber' },
-      { id: 'painter', name: 'Painter' },
       { id: 'developer', name: 'Developer' },
       { id: 'social_media_manager', name: 'Social Media Manager' },
-      { id: 'electrician', name: 'Electrician' },
       { id: 'mechanic', name: 'Mechanic' },
       { id: 'engineer', name: 'Engineer' },
       { id: 'other', name: 'Other' },
@@ -255,12 +252,33 @@ export const CATEGORIES_DATA: CategoryDef[] = [
     ],
   },
 
-  // ── 12. Delivery Company ───────────────────────────────────────────────────
+  // ── 12. Tradesman ──────────────────────────────────────────────────────────
+  {
+    id: 'tradesman',
+    name: 'Tradesman',
+    icon: 'hammer-wrench',
+    sortOrder: 12,
+    subcategories: [
+      { id: 'plumber', name: 'Plumber' },
+      { id: 'electrician', name: 'Electrician' },
+      { id: 'carpenter', name: 'Carpenter' },
+      { id: 'painter', name: 'Painter' },
+      { id: 'bricklayer', name: 'Bricklayer' },
+      { id: 'other', name: 'Other' },
+    ],
+    ratingCriteria: [
+      { key: 'punctuality', label: 'Punctuality', icon: 'clock-check' },
+      { key: 'competence', label: 'Competence', icon: 'brain' },
+      { key: 'professionalism', label: 'Professionalism', icon: 'certificate' },
+    ],
+  },
+
+  // ── 13. Delivery Company ───────────────────────────────────────────────────
   {
     id: 'delivery_company',
     name: 'Delivery Company',
     icon: 'truck-delivery',
-    sortOrder: 12,
+    sortOrder: 13,
     subcategories: [
       { id: 'food_delivery', name: 'Food Delivery' },
       { id: 'parcel_delivery', name: 'Parcel Delivery' },
@@ -273,14 +291,38 @@ export const CATEGORIES_DATA: CategoryDef[] = [
     ],
   },
 
-  // ── 13. Other ──────────────────────────────────────────────────────────────
+  // ── 14. Influencer ─────────────────────────────────────────────────────────
+  {
+    id: 'influencer',
+    name: 'Influencer',
+    icon: 'account-star',
+    sortOrder: 14,
+    subcategories: [
+      { id: 'fashion_beauty', name: 'Fashion & Beauty' },
+      { id: 'food_lifestyle', name: 'Food & Lifestyle' },
+      { id: 'tech_gaming', name: 'Tech & Gaming' },
+      { id: 'fitness_health', name: 'Fitness & Health' },
+      { id: 'travel', name: 'Travel' },
+      { id: 'comedy_entertainment', name: 'Comedy & Entertainment' },
+      { id: 'education', name: 'Education & Tips' },
+      { id: 'business_finance', name: 'Business & Finance' },
+      { id: 'other', name: 'Other' },
+    ],
+    ratingCriteria: [
+      { key: 'content_quality', label: 'Content Quality', icon: 'video-check' },
+      { key: 'authenticity', label: 'Authenticity', icon: 'shield-check' },
+      { key: 'engagement', label: 'Engagement', icon: 'heart-multiple' },
+    ],
+  },
+
+  // ── 15. Other ──────────────────────────────────────────────────────────────
   // Businesses in this category receive a single general 1–5 star rating
   // instead of per-criterion sub-ratings.
   {
     id: 'other',
     name: 'Other',
     icon: 'dots-horizontal-circle-outline',
-    sortOrder: 13,
+    sortOrder: 15,
     subcategories: [],
     ratingCriteria: [], // intentionally empty → triggers general rating mode
   },

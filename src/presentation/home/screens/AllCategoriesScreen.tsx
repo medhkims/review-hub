@@ -1,4 +1,4 @@
-import React, { useCallback, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { View, FlatList, TextInput, ActivityIndicator, Pressable } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useTranslation } from 'react-i18next';
@@ -20,12 +20,13 @@ export default function AllCategoriesScreen() {
   const router = useRouter();
   const { categories, isCategoryLoading } = useHome();
   const role = useRoleStore((s) => s.role);
-
-  if (role === 'admin') {
-    router.replace('/(main)/(settings)/manage-categories');
-    return null;
-  }
   const [searchQuery, setSearchQuery] = useState('');
+
+  useEffect(() => {
+    if (role === 'admin') {
+      router.replace('/(main)/(settings)/manage-categories');
+    }
+  }, [role, router]);
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
 
   const filteredCategories = searchQuery.trim()
@@ -88,6 +89,8 @@ export default function AllCategoriesScreen() {
   const keyExtractor = useCallback((item: CategoryEntity) => item.id, []);
 
   const hasSelection = selectedIds.size > 0;
+
+  if (role === 'admin') return null;
 
   return (
     <ScreenLayout>

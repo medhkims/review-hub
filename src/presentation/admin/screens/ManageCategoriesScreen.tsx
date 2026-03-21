@@ -1,7 +1,6 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import {
   View,
-  FlatList,
   Pressable,
   TextInput,
   Modal,
@@ -20,6 +19,7 @@ import { colors } from '@/core/theme/colors';
 import { container } from '@/core/di/container';
 import { CategoryEntity } from '@/domain/business/entities/categoryEntity';
 import { SubcategoryEntity } from '@/domain/business/entities/subcategoryEntity';
+import { RatingCriterionEntity } from '@/domain/business/entities/ratingCriterionEntity';
 import {
   DeletedCategoryItem,
   DeletedSubcategoryItem,
@@ -330,6 +330,135 @@ function SubcategoryFormModal({ visible, title, name, isSaving, onChangeName, on
   );
 }
 
+// ── Criterion Form Modal ──────────────────────────────────────────────────────
+function CriterionFormModal({
+  visible, title, label, criterionKey, icon, isSaving,
+  onChangeLabel, onChangeKey, onChangeIcon, onSave, onCancel,
+}: {
+  visible: boolean; title: string; label: string; criterionKey: string; icon: string; isSaving: boolean;
+  onChangeLabel: (v: string) => void; onChangeKey: (v: string) => void; onChangeIcon: (v: string) => void;
+  onSave: () => void; onCancel: () => void;
+}) {
+  const { t } = useTranslation();
+  return (
+    <Modal visible={visible} transparent animationType="fade">
+      <View style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.6)', justifyContent: 'center', padding: 24 }}>
+        <View style={{ backgroundColor: colors.cardDark, borderRadius: 16, padding: 20 }}>
+          <AppText style={{ fontSize: 18, fontWeight: '700', color: colors.textWhite, marginBottom: 16 }}>{title}</AppText>
+          <AppText style={{ color: colors.textSlate400, marginBottom: 6, fontSize: 13 }}>{t('manageCategories.criterionLabel')}</AppText>
+          <TextInput
+            value={label} onChangeText={onChangeLabel}
+            placeholder={t('manageCategories.criterionLabelPlaceholder')}
+            placeholderTextColor={colors.textSlate400}
+            style={{ backgroundColor: 'rgba(51,65,85,0.4)', borderRadius: 8, paddingHorizontal: 12, paddingVertical: 10, color: colors.textWhite, marginBottom: 12 }}
+          />
+          <AppText style={{ color: colors.textSlate400, marginBottom: 6, fontSize: 13 }}>{t('manageCategories.criterionKey')}</AppText>
+          <TextInput
+            value={criterionKey} onChangeText={onChangeKey}
+            placeholder={t('manageCategories.criterionKeyPlaceholder')}
+            placeholderTextColor={colors.textSlate400}
+            style={{ backgroundColor: 'rgba(51,65,85,0.4)', borderRadius: 8, paddingHorizontal: 12, paddingVertical: 10, color: colors.textWhite, marginBottom: 12 }}
+          />
+          <AppText style={{ color: colors.textSlate400, marginBottom: 6, fontSize: 13 }}>{t('manageCategories.criterionIcon')}</AppText>
+          <TextInput
+            value={icon} onChangeText={onChangeIcon}
+            placeholder={t('manageCategories.criterionIconPlaceholder')}
+            placeholderTextColor={colors.textSlate400}
+            style={{ backgroundColor: 'rgba(51,65,85,0.4)', borderRadius: 8, paddingHorizontal: 12, paddingVertical: 10, color: colors.textWhite, marginBottom: 16 }}
+          />
+          <View style={{ flexDirection: 'row', gap: 10 }}>
+            <TouchableOpacity style={{ flex: 1, backgroundColor: 'rgba(51,65,85,0.4)', borderRadius: 8, padding: 12, alignItems: 'center' }} onPress={onCancel} accessibilityRole="button">
+              <AppText style={{ color: colors.textSlate200 }}>{t('common.cancel')}</AppText>
+            </TouchableOpacity>
+            <TouchableOpacity style={{ flex: 1, backgroundColor: colors.primary, borderRadius: 8, padding: 12, alignItems: 'center', opacity: isSaving ? 0.6 : 1 }} onPress={onSave} disabled={isSaving} accessibilityRole="button">
+              {isSaving ? <ActivityIndicator size="small" color={colors.white} /> : <AppText style={{ color: colors.white, fontWeight: '600' }}>{t('common.save')}</AppText>}
+            </TouchableOpacity>
+          </View>
+        </View>
+      </View>
+    </Modal>
+  );
+}
+
+// ── Rating Criteria Card ──────────────────────────────────────────────────────
+function RatingCriteriaCard({
+  categories,
+  onAddCriterion,
+  onEditCriterion,
+  onDeleteCriterion,
+}: {
+  categories: CategoryEntity[];
+  onAddCriterion: (categoryId: string) => void;
+  onEditCriterion: (categoryId: string, criterion: RatingCriterionEntity, index: number) => void;
+  onDeleteCriterion: (categoryId: string, criterion: RatingCriterionEntity) => void;
+}) {
+  const { t } = useTranslation();
+  const [expandedIds, setExpandedIds] = useState<Set<string>>(new Set());
+
+  const toggle = useCallback((id: string) => {
+    setExpandedIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id); else next.add(id);
+      return next;
+    });
+  }, []);
+
+  return (
+    <View style={{ backgroundColor: colors.cardDark, borderRadius: 14, borderWidth: 1, borderColor: colors.borderDark, overflow: 'hidden' }}>
+      {categories.map((cat) => {
+        const expanded = expandedIds.has(cat.id);
+        return (
+          <View key={cat.id} style={{ borderTopWidth: 1, borderTopColor: 'rgba(51,65,85,0.3)' }}>
+            {/* Category row */}
+            <TouchableOpacity
+              style={{ flexDirection: 'row', alignItems: 'center', paddingHorizontal: 14, paddingVertical: 12 }}
+              onPress={() => toggle(cat.id)}
+              accessibilityRole="button"
+              activeOpacity={0.7}
+            >
+              <MaterialCommunityIcons name={cat.icon as IconName} size={18} color={colors.primary} style={{ marginRight: 8 }} />
+              <AppText style={{ flex: 1, color: colors.textWhite, fontWeight: '600', fontSize: 14 }}>{cat.name}</AppText>
+              <AppText style={{ color: colors.textSlate400, fontSize: 12, marginRight: 6 }}>{cat.ratingCriteria.length} {t('manageCategories.ratingCriteriaCard').toLowerCase()}</AppText>
+              <MaterialCommunityIcons name={expanded ? 'chevron-up' : 'chevron-down'} size={18} color={colors.textSlate400} />
+            </TouchableOpacity>
+
+            {expanded && (
+              <>
+                {cat.ratingCriteria.length === 0 && (
+                  <View style={{ paddingLeft: 40, paddingRight: 14, paddingVertical: 8 }}>
+                    <AppText style={{ color: colors.textSlate400, fontSize: 13 }}>{t('manageCategories.ratingCriteriaEmpty')}</AppText>
+                  </View>
+                )}
+                {cat.ratingCriteria.map((criterion, idx) => (
+                  <View key={`${criterion.key}-${idx}`} style={{ flexDirection: 'row', alignItems: 'center', paddingVertical: 9, paddingLeft: 36, paddingRight: 12, borderTopWidth: 1, borderTopColor: 'rgba(51,65,85,0.2)' }}>
+                    <MaterialCommunityIcons name={criterion.icon as IconName} size={16} color={colors.textSlate400} style={{ marginRight: 8 }} />
+                    <AppText style={{ flex: 1, color: colors.textSlate200, fontSize: 13 }}>{criterion.label}</AppText>
+                    <AppText style={{ color: colors.textSlate400, fontSize: 11, marginRight: 10 }}>{criterion.key}</AppText>
+                    <TouchableOpacity onPress={() => onEditCriterion(cat.id, criterion, idx)} accessibilityRole="button" style={{ marginRight: 10, padding: 4 }}>
+                      <MaterialCommunityIcons name="pencil-outline" size={15} color={colors.primary} />
+                    </TouchableOpacity>
+                    <TouchableOpacity onPress={() => onDeleteCriterion(cat.id, criterion)} accessibilityRole="button" style={{ padding: 4 }}>
+                      <MaterialCommunityIcons name="trash-can-outline" size={15} color={colors.error} />
+                    </TouchableOpacity>
+                  </View>
+                ))}
+                <TouchableOpacity
+                  style={{ flexDirection: 'row', alignItems: 'center', paddingVertical: 9, paddingLeft: 36, paddingRight: 14, borderTopWidth: 1, borderTopColor: 'rgba(51,65,85,0.2)' }}
+                  onPress={() => onAddCriterion(cat.id)}
+                  accessibilityRole="button"
+                >
+                  <MaterialCommunityIcons name="plus" size={15} color={colors.primary} />
+                  <AppText style={{ color: colors.primary, marginLeft: 6, fontSize: 13 }}>{t('manageCategories.addCriterion')}</AppText>
+                </TouchableOpacity>
+              </>
+            )}
+          </View>
+        );
+      })}
+    </View>
+  );
+}
+
 // ── Main Screen ───────────────────────────────────────────────────────────────
 export function ManageCategoriesScreen() {
   const { t } = useTranslation();
@@ -338,6 +467,8 @@ export function ManageCategoriesScreen() {
   const [categories, setCategories] = useState<CategoryEntity[]>([]);
   const [isLoadingActive, setIsLoadingActive] = useState(true);
   const [expandedIds, setExpandedIds] = useState<Set<string>>(new Set());
+  const [subTab, setSubTab] = useState<null | 'categories' | 'rating'>(null);
+  const [criteriaTab, setCriteriaTab] = useState<'active' | 'deleted'>('active');
 
   const [deletedCategories, setDeletedCategories] = useState<DeletedCategoryItem[]>([]);
   const [deletedSubcategories, setDeletedSubcategories] = useState<DeletedSubcategoryItem[]>([]);
@@ -372,6 +503,19 @@ export function ManageCategoriesScreen() {
   const [recoveringCategory, setRecoveringCategory] = useState<CategoryEntity | null>(null);
 
   const [recoverSubVisible, setRecoverSubVisible] = useState(false);
+
+  // ── Rating Criteria state ──
+  const [criterionCategoryId, setCriterionCategoryId] = useState('');
+  const [addCriterionVisible, setAddCriterionVisible] = useState(false);
+  const [newCriterionLabel, setNewCriterionLabel] = useState('');
+  const [newCriterionKey, setNewCriterionKey] = useState('');
+  const [newCriterionIcon, setNewCriterionIcon] = useState('');
+
+  const [editCriterionVisible, setEditCriterionVisible] = useState(false);
+  const [editingCriterionIndex, setEditingCriterionIndex] = useState(-1);
+  const [editCriterionLabel, setEditCriterionLabel] = useState('');
+  const [editCriterionKey, setEditCriterionKey] = useState('');
+  const [editCriterionIcon, setEditCriterionIcon] = useState('');
   const [recoveringSubItem, setRecoveringSubItem] = useState<DeletedSubcategoryItem | null>(null);
 
   const showConfirm = useCallback((title: string, message: string, onConfirm: () => void) => {
@@ -397,8 +541,11 @@ export function ManageCategoriesScreen() {
 
   const handleTabChange = useCallback((next: 'active' | 'deleted') => {
     setTab(next);
+    // Only reset to landing when NOT already inside the Category sub-screen
+    if (subTab !== 'categories') setSubTab(null);
+    setCriteriaTab('active');
     if (next === 'deleted' && !deletedLoaded) loadDeleted();
-  }, [deletedLoaded, loadDeleted]);
+  }, [subTab, deletedLoaded, loadDeleted]);
 
   const toggleExpand = useCallback((id: string) => {
     setExpandedIds((prev) => { const next = new Set(prev); if (next.has(id)) next.delete(id); else next.add(id); return next; });
@@ -493,12 +640,95 @@ export function ManageCategoriesScreen() {
     result.fold(() => undefined, () => { loadActive(); loadDeleted(); });
   }, [recoveringSubItem, loadActive, loadDeleted]);
 
-  const renderCategory = useCallback(
-    ({ item }: { item: CategoryEntity }) => (
-      <CategoryRow item={item} expanded={expandedIds.has(item.id)} onToggle={toggleExpand} onDeleteCategory={handleDeleteCategory} onDeleteSubcategory={handleDeleteSubcategory} onAddSubcategory={openAddSubcategory} onEditCategory={openEditCategory} onEditSubcategory={openEditSubcategory} />
-    ),
-    [expandedIds, toggleExpand, handleDeleteCategory, handleDeleteSubcategory, openAddSubcategory, openEditCategory, openEditSubcategory],
-  );
+  const handleRecoverCriterion = useCallback(async (categoryId: string, criterion: RatingCriterionEntity) => {
+    const result = await container.recoverRatingCriterionUseCase.execute(categoryId, criterion.key);
+    result.fold(() => undefined, () => {
+      setCategories((prev) => prev.map((c) => {
+        if (c.id !== categoryId) return c;
+        return {
+          ...c,
+          ratingCriteria: [...c.ratingCriteria, criterion],
+          deletedRatingCriteria: (c.deletedRatingCriteria ?? []).filter((cr) => cr.key !== criterion.key),
+        };
+      }));
+    });
+  }, []);
+
+  // ── Rating Criteria handlers ──
+  const openAddCriterion = useCallback((categoryId: string) => {
+    setCriterionCategoryId(categoryId);
+    setNewCriterionLabel('');
+    setNewCriterionKey('');
+    setNewCriterionIcon('');
+    setAddCriterionVisible(true);
+  }, []);
+
+  const openEditCriterion = useCallback((categoryId: string, criterion: RatingCriterionEntity, index: number) => {
+    setCriterionCategoryId(categoryId);
+    setEditingCriterionIndex(index);
+    setEditCriterionLabel(criterion.label);
+    setEditCriterionKey(criterion.key);
+    setEditCriterionIcon(criterion.icon);
+    setEditCriterionVisible(true);
+  }, []);
+
+  const handleAddCriterion = useCallback(async () => {
+    if (!newCriterionLabel.trim()) return;
+    setIsSaving(true);
+    const key = newCriterionKey.trim() || newCriterionLabel.trim().toLowerCase().replace(/[^a-z0-9]+/g, '_').replace(/^_|_$/g, '');
+    const cat = categories.find((c) => c.id === criterionCategoryId);
+    if (!cat) { setIsSaving(false); return; }
+    const updated: RatingCriterionEntity[] = [...cat.ratingCriteria, { key, label: newCriterionLabel.trim(), icon: newCriterionIcon.trim() || 'star' }];
+    const result = await container.updateRatingCriteriaUseCase.execute(criterionCategoryId, updated);
+    result.fold(
+      () => setIsSaving(false),
+      () => {
+        setCategories((prev) => prev.map((c) => c.id === criterionCategoryId ? { ...c, ratingCriteria: updated } : c));
+        setIsSaving(false); setAddCriterionVisible(false);
+      },
+    );
+  }, [newCriterionLabel, newCriterionKey, newCriterionIcon, criterionCategoryId, categories]);
+
+  const handleEditCriterion = useCallback(async () => {
+    if (!editCriterionLabel.trim()) return;
+    setIsSaving(true);
+    const cat = categories.find((c) => c.id === criterionCategoryId);
+    if (!cat) { setIsSaving(false); return; }
+    const updated: RatingCriterionEntity[] = cat.ratingCriteria.map((cr, idx) =>
+      idx === editingCriterionIndex
+        ? { key: editCriterionKey.trim() || cr.key, label: editCriterionLabel.trim(), icon: editCriterionIcon.trim() || cr.icon }
+        : cr,
+    );
+    const result = await container.updateRatingCriteriaUseCase.execute(criterionCategoryId, updated);
+    result.fold(
+      () => setIsSaving(false),
+      () => {
+        setCategories((prev) => prev.map((c) => c.id === criterionCategoryId ? { ...c, ratingCriteria: updated } : c));
+        setIsSaving(false); setEditCriterionVisible(false);
+      },
+    );
+  }, [editCriterionLabel, editCriterionKey, editCriterionIcon, criterionCategoryId, editingCriterionIndex, categories]);
+
+  const handleDeleteCriterion = useCallback((categoryId: string, criterion: RatingCriterionEntity) => {
+    showConfirm(
+      t('manageCategories.deleteCriterion'),
+      t('manageCategories.deleteCriterionConfirm', { label: criterion.label }),
+      async () => {
+        setConfirmVisible(false);
+        const result = await container.softDeleteRatingCriterionUseCase.execute(categoryId, criterion.key);
+        result.fold(() => undefined, () => {
+          setCategories((prev) => prev.map((c) => {
+            if (c.id !== categoryId) return c;
+            return {
+              ...c,
+              ratingCriteria: c.ratingCriteria.filter((cr) => cr.key !== criterion.key),
+              deletedRatingCriteria: [...(c.deletedRatingCriteria ?? []), criterion],
+            };
+          }));
+        });
+      },
+    );
+  }, [showConfirm, t]);
 
   return (
     <ScreenLayout>
@@ -506,40 +736,178 @@ export function ManageCategoriesScreen() {
       <View style={{ flexDirection: 'row', alignItems: 'center', paddingHorizontal: 16, paddingTop: 8, paddingBottom: 12 }}>
         <View style={{ marginRight: 12 }}><AdminMenuButton /></View>
         <AppText style={{ flex: 1, fontSize: 20, fontWeight: '700', color: colors.textWhite }}>{t('manageCategories.title')}</AppText>
-        {tab === 'active' && (
-          <Pressable onPress={() => { setNewCategoryName(''); setNewCategoryLogoUri(null); setAddCategoryVisible(true); }} accessibilityRole="button" style={{ backgroundColor: colors.primary, borderRadius: 8, paddingHorizontal: 12, paddingVertical: 6, flexDirection: 'row', alignItems: 'center' }}>
-            <MaterialCommunityIcons name="plus" size={16} color={colors.white} />
-            <AppText style={{ color: colors.white, fontWeight: '600', marginLeft: 4, fontSize: 13 }}>{t('manageCategories.addCategory')}</AppText>
-          </Pressable>
-        )}
       </View>
 
-      {/* Tabs */}
-      <View style={{ flexDirection: 'row', marginHorizontal: 16, marginBottom: 12, backgroundColor: 'rgba(51,65,85,0.3)', borderRadius: 10, padding: 3 }}>
-        {(['active', 'deleted'] as const).map((tabKey) => (
-          <TouchableOpacity
-            key={tabKey}
-            style={{ flex: 1, paddingVertical: 8, borderRadius: 8, alignItems: 'center', backgroundColor: tab === tabKey ? (tabKey === 'deleted' ? colors.error : colors.primary) : 'transparent' }}
-            onPress={() => handleTabChange(tabKey)}
-            accessibilityRole="tab"
-          >
-            <AppText style={{ color: tab === tabKey ? colors.white : colors.textSlate400, fontWeight: '600', fontSize: 13 }}>
-              {tabKey === 'active' ? t('manageCategories.tabActive') : t('manageCategories.tabDeleted')}
-            </AppText>
-          </TouchableOpacity>
-        ))}
-      </View>
+      {/* Top-level tabs — visible only inside Category sub-screen */}
+      {subTab === 'categories' && (
+        <View style={{ flexDirection: 'row', marginHorizontal: 16, marginBottom: 12, backgroundColor: 'rgba(51,65,85,0.3)', borderRadius: 10, padding: 3 }}>
+          {(['active', 'deleted'] as const).map((tabKey) => (
+            <TouchableOpacity
+              key={tabKey}
+              style={{ flex: 1, paddingVertical: 8, borderRadius: 8, alignItems: 'center', backgroundColor: tab === tabKey ? (tabKey === 'deleted' ? colors.error : colors.primary) : 'transparent' }}
+              onPress={() => handleTabChange(tabKey)}
+              accessibilityRole="tab"
+            >
+              <AppText style={{ color: tab === tabKey ? colors.white : colors.textSlate400, fontWeight: '600', fontSize: 13 }}>
+                {tabKey === 'active' ? t('manageCategories.tabActive') : t('manageCategories.tabDeleted')}
+              </AppText>
+            </TouchableOpacity>
+          ))}
+        </View>
+      )}
 
       {/* Content */}
-      {tab === 'active' ? (
+      {tab === 'deleted' && subTab === 'categories' ? (
+        <DeletedTab deletedCategories={deletedCategories} deletedSubcategories={deletedSubcategories} isLoading={isLoadingDeleted} onRecoverCategory={(cat) => { setRecoveringCategory(cat); setRecoverCatVisible(true); }} onRecoverSubcategory={(item) => { setRecoveringSubItem(item); setRecoverSubVisible(true); }} />
+      ) : tab === 'active' ? (
         isLoadingActive ? (
           <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}><ActivityIndicator color={colors.primary} size="large" /></View>
+        ) : subTab === null ? (
+          /* ── Landing: two big cards ── */
+          <ScrollView contentContainerStyle={{ padding: 20, gap: 16 }} showsVerticalScrollIndicator={false}>
+            {/* Card: Category */}
+            <TouchableOpacity
+              activeOpacity={0.85}
+              onPress={() => setSubTab('categories')}
+              accessibilityRole="button"
+              style={{ backgroundColor: colors.cardDark, borderRadius: 18, borderWidth: 1, borderColor: colors.borderDark, padding: 28, alignItems: 'center', gap: 12 }}
+            >
+              <View style={{ width: 72, height: 72, borderRadius: 20, backgroundColor: 'rgba(168,85,247,0.18)', alignItems: 'center', justifyContent: 'center' }}>
+                <MaterialCommunityIcons name="shape" size={36} color={colors.primary} />
+              </View>
+              <AppText style={{ fontSize: 20, fontWeight: '700', color: colors.textWhite }}>{t('manageCategories.subTabCategory')}</AppText>
+              <AppText style={{ fontSize: 13, color: colors.textSlate400, textAlign: 'center' }}>{t('manageCategories.categoryCardDesc')}</AppText>
+              <View style={{ marginTop: 4, backgroundColor: 'rgba(168,85,247,0.15)', borderRadius: 10, paddingHorizontal: 18, paddingVertical: 8, borderWidth: 1, borderColor: colors.primary }}>
+                <AppText style={{ color: colors.primary, fontWeight: '600', fontSize: 14 }}>{t('manageCategories.manage')} →</AppText>
+              </View>
+            </TouchableOpacity>
+
+            {/* Card: Rating Criteria */}
+            <TouchableOpacity
+              activeOpacity={0.85}
+              onPress={() => setSubTab('rating')}
+              accessibilityRole="button"
+              style={{ backgroundColor: colors.cardDark, borderRadius: 18, borderWidth: 1, borderColor: colors.borderDark, padding: 28, alignItems: 'center', gap: 12 }}
+            >
+              <View style={{ width: 72, height: 72, borderRadius: 20, backgroundColor: 'rgba(20,184,166,0.15)', alignItems: 'center', justifyContent: 'center' }}>
+                <MaterialCommunityIcons name="star-half-full" size={36} color="#14b8a6" />
+              </View>
+              <AppText style={{ fontSize: 20, fontWeight: '700', color: colors.textWhite }}>{t('manageCategories.subTabRatingCriteria')}</AppText>
+              <AppText style={{ fontSize: 13, color: colors.textSlate400, textAlign: 'center' }}>{t('manageCategories.ratingCardDesc')}</AppText>
+              <View style={{ marginTop: 4, backgroundColor: 'rgba(20,184,166,0.12)', borderRadius: 10, paddingHorizontal: 18, paddingVertical: 8, borderWidth: 1, borderColor: '#14b8a6' }}>
+                <AppText style={{ color: '#14b8a6', fontWeight: '600', fontSize: 14 }}>{t('manageCategories.manage')} →</AppText>
+              </View>
+            </TouchableOpacity>
+          </ScrollView>
+        ) : subTab === 'categories' ? (
+          /* ── Category sub-screen ── */
+          <>
+            <View style={{ flexDirection: 'row', alignItems: 'center', paddingHorizontal: 16, marginBottom: 10, gap: 10 }}>
+              <TouchableOpacity onPress={() => setSubTab(null)} accessibilityRole="button" style={{ padding: 6 }}>
+                <MaterialCommunityIcons name="arrow-left" size={22} color={colors.textWhite} />
+              </TouchableOpacity>
+              <AppText style={{ flex: 1, fontSize: 16, fontWeight: '700', color: colors.textWhite }}>{t('manageCategories.subTabCategory')}</AppText>
+              <Pressable
+                onPress={() => { setNewCategoryName(''); setNewCategoryLogoUri(null); setAddCategoryVisible(true); }}
+                accessibilityRole="button"
+                style={{ backgroundColor: colors.primary, borderRadius: 8, paddingHorizontal: 12, paddingVertical: 7, flexDirection: 'row', alignItems: 'center' }}
+              >
+                <MaterialCommunityIcons name="plus" size={16} color={colors.white} />
+                <AppText style={{ color: colors.white, fontWeight: '600', marginLeft: 4, fontSize: 13 }}>{t('manageCategories.addCategory')}</AppText>
+              </Pressable>
+            </View>
+            <ScrollView contentContainerStyle={{ paddingHorizontal: 16, paddingBottom: 32 }} showsVerticalScrollIndicator={false}>
+              {categories.map((item) => (
+                <CategoryRow
+                  key={item.id}
+                  item={item}
+                  expanded={expandedIds.has(item.id)}
+                  onToggle={toggleExpand}
+                  onDeleteCategory={handleDeleteCategory}
+                  onDeleteSubcategory={handleDeleteSubcategory}
+                  onAddSubcategory={openAddSubcategory}
+                  onEditCategory={openEditCategory}
+                  onEditSubcategory={openEditSubcategory}
+                />
+              ))}
+            </ScrollView>
+          </>
         ) : (
-          <FlatList data={categories} keyExtractor={(item) => item.id} renderItem={renderCategory} contentContainerStyle={{ padding: 16, paddingBottom: 32 }} showsVerticalScrollIndicator={false} />
+          /* ── Rating Criteria sub-screen ── */
+          <>
+            <View style={{ flexDirection: 'row', alignItems: 'center', paddingHorizontal: 16, marginBottom: 10 }}>
+              <TouchableOpacity onPress={() => { setSubTab(null); setCriteriaTab('active'); }} accessibilityRole="button" style={{ padding: 6, marginRight: 8 }}>
+                <MaterialCommunityIcons name="arrow-left" size={22} color={colors.textWhite} />
+              </TouchableOpacity>
+              <AppText style={{ flex: 1, fontSize: 16, fontWeight: '700', color: colors.textWhite }}>{t('manageCategories.subTabRatingCriteria')}</AppText>
+            </View>
+
+            {/* Criteria sub-tabs */}
+            <View style={{ flexDirection: 'row', marginHorizontal: 16, marginBottom: 12, backgroundColor: 'rgba(51,65,85,0.3)', borderRadius: 10, padding: 3 }}>
+              {(['active', 'deleted'] as const).map((tabKey) => (
+                <TouchableOpacity
+                  key={tabKey}
+                  style={{ flex: 1, paddingVertical: 8, borderRadius: 8, alignItems: 'center', backgroundColor: criteriaTab === tabKey ? (tabKey === 'deleted' ? colors.error : colors.primary) : 'transparent' }}
+                  onPress={() => setCriteriaTab(tabKey)}
+                  accessibilityRole="tab"
+                >
+                  <AppText style={{ color: criteriaTab === tabKey ? colors.white : colors.textSlate400, fontWeight: '600', fontSize: 13 }}>
+                    {tabKey === 'active' ? t('manageCategories.tabActiveCriteria') : t('manageCategories.tabDeletedCriteria')}
+                  </AppText>
+                </TouchableOpacity>
+              ))}
+            </View>
+
+            {criteriaTab === 'active' ? (
+              <ScrollView contentContainerStyle={{ paddingHorizontal: 16, paddingBottom: 32 }} showsVerticalScrollIndicator={false}>
+                <RatingCriteriaCard
+                  categories={categories}
+                  onAddCriterion={openAddCriterion}
+                  onEditCriterion={openEditCriterion}
+                  onDeleteCriterion={handleDeleteCriterion}
+                />
+              </ScrollView>
+            ) : (
+              /* ── Deleted criteria tab ── */
+              <ScrollView contentContainerStyle={{ paddingHorizontal: 16, paddingBottom: 32 }} showsVerticalScrollIndicator={false}>
+                {categories.every((c) => (c.deletedRatingCriteria ?? []).length === 0) ? (
+                  <View style={{ flex: 1, alignItems: 'center', marginTop: 60, gap: 12 }}>
+                    <MaterialCommunityIcons name="delete-empty-outline" size={48} color={colors.textSlate400} />
+                    <AppText style={{ color: colors.textSlate400, fontSize: 15 }}>{t('manageCategories.deletedCriteriaEmpty')}</AppText>
+                  </View>
+                ) : (
+                  categories.filter((c) => (c.deletedRatingCriteria ?? []).length > 0).map((cat) => (
+                    <View key={cat.id} style={{ backgroundColor: colors.cardDark, borderRadius: 12, borderWidth: 1, borderColor: colors.borderDark, marginBottom: 10, overflow: 'hidden' }}>
+                      <View style={{ flexDirection: 'row', alignItems: 'center', padding: 14 }}>
+                        <MaterialCommunityIcons name={cat.icon as IconName} size={20} color={colors.textSlate400} style={{ marginRight: 10 }} />
+                        <AppText style={{ flex: 1, color: colors.textSlate400, fontWeight: '600', fontSize: 13 }}>{cat.name}</AppText>
+                      </View>
+                      {(cat.deletedRatingCriteria ?? []).map((criterion) => (
+                        <View key={criterion.key} style={{ flexDirection: 'row', alignItems: 'center', paddingVertical: 10, paddingLeft: 36, paddingRight: 14, borderTopWidth: 1, borderTopColor: 'rgba(51,65,85,0.3)' }}>
+                          <MaterialCommunityIcons name={criterion.icon as IconName} size={16} color={colors.textSlate400} style={{ marginRight: 8 }} />
+                          <AppText style={{ flex: 1, color: colors.textSlate400, fontSize: 13 }}>{criterion.label}</AppText>
+                          <AppText style={{ color: colors.textSlate400, fontSize: 11, marginRight: 10 }}>{criterion.key}</AppText>
+                          <TouchableOpacity
+                            onPress={() => showConfirm(
+                              t('manageCategories.recoverCriterion'),
+                              t('manageCategories.recoverCriterionMessage', { label: criterion.label, category: cat.name }),
+                              () => { setConfirmVisible(false); void handleRecoverCriterion(cat.id, criterion); },
+                            )}
+                            accessibilityRole="button"
+                            style={{ backgroundColor: 'rgba(168,85,247,0.15)', borderRadius: 6, paddingHorizontal: 10, paddingVertical: 5, borderWidth: 1, borderColor: colors.primary }}
+                          >
+                            <AppText style={{ color: colors.primary, fontSize: 12, fontWeight: '600' }}>{t('manageCategories.recoverConfirm')}</AppText>
+                          </TouchableOpacity>
+                        </View>
+                      ))}
+                    </View>
+                  ))
+                )}
+              </ScrollView>
+            )}
+          </>
         )
-      ) : (
-        <DeletedTab deletedCategories={deletedCategories} deletedSubcategories={deletedSubcategories} isLoading={isLoadingDeleted} onRecoverCategory={(cat) => { setRecoveringCategory(cat); setRecoverCatVisible(true); }} onRecoverSubcategory={(item) => { setRecoveringSubItem(item); setRecoverSubVisible(true); }} />
-      )}
+      ) : null}
 
       {/* Modals */}
       <ConfirmModal visible={confirmVisible} title={confirmTitle} message={confirmMessage} onConfirm={confirmAction} onCancel={() => setConfirmVisible(false)} />
@@ -563,6 +931,34 @@ export function ManageCategoriesScreen() {
       <SubcategoryFormModal visible={addSubVisible} title={t('manageCategories.addSubcategory')} name={newSubName} isSaving={isSaving} onChangeName={setNewSubName} onSave={handleAddSubcategory} onCancel={() => setAddSubVisible(false)} />
 
       <SubcategoryFormModal visible={editSubVisible} title={t('manageCategories.editSubcategory')} name={editSubName} isSaving={isSaving} onChangeName={setEditSubName} onSave={handleEditSubcategory} onCancel={() => { setEditSubVisible(false); setEditingSub(null); }} />
+
+      <CriterionFormModal
+        visible={addCriterionVisible}
+        title={t('manageCategories.addCriterion')}
+        label={newCriterionLabel}
+        criterionKey={newCriterionKey}
+        icon={newCriterionIcon}
+        isSaving={isSaving}
+        onChangeLabel={(v) => { setNewCriterionLabel(v); if (!newCriterionKey) setNewCriterionKey(v.toLowerCase().replace(/[^a-z0-9]+/g, '_').replace(/^_|_$/g, '')); }}
+        onChangeKey={setNewCriterionKey}
+        onChangeIcon={setNewCriterionIcon}
+        onSave={handleAddCriterion}
+        onCancel={() => setAddCriterionVisible(false)}
+      />
+
+      <CriterionFormModal
+        visible={editCriterionVisible}
+        title={t('manageCategories.editCriterion')}
+        label={editCriterionLabel}
+        criterionKey={editCriterionKey}
+        icon={editCriterionIcon}
+        isSaving={isSaving}
+        onChangeLabel={setEditCriterionLabel}
+        onChangeKey={setEditCriterionKey}
+        onChangeIcon={setEditCriterionIcon}
+        onSave={handleEditCriterion}
+        onCancel={() => setEditCriterionVisible(false)}
+      />
 
       <ImageCropModal
         visible={newLogoPicker.isPreviewVisible}

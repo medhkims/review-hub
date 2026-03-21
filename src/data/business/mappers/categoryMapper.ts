@@ -13,6 +13,7 @@ export class CategoryMapper {
       sortOrder: model.sort_order ?? index,
       subcategories: (model.subcategories ?? []).map(CategoryMapper.subcategoryToEntity),
       ratingCriteria: (model.rating_criteria ?? []).map(CategoryMapper.ratingCriterionToEntity),
+      deletedRatingCriteria: (model.deleted_rating_criteria ?? []).map(CategoryMapper.ratingCriterionToEntity),
       isDeleted: model.is_deleted,
     };
   }

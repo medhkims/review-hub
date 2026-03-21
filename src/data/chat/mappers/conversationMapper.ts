@@ -1,5 +1,5 @@
 import { ConversationModel } from '../models/conversationModel';
-import { ConversationEntity } from '@/domain/chat/entities/conversationEntity';
+import { ConversationEntity, ConversationType } from '@/domain/chat/entities/conversationEntity';
 
 export class ConversationMapper {
   static toEntity(model: ConversationModel): ConversationEntity {
@@ -9,6 +9,7 @@ export class ConversationMapper {
       lastMessage: model.last_message,
       lastMessageAt: model.last_message_at.toDate(),
       unreadCount: model.unread_count,
+      conversationType: model.conversation_type as ConversationType | undefined,
     };
   }
 }

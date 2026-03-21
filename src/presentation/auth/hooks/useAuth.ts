@@ -102,11 +102,11 @@ export const useAuth = () => {
     );
   }, [signInUseCase, setLoading, setError, setUser, setProvider, loadRole, persistAccount]);
 
-  const signUp = useCallback(async (email: string, password: string, displayName: string, gender?: 'male' | 'female') => {
+  const signUp = useCallback(async (email: string, password: string, displayName: string, gender?: 'male' | 'female', birthday?: Date) => {
     setLoading(true);
     setError(null);
 
-    const result = await signUpUseCase.execute(email, password, displayName, undefined, undefined, gender);
+    const result = await signUpUseCase.execute(email, password, displayName, undefined, undefined, gender, birthday);
 
     result.fold(
       (failure) => {

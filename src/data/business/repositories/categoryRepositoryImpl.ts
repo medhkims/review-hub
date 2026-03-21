@@ -1,4 +1,5 @@
 import { CategoryRepository, DeletedItemsResult } from '@/domain/business/repositories/categoryRepository';
+import { RatingCriterionEntity } from '@/domain/business/entities/ratingCriterionEntity';
 import { CategoryEntity } from '@/domain/business/entities/categoryEntity';
 import { SubcategoryEntity } from '@/domain/business/entities/subcategoryEntity';
 import { CategoryRemoteDataSource } from '../datasources/categoryRemoteDataSource';
@@ -101,6 +102,7 @@ export class CategoryRepositoryImpl implements CategoryRepository {
         const entities = active.map((model, index) => {
           const entity = CategoryMapper.toEntity(model, index);
           return { ...entity, subcategories: entity.subcategories.filter((s) => !s.isDeleted) };
+          // deletedRatingCriteria is already mapped by CategoryMapper.toEntity
         });
         return right(entities);
       }
@@ -313,6 +315,37 @@ export class CategoryRepositoryImpl implements CategoryRepository {
     } catch (error) {
       if (error instanceof ServerException) return left(new ServerFailure(error.message));
       return left(new ServerFailure('Failed to fetch deleted items'));
+    }
+  }
+
+  async updateRatingCriteria(categoryId: string, criteria: RatingCriterionEntity[]): Promise<Either<Failure, void>> {
+    try {
+      const ratingCriteriaModel = criteria.map((c) => ({ key: c.key, label: c.label, icon: c.icon }));
+      await this.firestore.updateCategory(categoryId, { rating_criteria: ratingCriteriaModel } as never);
+      return right(undefined);
+    } catch (error) {
+      if (error instanceof ServerException) return left(new ServerFailure(error.message));
+      return left(new ServerFailure('Failed to update rating criteria'));
+    }
+  }
+
+  async softDeleteRatingCriterion(categoryId: string, criterionKey: string): Promise<Either<Failure, void>> {
+    try {
+      await this.firestore.softDeleteRatingCriterion(categoryId, criterionKey);
+      return right(undefined);
+    } catch (error) {
+      if (error instanceof ServerException) return left(new ServerFailure(error.message));
+      return left(new ServerFailure('Failed to delete criterion'));
+    }
+  }
+
+  async recoverRatingCriterion(categoryId: string, criterionKey: string): Promise<Either<Failure, void>> {
+    try {
+      await this.firestore.recoverRatingCriterion(categoryId, criterionKey);
+      return right(undefined);
+    } catch (error) {
+      if (error instanceof ServerException) return left(new ServerFailure(error.message));
+      return left(new ServerFailure('Failed to recover criterion'));
     }
   }
 }

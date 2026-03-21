@@ -72,6 +72,13 @@ const MENU_ITEMS: MenuItem[] = [
     pathMatch: '/',
   },
   {
+    key: 'tickets',
+    label: 'Tickets',
+    icon: 'ticket-outline',
+    route: '/(main)/(admin)/tickets',
+    pathMatch: '/tickets',
+  },
+  {
     key: 'boost',
     label: 'Sub & Boost',
     icon: 'rocket-launch-outline',

@@ -51,9 +51,8 @@ service cloud.firestore {
     // PROFILES COLLECTION
     // ========================================
     match /profiles/{userId} {
-      // Allow users to read their own profile, admins can read any profile
-      allow read: if isAuthenticated()
-        && (isOwner(userId) || isAdmin());
+      // Any authenticated user can read profiles (display names needed for reviews)
+      allow read: if isAuthenticated();
 
       // Allow users to create their own profile (simple_user or business_owner)
       allow create: if isAuthenticated()
@@ -133,17 +132,8 @@ service cloud.firestore {
     // REVIEWS COLLECTION (Future)
     // ========================================
     match /reviews/{reviewId} {
-      // Users can always read their own reviews (any status).
-      // Other authenticated users can only read posted (approved) reviews.
-      // Admins/moderators can read all reviews.
-      // Business owners can read all reviews for their own business.
-      allow read: if isAuthenticated()
-        && (
-          resource.data.user_id == request.auth.uid
-          || resource.data.status == 'posted'
-          || isAdminOrModerator()
-          || get(/databases/$(database)/documents/businesses/$(resource.data.business_id)).data.owner_id == request.auth.uid
-        );
+      // Any authenticated user can read reviews (reviews are public content)
+      allow read: if isAuthenticated();
 
       // Only authenticated users can create reviews (status must be 'pending')
       allow create: if isAuthenticated()
@@ -159,6 +149,25 @@ service cloud.firestore {
     // BUSINESSES COLLECTION
     // ========================================
     match /businesses/{businessId} {
+      // Reviews subcollection under each business
+      match /reviews/{reviewId} {
+        // Authenticated users can read posted reviews; owners/admins see all
+        allow read: if isAuthenticated()
+          && (
+            resource.data.user_id == request.auth.uid
+            || resource.data.status == 'posted'
+            || isAdminOrModerator()
+            || get(/databases/$(database)/documents/businesses/$(businessId)).data.owner_id == request.auth.uid
+          );
+
+        allow create: if isAuthenticated()
+          && request.resource.data.user_id == request.auth.uid
+          && request.resource.data.status == 'pending';
+
+        allow update, delete: if isAuthenticated()
+          && (resource.data.user_id == request.auth.uid || isAdminOrModerator());
+      }
+
       // Anyone authenticated can read businesses
       allow read: if isAuthenticated();
 
@@ -399,6 +408,23 @@ service cloud.firestore {
       allow read: if isAuthenticated();
       // Only admins can write
       allow write: if isAuthenticated() && isAdmin();
+    }
+
+    // ========================================
+    // REPORTS COLLECTION (Business reports by users)
+    // ========================================
+    match /reports/{reportId} {
+      // Only admins and moderators can read reports
+      allow read: if isAuthenticated() && isAdminOrModerator();
+
+      // Any authenticated user can create a report for themselves
+      allow create: if isAuthenticated()
+        && request.resource.data.reported_by == request.auth.uid
+        && isValidString(request.resource.data.reason, 1, 220)
+        && request.resource.data.status == 'pending';
+
+      // Only admins/moderators can update or delete reports
+      allow update, delete: if isAuthenticated() && isAdminOrModerator();
     }
 
     // Deny all other access by default

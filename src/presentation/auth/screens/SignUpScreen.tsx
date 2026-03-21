@@ -7,6 +7,7 @@ import { AppText } from '@/presentation/shared/components/ui/AppText';
 import { AppInput } from '@/presentation/shared/components/ui/AppInput';
 import { AppButton } from '@/presentation/shared/components/ui/AppButton';
 import { ScreenLayout } from '@/presentation/shared/layouts/ScreenLayout';
+import { BirthdayPicker } from '../components/BirthdayPicker';
 import { CompanySignUpStep1, CompanyStep1Data } from '../components/CompanySignUpStep1';
 import { CompanySignUpStep2, CompanyStep2Data } from '../components/CompanySignUpStep2';
 import { CompanySignUpStep3, CompanyStep3Data } from '../components/CompanySignUpStep3';
@@ -137,6 +138,7 @@ export default function SignUpScreen() {
   const [password, setPassword] = useState('');
   const [gender, setGender] = useState<'male' | 'female' | null>(null);
   const [genderDropdownOpen, setGenderDropdownOpen] = useState(false);
+  const [birthday, setBirthday] = useState<Date | null>(null);
   const [agreedToTerms, setAgreedToTerms] = useState(false);
   const [confirmError, setConfirmError] = useState<string | null>(null);
 
@@ -147,7 +149,7 @@ export default function SignUpScreen() {
       setConfirmError(t('auth.passwordMinLength'));
       return;
     }
-    signUp(email.trim(), password, displayName.trim(), gender || undefined);
+    signUp(email.trim(), password, displayName.trim(), gender || undefined, birthday ?? undefined);
   };
 
   const handleCompanyStep1Next = () => {
@@ -190,6 +192,7 @@ export default function SignUpScreen() {
     displayName.trim().length > 0 &&
     email.trim().length > 0 &&
     password.length >= 6 &&
+    birthday !== null &&
     agreedToTerms;
 
   return (
@@ -482,6 +485,8 @@ export default function SignUpScreen() {
                   </View>
                 )}
               </View>
+
+              <BirthdayPicker value={birthday} onChange={setBirthday} />
 
               <AppInput
                 placeholder={t('auth.signUp.email')}

@@ -26,6 +26,9 @@ export interface CategoryRepository {
   removeSubcategory(categoryId: string, subcategoryId: string): Promise<Either<Failure, void>>;
   updateCategory(categoryId: string, name: string, icon: string, logoUri?: string): Promise<Either<Failure, CategoryEntity>>;
   updateSubcategory(categoryId: string, subcategoryId: string, name: string): Promise<Either<Failure, SubcategoryEntity>>;
+  updateRatingCriteria(categoryId: string, criteria: import('../entities/ratingCriterionEntity').RatingCriterionEntity[]): Promise<Either<Failure, void>>;
+  softDeleteRatingCriterion(categoryId: string, criterionKey: string): Promise<Either<Failure, void>>;
+  recoverRatingCriterion(categoryId: string, criterionKey: string): Promise<Either<Failure, void>>;
   softDeleteCategory(categoryId: string): Promise<Either<Failure, void>>;
   softDeleteSubcategory(categoryId: string, subcategoryId: string): Promise<Either<Failure, void>>;
   recoverCategory(categoryId: string, withSubcategories: boolean): Promise<Either<Failure, void>>;

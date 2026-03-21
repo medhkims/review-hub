@@ -1,6 +1,7 @@
 import { BusinessEntity } from '../entities/businessEntity';
 import { BusinessDetailEntity } from '../entities/businessDetailEntity';
 import { ReviewEntity } from '../entities/reviewEntity';
+import { CommentEntity, ReplyEntity } from '../entities/commentEntity';
 import { ActiveCategoryInfoEntity } from '../entities/activeCategoryInfoEntity';
 import { Either } from '@/core/types/either';
 import { Failure } from '@/core/error/failures';
@@ -59,4 +60,19 @@ export interface BusinessRepository {
   getSuspendedBusinesses(): Promise<Either<Failure, BusinessDetailEntity[]>>;
   incrementSearchCount(businessId: string): Promise<Either<Failure, void>>;
   incrementGlobalSearchCount(): Promise<Either<Failure, void>>;
+  reportBusiness(params: ReportBusinessParams): Promise<Either<Failure, void>>;
+  likeReview(reviewId: string): Promise<Either<Failure, void>>;
+  unlikeReview(reviewId: string): Promise<Either<Failure, void>>;
+  incrementReviewView(reviewId: string): Promise<Either<Failure, void>>;
+  getReviewComments(reviewId: string): Promise<Either<Failure, CommentEntity[]>>;
+  addReviewComment(reviewId: string, text: string): Promise<Either<Failure, CommentEntity>>;
+  addCommentReply(commentId: string, reviewId: string, text: string): Promise<Either<Failure, ReplyEntity>>;
+}
+
+export interface ReportBusinessParams {
+  businessId: string;
+  businessName: string;
+  reason: string;
+  reportedByUserId: string;
+  reporterDisplayName: string;
 }

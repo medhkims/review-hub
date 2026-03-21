@@ -14,12 +14,14 @@ import {
   updateDoc,
   serverTimestamp,
   increment,
+  Timestamp,
 } from 'firebase/firestore';
 import { ref, uploadBytesResumable, getDownloadURL } from 'firebase/storage';
 import { Platform } from 'react-native';
 import { BusinessModel } from '../models/businessModel';
 import { BusinessDetailModel } from '../models/businessDetailModel';
 import { ReviewModel } from '../models/reviewModel';
+import { CommentModel, ReplyModel } from '../models/commentModel';
 import { ServerException } from '@/core/error/exceptions';
 import { auth } from '@/core/firebase/firebaseConfig';
 import { findBestFuzzyMatch } from '@/core/utils/fuzzySearch';
@@ -75,6 +77,13 @@ export interface BusinessRemoteDataSource {
   getSuspendedBusinesses(): Promise<BusinessDetailModel[]>;
   incrementSearchCount(businessId: string): Promise<void>;
   incrementGlobalSearchCount(): Promise<void>;
+  reportBusiness(businessId: string, businessName: string, reason: string, reportedByUserId: string, reporterDisplayName: string): Promise<void>;
+  likeReview(reviewId: string, userId: string): Promise<void>;
+  unlikeReview(reviewId: string, userId: string): Promise<void>;
+  incrementReviewView(reviewId: string): Promise<void>;
+  getReviewComments(reviewId: string): Promise<CommentModel[]>;
+  addReviewComment(reviewId: string, userId: string, text: string): Promise<CommentModel>;
+  addCommentReply(commentId: string, reviewId: string, userId: string, text: string): Promise<ReplyModel>;
 }
 
 export class BusinessRemoteDataSourceImpl implements BusinessRemoteDataSource {
@@ -326,14 +335,210 @@ export class BusinessRemoteDataSourceImpl implements BusinessRemoteDataSource {
   async getBusinessReviews(businessId: string): Promise<ReviewModel[]> {
     try {
       const q = query(
-        collection(firestore, this.BUSINESSES, businessId, this.REVIEWS),
+        collection(firestore, this.REVIEWS),
+        where('business_id', '==', businessId),
         orderBy('created_at', 'desc'),
-        limit(20)
+        limit(100)
       );
       const snapshot = await getDocs(q);
-      return snapshot.docs.map((d) => ({ id: d.id, ...d.data() } as ReviewModel));
+      const rawReviews = snapshot.docs
+        .map((d) => ({ id: d.id, ...d.data() } as ReviewModel))
+        .filter((r) => r.status === 'posted');
+
+      // Batch-fetch author display names from profiles
+      const uniqueUserIds = [...new Set(rawReviews.map((r) => r.user_id))];
+      const profileMap: Record<string, { display_name?: string; avatar_url?: string }> = {};
+      await Promise.all(
+        uniqueUserIds.map(async (uid) => {
+          try {
+            const profileSnap = await getDoc(doc(firestore, 'profiles', uid));
+            if (profileSnap.exists()) {
+              profileMap[uid] = profileSnap.data() as { display_name?: string; avatar_url?: string };
+            }
+          } catch {
+            // Non-critical: fall back to user ID
+          }
+        })
+      );
+
+      // Check which reviews the current user has liked
+      const currentUserId = auth.currentUser?.uid ?? null;
+      const likedSet = new Set<string>();
+      if (currentUserId && rawReviews.length > 0) {
+        await Promise.all(
+          rawReviews.map(async (r) => {
+            try {
+              const likeDoc = await getDoc(doc(firestore, 'review_likes', `${currentUserId}_${r.id}`));
+              if (likeDoc.exists()) likedSet.add(r.id);
+            } catch {
+              // Non-critical
+            }
+          })
+        );
+      }
+
+      return rawReviews.map((r) => ({
+        ...r,
+        author_name: profileMap[r.user_id]?.display_name ?? `User ${r.user_id.slice(0, 6)}`,
+        author_avatar_url: profileMap[r.user_id]?.avatar_url ?? null,
+        is_liked_by_current_user: likedSet.has(r.id),
+      }));
     } catch (error: unknown) {
       const message = error instanceof Error ? error.message : 'Failed to fetch reviews';
+      throw new ServerException(message);
+    }
+  }
+
+  async likeReview(reviewId: string, userId: string): Promise<void> {
+    try {
+      const likeId = `${userId}_${reviewId}`;
+      await setDoc(doc(firestore, 'review_likes', likeId), {
+        review_id: reviewId,
+        user_id: userId,
+        created_at: serverTimestamp(),
+      });
+      updateDoc(doc(firestore, this.REVIEWS, reviewId), { like_count: increment(1) }).catch(() => {});
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : 'Failed to like review';
+      throw new ServerException(message);
+    }
+  }
+
+  async unlikeReview(reviewId: string, userId: string): Promise<void> {
+    try {
+      const likeId = `${userId}_${reviewId}`;
+      await deleteDoc(doc(firestore, 'review_likes', likeId));
+      updateDoc(doc(firestore, this.REVIEWS, reviewId), { like_count: increment(-1) }).catch(() => {});
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : 'Failed to unlike review';
+      throw new ServerException(message);
+    }
+  }
+
+  async incrementReviewView(reviewId: string): Promise<void> {
+    updateDoc(doc(firestore, this.REVIEWS, reviewId), { view_count: increment(1) }).catch(() => {});
+  }
+
+  async getReviewComments(reviewId: string): Promise<CommentModel[]> {
+    try {
+      const q = query(
+        collection(firestore, 'review_comments'),
+        where('review_id', '==', reviewId),
+        orderBy('created_at', 'asc'),
+        limit(200),
+      );
+      const snapshot = await getDocs(q);
+      const rawComments = snapshot.docs.map((d) => ({ id: d.id, ...d.data() } as CommentModel));
+
+      // Batch-fetch replies for each comment
+      const repliesMap: Record<string, import('../models/commentModel').ReplyModel[]> = {};
+      await Promise.all(
+        rawComments.map(async (c) => {
+          try {
+            const rq = query(
+              collection(firestore, 'review_replies'),
+              where('comment_id', '==', c.id),
+              orderBy('created_at', 'asc'),
+              limit(50),
+            );
+            const rSnap = await getDocs(rq);
+            repliesMap[c.id] = rSnap.docs.map((d) => ({ id: d.id, ...d.data() } as import('../models/commentModel').ReplyModel));
+          } catch {
+            repliesMap[c.id] = [];
+          }
+        })
+      );
+
+      // Enrich with author info
+      const allUserIds = new Set<string>();
+      rawComments.forEach((c) => allUserIds.add(c.user_id));
+      Object.values(repliesMap).forEach((replies) => replies.forEach((r) => allUserIds.add(r.user_id)));
+
+      const profileMap: Record<string, { display_name?: string; avatar_url?: string }> = {};
+      await Promise.all(
+        Array.from(allUserIds).map(async (uid) => {
+          try {
+            const snap = await getDoc(doc(firestore, 'profiles', uid));
+            if (snap.exists()) profileMap[uid] = snap.data() as { display_name?: string; avatar_url?: string };
+          } catch {
+            // Non-critical
+          }
+        })
+      );
+
+      return rawComments.map((c) => ({
+        ...c,
+        author_name: profileMap[c.user_id]?.display_name ?? `User ${c.user_id.slice(0, 6)}`,
+        author_avatar_url: profileMap[c.user_id]?.avatar_url ?? null,
+        reply_count: repliesMap[c.id]?.length ?? 0,
+        _replies: (repliesMap[c.id] ?? []).map((r) => ({
+          ...r,
+          author_name: profileMap[r.user_id]?.display_name ?? `User ${r.user_id.slice(0, 6)}`,
+          author_avatar_url: profileMap[r.user_id]?.avatar_url ?? null,
+        })),
+      }));
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : 'Failed to fetch comments';
+      throw new ServerException(message);
+    }
+  }
+
+  async addReviewComment(reviewId: string, userId: string, text: string): Promise<CommentModel> {
+    try {
+      const profileSnap = await getDoc(doc(firestore, 'profiles', userId)).catch(() => null);
+      const profile = profileSnap?.exists() ? profileSnap.data() as { display_name?: string; avatar_url?: string } : null;
+
+      const docRef = await addDoc(collection(firestore, 'review_comments'), {
+        review_id: reviewId,
+        user_id: userId,
+        text: text.trim(),
+        created_at: serverTimestamp(),
+        reply_count: 0,
+      });
+      updateDoc(doc(firestore, this.REVIEWS, reviewId), { comment_count: increment(1) }).catch(() => {});
+
+      return {
+        id: docRef.id,
+        review_id: reviewId,
+        user_id: userId,
+        text: text.trim(),
+        created_at: Timestamp.now(),
+        reply_count: 0,
+        author_name: profile?.display_name ?? `User ${userId.slice(0, 6)}`,
+        author_avatar_url: profile?.avatar_url ?? null,
+      };
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : 'Failed to add comment';
+      throw new ServerException(message);
+    }
+  }
+
+  async addCommentReply(commentId: string, reviewId: string, userId: string, text: string): Promise<import('../models/commentModel').ReplyModel> {
+    try {
+      const profileSnap = await getDoc(doc(firestore, 'profiles', userId)).catch(() => null);
+      const profile = profileSnap?.exists() ? profileSnap.data() as { display_name?: string; avatar_url?: string } : null;
+
+      const docRef = await addDoc(collection(firestore, 'review_replies'), {
+        comment_id: commentId,
+        review_id: reviewId,
+        user_id: userId,
+        text: text.trim(),
+        created_at: serverTimestamp(),
+      });
+      updateDoc(doc(firestore, 'review_comments', commentId), { reply_count: increment(1) }).catch(() => {});
+
+      return {
+        id: docRef.id,
+        comment_id: commentId,
+        review_id: reviewId,
+        user_id: userId,
+        text: text.trim(),
+        created_at: Timestamp.now(),
+        author_name: profile?.display_name ?? `User ${userId.slice(0, 6)}`,
+        author_avatar_url: profile?.avatar_url ?? null,
+      };
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : 'Failed to add reply';
       throw new ServerException(message);
     }
   }
@@ -726,6 +931,24 @@ export class BusinessRemoteDataSourceImpl implements BusinessRemoteDataSource {
       };
     } catch (error: unknown) {
       const message = error instanceof Error ? error.message : 'Failed to fetch active category info';
+      throw new ServerException(message);
+    }
+  }
+
+  async reportBusiness(businessId: string, businessName: string, reason: string, reportedByUserId: string, reporterDisplayName: string): Promise<void> {
+    try {
+      await addDoc(collection(firestore, 'reports'), {
+        business_id: businessId,
+        business_name: businessName,
+        reason,
+        reported_by: reportedByUserId,
+        reporter_name: reporterDisplayName,
+        status: 'pending',
+        created_at: serverTimestamp(),
+        updated_at: serverTimestamp(),
+      });
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : 'Failed to submit report';
       throw new ServerException(message);
     }
   }
