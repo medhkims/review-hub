@@ -17,19 +17,19 @@ interface StarRowProps {
 const StarRow = ({ label, rating }: StarRowProps) => {
   const theme = useTheme();
   return (
-  <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingVertical: 6 }}>
-    <AppText style={{ fontSize: 13, color: theme.textSecondary }}>{label}</AppText>
-    <View style={{ flexDirection: 'row', gap: 2 }}>
-      {[1, 2, 3, 4, 5].map((star) => (
-        <MaterialCommunityIcons
-          key={star}
-          name={star <= rating ? 'star' : 'star-outline'}
-          size={14}
-          color={colors.neonPurple}
-        />
-      ))}
+    <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingVertical: 6 }}>
+      <AppText style={{ fontSize: 13, color: theme.textSecondary }}>{label}</AppText>
+      <View style={{ flexDirection: 'row', gap: 2 }}>
+        {[1, 2, 3, 4, 5].map((star) => (
+          <MaterialCommunityIcons
+            key={star}
+            name={star <= rating ? 'star' : 'star-outline'}
+            size={14}
+            color={colors.neonPurple}
+          />
+        ))}
+      </View>
     </View>
-  </View>
   );
 };
 

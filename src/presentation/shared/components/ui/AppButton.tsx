@@ -37,6 +37,7 @@ export const AppButton: React.FC<AppButtonProps> = ({
   className = '',
   icon,
   disabled,
+  style,
   ...props
 }) => {
   const theme = useTheme();
@@ -62,17 +63,20 @@ export const AppButton: React.FC<AppButtonProps> = ({
   return (
     <Pressable
       className={`items-center justify-center ${disabled ? 'opacity-50' : ''} ${className}`}
-      style={{
-        borderRadius: isPill ? 9999 : 12,
-        alignItems: 'center',
-        justifyContent: 'center',
-        flexDirection: 'row',
-        backgroundColor: variantBgColors[variant],
-        opacity: disabled ? 0.5 : 1,
-        height: isPill && normalizedSize === 'lg' ? 56 : undefined,
-        ...sizePadding[normalizedSize],
-        ...(variant === 'secondary' ? { borderWidth: 1, borderColor: theme.border } : {}),
-      }}
+      style={[
+        {
+          borderRadius: isPill ? 9999 : 12,
+          alignItems: 'center',
+          justifyContent: 'center',
+          flexDirection: 'row',
+          backgroundColor: variantBgColors[variant],
+          opacity: disabled ? 0.5 : 1,
+          height: isPill && normalizedSize === 'lg' ? 56 : undefined,
+          ...sizePadding[normalizedSize],
+          ...(variant === 'secondary' ? { borderWidth: 1, borderColor: theme.border } : {}),
+        },
+        style,
+      ]}
       disabled={disabled || isLoading}
       {...props}
     >

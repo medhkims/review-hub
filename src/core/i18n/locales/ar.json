@@ -18,9 +18,18 @@
     "goHome": "الذهاب إلى الرئيسية",
     "goBackToHome": "العودة إلى الرئيسية",
     "months": {
-      "jan": "يناير", "feb": "فبراير", "mar": "مارس", "apr": "أبريل",
-      "may": "مايو", "jun": "يونيو", "jul": "يوليو", "aug": "أغسطس",
-      "sep": "سبتمبر", "oct": "أكتوبر", "nov": "نوفمبر", "dec": "ديسمبر"
+      "jan": "يناير",
+      "feb": "فبراير",
+      "mar": "مارس",
+      "apr": "أبريل",
+      "may": "مايو",
+      "jun": "يونيو",
+      "jul": "يوليو",
+      "aug": "أغسطس",
+      "sep": "سبتمبر",
+      "oct": "أكتوبر",
+      "nov": "نوفمبر",
+      "dec": "ديسمبر"
     },
     "date": {
       "day": "اليوم",
@@ -171,6 +180,7 @@
     "allBusinesses": "جميع الأعمال",
     "sort": "ترتيب",
     "filter": "تصفية",
+    "location": "الموقع",
     "errorLoading": "فشل تحميل الأعمال",
     "allCategories": {
       "title": "جميع الفئات",
@@ -228,7 +238,14 @@
   },
   "notifications": {
     "title": "الإشعارات",
-    "empty": "لا توجد إشعارات بعد"
+    "empty": "لا توجد إشعارات بعد",
+    "emptyMessage": "ستظهر إشعاراتك هنا عند استلامها.",
+    "markAllRead": "تعيين الكل كمقروء",
+    "justNow": "الآن",
+    "minutesAgo": "منذ {{count}} دقيقة",
+    "hoursAgo": "منذ {{count}} ساعة",
+    "daysAgo": "منذ {{count}} يوم",
+    "yesterday": "أمس"
   },
   "reviews": {
     "title": "تقييماتي",
@@ -322,17 +339,6 @@
       "moderatorEmptyMessage": "ستظهر محادثات المشرفين هنا"
     }
   },
-  "notifications": {
-    "title": "الإشعارات",
-    "empty": "لا توجد إشعارات بعد",
-    "emptyMessage": "ستظهر إشعاراتك هنا عند استلامها.",
-    "markAllRead": "تعيين الكل كمقروء",
-    "justNow": "الآن",
-    "minutesAgo": "منذ {{count}} دقيقة",
-    "hoursAgo": "منذ {{count}} ساعة",
-    "daysAgo": "منذ {{count}} يوم",
-    "yesterday": "أمس"
-  },
   "profile": {
     "title": "الملف الشخصي",
     "sections": {
@@ -360,6 +366,9 @@
     "darkMode": "الوضع الداكن",
     "darkModeHint": "التبديل بين المظهر الفاتح والداكن",
     "language": "اللغة",
+    "languageHint": "اختر لغتك المفضلة",
+    "languageEnglish": "الإنجليزية",
+    "languageArabic": "العربية",
     "support": "الدعم",
     "contactSupport": "تواصل مع الدعم",
     "helpCenter": "مركز المساعدة",
@@ -575,7 +584,9 @@
     "alreadyVerifiedSubtitle": "تم توثيق حسابك من قِبل فريقنا. يمكنك الآن الوصول إلى جميع الميزات.",
     "rejectedTitle": "تم رفض الطلب",
     "rejectedSubtitle": "تم رفض طلب التحقق الخاص بك. يرجى المحاولة مرة أخرى بمعلومات صحيحة.",
-    "makeNewSubmit": "إرسال طلب جديد"
+    "makeNewSubmit": "إرسال طلب جديد",
+    "validatingId": "جاري التحقق من بطاقة الهوية...",
+    "errorNotIdCard": "الصورة المرفوعة لا تبدو بطاقة هوية وطنية تونسية. يرجى تحميل صورة واضحة لبطاقة التعريف الوطنية (CIN)."
   },
   "changePassword": {
     "title": "تغيير كلمة المرور",
@@ -653,7 +664,12 @@
       "viewIdCard": "عرض بطاقة الهوية",
       "idCard": "بطاقة الهوية",
       "reviewedAt": "تاريخ المراجعة",
-      "rejectionReason": "سبب الرفض"
+      "rejectionReason": "سبب الرفض",
+      "cinNumber": "رقم بطاقة الهوية",
+      "cinNotDetected": "لم يتم التعرف على رقم الهوية",
+      "phone": "الهاتف",
+      "submittedAt": "تاريخ التقديم",
+      "detailTitle": "مستخدم موثق"
     },
     "banners": {
       "title": "إدارة البانرات",
@@ -1065,6 +1081,10 @@
     "newBusinesses": "أعمال جديدة",
     "apply": "تطبيق"
   },
+  "countryPicker": {
+    "title": "اختر الدولة",
+    "search": "ابحث عن دولة أو رمز..."
+  },
   "filterBy": {
     "title": "تصفية حسب",
     "reset": "إعادة تعيين",
@@ -1227,7 +1247,7 @@
   },
   "verification": {
     "otpTitle": "يرجى التحقق من حسابك",
-    "otpSubtitle": "أدخل الرمز المرسل إلى رقم هاتفك",
+    "otpSubtitle": "أدخل الرمز المرسل إلى رقم هاتفك: {{phone}}",
     "verify": "تحقق",
     "didntReceive": "لم تستلم الرمز؟",
     "resend": "إعادة الإرسال",

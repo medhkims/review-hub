@@ -14,6 +14,7 @@ import { AppText } from '@/presentation/shared/components/ui/AppText';
 import { useAdminDrawerStore } from '../store/adminDrawerStore';
 import { useAuth } from '@/presentation/auth/hooks/useAuth';
 import { useAdminBadges } from '../hooks/useAdminBadges';
+import { useAdminBadgeStore } from '../store/adminBadgeStore';
 
 const DRAWER_WIDTH = 280;
 
@@ -105,12 +106,14 @@ const MENU_ITEMS: MenuItem[] = [
 export const AdminDrawer: React.FC = () => {
   const { isOpen, close, activeKey, setActiveKey } = useAdminDrawerStore();
   const { signOut } = useAuth();
-  const badges = useAdminBadges();
+  // useAdminBadges drives the fetch + 60s refresh; reads come from the store
+  useAdminBadges();
+  const { tickets, verification, chat } = useAdminBadgeStore();
 
   const badgeCount: Record<string, number> = {
-    tickets: badges.tickets,
-    verification: badges.verification,
-    chat: badges.chat,
+    tickets,
+    verification,
+    chat,
   };
   const { top } = useSafeAreaInsets();
   const pathname = usePathname();
@@ -221,12 +224,36 @@ export const AdminDrawer: React.FC = () => {
           >
             <MaterialCommunityIcons name="shield-crown" size={26} color={colors.neonPurple} />
           </View>
-          <AppText style={{ fontSize: 16, fontWeight: '700', color: colors.white }}>
-            Administrator
-          </AppText>
-          <AppText style={{ fontSize: 12, color: colors.textSlate400, marginTop: 2 }}>
-            Admin Panel
-          </AppText>
+          <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
+            <View>
+              <AppText style={{ fontSize: 16, fontWeight: '700', color: colors.white }}>
+                Administrator
+              </AppText>
+              <AppText style={{ fontSize: 12, color: colors.textSlate400, marginTop: 2 }}>
+                Admin Panel
+              </AppText>
+            </View>
+            {(tickets + verification + chat) > 0 && (
+              <View
+                style={{
+                  flexDirection: 'row',
+                  alignItems: 'center',
+                  gap: 6,
+                  backgroundColor: 'rgba(239,68,68,0.15)',
+                  borderWidth: 1,
+                  borderColor: 'rgba(239,68,68,0.3)',
+                  borderRadius: 20,
+                  paddingHorizontal: 10,
+                  paddingVertical: 4,
+                }}
+              >
+                <View style={{ width: 6, height: 6, borderRadius: 3, backgroundColor: '#EF4444' }} />
+                <AppText style={{ fontSize: 12, fontWeight: '700', color: '#EF4444' }}>
+                  {tickets + verification + chat} pending
+                </AppText>
+              </View>
+            )}
+          </View>
         </View>
 
         {/* Menu Items */}

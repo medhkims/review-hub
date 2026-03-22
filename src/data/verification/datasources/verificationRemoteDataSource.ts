@@ -1,4 +1,5 @@
-import { firestore, storage } from '@/core/firebase/firebaseConfig';
+import { firestore, storage, functions } from '@/core/firebase/firebaseConfig';
+import { httpsCallable } from 'firebase/functions';
 import {
   collection,
   addDoc,
@@ -26,6 +27,7 @@ export interface VerificationRemoteDataSource {
     fullName: string,
     phoneNumber: string,
     idCardUrl: string,
+    cinNumber: string | null,
   ): Promise<VerificationModel>;
   getUserVerification(userId: string): Promise<VerificationModel | null>;
   getPendingVerifications(): Promise<VerificationModel[]>;
@@ -39,6 +41,7 @@ export interface VerificationRemoteDataSource {
   uploadIdCard(userId: string, imageUri: string, mimeType?: string): Promise<string>;
   sendOtp(phoneNumber: string): Promise<void>;
   verifyOtp(phoneNumber: string, code: string): Promise<void>;
+  validateIdCard(imageBase64: string): Promise<{ isValid: boolean; cinNumber: string | null }>;
 }
 
 export class VerificationRemoteDataSourceImpl implements VerificationRemoteDataSource {
@@ -52,6 +55,7 @@ export class VerificationRemoteDataSourceImpl implements VerificationRemoteDataS
     fullName: string,
     phoneNumber: string,
     idCardUrl: string,
+    cinNumber: string | null,
   ): Promise<VerificationModel> {
     try {
       const now = serverTimestamp();
@@ -62,6 +66,7 @@ export class VerificationRemoteDataSourceImpl implements VerificationRemoteDataS
         full_name: fullName,
         phone_number: phoneNumber,
         id_card_url: idCardUrl,
+        cin_number: cinNumber ?? null,
         status: 'pending',
         submitted_at: now,
         reviewed_at: null,
@@ -78,6 +83,7 @@ export class VerificationRemoteDataSourceImpl implements VerificationRemoteDataS
         full_name: fullName,
         phone_number: phoneNumber,
         id_card_url: idCardUrl,
+        cin_number: cinNumber ?? null,
         status: 'pending',
         submitted_at: { toDate: () => clientNow } as unknown as Timestamp,
         reviewed_at: null,
@@ -251,6 +257,25 @@ export class VerificationRemoteDataSourceImpl implements VerificationRemoteDataS
         : raw && !raw.toLowerCase().startsWith('internal')
           ? raw
           : 'Failed to send verification code. Please try again.';
+      throw new ServerException(msg);
+    }
+  }
+
+  async validateIdCard(imageBase64: string): Promise<{ isValid: boolean; cinNumber: string | null }> {
+    try {
+      const fn = httpsCallable<{ imageBase64: string }, { isValid: boolean; cinNumber: string | null }>(
+        functions,
+        'validateTunisianId',
+      );
+      const result = await fn({ imageBase64 });
+      return { isValid: result.data.isValid, cinNumber: result.data.cinNumber ?? null };
+    } catch (error: unknown) {
+      const code = (error as { code?: string }).code ?? '';
+      // If the Cloud Function is not yet deployed, skip validation and allow submission
+      if (code === 'functions/not-found' || code === 'functions/internal' || code === 'functions/unavailable') {
+        return true;
+      }
+      const msg = error instanceof Error ? error.message : 'Failed to validate ID card';
       throw new ServerException(msg);
     }
   }

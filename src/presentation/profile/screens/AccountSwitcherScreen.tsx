@@ -41,84 +41,84 @@ const ROW_STYLE = {
 const AccountRowContent: React.FC<AccountRowProps> = ({ item, isActive, isEditing, onRemove }) => {
   const theme = useTheme();
   return (
-  <>
-    {isEditing && !isActive ? (
-      <Pressable
-        onPress={onRemove}
-        accessibilityRole="button"
-        accessibilityLabel={`Remove ${item.displayName}`}
-        hitSlop={8}
-        style={{
-          width: 24,
-          height: 24,
-          borderRadius: 12,
-          backgroundColor: '#EF4444',
-          alignItems: 'center',
-          justifyContent: 'center',
-        }}
-      >
-        <MaterialCommunityIcons name="minus" size={16} color={colors.white} />
-      </Pressable>
-    ) : (
-      <MaterialCommunityIcons
-        name={item.type === 'user' ? 'account' : 'domain'}
-        size={20}
-        color={theme.textMuted}
-      />
-    )}
-    <View
-      style={{
-        width: 44,
-        height: 44,
-        borderRadius: 22,
-        backgroundColor: theme.border,
-        alignItems: 'center',
-        justifyContent: 'center',
-        overflow: 'hidden',
-      }}
-    >
-      {item.avatarUrl ? (
-        <Image
-          source={{ uri: item.avatarUrl }}
-          style={{ width: 44, height: 44, borderRadius: 22 }}
-          accessibilityLabel={item.displayName}
-        />
-      ) : (
-        <AppText style={{ fontSize: 14, fontWeight: '700', color: theme.text }}>
-          {getInitials(item.displayName)}
-        </AppText>
-      )}
-    </View>
-    <View style={{ flex: 1 }}>
-      <AppText style={{ fontSize: 15, fontWeight: '600', color: theme.text }}>
-        {item.displayName}
-      </AppText>
-      <AppText style={{ fontSize: 13, color: theme.textMuted, marginTop: 2 }}>
-        {item.email}
-      </AppText>
-    </View>
-    {!isEditing && (
-      isActive ? (
-        <View
+    <>
+      {isEditing && !isActive ? (
+        <Pressable
+          onPress={onRemove}
+          accessibilityRole="button"
+          accessibilityLabel={`Remove ${item.displayName}`}
+          hitSlop={8}
           style={{
             width: 24,
             height: 24,
             borderRadius: 12,
-            backgroundColor: colors.neonPurple,
+            backgroundColor: '#EF4444',
             alignItems: 'center',
             justifyContent: 'center',
           }}
         >
-          <MaterialCommunityIcons name="check" size={14} color={colors.white} />
-        </View>
+          <MaterialCommunityIcons name="minus" size={16} color={colors.white} />
+        </Pressable>
       ) : (
-        <MaterialCommunityIcons name="chevron-right" size={22} color={theme.textMuted} />
-      )
-    )}
-    {isEditing && isActive && (
-      <AppText style={{ fontSize: 12, color: theme.textMuted }}>active</AppText>
-    )}
-  </>
+        <MaterialCommunityIcons
+          name={item.type === 'user' ? 'account' : 'domain'}
+          size={20}
+          color={theme.textMuted}
+        />
+      )}
+      <View
+        style={{
+          width: 44,
+          height: 44,
+          borderRadius: 22,
+          backgroundColor: theme.border,
+          alignItems: 'center',
+          justifyContent: 'center',
+          overflow: 'hidden',
+        }}
+      >
+        {item.avatarUrl ? (
+          <Image
+            source={{ uri: item.avatarUrl }}
+            style={{ width: 44, height: 44, borderRadius: 22 }}
+            accessibilityLabel={item.displayName}
+          />
+        ) : (
+          <AppText style={{ fontSize: 14, fontWeight: '700', color: theme.text }}>
+            {getInitials(item.displayName)}
+          </AppText>
+        )}
+      </View>
+      <View style={{ flex: 1 }}>
+        <AppText style={{ fontSize: 15, fontWeight: '600', color: theme.text }}>
+          {item.displayName}
+        </AppText>
+        <AppText style={{ fontSize: 13, color: theme.textMuted, marginTop: 2 }}>
+          {item.email}
+        </AppText>
+      </View>
+      {!isEditing && (
+        isActive ? (
+          <View
+            style={{
+              width: 24,
+              height: 24,
+              borderRadius: 12,
+              backgroundColor: colors.neonPurple,
+              alignItems: 'center',
+              justifyContent: 'center',
+            }}
+          >
+            <MaterialCommunityIcons name="check" size={14} color={colors.white} />
+          </View>
+        ) : (
+          <MaterialCommunityIcons name="chevron-right" size={22} color={theme.textMuted} />
+        )
+      )}
+      {isEditing && isActive && (
+        <AppText style={{ fontSize: 12, color: theme.textMuted }}>active</AppText>
+      )}
+    </>
   );
 };
 

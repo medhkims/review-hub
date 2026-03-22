@@ -10,6 +10,7 @@ export interface SubmitVerificationParams {
   phoneNumber: string;
   idCardImageUri: string;
   idCardMimeType?: string;
+  cinNumber?: string | null;
 }
 
 export interface VerificationRepository {
@@ -25,4 +26,5 @@ export interface VerificationRepository {
   ): Promise<Either<Failure, void>>;
   sendOtp(phoneNumber: string): Promise<Either<Failure, void>>;
   verifyOtp(phoneNumber: string, code: string): Promise<Either<Failure, void>>;
+  validateIdCard(imageBase64: string): Promise<Either<Failure, { isValid: boolean; cinNumber: string | null }>>;
 }

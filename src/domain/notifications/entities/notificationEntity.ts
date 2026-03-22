@@ -7,7 +7,9 @@ export type NotificationType =
   | 'business_approved'
   | 'business_rejected'
   | 'review_approved'
-  | 'review_rejected';
+  | 'review_rejected'
+  | 'verification_approved'
+  | 'verification_rejected';
 
 export interface NotificationEntity {
   id: string;

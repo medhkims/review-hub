@@ -1,5 +1,6 @@
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
 import { container } from '@/core/di/container';
+import { useAdminBadgeStore } from '../store/adminBadgeStore';
 
 export interface AdminBadgeCounts {
   tickets: number;
@@ -7,51 +8,67 @@ export interface AdminBadgeCounts {
   chat: number;
 }
 
-export const useAdminBadges = () => {
-  const [badges, setBadges] = useState<AdminBadgeCounts>({ tickets: 0, verification: 0, chat: 0 });
+export const useAdminBadges = (): AdminBadgeCounts => {
+  const { tickets, verification, chat, setBadges } = useAdminBadgeStore();
 
   useEffect(() => {
     let cancelled = false;
 
     const load = async () => {
-      const [ticketsResult, pendingBusinessesResult, pendingReviewsResult, conversationsResult] =
-        await Promise.all([
-          container.getTicketsUseCase.execute(),
-          container.getPendingBusinessesUseCase.execute(),
-          container.getPendingReviewsUseCase.execute(),
-          container.getConversationsUseCase.execute(),
-        ]);
+      const [
+        ticketsResult,
+        pendingBusinessesResult,
+        pendingReviewsResult,
+        pendingVerificationsResult,
+        conversationsResult,
+      ] = await Promise.all([
+        container.getTicketsUseCase.execute(),
+        container.getPendingBusinessesUseCase.execute(),
+        container.getPendingReviewsUseCase.execute(),
+        container.getPendingVerificationsUseCase.execute(),
+        container.getConversationsUseCase.execute(),
+      ]);
 
       if (cancelled) return;
 
-      let tickets = 0;
+      let newTickets = 0;
       ticketsResult.fold(
         () => {},
-        (data) => { tickets = data.filter((t) => t.status === 'OPEN').length; },
+        (data) => { newTickets = data.filter((t) => t.status === 'OPEN').length; },
       );
 
-      let verification = 0;
+      let newVerification = 0;
       pendingBusinessesResult.fold(
         () => {},
-        (data) => { verification += data.length; },
+        (data) => { newVerification += data.length; },
       );
       pendingReviewsResult.fold(
         () => {},
-        (data) => { verification += data.length; },
+        (data) => { newVerification += data.length; },
+      );
+      pendingVerificationsResult.fold(
+        () => {},
+        (data) => { newVerification += data.length; },
       );
 
-      let chat = 0;
+      let newChat = 0;
       conversationsResult.fold(
         () => {},
-        (data) => { chat = data.filter((c) => c.unreadCount > 0).length; },
+        (data) => { newChat = data.filter((c) => c.unreadCount > 0).length; },
       );
 
-      setBadges({ tickets, verification, chat });
+      setBadges({ tickets: newTickets, verification: newVerification, chat: newChat });
     };
 
     load();
-    return () => { cancelled = true; };
-  }, []);
+    // Auto-refresh every 60 seconds so admin always sees up-to-date counts
+    const interval = setInterval(load, 60_000);
 
-  return badges;
+    return () => {
+      cancelled = true;
+      clearInterval(interval);
+    };
+  }, [setBadges]);
+
+  return { tickets, verification, chat };
 };

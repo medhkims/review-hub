@@ -7,6 +7,7 @@ import {
   Image,
   RefreshControl,
   ActivityIndicator,
+  ScrollView,
 } from 'react-native';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import { useTranslation } from 'react-i18next';
@@ -15,6 +16,7 @@ import { ScreenLayout } from '@/presentation/shared/layouts/ScreenLayout';
 import { AppText } from '@/presentation/shared/components/ui/AppText';
 import { FilterBySheet, FilterState, DEFAULT_FILTER_STATE } from '@/presentation/shared/components/FilterBySheet';
 import { SortBySheet, SortOption } from '@/presentation/shared/components/SortBySheet';
+import { LocationDropdown } from '@/presentation/shared/components/LocationDropdown';
 import { useAnalyticsScreen } from '@/presentation/shared/hooks/useAnalyticsScreen';
 import { AnalyticsScreens } from '@/core/analytics/analyticsKeys';
 import { colors } from '@/core/theme/colors';
@@ -183,8 +185,10 @@ export default function MultiCategoryResultsScreen() {
   const [searchQuery, setSearchQuery] = useState('');
   const [showFilter, setShowFilter] = useState(false);
   const [showSort, setShowSort] = useState(false);
+  const [showLocation, setShowLocation] = useState(false);
   const [activeFilters, setActiveFilters] = useState<FilterState>(DEFAULT_FILTER_STATE);
   const [activeSort, setActiveSort] = useState<SortOption | null>(null);
+  const [activeLocations, setActiveLocations] = useState<string[]>([]);
 
   const loadBusinesses = useCallback(async () => {
     if (parsedIds.length === 0) {
@@ -253,9 +257,9 @@ export default function MultiCategoryResultsScreen() {
       data = data.filter((b) => b.name.toLowerCase().includes(query));
     }
 
-    if (activeFilters.locations.length > 0) {
+    if (activeLocations.length > 0) {
       data = data.filter((b) =>
-        activeFilters.locations.some((loc) =>
+        activeLocations.some((loc) =>
           b.location?.toLowerCase().includes(loc.toLowerCase()),
         ),
       );
@@ -283,12 +287,13 @@ export default function MultiCategoryResultsScreen() {
       default:
         return data;
     }
-  }, [businesses, searchQuery, activeFilters, activeSort]);
+  }, [businesses, searchQuery, activeFilters, activeLocations, activeSort]);
 
   const isFilterActive =
-    activeFilters.locations.length > 0 ||
     activeFilters.categories.length > 0 ||
     activeFilters.minRating > 0;
+  const isSortActive = activeSort !== null;
+  const isLocationActive = activeLocations.length > 0;
 
   const handleBack = useCallback(() => {
     router.back();
@@ -368,19 +373,10 @@ export default function MultiCategoryResultsScreen() {
         </AppText>
       </View>
 
-      {/* Search + Sort + Filter row */}
-      <View
-        style={{
-          flexDirection: 'row',
-          alignItems: 'center',
-          paddingHorizontal: 24,
-          paddingBottom: 12,
-          gap: 10,
-        }}
-      >
+      {/* Search bar */}
+      <View style={{ paddingHorizontal: 24, paddingBottom: 10 }}>
         <View
           style={{
-            flex: 1,
             flexDirection: 'row',
             alignItems: 'center',
             backgroundColor: theme.card,
@@ -407,53 +403,120 @@ export default function MultiCategoryResultsScreen() {
             accessibilityRole="search"
           />
         </View>
+      </View>
 
-        {/* Sort button */}
+      {/* Sort / Filter / Location row */}
+      <ScrollView
+        horizontal
+        showsHorizontalScrollIndicator={false}
+        style={{ flexGrow: 0, marginBottom: 12 }}
+        contentContainerStyle={{ paddingHorizontal: 24, gap: 8 }}
+      >
         <Pressable
           onPress={() => setShowSort(true)}
-          style={{
-            width: 44,
-            height: 44,
-            borderRadius: 12,
-            backgroundColor: activeSort ? 'rgba(168,85,247,0.15)' : theme.card,
-            borderWidth: 1,
-            borderColor: activeSort ? colors.neonPurple : theme.border,
-            alignItems: 'center',
-            justifyContent: 'center',
-          }}
           accessibilityLabel={t('home.sort')}
           accessibilityRole="button"
+          style={{
+            flexDirection: 'row',
+            alignItems: 'center',
+            gap: 6,
+            paddingHorizontal: 14,
+            paddingVertical: 8,
+            borderRadius: 20,
+            borderWidth: 1,
+            borderColor: isSortActive ? colors.neonPurple : theme.border,
+            backgroundColor: isSortActive ? 'rgba(168,85,247,0.12)' : theme.card,
+          }}
         >
           <MaterialCommunityIcons
             name="swap-vertical"
-            size={22}
-            color={activeSort ? colors.neonPurple : theme.textSecondary}
+            size={16}
+            color={isSortActive ? colors.neonPurple : theme.textSecondary}
           />
+          <AppText
+            style={{
+              fontSize: 13,
+              fontWeight: isSortActive ? '600' : '400',
+              color: isSortActive ? colors.neonPurple : theme.textSecondary,
+            }}
+          >
+            {t('home.sort')}
+          </AppText>
         </Pressable>
 
-        {/* Filter button */}
         <Pressable
           onPress={() => setShowFilter(true)}
-          style={{
-            width: 44,
-            height: 44,
-            borderRadius: 12,
-            backgroundColor: isFilterActive ? 'rgba(168,85,247,0.15)' : theme.card,
-            borderWidth: 1,
-            borderColor: isFilterActive ? colors.neonPurple : theme.border,
-            alignItems: 'center',
-            justifyContent: 'center',
-          }}
           accessibilityLabel={t('home.filter')}
           accessibilityRole="button"
+          style={{
+            flexDirection: 'row',
+            alignItems: 'center',
+            gap: 6,
+            paddingHorizontal: 14,
+            paddingVertical: 8,
+            borderRadius: 20,
+            borderWidth: 1,
+            borderColor: isFilterActive ? colors.neonPurple : theme.border,
+            backgroundColor: isFilterActive ? 'rgba(168,85,247,0.12)' : theme.card,
+          }}
         >
           <MaterialCommunityIcons
             name="tune-variant"
-            size={22}
+            size={16}
             color={isFilterActive ? colors.neonPurple : theme.textSecondary}
           />
+          <AppText
+            style={{
+              fontSize: 13,
+              fontWeight: isFilterActive ? '600' : '400',
+              color: isFilterActive ? colors.neonPurple : theme.textSecondary,
+            }}
+          >
+            {t('home.filter')}
+          </AppText>
         </Pressable>
-      </View>
+
+        <Pressable
+          onPress={() => setShowLocation((prev) => !prev)}
+          accessibilityLabel={t('home.location')}
+          accessibilityRole="button"
+          style={{
+            flexDirection: 'row',
+            alignItems: 'center',
+            gap: 6,
+            paddingHorizontal: 14,
+            paddingVertical: 8,
+            borderRadius: 20,
+            borderWidth: 1,
+            borderColor: isLocationActive ? colors.neonPurple : theme.border,
+            backgroundColor: isLocationActive ? 'rgba(168,85,247,0.12)' : theme.card,
+          }}
+        >
+          <MaterialCommunityIcons
+            name="map-marker-outline"
+            size={16}
+            color={isLocationActive ? colors.neonPurple : theme.textSecondary}
+          />
+          <AppText
+            style={{
+              fontSize: 13,
+              fontWeight: isLocationActive ? '600' : '400',
+              color: isLocationActive ? colors.neonPurple : theme.textSecondary,
+            }}
+          >
+            {t('home.location')}
+          </AppText>
+        </Pressable>
+      </ScrollView>
+
+      <LocationDropdown
+        visible={showLocation}
+        initialLocations={activeLocations}
+        onApply={(locations) => {
+          setActiveLocations(locations);
+          setShowLocation(false);
+        }}
+      />
 
       {/* Loading */}
       {isLoading && businesses.length === 0 ? (
@@ -521,6 +584,7 @@ export default function MultiCategoryResultsScreen() {
         }}
         initialValue={activeSort}
       />
+
     </ScreenLayout>
   );
 }

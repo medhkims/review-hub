@@ -2,6 +2,7 @@ import { firestore } from '@/core/firebase/firebaseConfig';
 import {
   collection,
   getDocs,
+  getDoc,
   query,
   where,
   orderBy,

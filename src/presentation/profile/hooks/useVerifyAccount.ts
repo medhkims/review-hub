@@ -9,6 +9,8 @@ export const useVerifyAccount = () => {
 
   const [step, setStep] = useState<Step>('loading');
   const [isLoading, setIsLoading] = useState(false);
+  const [isValidatingId, setIsValidatingId] = useState(false);
+  const [extractedCin, setExtractedCin] = useState<string | null>(null);
   const [isSendingOtp, setIsSendingOtp] = useState(false);
   const [isVerifyingOtp, setIsVerifyingOtp] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -39,6 +41,24 @@ export const useVerifyAccount = () => {
       );
     });
   }, [user]);
+
+  const validateIdCard = useCallback(async (imageBase64: string): Promise<boolean> => {
+    setIsValidatingId(true);
+    setError(null);
+    const result = await container.validateIdCardUseCase.execute(imageBase64);
+    setIsValidatingId(false);
+    return result.fold(
+      (failure) => { setError(failure.message); return false; },
+      ({ isValid, cinNumber }) => {
+        if (!isValid) {
+          setError('notIdCard');
+          return false;
+        }
+        setExtractedCin(cinNumber);
+        return true;
+      },
+    );
+  }, []);
 
   const sendOtp = useCallback(async (phoneNumber: string) => {
     setIsSendingOtp(true);
@@ -84,6 +104,7 @@ export const useVerifyAccount = () => {
         phoneNumber: pendingPhone,
         idCardImageUri,
         idCardMimeType,
+        cinNumber: extractedCin,
       });
       setIsLoading(false);
 
@@ -92,7 +113,7 @@ export const useVerifyAccount = () => {
         () => { setPendingFullName(fullName); setStep('success'); },
       );
     },
-    [user, pendingPhone],
+    [user, pendingPhone, extractedCin],
   );
 
   const resendOtp = useCallback(async () => {
@@ -113,17 +134,20 @@ export const useVerifyAccount = () => {
     setPendingPhone('');
     setPendingFullName('');
     setRejectionReason(null);
+    setExtractedCin(null);
   }, []);
 
   return {
     step,
     isLoading,
+    isValidatingId,
     isSendingOtp,
     isVerifyingOtp,
     error,
     pendingPhone,
     pendingFullName,
     rejectionReason,
+    validateIdCard,
     sendOtp,
     verifyOtpAndSubmit,
     resendOtp,

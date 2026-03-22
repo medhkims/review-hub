@@ -530,32 +530,32 @@ export const PasswordField: React.FC<PasswordFieldProps> = ({
 }) => {
   const theme = useTheme();
   return (
-  <View>
-    <AppText style={{ color: labelColor, fontSize: 11, fontWeight: '600', letterSpacing: 1.2, marginBottom: 8, marginLeft: 2, textTransform: 'uppercase' }}>
-      {label}
-    </AppText>
-    <View style={{ flexDirection: 'row', alignItems: 'center', backgroundColor: theme.card, borderWidth: 1.5, borderColor, borderRadius: 14, paddingHorizontal: 14 }}>
-      <MaterialCommunityIcons name={icon as never} size={20} color={iconActiveColor} />
-      <TextInput
-        value={value}
-        onChangeText={onChangeText}
-        style={{ flex: 1, paddingVertical: 15, marginLeft: 12, color: theme.text, fontSize: 15 }}
-        placeholder="••••••••"
-        placeholderTextColor="#334155"
-        secureTextEntry={!show}
-        autoCapitalize="none"
-        autoCorrect={false}
-        editable={!disabled}
-        accessibilityLabel={accessLabel}
-      />
-      <Pressable onPress={onToggle} style={{ padding: 6 }} accessibilityRole="button" accessibilityLabel={showLabel}>
-        <MaterialCommunityIcons name={show ? 'eye-off-outline' : 'eye-outline'} size={20} color="#64748b" />
-      </Pressable>
+    <View>
+      <AppText style={{ color: labelColor, fontSize: 11, fontWeight: '600', letterSpacing: 1.2, marginBottom: 8, marginLeft: 2, textTransform: 'uppercase' }}>
+        {label}
+      </AppText>
+      <View style={{ flexDirection: 'row', alignItems: 'center', backgroundColor: theme.card, borderWidth: 1.5, borderColor, borderRadius: 14, paddingHorizontal: 14 }}>
+        <MaterialCommunityIcons name={icon as never} size={20} color={iconActiveColor} />
+        <TextInput
+          value={value}
+          onChangeText={onChangeText}
+          style={{ flex: 1, paddingVertical: 15, marginLeft: 12, color: theme.text, fontSize: 15 }}
+          placeholder="••••••••"
+          placeholderTextColor="#334155"
+          secureTextEntry={!show}
+          autoCapitalize="none"
+          autoCorrect={false}
+          editable={!disabled}
+          accessibilityLabel={accessLabel}
+        />
+        <Pressable onPress={onToggle} style={{ padding: 6 }} accessibilityRole="button" accessibilityLabel={showLabel}>
+          <MaterialCommunityIcons name={show ? 'eye-off-outline' : 'eye-outline'} size={20} color="#64748b" />
+        </Pressable>
+      </View>
+      {error ? (
+        <AppText style={{ color: '#f87171', fontSize: 12, marginTop: 6, marginLeft: 4 }}>{error}</AppText>
+      ) : null}
     </View>
-    {error ? (
-      <AppText style={{ color: '#f87171', fontSize: 12, marginTop: 6, marginLeft: 4 }}>{error}</AppText>
-    ) : null}
-  </View>
   );
 };
 
@@ -571,32 +571,32 @@ interface MethodRowProps {
 export const MethodRow: React.FC<MethodRowProps> = ({ icon, label, sub, enabled, loading, onPress }) => {
   const theme = useTheme();
   return (
-  <Pressable
-    onPress={onPress}
-    disabled={!enabled || loading}
-    accessibilityRole="button"
-    accessibilityState={{ disabled: !enabled }}
-    style={({ pressed }) => ({
-      flexDirection: 'row', alignItems: 'center', gap: 14,
-      padding: 16, borderRadius: 16, borderWidth: 1,
-      borderColor: enabled ? 'rgba(168,85,247,0.3)' : theme.border,
-      backgroundColor: enabled
-        ? pressed ? 'rgba(168,85,247,0.15)' : 'rgba(168,85,247,0.07)'
-        : theme.background,
-      opacity: enabled ? 1 : 0.45,
-    })}
-  >
-    <MaterialCommunityIcons name={icon as never} size={26} color={enabled ? '#A855F7' : '#475569'} />
-    <View style={{ flex: 1 }}>
-      <AppText style={{ color: enabled ? theme.text : theme.textMuted, fontWeight: '600', fontSize: 15 }}>{label}</AppText>
-      <AppText style={{ color: theme.textSecondary, fontSize: 12, marginTop: 2 }}>{sub}</AppText>
-    </View>
-    {loading
-      ? <ActivityIndicator size="small" color="#A855F7" />
-      : enabled
-        ? <MaterialCommunityIcons name="chevron-right" size={22} color="#A855F7" />
-        : <MaterialCommunityIcons name="lock-outline" size={18} color="#475569" />}
-  </Pressable>
+    <Pressable
+      onPress={onPress}
+      disabled={!enabled || loading}
+      accessibilityRole="button"
+      accessibilityState={{ disabled: !enabled }}
+      style={({ pressed }) => ({
+        flexDirection: 'row', alignItems: 'center', gap: 14,
+        padding: 16, borderRadius: 16, borderWidth: 1,
+        borderColor: enabled ? 'rgba(168,85,247,0.3)' : theme.border,
+        backgroundColor: enabled
+          ? pressed ? 'rgba(168,85,247,0.15)' : 'rgba(168,85,247,0.07)'
+          : theme.background,
+        opacity: enabled ? 1 : 0.45,
+      })}
+    >
+      <MaterialCommunityIcons name={icon as never} size={26} color={enabled ? '#A855F7' : '#475569'} />
+      <View style={{ flex: 1 }}>
+        <AppText style={{ color: enabled ? theme.text : theme.textMuted, fontWeight: '600', fontSize: 15 }}>{label}</AppText>
+        <AppText style={{ color: theme.textSecondary, fontSize: 12, marginTop: 2 }}>{sub}</AppText>
+      </View>
+      {loading
+        ? <ActivityIndicator size="small" color="#A855F7" />
+        : enabled
+          ? <MaterialCommunityIcons name="chevron-right" size={22} color="#A855F7" />
+          : <MaterialCommunityIcons name="lock-outline" size={18} color="#475569" />}
+    </Pressable>
   );
 };
 
@@ -622,42 +622,42 @@ export const OtpStep: React.FC<OtpStepProps> = ({
 }) => {
   const theme = useTheme();
   return (
-  <>
-    <View style={{ alignItems: 'center', marginBottom: 16 }}>
-      <MaterialCommunityIcons name={icon as never} size={52} color="#A855F7" />
-    </View>
-    <AppText style={{ color: theme.text, fontSize: 18, fontWeight: '700', textAlign: 'center', marginBottom: 8 }}>
-      {title}
-    </AppText>
-    <AppText style={{ color: theme.textSecondary, fontSize: 13, textAlign: 'center', lineHeight: 20, marginBottom: 24 }}>
-      {description}
-    </AppText>
+    <>
+      <View style={{ alignItems: 'center', marginBottom: 16 }}>
+        <MaterialCommunityIcons name={icon as never} size={52} color="#A855F7" />
+      </View>
+      <AppText style={{ color: theme.text, fontSize: 18, fontWeight: '700', textAlign: 'center', marginBottom: 8 }}>
+        {title}
+      </AppText>
+      <AppText style={{ color: theme.textSecondary, fontSize: 13, textAlign: 'center', lineHeight: 20, marginBottom: 24 }}>
+        {description}
+      </AppText>
 
-    {otpInput}
+      {otpInput}
 
-    {error ? <AppText style={{ color: '#f87171', fontSize: 13, textAlign: 'center', marginBottom: 12 }}>{error}</AppText> : null}
+      {error ? <AppText style={{ color: '#f87171', fontSize: 13, textAlign: 'center', marginBottom: 12 }}>{error}</AppText> : null}
 
-    <Pressable
-      onPress={onVerify}
-      disabled={loading || !otpReady}
-      style={({ pressed }) => ({
-        backgroundColor: '#A855F7',
-        paddingVertical: 16, borderRadius: 14, alignItems: 'center', marginBottom: 10,
-        opacity: loading || !otpReady ? 0.5 : pressed ? 0.85 : 1,
-      })}
-    >
-      {loading
-        ? <ActivityIndicator color="white" />
-        : <AppText style={{ color: 'white', fontWeight: '600', fontSize: 15 }}>{verifyLabel}</AppText>}
-    </Pressable>
+      <Pressable
+        onPress={onVerify}
+        disabled={loading || !otpReady}
+        style={({ pressed }) => ({
+          backgroundColor: '#A855F7',
+          paddingVertical: 16, borderRadius: 14, alignItems: 'center', marginBottom: 10,
+          opacity: loading || !otpReady ? 0.5 : pressed ? 0.85 : 1,
+        })}
+      >
+        {loading
+          ? <ActivityIndicator color="white" />
+          : <AppText style={{ color: 'white', fontWeight: '600', fontSize: 15 }}>{verifyLabel}</AppText>}
+      </Pressable>
 
-    <Pressable onPress={onResend} disabled={loading} style={{ paddingVertical: 10, alignItems: 'center' }}>
-      <AppText style={{ color: theme.textSecondary, fontSize: 13 }}>{resendLabel}</AppText>
-    </Pressable>
+      <Pressable onPress={onResend} disabled={loading} style={{ paddingVertical: 10, alignItems: 'center' }}>
+        <AppText style={{ color: theme.textSecondary, fontSize: 13 }}>{resendLabel}</AppText>
+      </Pressable>
 
-    <Pressable onPress={onBack} style={{ paddingVertical: 8, alignItems: 'center' }}>
-      <AppText style={{ color: theme.textMuted, fontSize: 12 }}>{backLabel}</AppText>
-    </Pressable>
-  </>
+      <Pressable onPress={onBack} style={{ paddingVertical: 8, alignItems: 'center' }}>
+        <AppText style={{ color: theme.textMuted, fontSize: 12 }}>{backLabel}</AppText>
+      </Pressable>
+    </>
   );
 };

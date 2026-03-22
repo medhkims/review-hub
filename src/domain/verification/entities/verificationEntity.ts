@@ -8,6 +8,7 @@ export interface VerificationEntity {
   fullName: string;
   phoneNumber: string;
   idCardUrl: string;
+  cinNumber: string | null;
   status: VerificationStatus;
   submittedAt: Date;
   reviewedAt: Date | null;

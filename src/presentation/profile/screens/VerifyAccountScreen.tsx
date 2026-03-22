@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useRef } from 'react';
 import { View, ScrollView, Pressable, TextInput, ActivityIndicator, Image, Alert, Modal } from 'react-native';
 import { useRouter, useFocusEffect, router as rootRouter } from 'expo-router';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
@@ -10,6 +10,8 @@ import { ScreenLayout } from '@/presentation/shared/layouts/ScreenLayout';
 import { OtpVerificationModal } from '@/presentation/shared/components/OtpVerificationModal';
 import { VerificationSuccessModal } from '@/presentation/shared/components/VerificationSuccessModal';
 import { useVerifyAccount } from '../hooks/useVerifyAccount';
+import { CountryPickerModal, DEFAULT_COUNTRY } from '@/presentation/shared/components/CountryPickerModal';
+import type { Country } from '@/presentation/shared/components/CountryPickerModal';
 import { useAnalyticsScreen } from '@/presentation/shared/hooks/useAnalyticsScreen';
 import { AnalyticsScreens } from '@/core/analytics/analyticsKeys';
 import { colors } from '@/core/theme/colors';
@@ -23,8 +25,11 @@ export default function VerifyAccountScreen() {
 
   const [fullName, setFullName] = useState('');
   const [phoneNumber, setPhoneNumber] = useState('');
+  const [selectedCountry, setSelectedCountry] = useState<Country>(DEFAULT_COUNTRY);
+  const [countryPickerVisible, setCountryPickerVisible] = useState(false);
   const [idCardUri, setIdCardUri] = useState<string | null>(null);
   const [idCardMime, setIdCardMime] = useState<string>('image/jpeg');
+  const idCardBase64Ref = useRef<string | null>(null);
   const [isScreenFocused, setIsScreenFocused] = useState(true);
 
   useFocusEffect(useCallback(() => {
@@ -35,12 +40,14 @@ export default function VerifyAccountScreen() {
   const {
     step,
     isLoading,
+    isValidatingId,
     isSendingOtp,
     isVerifyingOtp,
     error,
     pendingPhone,
     pendingFullName,
     rejectionReason,
+    validateIdCard,
     sendOtp,
     verifyOtpAndSubmit,
     resendOtp,
@@ -57,11 +64,13 @@ export default function VerifyAccountScreen() {
       mediaTypes: ImagePicker.MediaTypeOptions.Images,
       quality: 0.8,
       allowsEditing: false,
+      base64: true,
     });
     if (!result.canceled && result.assets.length > 0) {
       const asset = result.assets[0];
       setIdCardUri(asset.uri);
       setIdCardMime(asset.mimeType ?? 'image/jpeg');
+      idCardBase64Ref.current = asset.base64 ?? null;
     }
   }, [t]);
 
@@ -78,9 +87,16 @@ export default function VerifyAccountScreen() {
       Alert.alert(t('common.error'), t('verifyAccount.errorIdCard'));
       return;
     }
-    const fullPhone = `+216${phoneNumber.trim()}`;
+    // Validate that the uploaded image is a Tunisian ID card
+    const base64 = idCardBase64Ref.current;
+    if (base64) {
+      const isValid = await validateIdCard(base64);
+      if (!isValid) return;
+    }
+
+    const fullPhone = `${selectedCountry.dialCode}${phoneNumber.trim()}`;
     await sendOtp(fullPhone);
-  }, [fullName, phoneNumber, idCardUri, sendOtp, t]);
+  }, [fullName, phoneNumber, idCardUri, validateIdCard, sendOtp, t]);
 
   const handleVerifyOtp = useCallback(
     async (code: string) => {
@@ -101,7 +117,7 @@ export default function VerifyAccountScreen() {
   }, [router]);
 
   const isFormValid = fullName.trim().length > 0 && phoneNumber.trim().length > 0 && !!idCardUri;
-  const isBusy = isLoading || isSendingOtp;
+  const isBusy = isLoading || isValidatingId || isSendingOtp;
 
   // Loading state while checking existing verification
   if (step === 'loading') {
@@ -250,24 +266,6 @@ export default function VerifyAccountScreen() {
           </AppText>
         </View>
 
-        {/* Error banner */}
-        {error ? (
-          <View
-            style={{
-              backgroundColor: 'rgba(239,68,68,0.1)',
-              borderWidth: 1,
-              borderColor: 'rgba(239,68,68,0.3)',
-              borderRadius: 10,
-              padding: 12,
-              marginBottom: 16,
-            }}
-          >
-            <AppText style={{ fontSize: 13, color: colors.error, textAlign: 'center' }}>
-              {error}
-            </AppText>
-          </View>
-        ) : null}
-
         {/* Full Name */}
         <View style={{ marginBottom: 20 }}>
           <View style={{ flexDirection: 'row', marginBottom: 8 }}>
@@ -315,7 +313,10 @@ export default function VerifyAccountScreen() {
               overflow: 'hidden',
             }}
           >
-            <View
+            <Pressable
+              onPress={() => setCountryPickerVisible(true)}
+              accessibilityRole="button"
+              accessibilityLabel={`${selectedCountry.name} ${selectedCountry.dialCode}`}
               style={{
                 flexDirection: 'row',
                 alignItems: 'center',
@@ -326,11 +327,12 @@ export default function VerifyAccountScreen() {
                 gap: 6,
               }}
             >
-              <AppText style={{ fontSize: 18 }}>{'🇹🇳'}</AppText>
+              <AppText style={{ fontSize: 20 }}>{selectedCountry.flag}</AppText>
               <AppText style={{ fontSize: 14, color: theme.text, fontWeight: '500' }}>
-                {'+216'}
+                {selectedCountry.dialCode}
               </AppText>
-            </View>
+              <MaterialCommunityIcons name="chevron-down" size={16} color={theme.textMuted} />
+            </Pressable>
             <TextInput
               value={phoneNumber}
               onChangeText={setPhoneNumber}
@@ -448,11 +450,34 @@ export default function VerifyAccountScreen() {
           }}
         >
           {isBusy ? (
-            <ActivityIndicator size="small" color={colors.textWhite} />
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+              <ActivityIndicator size="small" color={colors.textWhite} />
+              <AppText style={{ color: colors.textWhite, fontSize: 14 }}>
+                {isValidatingId ? t('verifyAccount.validatingId') : t('verifyAccount.submit')}
+              </AppText>
+            </View>
           ) : (
             t('verifyAccount.submit')
           )}
         </AppButton>
+
+        {/* Error banner — below submit */}
+        {error ? (
+          <View
+            style={{
+              backgroundColor: 'rgba(239,68,68,0.1)',
+              borderWidth: 1,
+              borderColor: 'rgba(239,68,68,0.3)',
+              borderRadius: 10,
+              padding: 12,
+              marginTop: 12,
+            }}
+          >
+            <AppText style={{ fontSize: 13, color: colors.error, textAlign: 'center' }}>
+              {error === 'notIdCard' ? t('verifyAccount.errorNotIdCard') : error}
+            </AppText>
+          </View>
+        ) : null}
 
         <View style={{ height: 96 }} />
       </ScrollView>
@@ -463,6 +488,7 @@ export default function VerifyAccountScreen() {
         onClose={() => resetForm()}
         onVerify={handleVerifyOtp}
         onResend={resendOtp}
+        phoneNumber={pendingPhone ?? `${selectedCountry.dialCode}${phoneNumber.trim()}`}
       />
 
       {/* Pending / Success Modal */}
@@ -472,6 +498,17 @@ export default function VerifyAccountScreen() {
         phoneNumber={pendingPhone}
         fullName={pendingFullName}
         onGoHome={handleGoHome}
+      />
+
+      {/* Country Picker */}
+      <CountryPickerModal
+        visible={countryPickerVisible}
+        selected={selectedCountry}
+        onSelect={(country) => {
+          setSelectedCountry(country);
+          setCountryPickerVisible(false);
+        }}
+        onClose={() => setCountryPickerVisible(false)}
       />
 
       {/* Rejection Modal */}
@@ -487,6 +524,26 @@ export default function VerifyAccountScreen() {
               alignItems: 'center',
             }}
           >
+            {/* X close button */}
+            <Pressable
+              onPress={resetForm}
+              accessibilityRole="button"
+              accessibilityLabel={t('common.close')}
+              style={{
+                position: 'absolute',
+                top: 14,
+                right: 14,
+                width: 32,
+                height: 32,
+                borderRadius: 16,
+                backgroundColor: 'rgba(255,255,255,0.08)',
+                alignItems: 'center',
+                justifyContent: 'center',
+              }}
+            >
+              <MaterialCommunityIcons name="close" size={18} color={theme.textSecondary} />
+            </Pressable>
+
             <View
               style={{
                 width: 72,
@@ -516,6 +573,7 @@ export default function VerifyAccountScreen() {
             )}
 
             <AppButton
+              variant="primary"
               title={t('verifyAccount.makeNewSubmit')}
               size="lg"
               shape="pill"

@@ -64,27 +64,27 @@ const formatTimeAgo = (date: Date): string => {
 const Avatar = ({ name, avatarUrl, size = 36 }: { name: string; avatarUrl: string | null; size?: number }) => {
   const theme = useTheme();
   return (
-  <View
-    style={{
-      width: size,
-      height: size,
-      borderRadius: size / 2,
-      overflow: 'hidden',
-      borderWidth: 1,
-      borderColor: 'rgba(255,255,255,0.1)',
-      flexShrink: 0,
-    }}
-  >
-    {avatarUrl ? (
-      <Image source={{ uri: avatarUrl }} style={{ width: '100%', height: '100%' }} resizeMode="cover" accessibilityLabel={name} />
-    ) : (
-      <View style={{ flex: 1, backgroundColor: theme.card, alignItems: 'center', justifyContent: 'center' }}>
-        <AppText style={{ fontSize: size * 0.4, fontWeight: '700', color: colors.neonPurple }}>
-          {name.charAt(0).toUpperCase()}
-        </AppText>
-      </View>
-    )}
-  </View>
+    <View
+      style={{
+        width: size,
+        height: size,
+        borderRadius: size / 2,
+        overflow: 'hidden',
+        borderWidth: 1,
+        borderColor: 'rgba(255,255,255,0.1)',
+        flexShrink: 0,
+      }}
+    >
+      {avatarUrl ? (
+        <Image source={{ uri: avatarUrl }} style={{ width: '100%', height: '100%' }} resizeMode="cover" accessibilityLabel={name} />
+      ) : (
+        <View style={{ flex: 1, backgroundColor: theme.card, alignItems: 'center', justifyContent: 'center' }}>
+          <AppText style={{ fontSize: size * 0.4, fontWeight: '700', color: colors.neonPurple }}>
+            {name.charAt(0).toUpperCase()}
+          </AppText>
+        </View>
+      )}
+    </View>
   );
 };
 
@@ -105,66 +105,66 @@ const ReplyItem = React.memo<ReplyItemProps>(
 
     return (
       <View style={{ flexDirection: 'row', marginTop: 6 }}>
-      <View style={{ width: 36, alignItems: 'center' }}>
-        <View style={{ width: 2, flex: 1, backgroundColor: 'rgba(139, 92, 246, 0.25)', borderRadius: 1 }} />
-      </View>
-      <View style={{ flex: 1, flexDirection: 'row', gap: 8, paddingBottom: 2 }}>
-        <Avatar name={reply.authorName} avatarUrl={reply.authorAvatarUrl} size={26} />
-        <View
-          style={{
-            flex: 1,
-            backgroundColor: 'rgba(139, 92, 246, 0.07)',
-            borderRadius: 10,
-            borderWidth: 1,
-            borderColor: 'rgba(139, 92, 246, 0.15)',
-            padding: 10,
-          }}
-        >
-          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4, marginBottom: 4 }}>
-            <MaterialCommunityIcons name="reply" size={11} color={colors.neonPurple} />
-            <AppText style={{ fontSize: 10, color: colors.neonPurple }}>replying to {replyingTo}</AppText>
-          </View>
-          <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 3 }}>
-            <AppText style={{ fontSize: 12, fontWeight: '700', color: theme.text }}>{reply.authorName}</AppText>
-            <AppText style={{ fontSize: 10, color: theme.textMuted }}>{formatTimeAgo(reply.createdAt)}</AppText>
-          </View>
-          <AppText style={{ fontSize: 12, color: theme.textSecondary, lineHeight: 18 }}>{reply.text}</AppText>
+        <View style={{ width: 36, alignItems: 'center' }}>
+          <View style={{ width: 2, flex: 1, backgroundColor: 'rgba(139, 92, 246, 0.25)', borderRadius: 1 }} />
+        </View>
+        <View style={{ flex: 1, flexDirection: 'row', gap: 8, paddingBottom: 2 }}>
+          <Avatar name={reply.authorName} avatarUrl={reply.authorAvatarUrl} size={26} />
+          <View
+            style={{
+              flex: 1,
+              backgroundColor: 'rgba(139, 92, 246, 0.07)',
+              borderRadius: 10,
+              borderWidth: 1,
+              borderColor: 'rgba(139, 92, 246, 0.15)',
+              padding: 10,
+            }}
+          >
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4, marginBottom: 4 }}>
+              <MaterialCommunityIcons name="reply" size={11} color={colors.neonPurple} />
+              <AppText style={{ fontSize: 10, color: colors.neonPurple }}>replying to {replyingTo}</AppText>
+            </View>
+            <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 3 }}>
+              <AppText style={{ fontSize: 12, fontWeight: '700', color: theme.text }}>{reply.authorName}</AppText>
+              <AppText style={{ fontSize: 10, color: theme.textMuted }}>{formatTimeAgo(reply.createdAt)}</AppText>
+            </View>
+            <AppText style={{ fontSize: 12, color: theme.textSecondary, lineHeight: 18 }}>{reply.text}</AppText>
 
-          {/* Like + Reply row */}
-          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12, marginTop: 8 }}>
-            <Pressable
-              onPress={() => onLike(reply.id, likeState.liked)}
-              accessibilityLabel={likeState.liked ? t('review.unlikeReply') : t('review.likeReply')}
-              accessibilityRole="button"
-              style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}
-            >
-              <MaterialCommunityIcons
-                name={likeState.liked ? 'heart' : 'heart-outline'}
-                size={13}
-                color={likeState.liked ? '#ef4444' : theme.textMuted}
-              />
-              {likeState.count > 0 && (
-                <AppText style={{ fontSize: 11, color: likeState.liked ? '#ef4444' : theme.textMuted }}>
-                  {likeState.count}
-                </AppText>
-              )}
-            </Pressable>
-            {reply.authorId !== auth.currentUser?.uid && (
+            {/* Like + Reply row */}
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12, marginTop: 8 }}>
               <Pressable
-                onPress={() => onReplyToReply(reply, commentId)}
-                accessibilityLabel={t('review.replyToReply')}
+                onPress={() => onLike(reply.id, likeState.liked)}
+                accessibilityLabel={likeState.liked ? t('review.unlikeReply') : t('review.likeReply')}
                 accessibilityRole="button"
                 style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}
               >
-                <MaterialCommunityIcons name="reply" size={13} color={theme.textMuted} />
-                <AppText style={{ fontSize: 11, color: theme.textMuted }}>{t('review.replyToReply')}</AppText>
+                <MaterialCommunityIcons
+                  name={likeState.liked ? 'heart' : 'heart-outline'}
+                  size={13}
+                  color={likeState.liked ? '#ef4444' : theme.textMuted}
+                />
+                {likeState.count > 0 && (
+                  <AppText style={{ fontSize: 11, color: likeState.liked ? '#ef4444' : theme.textMuted }}>
+                    {likeState.count}
+                  </AppText>
+                )}
               </Pressable>
-            )}
+              {reply.authorId !== auth.currentUser?.uid && (
+                <Pressable
+                  onPress={() => onReplyToReply(reply, commentId)}
+                  accessibilityLabel={t('review.replyToReply')}
+                  accessibilityRole="button"
+                  style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}
+                >
+                  <MaterialCommunityIcons name="reply" size={13} color={theme.textMuted} />
+                  <AppText style={{ fontSize: 11, color: theme.textMuted }}>{t('review.replyToReply')}</AppText>
+                </Pressable>
+              )}
+            </View>
           </View>
         </View>
       </View>
-    </View>
-  );
+    );
 });
 
 interface CommentItemProps {

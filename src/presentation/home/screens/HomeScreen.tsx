@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { View, FlatList, RefreshControl, Pressable, ActivityIndicator, Keyboard, Image } from 'react-native';
+import { View, FlatList, RefreshControl, Pressable, ActivityIndicator, Keyboard, Image, ScrollView } from 'react-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useRouter, useNavigation } from 'expo-router';
 import { useTranslation } from 'react-i18next';
@@ -8,6 +8,9 @@ import { AppText } from '@/presentation/shared/components/ui/AppText';
 import { Avatar } from '@/presentation/shared/components/ui/Avatar';
 import { SearchBar } from '../components/SearchBar';
 import { SearchSuggestions } from '../components/SearchSuggestions';
+import { FilterBySheet, FilterState, DEFAULT_FILTER_STATE } from '@/presentation/shared/components/FilterBySheet';
+import { SortBySheet, SortOption } from '@/presentation/shared/components/SortBySheet';
+import { LocationDropdown } from '@/presentation/shared/components/LocationDropdown';
 import { CategoryChip } from '../components/CategoryChip';
 import { BusinessCard } from '../components/BusinessCard';
 import { BannerSlider } from '../components/BannerSlider';
@@ -358,11 +361,58 @@ export default function HomeScreen() {
     );
   }, [isLoading, isFuzzySearching, fuzzyMatch, searchQuery, handleFuzzyYes, handleAddNewBusiness]);
 
-  const isSearching = searchQuery.trim().length > 0;
-
   const [isFocused, setIsFocused] = useState(false);
   const [headerHeight, setHeaderHeight] = useState(0);
   const blurTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const [showFilter, setShowFilter] = useState(false);
+  const [showSort, setShowSort] = useState(false);
+  const [showLocation, setShowLocation] = useState(false);
+  const [activeFilters, setActiveFilters] = useState<FilterState>(DEFAULT_FILTER_STATE);
+  const [activeSort, setActiveSort] = useState<SortOption | null>(null);
+  const [activeLocations, setActiveLocations] = useState<string[]>([]);
+
+  const isSearching = searchQuery.trim().length > 0;
+  const isFilterActive = activeFilters.categories.length > 0 || activeFilters.minRating > 0;
+  const isSortActive = activeSort !== null;
+  const isLocationActive = activeLocations.length > 0;
+
+  const availableCategories = useMemo(
+    () => categories.map((c) => ({ id: c.id, name: c.name })),
+    [categories],
+  );
+
+  const filteredAndSorted = useMemo(() => {
+    if (!isSearching) return businesses;
+    let data = [...businesses];
+    if (activeLocations.length > 0) {
+      data = data.filter((b) =>
+        activeLocations.some((loc) =>
+          b.location?.toLowerCase().includes(loc.toLowerCase()),
+        ),
+      );
+    }
+    if (activeFilters.categories.length > 0) {
+      data = data.filter((b) => activeFilters.categories.includes(b.categoryId));
+    }
+    if (activeFilters.minRating > 0) {
+      data = data.filter((b) => b.rating >= activeFilters.minRating);
+    }
+    switch (activeSort) {
+      case 'top_rating':
+        return [...data].sort((a, b) => b.rating - a.rating);
+      case 'top_result':
+        return [...data].sort((a, b) => b.reviewCount - a.reviewCount);
+      case 'new_businesses':
+        return [...data].sort((a, b) => {
+          const aTime = a.createdAt instanceof Date ? a.createdAt.getTime() : 0;
+          const bTime = b.createdAt instanceof Date ? b.createdAt.getTime() : 0;
+          return bTime - aTime;
+        });
+      default:
+        return data;
+    }
+  }, [isSearching, businesses, activeFilters, activeLocations, activeSort]);
   const flatListRef = useRef<FlatList<BusinessEntity>>(null);
 
   useEffect(() => {
@@ -466,13 +516,174 @@ export default function HomeScreen() {
           placeholder={t('home.searchPlaceholder')}
           onFocus={handleSearchFocus}
           onBlur={handleSearchBlur}
-          onFilterPress={() => router.push('/(main)/(feed)/categories')}
         />
+
+        {isSearching && (
+          <>
+            <ScrollView
+              horizontal
+              showsHorizontalScrollIndicator={false}
+              style={{ flexGrow: 0, marginTop: 10 }}
+              contentContainerStyle={{ gap: 10 }}
+            >
+              <Pressable
+                onPress={() => setShowSort(true)}
+                accessibilityLabel={t('home.sort')}
+                accessibilityRole="button"
+                style={({ pressed }) => ({
+                  flexDirection: 'row',
+                  alignItems: 'center',
+                  gap: 6,
+                  paddingHorizontal: 16,
+                  paddingVertical: 9,
+                  borderRadius: 24,
+                  borderWidth: 1.5,
+                  borderColor: isSortActive ? colors.neonPurple : colors.borderDark,
+                  backgroundColor: isSortActive
+                    ? 'rgba(168,85,247,0.18)'
+                    : pressed
+                      ? 'rgba(51,65,85,0.6)'
+                      : colors.cardDark,
+                })}
+              >
+                <MaterialCommunityIcons
+                  name="swap-vertical"
+                  size={15}
+                  color={isSortActive ? colors.neonPurple : colors.textSlate200}
+                />
+                <AppText
+                  style={{
+                    fontSize: 13,
+                    fontWeight: isSortActive ? '600' : '500',
+                    color: isSortActive ? colors.neonPurple : colors.textSlate200,
+                  }}
+                >
+                  {t('home.sort')}
+                </AppText>
+                {isSortActive && (
+                  <View
+                    style={{
+                      width: 7,
+                      height: 7,
+                      borderRadius: 4,
+                      backgroundColor: colors.neonPurple,
+                      marginLeft: 2,
+                    }}
+                  />
+                )}
+              </Pressable>
+
+              <Pressable
+                onPress={() => setShowFilter(true)}
+                accessibilityLabel={t('home.filter')}
+                accessibilityRole="button"
+                style={({ pressed }) => ({
+                  flexDirection: 'row',
+                  alignItems: 'center',
+                  gap: 6,
+                  paddingHorizontal: 16,
+                  paddingVertical: 9,
+                  borderRadius: 24,
+                  borderWidth: 1.5,
+                  borderColor: isFilterActive ? colors.neonPurple : colors.borderDark,
+                  backgroundColor: isFilterActive
+                    ? 'rgba(168,85,247,0.18)'
+                    : pressed
+                      ? 'rgba(51,65,85,0.6)'
+                      : colors.cardDark,
+                })}
+              >
+                <MaterialCommunityIcons
+                  name="tune-variant"
+                  size={15}
+                  color={isFilterActive ? colors.neonPurple : colors.textSlate200}
+                />
+                <AppText
+                  style={{
+                    fontSize: 13,
+                    fontWeight: isFilterActive ? '600' : '500',
+                    color: isFilterActive ? colors.neonPurple : colors.textSlate200,
+                  }}
+                >
+                  {t('home.filter')}
+                </AppText>
+                {isFilterActive && (
+                  <View
+                    style={{
+                      width: 7,
+                      height: 7,
+                      borderRadius: 4,
+                      backgroundColor: colors.neonPurple,
+                      marginLeft: 2,
+                    }}
+                  />
+                )}
+              </Pressable>
+
+              <Pressable
+                onPress={() => setShowLocation((prev) => !prev)}
+                accessibilityLabel={t('home.location')}
+                accessibilityRole="button"
+                style={({ pressed }) => ({
+                  flexDirection: 'row',
+                  alignItems: 'center',
+                  gap: 6,
+                  paddingHorizontal: 16,
+                  paddingVertical: 9,
+                  borderRadius: 24,
+                  borderWidth: 1.5,
+                  borderColor: isLocationActive ? colors.neonPurple : colors.borderDark,
+                  backgroundColor: isLocationActive
+                    ? 'rgba(168,85,247,0.18)'
+                    : pressed
+                      ? 'rgba(51,65,85,0.6)'
+                      : colors.cardDark,
+                })}
+              >
+                <MaterialCommunityIcons
+                  name="map-marker-outline"
+                  size={15}
+                  color={isLocationActive ? colors.neonPurple : colors.textSlate200}
+                />
+                <AppText
+                  style={{
+                    fontSize: 13,
+                    fontWeight: isLocationActive ? '600' : '500',
+                    color: isLocationActive ? colors.neonPurple : colors.textSlate200,
+                  }}
+                >
+                  {t('home.location')}
+                </AppText>
+                {isLocationActive && (
+                  <View
+                    style={{
+                      width: 7,
+                      height: 7,
+                      borderRadius: 4,
+                      backgroundColor: colors.neonPurple,
+                      marginLeft: 2,
+                    }}
+                  />
+                )}
+              </Pressable>
+            </ScrollView>
+
+            <LocationDropdown
+              visible={showLocation}
+              initialLocations={activeLocations}
+              onApply={(locs) => {
+                setActiveLocations(locs);
+                setShowLocation(false);
+              }}
+            />
+          </>
+        )}
+
       </View>
 
       <FlatList
         ref={flatListRef}
-        data={isSearching ? businesses : []}
+        data={isSearching ? filteredAndSorted : []}
         renderItem={renderBusinessCard}
         keyExtractor={keyExtractor}
         ListHeaderComponent={isSearching ? searchResultsHeader : defaultListHeader}
@@ -508,7 +719,30 @@ export default function HomeScreen() {
           />
         </View>
       )}
+
       </View>
+
+      <SortBySheet
+        visible={showSort}
+        onClose={() => setShowSort(false)}
+        onApply={(sort) => {
+          setActiveSort(sort);
+          setShowSort(false);
+        }}
+        initialValue={activeSort}
+      />
+
+      <FilterBySheet
+        visible={showFilter}
+        onClose={() => setShowFilter(false)}
+        onApply={(filters) => {
+          setActiveFilters(filters);
+          setShowFilter(false);
+        }}
+        initialFilters={activeFilters}
+        showCategories
+        availableCategories={availableCategories}
+      />
     </ScreenLayout>
   );
 }

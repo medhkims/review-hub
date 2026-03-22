@@ -135,7 +135,203 @@ const STATUS_STYLES: Record<string, { bg: string; border: string; text: string; 
   rejected: { bg: 'rgba(239,68,68,0.1)', border: 'rgba(239,68,68,0.3)', text: colors.error, label: 'rejected' },
 };
 
-// ─── Verification Card ────────────────────────────────────────────────────────
+// ─── Approved User Detail Modal ───────────────────────────────────────────────
+
+interface DetailModalProps {
+  item: VerificationEntity | null;
+  onClose: () => void;
+}
+
+const DetailModal: React.FC<DetailModalProps> = ({ item, onClose }) => {
+  const { t } = useTranslation();
+  const theme = useTheme();
+  const [idCardVisible, setIdCardVisible] = useState(false);
+
+  if (!item) return null;
+
+  return (
+    <Modal visible transparent animationType="slide" onRequestClose={onClose}>
+      <View style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.7)', justifyContent: 'flex-end' }}>
+        <View
+          style={{
+            backgroundColor: theme.card,
+            borderTopLeftRadius: 24,
+            borderTopRightRadius: 24,
+            padding: 24,
+            borderWidth: 1,
+            borderColor: theme.border,
+            maxHeight: '90%',
+          }}
+        >
+          {/* Header */}
+          <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 20 }}>
+            <View style={{ flex: 1 }}>
+              <AppText style={{ fontSize: 18, fontWeight: '700', color: theme.text }}>
+                {t('admin.verifications.detailTitle')}
+              </AppText>
+            </View>
+            <Pressable
+              onPress={onClose}
+              accessibilityRole="button"
+              accessibilityLabel={t('common.close')}
+              style={{
+                width: 32, height: 32, borderRadius: 16,
+                backgroundColor: 'rgba(255,255,255,0.08)',
+                alignItems: 'center', justifyContent: 'center',
+              }}
+            >
+              <MaterialCommunityIcons name="close" size={18} color={theme.textSecondary} />
+            </Pressable>
+          </View>
+
+          <ScrollView showsVerticalScrollIndicator={false}>
+            {/* Avatar + name */}
+            <View style={{ alignItems: 'center', marginBottom: 20 }}>
+              <View
+                style={{
+                  width: 64, height: 64, borderRadius: 32,
+                  backgroundColor: 'rgba(34,197,94,0.15)',
+                  alignItems: 'center', justifyContent: 'center', marginBottom: 10,
+                }}
+              >
+                <MaterialCommunityIcons name="shield-check" size={32} color={colors.success} />
+              </View>
+              <AppText style={{ fontSize: 20, fontWeight: '700', color: theme.text }}>{item.fullName}</AppText>
+              <AppText style={{ fontSize: 13, color: theme.textMuted, marginTop: 2 }}>{item.userEmail}</AppText>
+            </View>
+
+            {/* Info rows */}
+            {[
+              { icon: 'card-account-details-outline', label: t('admin.verifications.cinNumber'), value: item.cinNumber ?? t('admin.verifications.cinNotDetected') },
+              { icon: 'phone', label: t('admin.verifications.phone'), value: item.phoneNumber },
+              { icon: 'calendar-plus', label: t('admin.verifications.submittedAt'), value: formatDate(item.submittedAt) },
+              { icon: 'calendar-check', label: t('admin.verifications.reviewedAt'), value: item.reviewedAt ? formatDate(item.reviewedAt) : '—' },
+              { icon: 'shield-account', label: t('admin.verifications.reviewedBy'), value: item.reviewedBy ?? '—' },
+            ].map(({ icon, label, value }) => (
+              <View
+                key={label}
+                style={{
+                  flexDirection: 'row', alignItems: 'center', gap: 12,
+                  paddingVertical: 12,
+                  borderBottomWidth: 1, borderBottomColor: theme.border,
+                }}
+              >
+                <MaterialCommunityIcons name={icon as 'phone'} size={18} color={colors.neonPurple} />
+                <View style={{ flex: 1 }}>
+                  <AppText style={{ fontSize: 11, color: theme.textMuted, marginBottom: 2 }}>{label}</AppText>
+                  <AppText style={{ fontSize: 14, fontWeight: '600', color: theme.text }}>{value}</AppText>
+                </View>
+              </View>
+            ))}
+
+            {/* ID Card thumbnail */}
+            <AppText style={{ fontSize: 13, fontWeight: '600', color: theme.textSecondary, marginTop: 16, marginBottom: 8 }}>
+              {t('admin.verifications.idCard')}
+            </AppText>
+            <Pressable
+              onPress={() => setIdCardVisible(true)}
+              accessibilityRole="button"
+              accessibilityLabel={t('admin.verifications.viewIdCard')}
+              style={{ borderRadius: 12, overflow: 'hidden', borderWidth: 1, borderColor: theme.border, height: 160, marginBottom: 8 }}
+            >
+              <Image
+                source={{ uri: item.idCardUrl }}
+                style={{ width: '100%', height: '100%' }}
+                resizeMode="cover"
+                accessibilityLabel={t('admin.verifications.idCard')}
+              />
+              <View
+                style={{
+                  position: 'absolute', bottom: 0, left: 0, right: 0,
+                  backgroundColor: 'rgba(0,0,0,0.5)', paddingVertical: 6,
+                  alignItems: 'center', flexDirection: 'row', justifyContent: 'center', gap: 6,
+                }}
+              >
+                <MaterialCommunityIcons name="eye" size={14} color={colors.textWhite} />
+                <AppText style={{ fontSize: 12, color: colors.textWhite }}>{t('admin.verifications.viewIdCard')}</AppText>
+              </View>
+            </Pressable>
+
+            <View style={{ height: 24 }} />
+          </ScrollView>
+        </View>
+      </View>
+
+      {/* Full-screen ID card */}
+      <Modal visible={idCardVisible} transparent animationType="fade" onRequestClose={() => setIdCardVisible(false)}>
+        <View style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.95)', justifyContent: 'center', alignItems: 'center' }}>
+          <Pressable
+            onPress={() => setIdCardVisible(false)}
+            accessibilityRole="button"
+            accessibilityLabel={t('common.close')}
+            style={{ position: 'absolute', top: 50, right: 20, zIndex: 10, padding: 8 }}
+          >
+            <MaterialCommunityIcons name="close" size={28} color={colors.textWhite} />
+          </Pressable>
+          <Image
+            source={{ uri: item.idCardUrl }}
+            style={{ width: '90%', height: '60%' }}
+            resizeMode="contain"
+            accessibilityLabel={t('admin.verifications.idCard')}
+          />
+        </View>
+      </Modal>
+    </Modal>
+  );
+};
+
+// ─── Approved Row (compact) ───────────────────────────────────────────────────
+
+interface ApprovedRowProps {
+  item: VerificationEntity;
+  onPress: () => void;
+}
+
+const ApprovedRow: React.FC<ApprovedRowProps> = ({ item, onPress }) => {
+  const { t } = useTranslation();
+  const theme = useTheme();
+  return (
+    <Pressable
+      onPress={onPress}
+      accessibilityRole="button"
+      accessibilityLabel={item.fullName}
+      style={{
+        flexDirection: 'row', alignItems: 'center', gap: 12,
+        backgroundColor: theme.card,
+        borderRadius: 14, borderWidth: 1, borderColor: theme.border,
+        padding: 14, marginBottom: 10,
+      }}
+    >
+      <View
+        style={{
+          width: 44, height: 44, borderRadius: 22,
+          backgroundColor: 'rgba(34,197,94,0.12)',
+          alignItems: 'center', justifyContent: 'center',
+        }}
+      >
+        <MaterialCommunityIcons name="shield-check" size={22} color={colors.success} />
+      </View>
+      <View style={{ flex: 1 }}>
+        <AppText style={{ fontSize: 15, fontWeight: '700', color: theme.text }}>{item.fullName}</AppText>
+        {item.cinNumber ? (
+          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4, marginTop: 3 }}>
+            <MaterialCommunityIcons name="card-account-details-outline" size={12} color={colors.neonPurple} />
+            <AppText style={{ fontSize: 12, color: colors.neonPurple, fontWeight: '600' }}>
+              {item.cinNumber}
+            </AppText>
+          </View>
+        ) : (
+          <AppText style={{ fontSize: 12, color: theme.textMuted, marginTop: 2 }}>
+            {t('admin.verifications.cinNotDetected')}
+          </AppText>
+        )}
+      </View>
+      <MaterialCommunityIcons name="chevron-right" size={20} color={theme.textMuted} />
+    </Pressable>
+  );
+};
+
+// ─── Verification Card (pending / rejected) ───────────────────────────────────
 
 interface VerificationCardProps {
   item: VerificationEntity;
@@ -201,6 +397,14 @@ const VerificationCard: React.FC<VerificationCardProps> = ({ item, onApprove, on
 
       {/* Details */}
       <View style={{ gap: 6, marginBottom: 14 }}>
+        {item.cinNumber ? (
+          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+            <MaterialCommunityIcons name="card-account-details-outline" size={14} color={colors.neonPurple} />
+            <AppText style={{ fontSize: 13, color: theme.textSecondary, fontWeight: '600' }}>
+              {item.cinNumber}
+            </AppText>
+          </View>
+        ) : null}
         <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
           <MaterialCommunityIcons name="phone" size={14} color={theme.textMuted} />
           <AppText style={{ fontSize: 13, color: theme.textSecondary }}>
@@ -338,7 +542,7 @@ const VerificationCard: React.FC<VerificationCardProps> = ({ item, onApprove, on
           <Pressable
             onPress={() => setIdCardVisible(false)}
             accessibilityRole="button"
-            accessibilityLabel={t('verification.close')}
+            accessibilityLabel={t('common.close')}
             style={{ position: 'absolute', top: 50, right: 20, zIndex: 10, padding: 8 }}
           >
             <MaterialCommunityIcons name="close" size={28} color={colors.textWhite} />
@@ -424,7 +628,8 @@ export default function AdminVerificationsScreen() {
   const theme = useTheme();
   const { activeTab, switchTab, verifications, isLoading, isUpdating, error, load, approve, reject } =
     useAdminVerifications();
-  const [rejectTarget, setRejectTarget] = useState<string | null>(null);
+  const [rejectTarget, setRejectTarget] = useState<VerificationEntity | null>(null);
+  const [detailItem, setDetailItem] = useState<VerificationEntity | null>(null);
 
   const handleRejectConfirm = useCallback(
     async (reason: string) => {
@@ -513,13 +718,17 @@ export default function AdminVerificationsScreen() {
               {t(emptyKey)}
             </AppText>
           </View>
+        ) : activeTab === 'approved' ? (
+          verifications.map((item) => (
+            <ApprovedRow key={item.id} item={item} onPress={() => setDetailItem(item)} />
+          ))
         ) : (
           verifications.map((item) => (
             <VerificationCard
               key={item.id}
               item={item}
-              onApprove={() => approve(item.id)}
-              onReject={() => setRejectTarget(item.id)}
+              onApprove={() => approve(item)}
+              onReject={() => setRejectTarget(item)}
               isUpdating={isUpdating === item.id}
             />
           ))
@@ -530,8 +739,12 @@ export default function AdminVerificationsScreen() {
         visible={rejectTarget !== null}
         onClose={() => setRejectTarget(null)}
         onConfirm={handleRejectConfirm}
-        isLoading={isUpdating === rejectTarget}
+        isLoading={isUpdating === rejectTarget?.id}
       />
+
+      {detailItem ? (
+        <DetailModal item={detailItem} onClose={() => setDetailItem(null)} />
+      ) : null}
     </ScreenLayout>
   );
 }

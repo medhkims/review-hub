@@ -31,25 +31,38 @@ export const useAdminVerifications = () => {
     setVerifications([]);
   }, []);
 
-  const approve = useCallback(async (id: string) => {
+  const approve = useCallback(async (verification: VerificationEntity) => {
     if (!user) return;
-    setIsUpdating(id);
-    const result = await container.updateVerificationStatusUseCase.execute(id, 'approved', user.id);
+    setIsUpdating(verification.id);
+    const result = await container.updateVerificationStatusUseCase.execute({
+      id: verification.id,
+      status: 'approved',
+      reviewedBy: user.id,
+      userId: verification.userId,
+      userName: verification.userName,
+    });
     setIsUpdating(null);
     result.fold(
       (failure) => setError(failure.message),
-      () => setVerifications((prev) => prev.filter((v) => v.id !== id)),
+      () => setVerifications((prev) => prev.filter((v) => v.id !== verification.id)),
     );
   }, [user]);
 
-  const reject = useCallback(async (id: string, reason: string) => {
+  const reject = useCallback(async (verification: VerificationEntity, reason: string) => {
     if (!user) return;
-    setIsUpdating(id);
-    const result = await container.updateVerificationStatusUseCase.execute(id, 'rejected', user.id, reason);
+    setIsUpdating(verification.id);
+    const result = await container.updateVerificationStatusUseCase.execute({
+      id: verification.id,
+      status: 'rejected',
+      reviewedBy: user.id,
+      userId: verification.userId,
+      userName: verification.userName,
+      rejectionReason: reason,
+    });
     setIsUpdating(null);
     result.fold(
       (failure) => setError(failure.message),
-      () => setVerifications((prev) => prev.filter((v) => v.id !== id)),
+      () => setVerifications((prev) => prev.filter((v) => v.id !== verification.id)),
     );
   }, [user]);
 

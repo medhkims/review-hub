@@ -8,6 +8,7 @@ export interface VerificationModel {
   full_name: string;
   phone_number: string;
   id_card_url: string;
+  cin_number: string | null;
   status: string; // 'pending' | 'approved' | 'rejected'
   submitted_at: Timestamp;
   reviewed_at: Timestamp | null;

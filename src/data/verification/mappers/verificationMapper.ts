@@ -19,6 +19,7 @@ export class VerificationMapper {
       fullName: model.full_name,
       phoneNumber: model.phone_number,
       idCardUrl: model.id_card_url,
+      cinNumber: model.cin_number ?? null,
       status: deriveStatus(model.status),
       submittedAt: model.submitted_at?.toDate?.() ?? new Date(),
       reviewedAt: model.reviewed_at?.toDate?.() ?? null,

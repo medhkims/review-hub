@@ -83,7 +83,7 @@ export function PendingBusinessesScreen() {
   const [userVerificationsLoading, setUserVerificationsLoading] = useState(false);
   const [userVerificationsError, setUserVerificationsError] = useState<string | null>(null);
   const [userActionId, setUserActionId] = useState<string | null>(null);
-  const [userRejectTarget, setUserRejectTarget] = useState<string | null>(null);
+  const [userRejectTarget, setUserRejectTarget] = useState<VerificationEntity | null>(null);
   const [userRejectReason, setUserRejectReason] = useState('');
   const [userIdCardVisible, setUserIdCardVisible] = useState<string | null>(null);
 
@@ -93,7 +93,7 @@ export function PendingBusinessesScreen() {
     reviews: pendingReviews.length,
     moderator: 0,
     user: pendingUserCount,
-  }), [businesses.length, pendingReviews.length]);
+  }), [businesses.length, pendingReviews.length, pendingUserCount]);
 
   const currentRawData = useMemo(() => {
     if (statusFilter === 'pending') return businesses;
@@ -224,15 +224,21 @@ export function PendingBusinessesScreen() {
     );
   }, []);
 
-  const handleApproveUser = useCallback(async (id: string) => {
+  const handleApproveUser = useCallback(async (verification: VerificationEntity) => {
     if (!currentUser) return;
-    setUserActionId(id);
-    const result = await container.updateVerificationStatusUseCase.execute(id, 'approved', currentUser.id);
+    setUserActionId(verification.id);
+    const result = await container.updateVerificationStatusUseCase.execute({
+      id: verification.id,
+      status: 'approved',
+      reviewedBy: currentUser.id,
+      userId: verification.userId,
+      userName: verification.userName,
+    });
     setUserActionId(null);
     result.fold(
       () => {},
       () => {
-        setUserVerifications((prev) => prev.filter((v) => v.id !== id));
+        setUserVerifications((prev) => prev.filter((v) => v.id !== verification.id));
         setPendingUserCount((c) => Math.max(0, c - 1));
       },
     );
@@ -240,16 +246,23 @@ export function PendingBusinessesScreen() {
 
   const handleRejectUser = useCallback(async () => {
     if (!userRejectTarget || !currentUser) return;
-    const id = userRejectTarget;
-    setUserActionId(id);
-    const result = await container.updateVerificationStatusUseCase.execute(id, 'rejected', currentUser.id, userRejectReason.trim() || undefined);
+    const verification = userRejectTarget;
+    setUserActionId(verification.id);
+    const result = await container.updateVerificationStatusUseCase.execute({
+      id: verification.id,
+      status: 'rejected',
+      reviewedBy: currentUser.id,
+      userId: verification.userId,
+      userName: verification.userName,
+      rejectionReason: userRejectReason.trim() || undefined,
+    });
     setUserActionId(null);
     setUserRejectTarget(null);
     setUserRejectReason('');
     result.fold(
       () => {},
       () => {
-        setUserVerifications((prev) => prev.filter((v) => v.id !== id));
+        setUserVerifications((prev) => prev.filter((v) => v.id !== verification.id));
         setPendingUserCount((c) => Math.max(0, c - 1));
       },
     );
@@ -1029,7 +1042,7 @@ export function PendingBusinessesScreen() {
               {item.status === 'pending' ? (
                 <View style={{ flexDirection: 'row', gap: 10, paddingHorizontal: 14, paddingBottom: 14 }}>
                   <Pressable
-                    onPress={() => setUserRejectTarget(item.id)}
+                    onPress={() => setUserRejectTarget(item)}
                     disabled={userActionId === item.id}
                     accessibilityRole="button"
                     accessibilityLabel="Reject"
@@ -1038,7 +1051,7 @@ export function PendingBusinessesScreen() {
                     <AppText style={{ fontSize: 13, fontWeight: '600', color: '#EF4444' }}>Reject</AppText>
                   </Pressable>
                   <Pressable
-                    onPress={() => handleApproveUser(item.id)}
+                    onPress={() => handleApproveUser(item)}
                     disabled={userActionId === item.id}
                     accessibilityRole="button"
                     accessibilityLabel="Approve"
@@ -1110,8 +1123,8 @@ export function PendingBusinessesScreen() {
       <ScrollView
         horizontal
         showsHorizontalScrollIndicator={false}
-        contentContainerStyle={{ paddingHorizontal: 16, gap: 8 }}
-        style={{ flexGrow: 0, marginBottom: 12 }}
+        contentContainerStyle={{ paddingHorizontal: 16, gap: 8, paddingBottom: 2 }}
+        style={{ flexGrow: 0, marginBottom: 10 }}
       >
         {TABS.map((tab) => {
           const active = activeTab === tab.key;
@@ -1174,13 +1187,25 @@ export function PendingBusinessesScreen() {
         })}
       </ScrollView>
 
-      {/* Status Filter Buttons */}
-      <View style={{ flexDirection: 'row', paddingHorizontal: 20, gap: 8, marginBottom: 8 }}>
+      {/* Status Filter — segmented control */}
+      <View
+        style={{
+          flexDirection: 'row',
+          marginHorizontal: 16,
+          marginBottom: 10,
+          backgroundColor: colors.cardDark,
+          borderRadius: 14,
+          borderWidth: 1,
+          borderColor: colors.borderDark,
+          padding: 4,
+          gap: 4,
+        }}
+      >
         {([
-          { key: 'pending' as StatusFilter, label: 'Pending', icon: 'clock-outline' as const, color: '#F59E0B' },
-          { key: 'approved' as StatusFilter, label: 'Approved', icon: 'check-circle-outline' as const, color: colors.success },
-          { key: 'declined' as StatusFilter, label: 'Declined', icon: 'close-circle-outline' as const, color: '#EF4444' },
-          { key: 'suspended' as StatusFilter, label: 'Suspended', icon: 'pause-circle-outline' as const, color: '#F97316' },
+          { key: 'pending' as StatusFilter, label: 'Pending', color: '#F59E0B' },
+          { key: 'approved' as StatusFilter, label: 'Approved', color: colors.success },
+          { key: 'declined' as StatusFilter, label: 'Declined', color: '#EF4444' },
+          { key: 'suspended' as StatusFilter, label: 'Suspended', color: '#F97316' },
         ]).map((btn) => {
           const active = statusFilter === btn.key;
           return (
@@ -1192,19 +1217,16 @@ export function PendingBusinessesScreen() {
               accessibilityState={{ selected: active }}
               style={({ pressed }) => ({
                 flex: 1,
-                flexDirection: 'row',
                 alignItems: 'center',
                 justifyContent: 'center',
-                gap: 5,
-                paddingVertical: 9,
-                borderRadius: 12,
-                borderWidth: 1,
-                backgroundColor: active ? `${btn.color}20` : colors.cardDark,
-                borderColor: active ? btn.color : colors.borderDark,
+                paddingVertical: 8,
+                borderRadius: 10,
+                backgroundColor: active ? `${btn.color}22` : 'transparent',
+                borderWidth: active ? 1 : 0,
+                borderColor: active ? btn.color : 'transparent',
                 opacity: pressed ? 0.75 : 1,
               })}
             >
-              <MaterialCommunityIcons name={btn.icon} size={14} color={active ? btn.color : colors.textSlate500} />
               <AppText style={{ fontSize: 12, fontWeight: active ? '700' : '500', color: active ? btn.color : colors.textSlate500 }}>
                 {btn.label}
               </AppText>
@@ -2798,12 +2820,12 @@ export function PendingBusinessesScreen() {
               </Pressable>
               <Pressable
                 onPress={handleRejectUser}
-                disabled={userActionId === userRejectTarget}
+                disabled={userActionId === userRejectTarget?.id}
                 accessibilityRole="button"
                 accessibilityLabel="Reject"
                 style={{ flex: 1, paddingVertical: 12, borderRadius: 10, backgroundColor: '#EF4444', alignItems: 'center', justifyContent: 'center' }}
               >
-                {userActionId === userRejectTarget
+                {userActionId === userRejectTarget?.id
                   ? <ActivityIndicator size="small" color={colors.white} />
                   : <AppText style={{ fontSize: 15, fontWeight: '600', color: colors.white }}>Reject</AppText>}
               </Pressable>

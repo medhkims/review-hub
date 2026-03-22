@@ -14,6 +14,7 @@ interface OtpVerificationModalProps {
   onClose: () => void;
   onVerify: (code: string) => void;
   onResend: () => void;
+  phoneNumber?: string;
 }
 
 export const OtpVerificationModal: React.FC<OtpVerificationModalProps> = ({
@@ -21,6 +22,7 @@ export const OtpVerificationModal: React.FC<OtpVerificationModalProps> = ({
   onClose,
   onVerify,
   onResend,
+  phoneNumber,
 }) => {
   const { t } = useTranslation();
   const theme = useTheme();
@@ -77,7 +79,7 @@ export const OtpVerificationModal: React.FC<OtpVerificationModalProps> = ({
             {t('verification.otpTitle')}
           </AppText>
           <AppText style={{ fontSize: 14, color: theme.textMuted, textAlign: 'center', marginBottom: 24 }}>
-            {t('verification.otpSubtitle')}
+            {t('verification.otpSubtitle', { phone: phoneNumber ?? '' })}
           </AppText>
 
           <View style={{ flexDirection: 'row', justifyContent: 'center', gap: 10, marginBottom: 24 }}>

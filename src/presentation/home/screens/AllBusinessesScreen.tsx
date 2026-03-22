@@ -1,5 +1,5 @@
 import React, { useCallback, useMemo, useState } from 'react';
-import { View, FlatList, Pressable, RefreshControl, ActivityIndicator } from 'react-native';
+import { View, FlatList, Pressable, RefreshControl, ActivityIndicator, ScrollView } from 'react-native';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
@@ -8,6 +8,7 @@ import { AppText } from '@/presentation/shared/components/ui/AppText';
 import { SearchBar } from '../components/SearchBar';
 import { FilterBySheet, FilterState, DEFAULT_FILTER_STATE } from '@/presentation/shared/components/FilterBySheet';
 import { SortBySheet, SortOption } from '@/presentation/shared/components/SortBySheet';
+import { LocationDropdown } from '@/presentation/shared/components/LocationDropdown';
 import { NoResultsView } from '@/presentation/shared/components/NoResultsView';
 import { useHome } from '../hooks/useHome';
 import { useAnalyticsScreen } from '@/presentation/shared/hooks/useAnalyticsScreen';
@@ -59,13 +60,16 @@ export default function AllBusinessesScreen() {
 
   const [showFilter, setShowFilter] = useState(false);
   const [showSort, setShowSort] = useState(false);
+  const [showLocation, setShowLocation] = useState(false);
   const [activeFilters, setActiveFilters] = useState<FilterState>(DEFAULT_FILTER_STATE);
   const [activeSort, setActiveSort] = useState<SortOption | null>(null);
+  const [activeLocations, setActiveLocations] = useState<string[]>([]);
 
   const isFilterActive =
-    activeFilters.locations.length > 0 ||
     activeFilters.categories.length > 0 ||
     activeFilters.minRating > 0;
+  const isSortActive = activeSort !== null;
+  const isLocationActive = activeLocations.length > 0;
 
   const availableCategories = useMemo(
     () => categories.map((c) => ({ id: c.id, name: c.name })),
@@ -81,9 +85,9 @@ export default function AllBusinessesScreen() {
       data = data.filter((b) => b.name.toLowerCase().includes(q));
     }
 
-    if (activeFilters.locations.length > 0) {
+    if (activeLocations.length > 0) {
       data = data.filter((b) =>
-        activeFilters.locations.some((loc) =>
+        activeLocations.some((loc) =>
           b.location?.toLowerCase().includes(loc.toLowerCase()),
         ),
       );
@@ -111,7 +115,7 @@ export default function AllBusinessesScreen() {
       default:
         return data;
     }
-  }, [displayedBusinesses, isRecentSource, localSearch, activeFilters, activeSort]);
+  }, [displayedBusinesses, isRecentSource, localSearch, activeFilters, activeLocations, activeSort]);
 
   const handleBusinessPress = useCallback((businessId: string) => {
     router.push(`/(main)/(feed)/business/${businessId}`);
@@ -183,70 +187,172 @@ export default function AllBusinessesScreen() {
         </AppText>
       </View>
 
-      {/* Search + Sort + Filter row */}
-      <View
-        style={{
-          flexDirection: 'row',
-          alignItems: 'center',
-          paddingHorizontal: 20,
-          paddingBottom: 16,
-          gap: 10,
-        }}
-      >
-        <View style={{ flex: 1 }}>
-          <SearchBar
-            value={searchValue}
-            onChangeText={onSearch}
-            placeholder={t('home.searchPlaceholder')}
-          />
-        </View>
+      {/* Search bar */}
+      <View style={{ paddingHorizontal: 20, paddingBottom: 10 }}>
+        <SearchBar
+          value={searchValue}
+          onChangeText={onSearch}
+          placeholder={t('home.searchPlaceholder')}
+        />
+      </View>
 
-        {/* Sort button */}
+      {/* Sort / Filter / Location row */}
+      <ScrollView
+        horizontal
+        showsHorizontalScrollIndicator={false}
+        style={{ flexGrow: 0, height: 44, marginBottom: 12 }}
+        contentContainerStyle={{ paddingHorizontal: 20, gap: 10, alignItems: 'center' }}
+      >
         <Pressable
           onPress={() => setShowSort(true)}
-          style={{
-            width: 44,
-            height: 44,
-            borderRadius: 12,
-            backgroundColor: activeSort ? 'rgba(168,85,247,0.15)' : theme.card,
-            borderWidth: 1,
-            borderColor: activeSort ? colors.neonPurple : theme.border,
-            alignItems: 'center',
-            justifyContent: 'center',
-          }}
           accessibilityLabel={t('home.sort')}
           accessibilityRole="button"
+          style={({ pressed }) => ({
+            flexDirection: 'row',
+            alignItems: 'center',
+            gap: 6,
+            paddingHorizontal: 16,
+            paddingVertical: 9,
+            borderRadius: 24,
+            borderWidth: 1.5,
+            borderColor: isSortActive ? colors.neonPurple : colors.borderDark,
+            backgroundColor: isSortActive
+              ? 'rgba(168,85,247,0.18)'
+              : pressed
+                ? 'rgba(51,65,85,0.6)'
+                : colors.cardDark,
+          })}
         >
           <MaterialCommunityIcons
             name="swap-vertical"
-            size={22}
-            color={activeSort ? colors.neonPurple : theme.textSecondary}
+            size={15}
+            color={isSortActive ? colors.neonPurple : colors.textSlate200}
           />
+          <AppText
+            style={{
+              fontSize: 13,
+              fontWeight: isSortActive ? '600' : '500',
+              color: isSortActive ? colors.neonPurple : colors.textSlate200,
+            }}
+          >
+            {t('home.sort')}
+          </AppText>
+          {isSortActive && (
+            <View
+              style={{
+                width: 7,
+                height: 7,
+                borderRadius: 4,
+                backgroundColor: colors.neonPurple,
+                marginLeft: 2,
+              }}
+            />
+          )}
         </Pressable>
 
-        {/* Filter button */}
         <Pressable
           onPress={() => setShowFilter(true)}
-          style={{
-            width: 44,
-            height: 44,
-            borderRadius: 12,
-            backgroundColor: isFilterActive ? 'rgba(168,85,247,0.15)' : theme.card,
-            borderWidth: 1,
-            borderColor: isFilterActive ? colors.neonPurple : theme.border,
-            alignItems: 'center',
-            justifyContent: 'center',
-          }}
           accessibilityLabel={t('home.filter')}
           accessibilityRole="button"
+          style={({ pressed }) => ({
+            flexDirection: 'row',
+            alignItems: 'center',
+            gap: 6,
+            paddingHorizontal: 16,
+            paddingVertical: 9,
+            borderRadius: 24,
+            borderWidth: 1.5,
+            borderColor: isFilterActive ? colors.neonPurple : colors.borderDark,
+            backgroundColor: isFilterActive
+              ? 'rgba(168,85,247,0.18)'
+              : pressed
+                ? 'rgba(51,65,85,0.6)'
+                : colors.cardDark,
+          })}
         >
           <MaterialCommunityIcons
             name="tune-variant"
-            size={22}
-            color={isFilterActive ? colors.neonPurple : theme.textSecondary}
+            size={15}
+            color={isFilterActive ? colors.neonPurple : colors.textSlate200}
           />
+          <AppText
+            style={{
+              fontSize: 13,
+              fontWeight: isFilterActive ? '600' : '500',
+              color: isFilterActive ? colors.neonPurple : colors.textSlate200,
+            }}
+          >
+            {t('home.filter')}
+          </AppText>
+          {isFilterActive && (
+            <View
+              style={{
+                width: 7,
+                height: 7,
+                borderRadius: 4,
+                backgroundColor: colors.neonPurple,
+                marginLeft: 2,
+              }}
+            />
+          )}
         </Pressable>
-      </View>
+
+        <Pressable
+          onPress={() => setShowLocation((prev) => !prev)}
+          accessibilityLabel={t('home.location')}
+          accessibilityRole="button"
+          style={({ pressed }) => ({
+            flexDirection: 'row',
+            alignItems: 'center',
+            gap: 6,
+            paddingHorizontal: 16,
+            paddingVertical: 9,
+            borderRadius: 24,
+            borderWidth: 1.5,
+            borderColor: isLocationActive ? colors.neonPurple : colors.borderDark,
+            backgroundColor: isLocationActive
+              ? 'rgba(168,85,247,0.18)'
+              : pressed
+                ? 'rgba(51,65,85,0.6)'
+                : colors.cardDark,
+          })}
+        >
+          <MaterialCommunityIcons
+            name="map-marker-outline"
+            size={15}
+            color={isLocationActive ? colors.neonPurple : colors.textSlate200}
+          />
+          <AppText
+            style={{
+              fontSize: 13,
+              fontWeight: isLocationActive ? '600' : '500',
+              color: isLocationActive ? colors.neonPurple : colors.textSlate200,
+            }}
+          >
+            {t('home.location')}
+          </AppText>
+          {isLocationActive && (
+            <View
+              style={{
+                width: 7,
+                height: 7,
+                borderRadius: 4,
+                backgroundColor: colors.neonPurple,
+                marginLeft: 2,
+              }}
+            />
+          )}
+        </Pressable>
+      </ScrollView>
+
+      <LocationDropdown
+        visible={showLocation}
+        initialLocations={activeLocations}
+        onApply={(locations) => {
+          setActiveLocations(locations);
+          setShowLocation(false);
+        }}
+      />
 
       {/* Loading indicator */}
       {displayedLoading && displayedBusinesses.length === 0 && (
@@ -309,6 +415,7 @@ export default function AllBusinessesScreen() {
         }}
         initialValue={activeSort}
       />
+
     </ScreenLayout>
   );
 }

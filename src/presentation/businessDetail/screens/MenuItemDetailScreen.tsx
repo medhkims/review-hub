@@ -27,27 +27,27 @@ const MOCK_ITEM = {
 const IngredientChip: React.FC<{ name: string; icon: string }> = ({ name, icon }) => {
   const theme = useTheme();
   return (
-  <View
-    style={{
-      backgroundColor: theme.card,
-      borderRadius: 16,
-      paddingHorizontal: 20,
-      paddingVertical: 12,
-      alignItems: 'center',
-      justifyContent: 'center',
-      borderWidth: 1,
-      borderColor: theme.border,
-      minWidth: 90,
-    }}
-  >
-    <MaterialCommunityIcons
-      name={icon as keyof typeof MaterialCommunityIcons.glyphMap}
-      size={24}
-      color={colors.neonPurple}
-      style={{ marginBottom: 6 }}
-    />
-    <AppText style={{ fontSize: 12, color: theme.textSecondary, fontWeight: '500' }}>{name}</AppText>
-  </View>
+    <View
+      style={{
+        backgroundColor: theme.card,
+        borderRadius: 16,
+        paddingHorizontal: 20,
+        paddingVertical: 12,
+        alignItems: 'center',
+        justifyContent: 'center',
+        borderWidth: 1,
+        borderColor: theme.border,
+        minWidth: 90,
+      }}
+    >
+      <MaterialCommunityIcons
+        name={icon as keyof typeof MaterialCommunityIcons.glyphMap}
+        size={24}
+        color={colors.neonPurple}
+        style={{ marginBottom: 6 }}
+      />
+      <AppText style={{ fontSize: 12, color: theme.textSecondary, fontWeight: '500' }}>{name}</AppText>
+    </View>
   );
 };
 

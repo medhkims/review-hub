@@ -1,5 +1,5 @@
-import React, { useCallback } from 'react';
-import { View, ScrollView, Pressable } from 'react-native';
+import React, { useCallback, useState } from 'react';
+import { View, ScrollView, Pressable, Modal } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 import { ScreenLayout } from '@/presentation/shared/layouts/ScreenLayout';
@@ -14,15 +14,17 @@ import { useAuth } from '@/presentation/auth/hooks/useAuth';
 import { useRoleStore } from '@/presentation/auth/store/roleStore';
 import { useAnalyticsScreen } from '@/presentation/shared/hooks/useAnalyticsScreen';
 import { AnalyticsScreens } from '@/core/analytics/analyticsKeys';
+import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { colors } from '@/core/theme/colors';
 import { useTheme } from '@/core/theme/useTheme';
 
 export default function SettingsScreen() {
   useAnalyticsScreen(AnalyticsScreens.SETTINGS);
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const router = useRouter();
   const settings = useSettingsStore((state) => state.settings);
-  const { toggleNotifications, toggleDarkMode } = useSettings();
+  const { toggleNotifications, toggleDarkMode, changeLanguage } = useSettings();
+  const [showLanguagePicker, setShowLanguagePicker] = useState(false);
   const { user } = useAuthStore();
   const { signOut } = useAuth();
   const { role } = useRoleStore();
@@ -32,6 +34,14 @@ export default function SettingsScreen() {
 
   const notificationsEnabled = settings?.notificationsEnabled ?? true;
   const darkModeEnabled = settings?.theme === 'dark';
+  const currentLanguage = settings?.language ?? i18n.language;
+
+  const LANGUAGES = [
+    { code: 'en', label: t('settings.languageEnglish') },
+    { code: 'ar', label: t('settings.languageArabic') },
+  ];
+
+  const currentLanguageLabel = LANGUAGES.find((l) => l.code === currentLanguage)?.label ?? currentLanguage;
 
   const handleLogout = async () => {
     await signOut();
@@ -151,6 +161,64 @@ export default function SettingsScreen() {
           <SettingCard>
             <SettingRow iconName="moon-waxing-crescent" iconColor="purple" label={t('settings.darkMode')} hint={t('settings.darkModeHint')} rightElement="toggle" toggleValue={darkModeEnabled} onToggle={toggleDarkMode} isLast />
           </SettingCard>
+          <SettingCard>
+            <SettingRow
+              iconName="translate"
+              iconColor="blue"
+              label={t('settings.language')}
+              hint={t('settings.languageHint')}
+              value={currentLanguageLabel}
+              onPress={() => setShowLanguagePicker(true)}
+              isLast
+            />
+          </SettingCard>
+
+          <Modal
+            visible={showLanguagePicker}
+            transparent
+            animationType="fade"
+            onRequestClose={() => setShowLanguagePicker(false)}
+          >
+            <Pressable
+              style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.5)', justifyContent: 'center', alignItems: 'center' }}
+              onPress={() => setShowLanguagePicker(false)}
+            >
+              <Pressable
+                style={{ backgroundColor: theme.card, borderRadius: 16, width: 260, overflow: 'hidden', borderWidth: 1, borderColor: theme.border }}
+                onPress={() => {}}
+              >
+                <View style={{ paddingVertical: 12, paddingHorizontal: 20, borderBottomWidth: 1, borderBottomColor: theme.border }}>
+                  <AppText style={{ fontSize: 15, fontWeight: '600', color: theme.text }}>{t('settings.language')}</AppText>
+                </View>
+                {LANGUAGES.map((lang, index) => {
+                  const isSelected = lang.code === currentLanguage;
+                  const isLastItem = index === LANGUAGES.length - 1;
+                  return (
+                    <Pressable
+                      key={lang.code}
+                      onPress={async () => {
+                        setShowLanguagePicker(false);
+                        await changeLanguage(lang.code);
+                      }}
+                      accessibilityRole="button"
+                      accessibilityLabel={lang.label}
+                      style={[
+                        { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingVertical: 16, paddingHorizontal: 20 },
+                        !isLastItem ? { borderBottomWidth: 1, borderBottomColor: theme.border } : {},
+                      ]}
+                    >
+                      <AppText style={{ fontSize: 15, color: isSelected ? colors.neonPurple : theme.text, fontWeight: isSelected ? '600' : '400' }}>
+                        {lang.label}
+                      </AppText>
+                      {isSelected && (
+                        <MaterialCommunityIcons name="check" size={18} color={colors.neonPurple} />
+                      )}
+                    </Pressable>
+                  );
+                })}
+              </Pressable>
+            </Pressable>
+          </Modal>
 
           {isAdminOrModerator && (
             <>

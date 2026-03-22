@@ -1,11 +1,16 @@
 import React from 'react';
-import { Pressable } from 'react-native';
+import { Pressable, View } from 'react-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { colors } from '@/core/theme/colors';
+import { AppText } from '@/presentation/shared/components/ui/AppText';
 import { useAdminDrawerStore } from '../store/adminDrawerStore';
+import { useAdminBadgeStore } from '../store/adminBadgeStore';
 
 export const AdminMenuButton: React.FC = () => {
   const open = useAdminDrawerStore((s) => s.open);
+  const { tickets, verification, chat } = useAdminBadgeStore();
+  const total = tickets + verification + chat;
+
   return (
     <Pressable
       onPress={open}
@@ -20,6 +25,26 @@ export const AdminMenuButton: React.FC = () => {
       })}
     >
       <MaterialCommunityIcons name="menu" size={22} color={colors.neonPurple} />
+      {total > 0 && (
+        <View
+          style={{
+            position: 'absolute',
+            top: 2,
+            right: 2,
+            minWidth: 16,
+            height: 16,
+            borderRadius: 8,
+            backgroundColor: '#EF4444',
+            justifyContent: 'center',
+            alignItems: 'center',
+            paddingHorizontal: 3,
+          }}
+        >
+          <AppText style={{ fontSize: 9, color: '#FFFFFF', fontWeight: '700', lineHeight: 12 }}>
+            {total > 99 ? '99+' : String(total)}
+          </AppText>
+        </View>
+      )}
     </Pressable>
   );
 };

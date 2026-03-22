@@ -176,6 +176,7 @@ import { UpdateVerificationStatusUseCase } from '@/domain/verification/usecases/
 import { SendVerificationOtpUseCase } from '@/domain/verification/usecases/sendVerificationOtpUseCase';
 import { VerifyVerificationOtpUseCase } from '@/domain/verification/usecases/verifyVerificationOtpUseCase';
 import { GetVerificationsByStatusUseCase } from '@/domain/verification/usecases/getVerificationsByStatusUseCase';
+import { ValidateIdCardUseCase } from '@/domain/verification/usecases/validateIdCardUseCase';
 
 // ---- FAQ ----
 import { FaqRemoteDataSourceImpl } from '@/data/faq/datasources/faqRemoteDataSource';
@@ -390,10 +391,11 @@ const verificationRepository = new VerificationRepositoryImpl(verificationRemote
 const submitVerificationUseCase = new SubmitVerificationUseCase(verificationRepository);
 const getUserVerificationUseCase = new GetUserVerificationUseCase(verificationRepository);
 const getPendingVerificationsUseCase = new GetPendingVerificationsUseCase(verificationRepository);
-const updateVerificationStatusUseCase = new UpdateVerificationStatusUseCase(verificationRepository);
+const updateVerificationStatusUseCase = new UpdateVerificationStatusUseCase(verificationRepository, notificationRepository);
 const sendVerificationOtpUseCase = new SendVerificationOtpUseCase(verificationRepository);
 const verifyVerificationOtpUseCase = new VerifyVerificationOtpUseCase(verificationRepository);
 const getVerificationsByStatusUseCase = new GetVerificationsByStatusUseCase(verificationRepository);
+const validateIdCardUseCase = new ValidateIdCardUseCase(verificationRepository);
 
 // ---- Admin ----
 const adminRemoteDataSource = new AdminRemoteDataSourceImpl();
@@ -553,6 +555,7 @@ export const container = {
   sendVerificationOtpUseCase,
   verifyVerificationOtpUseCase,
   getVerificationsByStatusUseCase,
+  validateIdCardUseCase,
   // FAQ use cases
   getFaqsUseCase,
   getAdminFaqsUseCase,

@@ -42,56 +42,56 @@ const ImageUploadBox: React.FC<ImageUploadBoxProps> = ({
 }) => {
   const theme = useTheme();
   return (
-  <View style={{ flex: 1 }}>
-    <AppText style={{ color: theme.textSecondary, fontSize: 13, marginBottom: 6, fontWeight: '500' }}>
-      {label}
-    </AppText>
-    <Pressable
-      onPress={onPick}
-      accessibilityLabel={label}
-      accessibilityRole="button"
-      style={{
-        height,
-        borderStyle: 'dashed',
-        borderWidth: 1.5,
-        borderColor: theme.border,
-        borderRadius: 12,
-        backgroundColor: theme.card,
-        alignItems: 'center',
-        justifyContent: 'center',
-        overflow: 'hidden',
-      }}
-    >
-      {imageUri ? (
-        <Image source={{ uri: imageUri }} style={{ width: '100%', height: '100%' }} resizeMode="cover" accessibilityLabel={label} />
-      ) : (
-        <View style={{ alignItems: 'center' }}>
-          <MaterialCommunityIcons name={icon} size={24} color={theme.textMuted} />
-          <AppText style={{ color: theme.textMuted, fontSize: 12, marginTop: 6 }}>{hintText}</AppText>
-        </View>
-      )}
-    </Pressable>
-    {imageUri && (
+    <View style={{ flex: 1 }}>
+      <AppText style={{ color: theme.textSecondary, fontSize: 13, marginBottom: 6, fontWeight: '500' }}>
+        {label}
+      </AppText>
       <Pressable
-        onPress={onRemove}
+        onPress={onPick}
+        accessibilityLabel={label}
         accessibilityRole="button"
-        accessibilityLabel={`Remove ${label}`}
         style={{
-          position: 'absolute',
-          bottom: 8,
-          right: 8,
-          width: 28,
-          height: 28,
-          borderRadius: 14,
-          backgroundColor: 'rgba(15,23,42,0.8)',
+          height,
+          borderStyle: 'dashed',
+          borderWidth: 1.5,
+          borderColor: theme.border,
+          borderRadius: 12,
+          backgroundColor: theme.card,
           alignItems: 'center',
           justifyContent: 'center',
+          overflow: 'hidden',
         }}
       >
-        <MaterialCommunityIcons name="close" size={16} color="#FFFFFF" />
+        {imageUri ? (
+          <Image source={{ uri: imageUri }} style={{ width: '100%', height: '100%' }} resizeMode="cover" accessibilityLabel={label} />
+        ) : (
+          <View style={{ alignItems: 'center' }}>
+            <MaterialCommunityIcons name={icon} size={24} color={theme.textMuted} />
+            <AppText style={{ color: theme.textMuted, fontSize: 12, marginTop: 6 }}>{hintText}</AppText>
+          </View>
+        )}
       </Pressable>
-    )}
-  </View>
+      {imageUri && (
+        <Pressable
+          onPress={onRemove}
+          accessibilityRole="button"
+          accessibilityLabel={`Remove ${label}`}
+          style={{
+            position: 'absolute',
+            bottom: 8,
+            right: 8,
+            width: 28,
+            height: 28,
+            borderRadius: 14,
+            backgroundColor: 'rgba(15,23,42,0.8)',
+            alignItems: 'center',
+            justifyContent: 'center',
+          }}
+        >
+          <MaterialCommunityIcons name="close" size={16} color="#FFFFFF" />
+        </Pressable>
+      )}
+    </View>
   );
 };
 
@@ -108,49 +108,49 @@ interface AlertModalProps {
 const AlertModal: React.FC<AlertModalProps> = ({ visible, title, message, onClose, buttons }) => {
   const theme = useTheme();
   return (
-  <Modal visible={visible} transparent animationType="fade">
-    <View style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.7)', justifyContent: 'center', alignItems: 'center', paddingHorizontal: 24 }}>
-      <View style={{ backgroundColor: theme.card, borderRadius: 20, padding: 24, width: '100%', borderWidth: 1, borderColor: theme.border }}>
-        {onClose && (
-          <Pressable
-            onPress={onClose}
-            accessibilityRole="button"
-            accessibilityLabel="Close"
-            style={{ position: 'absolute', top: 12, right: 12, padding: 4 }}
-          >
-            <MaterialCommunityIcons name="close" size={20} color={theme.textSecondary} />
-          </Pressable>
-        )}
-        <AppText style={{ fontSize: 18, fontWeight: '700', color: theme.text, marginBottom: 8, textAlign: 'center' }}>
-          {title}
-        </AppText>
-        <AppText style={{ fontSize: 14, color: theme.textSecondary, textAlign: 'center', marginBottom: 24, lineHeight: 20 }}>
-          {message}
-        </AppText>
-        {buttons.map((btn, i) => (
-          <Pressable
-            key={i}
-            onPress={btn.onPress}
-            accessibilityRole="button"
-            accessibilityLabel={btn.label}
-            style={{
-              backgroundColor: btn.variant === 'primary' ? colors.neonPurple : 'transparent',
-              borderWidth: btn.variant !== 'primary' ? 1 : 0,
-              borderColor: theme.border,
-              borderRadius: 12,
-              paddingVertical: 13,
-              alignItems: 'center',
-              marginBottom: i < buttons.length - 1 ? 10 : 0,
-            }}
-          >
-            <AppText style={{ color: btn.variant === 'primary' ? '#FFFFFF' : theme.textSecondary, fontWeight: '600', fontSize: 15 }}>
-              {btn.label}
-            </AppText>
-          </Pressable>
-        ))}
+    <Modal visible={visible} transparent animationType="fade">
+      <View style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.7)', justifyContent: 'center', alignItems: 'center', paddingHorizontal: 24 }}>
+        <View style={{ backgroundColor: theme.card, borderRadius: 20, padding: 24, width: '100%', borderWidth: 1, borderColor: theme.border }}>
+          {onClose && (
+            <Pressable
+              onPress={onClose}
+              accessibilityRole="button"
+              accessibilityLabel="Close"
+              style={{ position: 'absolute', top: 12, right: 12, padding: 4 }}
+            >
+              <MaterialCommunityIcons name="close" size={20} color={theme.textSecondary} />
+            </Pressable>
+          )}
+          <AppText style={{ fontSize: 18, fontWeight: '700', color: theme.text, marginBottom: 8, textAlign: 'center' }}>
+            {title}
+          </AppText>
+          <AppText style={{ fontSize: 14, color: theme.textSecondary, textAlign: 'center', marginBottom: 24, lineHeight: 20 }}>
+            {message}
+          </AppText>
+          {buttons.map((btn, i) => (
+            <Pressable
+              key={i}
+              onPress={btn.onPress}
+              accessibilityRole="button"
+              accessibilityLabel={btn.label}
+              style={{
+                backgroundColor: btn.variant === 'primary' ? colors.neonPurple : 'transparent',
+                borderWidth: btn.variant !== 'primary' ? 1 : 0,
+                borderColor: theme.border,
+                borderRadius: 12,
+                paddingVertical: 13,
+                alignItems: 'center',
+                marginBottom: i < buttons.length - 1 ? 10 : 0,
+              }}
+            >
+              <AppText style={{ color: btn.variant === 'primary' ? '#FFFFFF' : theme.textSecondary, fontWeight: '600', fontSize: 15 }}>
+                {btn.label}
+              </AppText>
+            </Pressable>
+          ))}
+        </View>
       </View>
-    </View>
-  </Modal>
+    </Modal>
   );
 };
 

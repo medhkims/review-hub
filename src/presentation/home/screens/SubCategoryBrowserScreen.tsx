@@ -17,6 +17,7 @@ import { ErrorView } from '@/presentation/shared/components/ui/ErrorView';
 import { SubcategoryPickerModal } from '@/presentation/shared/components/ui/SubcategoryPickerModal';
 import { FilterBySheet, FilterState, DEFAULT_FILTER_STATE } from '@/presentation/shared/components/FilterBySheet';
 import { SortBySheet, SortOption } from '@/presentation/shared/components/SortBySheet';
+import { LocationDropdown } from '@/presentation/shared/components/LocationDropdown';
 import { useAnalyticsScreen } from '@/presentation/shared/hooks/useAnalyticsScreen';
 import { AnalyticsScreens } from '@/core/analytics/analyticsKeys';
 import { colors } from '@/core/theme/colors';
@@ -101,8 +102,10 @@ export default function SubCategoryBrowserScreen() {
   const [showSubCategoryPicker, setShowSubCategoryPicker] = useState(false);
   const [showFilter, setShowFilter] = useState(false);
   const [showSort, setShowSort] = useState(false);
+  const [showLocation, setShowLocation] = useState(false);
   const [activeFilters, setActiveFilters] = useState<FilterState>(DEFAULT_FILTER_STATE);
   const [activeSort, setActiveSort] = useState<SortOption | null>(null);
+  const [activeLocations, setActiveLocations] = useState<string[]>([]);
 
   const loadBusinesses = useCallback(async () => {
     setError(null);
@@ -156,9 +159,9 @@ export default function SubCategoryBrowserScreen() {
       const query = searchQuery.toLowerCase();
       data = data.filter((b) => b.name.toLowerCase().includes(query));
     }
-    if (activeFilters.locations.length > 0) {
+    if (activeLocations.length > 0) {
       data = data.filter((b) =>
-        activeFilters.locations.some((loc) =>
+        activeLocations.some((loc) =>
           b.location?.toLowerCase().includes(loc.toLowerCase()),
         ),
       );
@@ -180,7 +183,7 @@ export default function SubCategoryBrowserScreen() {
       default:
         return data;
     }
-  }, [businesses, selectedSubCategories, searchQuery, activeFilters, activeSort]);
+  }, [businesses, selectedSubCategories, searchQuery, activeFilters, activeLocations, activeSort]);
 
   const handleBack = useCallback(() => {
     router.back();
@@ -306,99 +309,149 @@ export default function SubCategoryBrowserScreen() {
       </View>
 
       {/* Search Bar */}
-      <View style={{ paddingHorizontal: 24, paddingBottom: 12 }}>
-        <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-          <View
-            style={{
-              flex: 1,
-              flexDirection: 'row',
-              alignItems: 'center',
-              backgroundColor: theme.card,
-              borderWidth: 1,
-              borderColor: theme.border,
-              borderRadius: 16,
-              paddingHorizontal: 16,
-              paddingVertical: 12,
-            }}
-          >
-            <MaterialCommunityIcons
-              name="magnify"
-              size={22}
-              color={colors.neonPurple}
-              style={{ marginRight: 12 }}
-            />
-            <TextInput
-              style={{ flex: 1, color: theme.text, fontSize: 15, padding: 0 }}
-              value={searchQuery}
-              onChangeText={setSearchQuery}
-              placeholder={searchPlaceholder}
-              placeholderTextColor={theme.textMuted}
-              accessibilityLabel={searchPlaceholder}
-              accessibilityRole="search"
-            />
-          </View>
-
-          {/* Sort Button */}
-          <Pressable
-            onPress={() => setShowSort(true)}
-            style={({ pressed }) => ({
-              width: 44,
-              height: 44,
-              borderRadius: 14,
-              backgroundColor: activeSort ? 'rgba(168,85,247,0.15)' : theme.card,
-              borderWidth: 1,
-              borderColor: activeSort ? colors.neonPurple : theme.border,
-              alignItems: 'center',
-              justifyContent: 'center',
-              marginLeft: 10,
-              opacity: pressed ? 0.7 : 1,
-            })}
-            accessibilityLabel={t('sortBy.title')}
-            accessibilityRole="button"
-          >
-            <MaterialCommunityIcons
-              name="sort-variant"
-              size={20}
-              color={activeSort ? colors.neonPurple : theme.textSecondary}
-            />
-          </Pressable>
-
-          {/* Filter Button */}
-          <Pressable
-            onPress={() => setShowFilter(true)}
-            style={({ pressed }) => ({
-              width: 44,
-              height: 44,
-              borderRadius: 14,
-              backgroundColor:
-                activeFilters.locations.length > 0 || activeFilters.minRating > 0
-                  ? 'rgba(168,85,247,0.15)'
-                  : theme.card,
-              borderWidth: 1,
-              borderColor:
-                activeFilters.locations.length > 0 || activeFilters.minRating > 0
-                  ? colors.neonPurple
-                  : theme.border,
-              alignItems: 'center',
-              justifyContent: 'center',
-              marginLeft: 8,
-              opacity: pressed ? 0.7 : 1,
-            })}
-            accessibilityLabel={t('filterBy.title')}
-            accessibilityRole="button"
-          >
-            <MaterialCommunityIcons
-              name="filter-variant"
-              size={20}
-              color={
-                activeFilters.locations.length > 0 || activeFilters.minRating > 0
-                  ? colors.neonPurple
-                  : theme.textSecondary
-              }
-            />
-          </Pressable>
+      <View style={{ paddingHorizontal: 24, paddingBottom: 10 }}>
+        <View
+          style={{
+            flexDirection: 'row',
+            alignItems: 'center',
+            backgroundColor: theme.card,
+            borderWidth: 1,
+            borderColor: theme.border,
+            borderRadius: 16,
+            paddingHorizontal: 16,
+            paddingVertical: 12,
+          }}
+        >
+          <MaterialCommunityIcons
+            name="magnify"
+            size={22}
+            color={colors.neonPurple}
+            style={{ marginRight: 12 }}
+          />
+          <TextInput
+            style={{ flex: 1, color: theme.text, fontSize: 15, padding: 0 }}
+            value={searchQuery}
+            onChangeText={setSearchQuery}
+            placeholder={searchPlaceholder}
+            placeholderTextColor={theme.textMuted}
+            accessibilityLabel={searchPlaceholder}
+            accessibilityRole="search"
+          />
         </View>
       </View>
+
+      {/* Sort / Filter / Location row */}
+      <ScrollView
+        horizontal
+        showsHorizontalScrollIndicator={false}
+        style={{ flexGrow: 0, marginBottom: 12 }}
+        contentContainerStyle={{ paddingHorizontal: 24, gap: 8 }}
+      >
+        <Pressable
+          onPress={() => setShowSort(true)}
+          accessibilityLabel={t('home.sort')}
+          accessibilityRole="button"
+          style={{
+            flexDirection: 'row',
+            alignItems: 'center',
+            gap: 6,
+            paddingHorizontal: 14,
+            paddingVertical: 8,
+            borderRadius: 20,
+            borderWidth: 1,
+            borderColor: activeSort ? colors.neonPurple : theme.border,
+            backgroundColor: activeSort ? 'rgba(168,85,247,0.12)' : theme.card,
+          }}
+        >
+          <MaterialCommunityIcons
+            name="swap-vertical"
+            size={16}
+            color={activeSort ? colors.neonPurple : theme.textSecondary}
+          />
+          <AppText
+            style={{
+              fontSize: 13,
+              fontWeight: activeSort ? '600' : '400',
+              color: activeSort ? colors.neonPurple : theme.textSecondary,
+            }}
+          >
+            {t('home.sort')}
+          </AppText>
+        </Pressable>
+
+        <Pressable
+          onPress={() => setShowFilter(true)}
+          accessibilityLabel={t('home.filter')}
+          accessibilityRole="button"
+          style={{
+            flexDirection: 'row',
+            alignItems: 'center',
+            gap: 6,
+            paddingHorizontal: 14,
+            paddingVertical: 8,
+            borderRadius: 20,
+            borderWidth: 1,
+            borderColor: activeFilters.minRating > 0 ? colors.neonPurple : theme.border,
+            backgroundColor: activeFilters.minRating > 0 ? 'rgba(168,85,247,0.12)' : theme.card,
+          }}
+        >
+          <MaterialCommunityIcons
+            name="tune-variant"
+            size={16}
+            color={activeFilters.minRating > 0 ? colors.neonPurple : theme.textSecondary}
+          />
+          <AppText
+            style={{
+              fontSize: 13,
+              fontWeight: activeFilters.minRating > 0 ? '600' : '400',
+              color: activeFilters.minRating > 0 ? colors.neonPurple : theme.textSecondary,
+            }}
+          >
+            {t('home.filter')}
+          </AppText>
+        </Pressable>
+
+        <Pressable
+          onPress={() => setShowLocation((prev) => !prev)}
+          accessibilityLabel={t('home.location')}
+          accessibilityRole="button"
+          style={{
+            flexDirection: 'row',
+            alignItems: 'center',
+            gap: 6,
+            paddingHorizontal: 14,
+            paddingVertical: 8,
+            borderRadius: 20,
+            borderWidth: 1,
+            borderColor: activeLocations.length > 0 ? colors.neonPurple : theme.border,
+            backgroundColor: activeLocations.length > 0 ? 'rgba(168,85,247,0.12)' : theme.card,
+          }}
+        >
+          <MaterialCommunityIcons
+            name="map-marker-outline"
+            size={16}
+            color={activeLocations.length > 0 ? colors.neonPurple : theme.textSecondary}
+          />
+          <AppText
+            style={{
+              fontSize: 13,
+              fontWeight: activeLocations.length > 0 ? '600' : '400',
+              color: activeLocations.length > 0 ? colors.neonPurple : theme.textSecondary,
+            }}
+          >
+            {t('home.location')}
+          </AppText>
+        </Pressable>
+      </ScrollView>
+
+      <LocationDropdown
+        visible={showLocation}
+        initialLocations={activeLocations}
+        onApply={(locations) => {
+          setActiveLocations(locations);
+          setShowLocation(false);
+        }}
+      />
 
       {/* Sub-Category Tabs — shown whenever the category has defined subcategories */}
       {subCategories.length > 0 && (
@@ -538,6 +591,7 @@ export default function SubCategoryBrowserScreen() {
         }}
         initialValue={activeSort}
       />
+
     </ScreenLayout>
   );
 }

@@ -91,6 +91,16 @@ const NOTIFICATION_TYPE_CONFIG: Record<NotificationType, NotificationTypeConfig>
     color: '#EF4444',
     bgColor: 'rgba(239, 68, 68, 0.1)',
   },
+  verification_approved: {
+    icon: 'shield-check',
+    color: colors.success,
+    bgColor: 'rgba(34, 197, 94, 0.1)',
+  },
+  verification_rejected: {
+    icon: 'shield-remove',
+    color: '#EF4444',
+    bgColor: 'rgba(239, 68, 68, 0.1)',
+  },
 };
 
 // -- Pulse Dot ----------------------------------------------------------------

@@ -18,54 +18,54 @@ const NEON_PURPLE = colors.neonPurple;
 const EmptyState = () => {
   const theme = useTheme();
   return (
-  <View
-    style={{
-      flex: 1,
-      alignItems: 'center',
-      justifyContent: 'center',
-      paddingHorizontal: 32,
-      paddingVertical: 64,
-    }}
-  >
     <View
       style={{
-        width: 80,
-        height: 80,
-        borderRadius: 40,
-        backgroundColor: `${NEON_PURPLE}15`,
+        flex: 1,
         alignItems: 'center',
         justifyContent: 'center',
-        marginBottom: 20,
+        paddingHorizontal: 32,
+        paddingVertical: 64,
       }}
     >
-      <MaterialCommunityIcons
-        name="post-outline"
-        size={36}
-        color={colors.textSlate500}
-      />
+      <View
+        style={{
+          width: 80,
+          height: 80,
+          borderRadius: 40,
+          backgroundColor: `${NEON_PURPLE}15`,
+          alignItems: 'center',
+          justifyContent: 'center',
+          marginBottom: 20,
+        }}
+      >
+        <MaterialCommunityIcons
+          name="post-outline"
+          size={36}
+          color={colors.textSlate500}
+        />
+      </View>
+      <AppText
+        style={{
+          fontSize: 18,
+          fontWeight: '700',
+          color: theme.text,
+          textAlign: 'center',
+          marginBottom: 8,
+        }}
+      >
+        No posts yet
+      </AppText>
+      <AppText
+        style={{
+          fontSize: 14,
+          color: theme.textSecondary,
+          textAlign: 'center',
+          lineHeight: 20,
+        }}
+      >
+        Be the first to share something with the community.
+      </AppText>
     </View>
-    <AppText
-      style={{
-        fontSize: 18,
-        fontWeight: '700',
-        color: theme.text,
-        textAlign: 'center',
-        marginBottom: 8,
-      }}
-    >
-      No posts yet
-    </AppText>
-    <AppText
-      style={{
-        fontSize: 14,
-        color: theme.textSecondary,
-        textAlign: 'center',
-        lineHeight: 20,
-      }}
-    >
-      Be the first to share something with the community.
-    </AppText>
-  </View>
   );
 };
 

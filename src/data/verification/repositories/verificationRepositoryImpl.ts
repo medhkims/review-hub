@@ -23,6 +23,7 @@ export class VerificationRepositoryImpl implements VerificationRepository {
         params.fullName,
         params.phoneNumber,
         idCardUrl,
+        params.cinNumber ?? null,
       );
       return right(VerificationMapper.toEntity(model));
     } catch (error: unknown) {
@@ -95,6 +96,17 @@ export class VerificationRepositoryImpl implements VerificationRepository {
     } catch (error: unknown) {
       if (error instanceof ServerException) return left(new ServerFailure(error.message));
       const msg = error instanceof Error ? error.message : 'Failed to verify OTP';
+      return left(new ServerFailure(msg));
+    }
+  }
+
+  async validateIdCard(imageBase64: string): Promise<Either<Failure, { isValid: boolean; cinNumber: string | null }>> {
+    try {
+      const result = await this.remote.validateIdCard(imageBase64);
+      return right(result);
+    } catch (error: unknown) {
+      if (error instanceof ServerException) return left(new ServerFailure(error.message));
+      const msg = error instanceof Error ? error.message : 'Failed to validate ID card';
       return left(new ServerFailure(msg));
     }
   }

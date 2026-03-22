@@ -130,21 +130,21 @@ ConversationCard.displayName = 'ConversationCard';
 const EmptyState = () => {
   const theme = useTheme();
   return (
-  <View className="flex-1 items-center justify-center px-8 py-16">
-    <MaterialCommunityIcons name="chat-outline" size={64} color={theme.border} />
-    <AppText
-      className="font-bold text-lg mt-4 text-center"
-      style={{ color: theme.text, fontSize: 18, fontWeight: '700' }}
-    >
-      No conversations yet
-    </AppText>
-    <AppText
-      className="text-sm mt-2 text-center leading-relaxed"
-      style={{ color: theme.textSecondary, fontSize: 14 }}
-    >
-      Start a conversation to connect with others
-    </AppText>
-  </View>
+    <View className="flex-1 items-center justify-center px-8 py-16">
+      <MaterialCommunityIcons name="chat-outline" size={64} color={theme.border} />
+      <AppText
+        className="font-bold text-lg mt-4 text-center"
+        style={{ color: theme.text, fontSize: 18, fontWeight: '700' }}
+      >
+        No conversations yet
+      </AppText>
+      <AppText
+        className="text-sm mt-2 text-center leading-relaxed"
+        style={{ color: theme.textSecondary, fontSize: 14 }}
+      >
+        Start a conversation to connect with others
+      </AppText>
+    </View>
   );
 };
 
@@ -158,62 +158,62 @@ interface AdminTabsProps {
 const AdminTabs = ({ active, onChange }: AdminTabsProps) => {
   const theme = useTheme();
   return (
-  <View
-    style={{
-      flexDirection: 'row',
-      marginHorizontal: 16,
-      marginBottom: 12,
-      borderRadius: 10,
-      overflow: 'hidden',
-      backgroundColor: theme.card,
-    }}
-  >
-    <Pressable
-      onPress={() => onChange('business')}
+    <View
       style={{
-        flex: 1,
-        paddingVertical: 10,
-        alignItems: 'center',
-        backgroundColor: active === 'business' ? colors.neonPurple : 'transparent',
+        flexDirection: 'row',
+        marginHorizontal: 16,
+        marginBottom: 12,
         borderRadius: 10,
+        overflow: 'hidden',
+        backgroundColor: theme.card,
       }}
-      accessibilityLabel="Business conversations"
-      accessibilityRole="tab"
     >
-      <AppText
+      <Pressable
+        onPress={() => onChange('business')}
         style={{
-          fontSize: 14,
-          fontWeight: '600',
-          color: active === 'business' ? '#FFFFFF' : theme.textSecondary,
+          flex: 1,
+          paddingVertical: 10,
+          alignItems: 'center',
+          backgroundColor: active === 'business' ? colors.neonPurple : 'transparent',
+          borderRadius: 10,
         }}
+        accessibilityLabel="Business conversations"
+        accessibilityRole="tab"
       >
-        Business
-      </AppText>
-    </Pressable>
+        <AppText
+          style={{
+            fontSize: 14,
+            fontWeight: '600',
+            color: active === 'business' ? '#FFFFFF' : theme.textSecondary,
+          }}
+        >
+          Business
+        </AppText>
+      </Pressable>
 
-    <Pressable
-      onPress={() => onChange('moderator')}
-      style={{
-        flex: 1,
-        paddingVertical: 10,
-        alignItems: 'center',
-        backgroundColor: active === 'moderator' ? colors.neonPurple : 'transparent',
-        borderRadius: 10,
-      }}
-      accessibilityLabel="Moderator conversations"
-      accessibilityRole="tab"
-    >
-      <AppText
+      <Pressable
+        onPress={() => onChange('moderator')}
         style={{
-          fontSize: 14,
-          fontWeight: '600',
-          color: active === 'moderator' ? '#FFFFFF' : theme.textSecondary,
+          flex: 1,
+          paddingVertical: 10,
+          alignItems: 'center',
+          backgroundColor: active === 'moderator' ? colors.neonPurple : 'transparent',
+          borderRadius: 10,
         }}
+        accessibilityLabel="Moderator conversations"
+        accessibilityRole="tab"
       >
-        Moderator
-      </AppText>
-    </Pressable>
-  </View>
+        <AppText
+          style={{
+            fontSize: 14,
+            fontWeight: '600',
+            color: active === 'moderator' ? '#FFFFFF' : theme.textSecondary,
+          }}
+        >
+          Moderator
+        </AppText>
+      </Pressable>
+    </View>
   );
 };
 
