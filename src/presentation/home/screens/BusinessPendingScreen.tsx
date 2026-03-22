@@ -6,9 +6,11 @@ import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { AppText } from '@/presentation/shared/components/ui/AppText';
 import { colors } from '@/core/theme/colors';
+import { useTheme } from '@/core/theme/useTheme';
 
 export default function BusinessPendingScreen() {
   const { t } = useTranslation();
+  const theme = useTheme();
   const insets = useSafeAreaInsets();
   const { businessName, categoryName, location } = useLocalSearchParams<{
     businessName?: string;
@@ -21,18 +23,18 @@ export default function BusinessPendingScreen() {
   }, []);
 
   return (
-    <View style={{ flex: 1, backgroundColor: colors.midnight }}>
+    <View style={{ flex: 1, backgroundColor: theme.background }}>
 
       {/* ── Blurred background: dim company profile ── */}
       <View style={[StyleSheet.absoluteFillObject, { opacity: 0.13 }]}>
         {/* Cover area */}
         <View style={{
           height: 230,
-          backgroundColor: colors.cardDark,
+          backgroundColor: theme.card,
           alignItems: 'center',
           justifyContent: 'center',
         }}>
-          <MaterialCommunityIcons name="image-outline" size={64} color={colors.textSlate500} />
+          <MaterialCommunityIcons name="image-outline" size={64} color={theme.textMuted} />
         </View>
 
         {/* Profile row */}
@@ -40,16 +42,16 @@ export default function BusinessPendingScreen() {
           <View style={{ flexDirection: 'row', alignItems: 'center', gap: 14, marginBottom: 14 }}>
             <View style={{
               width: 72, height: 72, borderRadius: 16,
-              backgroundColor: colors.cardDark,
+              backgroundColor: theme.card,
               alignItems: 'center', justifyContent: 'center',
             }}>
-              <MaterialCommunityIcons name="store" size={36} color={colors.textSlate500} />
+              <MaterialCommunityIcons name="store" size={36} color={theme.textMuted} />
             </View>
             <View style={{ flex: 1 }}>
-              <AppText style={{ fontSize: 22, fontWeight: '800', color: colors.white, marginBottom: 4 }}>
+              <AppText style={{ fontSize: 22, fontWeight: '800', color: theme.text, marginBottom: 4 }}>
                 {businessName ?? ''}
               </AppText>
-              <AppText style={{ fontSize: 14, color: colors.textSlate400 }}>
+              <AppText style={{ fontSize: 14, color: theme.textSecondary }}>
                 {categoryName ?? ''}
               </AppText>
             </View>
@@ -57,8 +59,8 @@ export default function BusinessPendingScreen() {
 
           {!!location && (
             <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
-              <MaterialCommunityIcons name="map-marker-outline" size={16} color={colors.textSlate500} />
-              <AppText style={{ fontSize: 14, color: colors.textSlate400 }}>
+              <MaterialCommunityIcons name="map-marker-outline" size={16} color={theme.textMuted} />
+              <AppText style={{ fontSize: 14, color: theme.textSecondary }}>
                 {location}
               </AppText>
             </View>
@@ -66,9 +68,9 @@ export default function BusinessPendingScreen() {
 
           {/* Fake content lines */}
           <View style={{ marginTop: 24, gap: 10 }}>
-            <View style={{ height: 12, borderRadius: 6, backgroundColor: colors.cardDark, width: '90%' }} />
-            <View style={{ height: 12, borderRadius: 6, backgroundColor: colors.cardDark, width: '75%' }} />
-            <View style={{ height: 12, borderRadius: 6, backgroundColor: colors.cardDark, width: '60%' }} />
+            <View style={{ height: 12, borderRadius: 6, backgroundColor: theme.card, width: '90%' }} />
+            <View style={{ height: 12, borderRadius: 6, backgroundColor: theme.card, width: '75%' }} />
+            <View style={{ height: 12, borderRadius: 6, backgroundColor: theme.card, width: '60%' }} />
           </View>
         </View>
       </View>
@@ -143,7 +145,7 @@ export default function BusinessPendingScreen() {
           <AppText style={{
             fontSize: 20,
             fontWeight: '800',
-            color: colors.white,
+            color: theme.text,
             textAlign: 'center',
             marginBottom: 8,
           }}>
@@ -153,7 +155,7 @@ export default function BusinessPendingScreen() {
           {/* Detail message */}
           <AppText style={{
             fontSize: 14,
-            color: colors.textSlate400,
+            color: theme.textSecondary,
             textAlign: 'center',
             lineHeight: 22,
           }}>
@@ -185,8 +187,8 @@ export default function BusinessPendingScreen() {
           accessibilityLabel={t('home.addBusiness.pendingGoHome')}
           accessibilityRole="button"
         >
-          <MaterialCommunityIcons name="home-outline" size={20} color={colors.white} />
-          <AppText style={{ color: colors.white, fontSize: 16, fontWeight: '700' }}>
+          <MaterialCommunityIcons name="home-outline" size={20} color="#FFFFFF" />
+          <AppText style={{ color: '#FFFFFF', fontSize: 16, fontWeight: '700' }}>
             {t('home.addBusiness.pendingGoHome')}
           </AppText>
         </Pressable>

@@ -12,6 +12,7 @@ import { useAuth } from '../hooks/useAuth';
 import { useAnalyticsScreen } from '@/presentation/shared/hooks/useAnalyticsScreen';
 import { AnalyticsScreens } from '@/core/analytics/analyticsKeys';
 import { colors } from '@/core/theme/colors';
+import { useTheme } from '@/core/theme/useTheme';
 import { useSavedAccountsStore, SavedAccount } from '../store/savedAccountsStore';
 
 const GoogleIcon = () => (
@@ -59,25 +60,28 @@ interface SocialButtonProps {
   accessibilityLabel: string;
 }
 
-const SocialButton: React.FC<SocialButtonProps> = ({ onPress, children, accessibilityLabel }) => (
-  <Pressable
-    onPress={onPress}
-    accessibilityRole="button"
-    accessibilityLabel={accessibilityLabel}
-    style={{
-      width: 56,
-      height: 56,
-      borderRadius: 28,
-      backgroundColor: colors.cardDark,
-      borderWidth: 1,
-      borderColor: colors.borderDark,
-      alignItems: 'center',
-      justifyContent: 'center',
-    }}
-  >
-    {children}
-  </Pressable>
-);
+const SocialButton: React.FC<SocialButtonProps> = ({ onPress, children, accessibilityLabel }) => {
+  const theme = useTheme();
+  return (
+    <Pressable
+      onPress={onPress}
+      accessibilityRole="button"
+      accessibilityLabel={accessibilityLabel}
+      style={{
+        width: 56,
+        height: 56,
+        borderRadius: 28,
+        backgroundColor: theme.card,
+        borderWidth: 1,
+        borderColor: theme.border,
+        alignItems: 'center',
+        justifyContent: 'center',
+      }}
+    >
+      {children}
+    </Pressable>
+  );
+};
 
 const getInitials = (name: string): string => {
   const parts = name.trim().split(' ');
@@ -89,6 +93,7 @@ export default function SignInScreen() {
   useAnalyticsScreen(AnalyticsScreens.SIGN_IN);
   const router = useRouter();
   const { t } = useTranslation();
+  const theme = useTheme();
   const { signIn, signInWithGoogle, isLoading, isAuthenticated, error } = useAuth();
   const { accounts, isLoaded, load, remove } = useSavedAccountsStore();
 
@@ -140,10 +145,10 @@ export default function SignInScreen() {
       >
         {/* Header Section */}
         <View style={{ paddingTop: 16, paddingBottom: 8, paddingHorizontal: 24 }}>
-          <AppText style={{ fontSize: 32, fontWeight: '700', color: colors.textWhite, lineHeight: 40 }}>
+          <AppText style={{ fontSize: 32, fontWeight: '700', color: theme.text, lineHeight: 40 }}>
             {t('auth.signIn.title')}
           </AppText>
-          <AppText style={{ fontSize: 16, color: colors.textSlate400, fontWeight: '400', lineHeight: 24, marginTop: 8 }}>
+          <AppText style={{ fontSize: 16, color: theme.textSecondary, fontWeight: '400', lineHeight: 24, marginTop: 8 }}>
             {t('auth.signIn.subtitle')}
           </AppText>
         </View>
@@ -165,7 +170,7 @@ export default function SignInScreen() {
             }}
           >
             <MaterialCommunityIcons name="account" size={18} color={colors.neonPurple} />
-            <AppText style={{ fontSize: 12, fontWeight: '600', color: colors.textSlate200, textTransform: 'uppercase', letterSpacing: 0.5 }}>
+            <AppText style={{ fontSize: 12, fontWeight: '600', color: theme.text, textTransform: 'uppercase', letterSpacing: 0.5 }}>
               {t('auth.signIn.userType')}
             </AppText>
           </View>
@@ -181,7 +186,7 @@ export default function SignInScreen() {
                   flex: 1,
                   fontSize: 11,
                   fontWeight: '700',
-                  color: colors.textSlate500,
+                  color: theme.textMuted,
                   letterSpacing: 1,
                   textTransform: 'uppercase',
                 }}
@@ -228,17 +233,17 @@ export default function SignInScreen() {
                   </View>
                   <View
                     style={{
-                      backgroundColor: colors.cardDark,
+                      backgroundColor: theme.card,
                       borderRadius: 16,
                       borderWidth: 1,
-                      borderColor: colors.borderDark,
+                      borderColor: theme.border,
                       overflow: 'hidden',
                     }}
                   >
                     {list.map((account, index) => (
                       <React.Fragment key={account.id}>
                         {index > 0 && (
-                          <View style={{ height: 1, backgroundColor: `${colors.borderDark}40`, marginHorizontal: 16 }} />
+                          <View style={{ height: 1, backgroundColor: `${theme.border}`, opacity: 0.4, marginHorizontal: 16 }} />
                         )}
                         <View style={{ flexDirection: 'row', alignItems: 'center' }}>
                           {isEditing && (
@@ -280,7 +285,7 @@ export default function SignInScreen() {
                               width: 44,
                               height: 44,
                               borderRadius: 22,
-                              backgroundColor: colors.borderDark,
+                              backgroundColor: theme.border,
                               alignItems: 'center',
                               justifyContent: 'center',
                               overflow: 'hidden',
@@ -293,21 +298,21 @@ export default function SignInScreen() {
                                 accessibilityLabel={account.displayName}
                               />
                             ) : (
-                              <AppText style={{ fontSize: 14, fontWeight: '700', color: colors.textWhite }}>
+                              <AppText style={{ fontSize: 14, fontWeight: '700', color: theme.text }}>
                                 {getInitials(account.displayName)}
                               </AppText>
                             )}
                           </View>
                           <View style={{ flex: 1 }}>
-                            <AppText style={{ fontSize: 15, fontWeight: '600', color: colors.textWhite }}>
+                            <AppText style={{ fontSize: 15, fontWeight: '600', color: theme.text }}>
                               {account.displayName}
                             </AppText>
-                            <AppText style={{ fontSize: 13, color: colors.textSlate400, marginTop: 2 }}>
+                            <AppText style={{ fontSize: 13, color: theme.textSecondary, marginTop: 2 }}>
                               {account.email}
                             </AppText>
                           </View>
                           {!isEditing && (account.provider === 'google' ? (
-                            <View style={{ width: 32, height: 32, borderRadius: 16, backgroundColor: colors.cardDark, borderWidth: 1, borderColor: colors.borderDark, alignItems: 'center', justifyContent: 'center' }}>
+                            <View style={{ width: 32, height: 32, borderRadius: 16, backgroundColor: theme.card, borderWidth: 1, borderColor: theme.border, alignItems: 'center', justifyContent: 'center' }}>
                               <Svg width={18} height={18} viewBox="0 0 24 24">
                                 <Path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4" />
                                 <Path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853" />
@@ -316,7 +321,7 @@ export default function SignInScreen() {
                               </Svg>
                             </View>
                           ) : (
-                            <MaterialCommunityIcons name="chevron-right" size={20} color={colors.textSlate500} />
+                            <MaterialCommunityIcons name="chevron-right" size={20} color={theme.textMuted} />
                           ))}
                         </Pressable>
                         </View>
@@ -349,7 +354,7 @@ export default function SignInScreen() {
         {(!hasSavedAccounts || showEmailForm) && (
           <>
             <View style={{ paddingHorizontal: 24, paddingVertical: 16, alignItems: 'center', gap: 16 }}>
-              <AppText style={{ fontSize: 14, fontWeight: '500', color: colors.textSlate400, textAlign: 'center' }}>
+              <AppText style={{ fontSize: 14, fontWeight: '500', color: theme.textSecondary, textAlign: 'center' }}>
                 {t('auth.signIn.socialPrompt')}
               </AppText>
               <View style={{ flexDirection: 'row', justifyContent: 'center', gap: 24 }}>
@@ -368,13 +373,13 @@ export default function SignInScreen() {
             {/* Divider */}
             <View style={{ paddingHorizontal: 24, paddingVertical: 16 }}>
               <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                <View style={{ flex: 1, height: 1, backgroundColor: 'rgba(51, 65, 85, 0.5)' }} />
-                <View style={{ backgroundColor: colors.midnight, paddingHorizontal: 8 }}>
-                  <AppText style={{ fontSize: 12, color: colors.textSlate400, textTransform: 'uppercase' }}>
+                <View style={{ flex: 1, height: 1, backgroundColor: theme.border }} />
+                <View style={{ backgroundColor: theme.background, paddingHorizontal: 8 }}>
+                  <AppText style={{ fontSize: 12, color: theme.textSecondary, textTransform: 'uppercase' }}>
                     {t('auth.signIn.orEmail')}
                   </AppText>
                 </View>
-                <View style={{ flex: 1, height: 1, backgroundColor: 'rgba(51, 65, 85, 0.5)' }} />
+                <View style={{ flex: 1, height: 1, backgroundColor: theme.border }} />
               </View>
             </View>
 
@@ -459,7 +464,7 @@ export default function SignInScreen() {
         {/* Footer */}
         <View style={{ marginTop: 'auto', paddingVertical: 32, alignItems: 'center' }}>
           <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-            <AppText style={{ fontSize: 14, color: colors.textSlate400 }}>
+            <AppText style={{ fontSize: 14, color: theme.textSecondary }}>
               {t('auth.signIn.noAccount')}{' '}
             </AppText>
             <Pressable
@@ -488,10 +493,10 @@ export default function SignInScreen() {
           <View
             style={{
               width: '85%',
-              backgroundColor: colors.cardDark,
+              backgroundColor: theme.card,
               borderRadius: 20,
               borderWidth: 1,
-              borderColor: colors.borderDark,
+              borderColor: theme.border,
               padding: 24,
             }}
           >
@@ -501,7 +506,7 @@ export default function SignInScreen() {
                   width: 64,
                   height: 64,
                   borderRadius: 32,
-                  backgroundColor: colors.borderDark,
+                  backgroundColor: theme.border,
                   alignItems: 'center',
                   justifyContent: 'center',
                   marginBottom: 12,
@@ -515,15 +520,15 @@ export default function SignInScreen() {
                     accessibilityLabel={selectedAccount.displayName}
                   />
                 ) : (
-                  <AppText style={{ fontSize: 22, fontWeight: '700', color: colors.textWhite }}>
+                  <AppText style={{ fontSize: 22, fontWeight: '700', color: theme.text }}>
                     {selectedAccount ? getInitials(selectedAccount.displayName) : ''}
                   </AppText>
                 )}
               </View>
-              <AppText style={{ fontSize: 17, fontWeight: '700', color: colors.textWhite, marginBottom: 4 }}>
+              <AppText style={{ fontSize: 17, fontWeight: '700', color: theme.text, marginBottom: 4 }}>
                 {t('accountSwitcher.passwordModalTitle')}
               </AppText>
-              <AppText style={{ fontSize: 13, color: colors.textSlate400, textAlign: 'center' }}>
+              <AppText style={{ fontSize: 13, color: theme.textSecondary, textAlign: 'center' }}>
                 {t('accountSwitcher.passwordModalSubtitle')} {selectedAccount?.displayName}
               </AppText>
             </View>
@@ -584,10 +589,10 @@ export default function SignInScreen() {
           <View
             style={{
               width: '80%',
-              backgroundColor: colors.cardDark,
+              backgroundColor: theme.card,
               borderRadius: 20,
               borderWidth: 1,
-              borderColor: colors.borderDark,
+              borderColor: theme.border,
               padding: 24,
               alignItems: 'center',
             }}
@@ -605,10 +610,10 @@ export default function SignInScreen() {
             >
               <MaterialCommunityIcons name="account-remove-outline" size={28} color="#EF4444" />
             </View>
-            <AppText style={{ fontSize: 17, fontWeight: '700', color: colors.textWhite, marginBottom: 8, textAlign: 'center' }}>
+            <AppText style={{ fontSize: 17, fontWeight: '700', color: theme.text, marginBottom: 8, textAlign: 'center' }}>
               {t('accountSwitcher.removeConfirmTitle')}
             </AppText>
-            <AppText style={{ fontSize: 13, color: colors.textSlate400, textAlign: 'center', marginBottom: 24, lineHeight: 20 }}>
+            <AppText style={{ fontSize: 13, color: theme.textSecondary, textAlign: 'center', marginBottom: 24, lineHeight: 20 }}>
               {t('accountSwitcher.removeConfirmMessage')}
             </AppText>
             <View style={{ flexDirection: 'row', gap: 12, width: '100%' }}>
@@ -621,11 +626,11 @@ export default function SignInScreen() {
                   paddingVertical: 12,
                   borderRadius: 12,
                   borderWidth: 1,
-                  borderColor: colors.borderDark,
+                  borderColor: theme.border,
                   alignItems: 'center',
                 }}
               >
-                <AppText style={{ fontSize: 15, fontWeight: '600', color: colors.textSlate300 }}>
+                <AppText style={{ fontSize: 15, fontWeight: '600', color: theme.textSecondary }}>
                   {t('accountSwitcher.removeConfirmNo')}
                 </AppText>
               </Pressable>

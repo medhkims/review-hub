@@ -2,6 +2,7 @@ import React from 'react';
 import { View, TextInput, Pressable } from 'react-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { colors } from '@/core/theme/colors';
+import { useTheme } from '@/core/theme/useTheme';
 
 interface SearchBarProps {
   value: string;
@@ -20,15 +21,15 @@ export const SearchBar: React.FC<SearchBarProps> = ({
   onFocus,
   onBlur,
 }) => {
+  const theme = useTheme();
   return (
     <View
-      className="flex-row items-center bg-card-dark border border-border-dark/50 rounded-2xl px-4 py-3"
       style={{
         flexDirection: 'row',
         alignItems: 'center',
-        backgroundColor: colors.cardDark,
+        backgroundColor: theme.card,
         borderWidth: 1,
-        borderColor: colors.borderDark,
+        borderColor: theme.border,
         borderRadius: 16,
         paddingHorizontal: 16,
         paddingVertical: 12,
@@ -41,12 +42,11 @@ export const SearchBar: React.FC<SearchBarProps> = ({
         style={{ marginRight: 12 }}
       />
       <TextInput
-        className="flex-1 text-white text-base"
-        style={{ flex: 1, color: colors.textWhite, fontSize: 16, padding: 0 }}
+        style={{ flex: 1, color: theme.text, fontSize: 16, padding: 0 }}
         value={value}
         onChangeText={onChangeText}
         placeholder={placeholder}
-        placeholderTextColor={colors.textSlate500}
+        placeholderTextColor={theme.textMuted}
         onFocus={onFocus}
         onBlur={onBlur}
         accessibilityLabel="Search businesses"
@@ -62,7 +62,7 @@ export const SearchBar: React.FC<SearchBarProps> = ({
           <MaterialCommunityIcons
             name="tune-variant"
             size={22}
-            color={colors.textSlate400}
+            color={theme.textSecondary}
           />
         </Pressable>
       )}

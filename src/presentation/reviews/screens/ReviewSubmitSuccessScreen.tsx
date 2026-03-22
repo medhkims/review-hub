@@ -7,15 +7,18 @@ import { ScreenLayout } from '@/presentation/shared/layouts/ScreenLayout';
 import { AppText } from '@/presentation/shared/components/ui/AppText';
 import { AppButton } from '@/presentation/shared/components/ui/AppButton';
 import { colors } from '@/core/theme/colors';
+import { useTheme } from '@/core/theme/useTheme';
 
 interface StarRowProps {
   label: string;
   rating: number;
 }
 
-const StarRow = ({ label, rating }: StarRowProps) => (
+const StarRow = ({ label, rating }: StarRowProps) => {
+  const theme = useTheme();
+  return (
   <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingVertical: 6 }}>
-    <AppText style={{ fontSize: 13, color: colors.textSlate400 }}>{label}</AppText>
+    <AppText style={{ fontSize: 13, color: theme.textSecondary }}>{label}</AppText>
     <View style={{ flexDirection: 'row', gap: 2 }}>
       {[1, 2, 3, 4, 5].map((star) => (
         <MaterialCommunityIcons
@@ -27,11 +30,13 @@ const StarRow = ({ label, rating }: StarRowProps) => (
       ))}
     </View>
   </View>
-);
+  );
+};
 
 export default function ReviewSubmitSuccessScreen() {
   const router = useRouter();
   const { t } = useTranslation();
+  const theme = useTheme();
 
   const { businessName, ratings: ratingsParam, reviewText } = useLocalSearchParams<{
     businessName: string;
@@ -63,7 +68,7 @@ export default function ReviewSubmitSuccessScreen() {
     <ScreenLayout>
       {/* Header */}
       <View style={{ alignItems: 'center', paddingHorizontal: 20, paddingVertical: 14 }}>
-        <AppText style={{ fontSize: 18, fontWeight: '700', color: colors.textWhite, letterSpacing: 0.5 }}>
+        <AppText style={{ fontSize: 18, fontWeight: '700', color: theme.text, letterSpacing: 0.5 }}>
           {t('reviewSuccess.title')}
         </AppText>
       </View>
@@ -76,7 +81,7 @@ export default function ReviewSubmitSuccessScreen() {
         <View style={{ alignItems: 'center', marginTop: 24, marginBottom: 32, gap: 16 }}>
           <View style={{
             width: 96, height: 96, borderRadius: 48,
-            backgroundColor: colors.midnight,
+            backgroundColor: theme.background,
             borderWidth: 1, borderColor: `${colors.neonPurple}33`,
             alignItems: 'center', justifyContent: 'center',
             shadowColor: colors.neonPurple,
@@ -89,10 +94,10 @@ export default function ReviewSubmitSuccessScreen() {
           </View>
 
           <View style={{ alignItems: 'center', gap: 6 }}>
-            <AppText style={{ fontSize: 22, fontWeight: '700', color: colors.textWhite, textAlign: 'center' }}>
+            <AppText style={{ fontSize: 22, fontWeight: '700', color: theme.text, textAlign: 'center' }}>
               {t('reviewSuccess.heading')}
             </AppText>
-            <AppText style={{ fontSize: 14, color: colors.textSlate400, textAlign: 'center', lineHeight: 20 }}>
+            <AppText style={{ fontSize: 14, color: theme.textSecondary, textAlign: 'center', lineHeight: 20 }}>
               {t('reviewSuccess.subtitle', { businessName: resolvedBusinessName })}
             </AppText>
           </View>
@@ -100,10 +105,10 @@ export default function ReviewSubmitSuccessScreen() {
 
         {/* Review summary card */}
         <View style={{
-          backgroundColor: colors.cardDark,
+          backgroundColor: theme.card,
           borderRadius: 20,
           borderWidth: 1,
-          borderColor: `${colors.textWhite}0D`,
+          borderColor: `${theme.text}0D`,
           overflow: 'hidden',
           marginBottom: 28,
           shadowColor: colors.black,
@@ -125,15 +130,15 @@ export default function ReviewSubmitSuccessScreen() {
             <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12, marginBottom: 16 }}>
               <View style={{
                 width: 48, height: 48, borderRadius: 24,
-                backgroundColor: colors.midnight,
-                borderWidth: 1, borderColor: `${colors.textWhite}1A`,
+                backgroundColor: theme.background,
+                borderWidth: 1, borderColor: `${theme.text}1A`,
                 alignItems: 'center', justifyContent: 'center',
               }}>
                 <AppText style={{ fontSize: 20, fontWeight: '700', color: colors.neonPurple }}>
                   {resolvedBusinessName.charAt(0).toUpperCase()}
                 </AppText>
               </View>
-              <AppText style={{ fontSize: 16, fontWeight: '700', color: colors.textWhite, flex: 1 }}>
+              <AppText style={{ fontSize: 16, fontWeight: '700', color: theme.text, flex: 1 }}>
                 {resolvedBusinessName}
               </AppText>
             </View>
@@ -157,10 +162,10 @@ export default function ReviewSubmitSuccessScreen() {
             {!!reviewText && (
               <AppText style={{
                 fontSize: 13,
-                color: colors.textSlate200,
+                color: theme.textSecondary,
                 fontStyle: 'italic',
                 borderTopWidth: 1,
-                borderTopColor: `${colors.textWhite}0D`,
+                borderTopColor: `${theme.text}0D`,
                 paddingTop: 12,
                 lineHeight: 20,
               }}>
@@ -180,7 +185,7 @@ export default function ReviewSubmitSuccessScreen() {
             onPress={handleGoToMyReviews}
             accessibilityLabel={t('reviewSuccess.goToMyReviews')}
             accessibilityRole="button"
-            icon={<MaterialCommunityIcons name="arrow-right" size={18} color={colors.textWhite} />}
+            icon={<MaterialCommunityIcons name="arrow-right" size={18} color="#FFFFFF" />}
           />
           <AppButton
             title={t('reviewSuccess.backToHome')}

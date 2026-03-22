@@ -10,6 +10,7 @@ import { Card } from '@/presentation/shared/components/ui/Card';
 import { useAnalyticsScreen } from '@/presentation/shared/hooks/useAnalyticsScreen';
 import { AnalyticsScreens } from '@/core/analytics/analyticsKeys';
 import { colors } from '@/core/theme/colors';
+import { useTheme } from '@/core/theme/useTheme';
 import { CATEGORY_MAP, RatingCriterionDef } from '@/core/constants/categoriesData';
 import { useWriteReview } from '../hooks/useWriteReview';
 import { PhotoPicker, SelectedPhoto } from '../components/PhotoPicker';
@@ -29,25 +30,30 @@ interface StarRatingProps {
   onRate: (n: number) => void;
 }
 
-const StarRating = React.memo(({ rating, onRate }: StarRatingProps) => (
-  <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
-    {[1, 2, 3, 4, 5].map((star) => (
-      <Pressable
-        key={star}
-        onPress={() => onRate(star)}
-        accessibilityLabel={`Rate ${star} star${star > 1 ? 's' : ''}`}
-        accessibilityRole="button"
-        hitSlop={4}
-      >
-        <MaterialCommunityIcons
-          name={star <= rating ? 'star' : 'star-outline'}
-          size={28}
-          color={star <= rating ? colors.neonPurple : colors.borderDark}
-        />
-      </Pressable>
-    ))}
-  </View>
-));
+const StarRating = React.memo(
+  ({ rating, onRate }: StarRatingProps) => {
+    const theme = useTheme();
+    return (
+      <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+        {[1, 2, 3, 4, 5].map((star) => (
+          <Pressable
+            key={star}
+            onPress={() => onRate(star)}
+            accessibilityLabel={`Rate ${star} star${star > 1 ? 's' : ''}`}
+            accessibilityRole="button"
+            hitSlop={4}
+          >
+            <MaterialCommunityIcons
+              name={star <= rating ? 'star' : 'star-outline'}
+              size={28}
+              color={star <= rating ? colors.neonPurple : theme.border}
+            />
+          </Pressable>
+        ))}
+      </View>
+    );
+  },
+);
 
 StarRating.displayName = 'StarRating';
 
@@ -55,6 +61,7 @@ export default function WriteReviewScreen() {
   useAnalyticsScreen(AnalyticsScreens.WRITE_REVIEW);
   const router = useRouter();
   const { t } = useTranslation();
+  const theme = useTheme();
   const { businessId, businessName, categoryId } = useLocalSearchParams<{
     businessId: string;
     businessName: string;
@@ -143,37 +150,37 @@ export default function WriteReviewScreen() {
             accessibilityRole="button"
             hitSlop={8}
             style={{
-              width: 40, height: 40, borderRadius: 20, backgroundColor: colors.cardDark,
+              width: 40, height: 40, borderRadius: 20, backgroundColor: theme.card,
               alignItems: 'center', justifyContent: 'center',
             }}
           >
-            <MaterialCommunityIcons name="arrow-left" size={22} color={colors.textWhite} />
+            <MaterialCommunityIcons name="arrow-left" size={22} color={theme.text} />
           </Pressable>
         </View>
 
         {/* Business Hero */}
         <View style={{ alignItems: 'center', marginBottom: 24 }}>
-          <View style={{ width: '100%', height: 140, backgroundColor: colors.cardDark, position: 'relative' }}>
+          <View style={{ width: '100%', height: 140, backgroundColor: theme.card, position: 'relative' }}>
             <View style={{
               position: 'absolute', bottom: 0, left: 0, right: 0,
-              height: 80, backgroundColor: colors.midnight, opacity: 0.8,
+              height: 80, backgroundColor: theme.background, opacity: 0.8,
             }} />
           </View>
           <View style={{
-            width: 72, height: 72, borderRadius: 36, backgroundColor: colors.cardDark,
+            width: 72, height: 72, borderRadius: 36, backgroundColor: theme.card,
             borderWidth: 3, borderColor: colors.neonPurple, alignItems: 'center',
             justifyContent: 'center', marginTop: -36,
           }}>
             <MaterialCommunityIcons name="store" size={32} color={colors.neonPurple} />
           </View>
-          <AppText style={{ fontSize: 22, fontWeight: '700', color: colors.textWhite, marginTop: 10, textAlign: 'center' }}>
+          <AppText style={{ fontSize: 22, fontWeight: '700', color: theme.text, marginTop: 10, textAlign: 'center' }}>
             {resolvedBusinessName}
           </AppText>
         </View>
 
         {/* Rating Section — general (1-5 stars) or per-criterion */}
         <View style={{ paddingHorizontal: 20, marginBottom: 24 }}>
-          <Card style={{ backgroundColor: colors.cardDark, borderRadius: 16, padding: 20 }}>
+          <Card style={{ backgroundColor: theme.card, borderRadius: 16, padding: 20 }}>
             {isGeneralRating ? (
               /* General rating mode for 'other' category */
               <View style={{ alignItems: 'center', paddingVertical: 8 }}>
@@ -183,16 +190,16 @@ export default function WriteReviewScreen() {
                 }}>
                   <MaterialCommunityIcons name="star-circle-outline" size={28} color={colors.neonPurple} />
                 </View>
-                <AppText style={{ fontSize: 16, fontWeight: '700', color: colors.textWhite, marginBottom: 4 }}>
+                <AppText style={{ fontSize: 16, fontWeight: '700', color: theme.text, marginBottom: 4 }}>
                   {t('writeReview.overallRating')}
                 </AppText>
                 {generalRating === 0 && (
-                  <AppText style={{ fontSize: 12, color: colors.textSlate400, marginBottom: 16 }}>
+                  <AppText style={{ fontSize: 12, color: theme.textSecondary, marginBottom: 16 }}>
                     {t('writeReview.tapToRate')}
                   </AppText>
                 )}
                 {generalRating > 0 && (
-                  <AppText style={{ fontSize: 12, color: colors.textSlate400, marginBottom: 16 }}>
+                  <AppText style={{ fontSize: 12, color: theme.textSecondary, marginBottom: 16 }}>
                     {generalRating} / 5
                   </AppText>
                 )}
@@ -206,7 +213,7 @@ export default function WriteReviewScreen() {
                   style={{
                     flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
                     paddingVertical: 14, borderBottomWidth: idx < ratingCriteria.length - 1 ? 1 : 0,
-                    borderBottomColor: colors.borderDark,
+                    borderBottomColor: theme.border,
                   }}
                 >
                   <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12, flex: 1 }}>
@@ -221,11 +228,11 @@ export default function WriteReviewScreen() {
                       />
                     </View>
                     <View>
-                      <AppText style={{ fontSize: 15, fontWeight: '600', color: colors.textWhite }}>
+                      <AppText style={{ fontSize: 15, fontWeight: '600', color: theme.text }}>
                         {criterion.label}
                       </AppText>
                       {ratings[criterion.key] === 0 && (
-                        <AppText style={{ fontSize: 11, color: colors.textSlate400, marginTop: 2 }}>
+                        <AppText style={{ fontSize: 11, color: theme.textSecondary, marginTop: 2 }}>
                           {t('writeReview.tapToRate')}
                         </AppText>
                       )}
@@ -240,24 +247,24 @@ export default function WriteReviewScreen() {
 
         {/* Write Your Review */}
         <View style={{ paddingHorizontal: 20, marginBottom: 24 }}>
-          <AppText style={{ fontSize: 17, fontWeight: '700', color: colors.textWhite, marginBottom: 12 }}>
+          <AppText style={{ fontSize: 17, fontWeight: '700', color: theme.text, marginBottom: 12 }}>
             {t('writeReview.writeYourReview')}
           </AppText>
           <View style={{
-            backgroundColor: colors.cardDark, borderRadius: 14,
-            borderWidth: 1, borderColor: colors.borderDark, padding: 14, minHeight: 130,
+            backgroundColor: theme.card, borderRadius: 14,
+            borderWidth: 1, borderColor: theme.border, padding: 14, minHeight: 130,
           }}>
             <TextInput
-              style={{ color: colors.textWhite, fontSize: 15, lineHeight: 22, minHeight: 90, textAlignVertical: 'top' }}
+              style={{ color: theme.text, fontSize: 15, lineHeight: 22, minHeight: 90, textAlignVertical: 'top' }}
               placeholder={t('writeReview.placeholder')}
-              placeholderTextColor={colors.textSlate500}
+              placeholderTextColor={theme.textMuted}
               multiline
               maxLength={MAX_CHARS}
               value={reviewText}
               onChangeText={handleTextChange}
               accessibilityLabel={t('writeReview.writeYourReview')}
             />
-            <AppText style={{ fontSize: 12, color: colors.textSlate400, textAlign: 'right', marginTop: 8 }}>
+            <AppText style={{ fontSize: 12, color: theme.textSecondary, textAlign: 'right', marginTop: 8 }}>
               {reviewText.length}/{MAX_CHARS}
             </AppText>
           </View>
@@ -265,7 +272,7 @@ export default function WriteReviewScreen() {
 
         {/* Add Photos */}
         <View style={{ paddingHorizontal: 20, marginBottom: 32 }}>
-          <AppText style={{ fontSize: 17, fontWeight: '700', color: colors.textWhite, marginBottom: 12 }}>
+          <AppText style={{ fontSize: 17, fontWeight: '700', color: theme.text, marginBottom: 12 }}>
             {t('writeReview.addPhotos')}
           </AppText>
           <PhotoPicker photos={photos} onChange={setPhotos} />
@@ -283,7 +290,7 @@ export default function WriteReviewScreen() {
             onPress={handleSubmit}
             accessibilityLabel={t('writeReview.submit')}
             accessibilityRole="button"
-            icon={!isSubmitting ? <MaterialCommunityIcons name="arrow-right" size={20} color={colors.textWhite} /> : undefined}
+            icon={!isSubmitting ? <MaterialCommunityIcons name="arrow-right" size={20} color="#FFFFFF" /> : undefined}
           />
         </View>
       </ScrollView>

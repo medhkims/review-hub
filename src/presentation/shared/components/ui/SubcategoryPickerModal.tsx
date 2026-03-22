@@ -4,6 +4,7 @@ import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useTranslation } from 'react-i18next';
 import { AppText } from './AppText';
 import { colors } from '@/core/theme/colors';
+import { useTheme } from '@/core/theme/useTheme';
 
 interface SubcategoryPickerModalProps {
   visible: boolean;
@@ -12,6 +13,7 @@ interface SubcategoryPickerModalProps {
   values: string[];
   onClose: () => void;
   onConfirm: (values: string[]) => void;
+  minSelect?: number;
 }
 
 export const SubcategoryPickerModal: React.FC<SubcategoryPickerModalProps> = ({
@@ -21,8 +23,10 @@ export const SubcategoryPickerModal: React.FC<SubcategoryPickerModalProps> = ({
   values,
   onClose,
   onConfirm,
+  minSelect = 0,
 }) => {
   const { t } = useTranslation();
+  const theme = useTheme();
   const [selected, setSelected] = useState<string[]>(values);
 
   useEffect(() => {
@@ -53,7 +57,7 @@ export const SubcategoryPickerModal: React.FC<SubcategoryPickerModalProps> = ({
         {/* Content — View (not Pressable) to avoid nested <button> on web */}
         <View
           style={{
-            backgroundColor: colors.cardDark,
+            backgroundColor: theme.card,
             borderRadius: 20,
             overflow: 'hidden',
           }}
@@ -66,10 +70,10 @@ export const SubcategoryPickerModal: React.FC<SubcategoryPickerModalProps> = ({
               justifyContent: 'space-between',
               padding: 20,
               borderBottomWidth: 1,
-              borderBottomColor: colors.borderDark,
+              borderBottomColor: theme.border,
             }}
           >
-            <AppText style={{ fontSize: 17, fontWeight: '700', color: colors.white }}>
+            <AppText style={{ fontSize: 17, fontWeight: '700', color: theme.text }}>
               {title}
             </AppText>
             <Pressable
@@ -77,7 +81,7 @@ export const SubcategoryPickerModal: React.FC<SubcategoryPickerModalProps> = ({
               accessibilityRole="button"
               accessibilityLabel={t('common.cancel')}
             >
-              <MaterialCommunityIcons name="close" size={22} color={colors.textSlate400} />
+              <MaterialCommunityIcons name="close" size={22} color={theme.textSecondary} />
             </Pressable>
           </View>
 
@@ -98,7 +102,7 @@ export const SubcategoryPickerModal: React.FC<SubcategoryPickerModalProps> = ({
                     paddingVertical: 14,
                     backgroundColor: isSelected ? 'rgba(168,85,247,0.08)' : 'transparent',
                     borderBottomWidth: index < options.length - 1 ? 1 : 0,
-                    borderBottomColor: colors.borderDark,
+                    borderBottomColor: theme.border,
                   }}
                 >
                   <View
@@ -107,7 +111,7 @@ export const SubcategoryPickerModal: React.FC<SubcategoryPickerModalProps> = ({
                       height: 22,
                       borderRadius: 6,
                       borderWidth: 2,
-                      borderColor: isSelected ? colors.neonPurple : colors.borderDark,
+                      borderColor: isSelected ? colors.neonPurple : theme.border,
                       backgroundColor: isSelected ? colors.neonPurple : 'transparent',
                       alignItems: 'center',
                       justifyContent: 'center',
@@ -122,7 +126,7 @@ export const SubcategoryPickerModal: React.FC<SubcategoryPickerModalProps> = ({
                     style={{
                       flex: 1,
                       fontSize: 15,
-                      color: isSelected ? colors.white : colors.textSlate200,
+                      color: isSelected ? theme.text : theme.textSecondary,
                       fontWeight: isSelected ? '600' : '400',
                     }}
                   >
@@ -140,7 +144,7 @@ export const SubcategoryPickerModal: React.FC<SubcategoryPickerModalProps> = ({
               gap: 12,
               padding: 16,
               borderTopWidth: 1,
-              borderTopColor: colors.borderDark,
+              borderTopColor: theme.border,
             }}
           >
             <Pressable
@@ -152,27 +156,39 @@ export const SubcategoryPickerModal: React.FC<SubcategoryPickerModalProps> = ({
                 paddingVertical: 13,
                 borderRadius: 12,
                 borderWidth: 1,
-                borderColor: colors.borderDark,
+                borderColor: theme.border,
                 alignItems: 'center',
               }}
             >
-              <AppText style={{ color: colors.textSlate400, fontWeight: '600' }}>
+              <AppText style={{ color: theme.textSecondary, fontWeight: '600' }}>
                 {t('common.cancel')}
               </AppText>
             </Pressable>
             <Pressable
               onPress={() => onConfirm(selected)}
+              disabled={minSelect > 0 && selected.length < minSelect}
               accessibilityRole="button"
               accessibilityLabel={t('common.confirm')}
               style={{
                 flex: 1,
                 paddingVertical: 13,
                 borderRadius: 12,
-                backgroundColor: colors.neonPurple,
+                backgroundColor:
+                  minSelect > 0 && selected.length < minSelect
+                    ? theme.border
+                    : colors.neonPurple,
                 alignItems: 'center',
               }}
             >
-              <AppText style={{ color: colors.white, fontWeight: '600' }}>
+              <AppText
+                style={{
+                  color:
+                    minSelect > 0 && selected.length < minSelect
+                      ? theme.textMuted
+                      : colors.white,
+                  fontWeight: '600',
+                }}
+              >
                 {selected.length > 1
                   ? `${t('common.confirm')} (${selected.length})`
                   : t('common.confirm')}

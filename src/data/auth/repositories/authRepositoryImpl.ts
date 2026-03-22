@@ -118,6 +118,54 @@ export class AuthRepositoryImpl implements AuthRepository {
     }
   }
 
+  async verifyCurrentPassword(currentPassword: string): Promise<Either<Failure, void>> {
+    try {
+      await this.remoteDataSource.verifyCurrentPassword(currentPassword);
+      return right(undefined);
+    } catch (error) {
+      if (error instanceof AuthException) {
+        return left(new AuthFailure(error.message));
+      }
+      return left(new NetworkFailure('Failed to verify password'));
+    }
+  }
+
+  async sendPasswordChangeEmailVerification(): Promise<Either<Failure, void>> {
+    try {
+      await this.remoteDataSource.sendPasswordChangeEmailVerification();
+      return right(undefined);
+    } catch (error) {
+      if (error instanceof AuthException) {
+        return left(new AuthFailure(error.message));
+      }
+      return left(new NetworkFailure('Failed to send verification email'));
+    }
+  }
+
+  async sendEmailOtp(email: string): Promise<Either<Failure, void>> {
+    try {
+      await this.remoteDataSource.sendEmailOtp(email);
+      return right(undefined);
+    } catch (error) {
+      if (error instanceof ServerException) {
+        return left(new ServerFailure(error.message));
+      }
+      return left(new NetworkFailure('Failed to send email code'));
+    }
+  }
+
+  async verifyEmailOtp(email: string, code: string): Promise<Either<Failure, void>> {
+    try {
+      await this.remoteDataSource.verifyEmailOtp(email, code);
+      return right(undefined);
+    } catch (error) {
+      if (error instanceof ServerException) {
+        return left(new ServerFailure(error.message));
+      }
+      return left(new NetworkFailure('Verification failed'));
+    }
+  }
+
   async signInWithGoogle(loginHint?: string): Promise<Either<Failure, UserEntity>> {
     try {
       const model = await this.remoteDataSource.signInWithGoogle(loginHint);

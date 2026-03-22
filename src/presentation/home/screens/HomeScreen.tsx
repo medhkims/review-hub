@@ -21,6 +21,7 @@ import { AnalyticsScreens } from '@/core/analytics/analyticsKeys';
 import { BusinessEntity } from '@/domain/business/entities/businessEntity';
 import { BannerEntity } from '@/domain/banner/entities/bannerEntity';
 import { colors } from '@/core/theme/colors';
+import { useTheme } from '@/core/theme/useTheme';
 import { getCategoryDefaultCover, getCategoryDefaultLogo } from '@/core/utils/categoryDefaultImages';
 import { useCategoryDefaultStore } from '@/presentation/shared/store/categoryDefaultStore';
 import { trackKeywordEvent } from '@/core/utils/premiumTracking';
@@ -32,6 +33,7 @@ export default function HomeScreen() {
   const navigation = useNavigation();
   const { user } = useAuthStore();
   const { role } = useRoleStore();
+  const theme = useTheme();
   const categoryDefaults = useCategoryDefaultStore((s) => s.defaults);
 
   const {
@@ -90,7 +92,7 @@ export default function HomeScreen() {
   };
 
   const handleAvatarPress = useCallback(() => {
-    router.push('/(main)/(profile)/personal-info');
+    router.push('/(main)/(settings)');
   }, [router]);
 
   const handleBusinessPress = useCallback((business: BusinessEntity) => {
@@ -130,7 +132,7 @@ export default function HomeScreen() {
       <View
         style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingHorizontal: 14, paddingBottom: 12 }}
       >
-        <AppText style={{ fontSize: 18, fontWeight: '700', color: colors.white }}>
+        <AppText style={{ fontSize: 18, fontWeight: '700', color: theme.text }}>
           {t('home.categoriesSection')}
         </AppText>
         <Pressable
@@ -183,7 +185,7 @@ export default function HomeScreen() {
               >
                 <MaterialCommunityIcons name="history" size={16} color={colors.white} />
               </View>
-              <AppText style={{ fontSize: 18, fontWeight: '700', color: colors.white }}>
+              <AppText style={{ fontSize: 18, fontWeight: '700', color: theme.text }}>
                 {t('home.lastSearchesSection')}
               </AppText>
             </View>
@@ -218,7 +220,7 @@ export default function HomeScreen() {
                     height: 100,
                     borderRadius: 16,
                     overflow: 'hidden',
-                    backgroundColor: colors.cardDark,
+                    backgroundColor: theme.card,
                     marginBottom: 10,
                   }}
                 >
@@ -243,13 +245,13 @@ export default function HomeScreen() {
                   })()}
                 </View>
                 <AppText
-                  style={{ fontSize: 13, fontWeight: '700', color: colors.white }}
+                  style={{ fontSize: 13, fontWeight: '700', color: theme.text }}
                   numberOfLines={1}
                 >
                   {item.name}
                 </AppText>
                 <AppText
-                  style={{ fontSize: 10, color: colors.textSlate400, marginTop: 2, letterSpacing: 0.5 }}
+                  style={{ fontSize: 10, color: theme.textSecondary, marginTop: 2, letterSpacing: 0.5 }}
                   numberOfLines={1}
                 >
                   {item.categoryName?.toUpperCase()}
@@ -277,7 +279,7 @@ export default function HomeScreen() {
           >
             <MaterialCommunityIcons name="fire" size={16} color={colors.white} />
           </View>
-          <AppText style={{ fontSize: 18, fontWeight: '700', color: colors.white }}>
+          <AppText style={{ fontSize: 18, fontWeight: '700', color: theme.text }}>
             {t('home.newAddedSection')}
           </AppText>
         </View>
@@ -313,16 +315,16 @@ export default function HomeScreen() {
         </View>
       )}
     </View>
-  ), [t, categories, banners, isBannersLoading, handleBannerPress, newBusinesses, isNewBusinessesLoading, recentSearches, handleBusinessPress, toggleWishlist, isWishlisted, router]);
+  ), [t, theme, categories, banners, isBannersLoading, handleBannerPress, newBusinesses, isNewBusinessesLoading, recentSearches, handleBusinessPress, toggleWishlist, isWishlisted, router]);
 
   // Header shown when searching — minimal, no extra sections obscuring results
   const searchResultsHeader = useMemo(() => (
     <View style={{ paddingHorizontal: 14, paddingTop: 16, paddingBottom: 12 }}>
-      <AppText style={{ fontSize: 20, fontWeight: '700', color: colors.white }}>
+      <AppText style={{ fontSize: 20, fontWeight: '700', color: theme.text }}>
         {t('home.searchResultsSection')}
       </AppText>
     </View>
-  ), [t]);
+  ), [t, theme]);
 
   const handleFuzzyYes = useCallback((business: BusinessEntity) => {
     addRecentlyViewed(business);
@@ -434,12 +436,12 @@ export default function HomeScreen() {
         >
           <View style={{ flex: 1 }}>
             <AppText
-              style={{ fontSize: 28, fontWeight: '700', color: colors.white, letterSpacing: -0.5 }}
+              style={{ fontSize: 28, fontWeight: '700', color: theme.text, letterSpacing: -0.5 }}
             >
               {t('home.title')}
             </AppText>
             <AppText
-              style={{ color: colors.textSlate400, marginTop: 4, fontSize: 14, fontWeight: '500' }}
+              style={{ color: theme.textSecondary, marginTop: 4, fontSize: 14, fontWeight: '500' }}
             >
               {t('home.subtitle')}
             </AppText>

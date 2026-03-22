@@ -66,7 +66,11 @@ export interface BusinessRepository {
   incrementReviewView(reviewId: string): Promise<Either<Failure, void>>;
   getReviewComments(reviewId: string): Promise<Either<Failure, CommentEntity[]>>;
   addReviewComment(reviewId: string, text: string): Promise<Either<Failure, CommentEntity>>;
-  addCommentReply(commentId: string, reviewId: string, text: string): Promise<Either<Failure, ReplyEntity>>;
+  addCommentReply(commentId: string, reviewId: string, text: string, replyingToName?: string): Promise<Either<Failure, ReplyEntity>>;
+  likeComment(commentId: string): Promise<Either<Failure, void>>;
+  unlikeComment(commentId: string): Promise<Either<Failure, void>>;
+  likeReply(replyId: string): Promise<Either<Failure, void>>;
+  unlikeReply(replyId: string): Promise<Either<Failure, void>>;
 }
 
 export interface ReportBusinessParams {

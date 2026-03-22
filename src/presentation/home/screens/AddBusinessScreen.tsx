@@ -21,16 +21,9 @@ import { Card } from '@/presentation/shared/components/ui/Card';
 import { useAnalyticsScreen } from '@/presentation/shared/hooks/useAnalyticsScreen';
 import { AnalyticsScreens } from '@/core/analytics/analyticsKeys';
 import { colors } from '@/core/theme/colors';
+import { useTheme } from '@/core/theme/useTheme';
 import { CATEGORIES_DATA } from '@/core/constants/categoriesData';
 import { useHome } from '../hooks/useHome';
-
-const CARD_STYLE = {
-  backgroundColor: colors.cardDark,
-  borderWidth: 1,
-  borderColor: colors.borderDark,
-  borderRadius: 16,
-  padding: 20,
-};
 
 // ── Image Upload Box ──────────────────────────────────────────────────────────
 
@@ -46,9 +39,11 @@ interface ImageUploadBoxProps {
 
 const ImageUploadBox: React.FC<ImageUploadBoxProps> = ({
   label, imageUri, onPick, onRemove, height, icon, hintText,
-}) => (
+}) => {
+  const theme = useTheme();
+  return (
   <View style={{ flex: 1 }}>
-    <AppText style={{ color: colors.textSlate400, fontSize: 13, marginBottom: 6, fontWeight: '500' }}>
+    <AppText style={{ color: theme.textSecondary, fontSize: 13, marginBottom: 6, fontWeight: '500' }}>
       {label}
     </AppText>
     <Pressable
@@ -59,9 +54,9 @@ const ImageUploadBox: React.FC<ImageUploadBoxProps> = ({
         height,
         borderStyle: 'dashed',
         borderWidth: 1.5,
-        borderColor: colors.borderDark,
+        borderColor: theme.border,
         borderRadius: 12,
-        backgroundColor: colors.cardDark,
+        backgroundColor: theme.card,
         alignItems: 'center',
         justifyContent: 'center',
         overflow: 'hidden',
@@ -71,8 +66,8 @@ const ImageUploadBox: React.FC<ImageUploadBoxProps> = ({
         <Image source={{ uri: imageUri }} style={{ width: '100%', height: '100%' }} resizeMode="cover" accessibilityLabel={label} />
       ) : (
         <View style={{ alignItems: 'center' }}>
-          <MaterialCommunityIcons name={icon} size={24} color={colors.textSlate500} />
-          <AppText style={{ color: colors.textSlate500, fontSize: 12, marginTop: 6 }}>{hintText}</AppText>
+          <MaterialCommunityIcons name={icon} size={24} color={theme.textMuted} />
+          <AppText style={{ color: theme.textMuted, fontSize: 12, marginTop: 6 }}>{hintText}</AppText>
         </View>
       )}
     </Pressable>
@@ -93,11 +88,12 @@ const ImageUploadBox: React.FC<ImageUploadBoxProps> = ({
           justifyContent: 'center',
         }}
       >
-        <MaterialCommunityIcons name="close" size={16} color={colors.white} />
+        <MaterialCommunityIcons name="close" size={16} color="#FFFFFF" />
       </Pressable>
     )}
   </View>
-);
+  );
+};
 
 // ── Alert Modal ───────────────────────────────────────────────────────────────
 
@@ -109,10 +105,12 @@ interface AlertModalProps {
   buttons: { label: string; onPress: () => void; variant?: 'primary' | 'secondary' }[];
 }
 
-const AlertModal: React.FC<AlertModalProps> = ({ visible, title, message, onClose, buttons }) => (
+const AlertModal: React.FC<AlertModalProps> = ({ visible, title, message, onClose, buttons }) => {
+  const theme = useTheme();
+  return (
   <Modal visible={visible} transparent animationType="fade">
     <View style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.7)', justifyContent: 'center', alignItems: 'center', paddingHorizontal: 24 }}>
-      <View style={{ backgroundColor: colors.cardDark, borderRadius: 20, padding: 24, width: '100%', borderWidth: 1, borderColor: colors.borderDark }}>
+      <View style={{ backgroundColor: theme.card, borderRadius: 20, padding: 24, width: '100%', borderWidth: 1, borderColor: theme.border }}>
         {onClose && (
           <Pressable
             onPress={onClose}
@@ -120,13 +118,13 @@ const AlertModal: React.FC<AlertModalProps> = ({ visible, title, message, onClos
             accessibilityLabel="Close"
             style={{ position: 'absolute', top: 12, right: 12, padding: 4 }}
           >
-            <MaterialCommunityIcons name="close" size={20} color={colors.textSlate400} />
+            <MaterialCommunityIcons name="close" size={20} color={theme.textSecondary} />
           </Pressable>
         )}
-        <AppText style={{ fontSize: 18, fontWeight: '700', color: colors.white, marginBottom: 8, textAlign: 'center' }}>
+        <AppText style={{ fontSize: 18, fontWeight: '700', color: theme.text, marginBottom: 8, textAlign: 'center' }}>
           {title}
         </AppText>
-        <AppText style={{ fontSize: 14, color: colors.textSlate400, textAlign: 'center', marginBottom: 24, lineHeight: 20 }}>
+        <AppText style={{ fontSize: 14, color: theme.textSecondary, textAlign: 'center', marginBottom: 24, lineHeight: 20 }}>
           {message}
         </AppText>
         {buttons.map((btn, i) => (
@@ -138,14 +136,14 @@ const AlertModal: React.FC<AlertModalProps> = ({ visible, title, message, onClos
             style={{
               backgroundColor: btn.variant === 'primary' ? colors.neonPurple : 'transparent',
               borderWidth: btn.variant !== 'primary' ? 1 : 0,
-              borderColor: colors.borderDark,
+              borderColor: theme.border,
               borderRadius: 12,
               paddingVertical: 13,
               alignItems: 'center',
               marginBottom: i < buttons.length - 1 ? 10 : 0,
             }}
           >
-            <AppText style={{ color: btn.variant === 'primary' ? colors.white : colors.textSlate400, fontWeight: '600', fontSize: 15 }}>
+            <AppText style={{ color: btn.variant === 'primary' ? '#FFFFFF' : theme.textSecondary, fontWeight: '600', fontSize: 15 }}>
               {btn.label}
             </AppText>
           </Pressable>
@@ -153,13 +151,15 @@ const AlertModal: React.FC<AlertModalProps> = ({ visible, title, message, onClos
       </View>
     </View>
   </Modal>
-);
+  );
+};
 
 // ── Main Screen ───────────────────────────────────────────────────────────────
 
 export default function AddBusinessScreen() {
   useAnalyticsScreen(AnalyticsScreens.ADD_BUSINESS);
   const { t } = useTranslation();
+  const theme = useTheme();
   const router = useRouter();
   const { prefillName, isAdmin } = useLocalSearchParams<{ prefillName?: string; isAdmin?: string }>();
   const adminMode = isAdmin === 'true';
@@ -286,9 +286,9 @@ export default function AddBusinessScreen() {
             accessibilityLabel={t('common.back')}
             accessibilityRole="button"
           >
-            <MaterialCommunityIcons name="chevron-left" size={28} color={colors.white} />
+            <MaterialCommunityIcons name="chevron-left" size={28} color={theme.text} />
           </Pressable>
-          <AppText style={{ fontSize: 20, fontWeight: '700', color: colors.white, flex: 1, textAlign: 'center', marginRight: 40 }}>
+          <AppText style={{ fontSize: 20, fontWeight: '700', color: theme.text, flex: 1, textAlign: 'center', marginRight: 40 }}>
             {t('home.addBusiness.title')}
           </AppText>
         </View>
@@ -296,22 +296,22 @@ export default function AddBusinessScreen() {
         {/* Hero icon */}
         <View style={{ alignItems: 'center', marginTop: 4, marginBottom: 16 }}>
           <View style={{
-            width: 72, height: 72, borderRadius: 36, backgroundColor: colors.cardDark,
+            width: 72, height: 72, borderRadius: 36, backgroundColor: theme.card,
             alignItems: 'center', justifyContent: 'center',
             shadowColor: colors.neonPurple, shadowOffset: { width: 0, height: 0 },
             shadowOpacity: 0.5, shadowRadius: 16, elevation: 8,
           }}>
             <MaterialCommunityIcons name="store-plus" size={32} color={colors.neonPurple} />
           </View>
-          <AppText style={{ color: colors.textSlate400, fontSize: 13, marginTop: 10, textAlign: 'center' }}>
+          <AppText style={{ color: theme.textSecondary, fontSize: 13, marginTop: 10, textAlign: 'center' }}>
             {t('home.addBusiness.subtitle')}
           </AppText>
         </View>
 
         {/* Business Details Card */}
         <View style={{ paddingHorizontal: 24, marginTop: 4 }}>
-          <Card style={CARD_STYLE}>
-            <AppText style={{ fontSize: 15, fontWeight: '700', color: colors.white, marginBottom: 16 }}>
+          <Card style={{ backgroundColor: theme.card, borderWidth: 1, borderColor: theme.border, borderRadius: 16, padding: 20 }}>
+            <AppText style={{ fontSize: 15, fontWeight: '700', color: theme.text, marginBottom: 16 }}>
               {t('home.addBusiness.businessDetails')}
             </AppText>
 
@@ -325,23 +325,23 @@ export default function AddBusinessScreen() {
 
             {/* Category Selector */}
             <View style={{ marginBottom: 16 }}>
-              <AppText style={{ color: colors.textSlate400, fontSize: 14, marginBottom: 4, fontWeight: '500' }}>
+              <AppText style={{ color: theme.textSecondary, fontSize: 14, marginBottom: 4, fontWeight: '500' }}>
                 {t('home.addBusiness.category')}
               </AppText>
               <Pressable
                 onPress={() => setShowCategoryPicker(true)}
                 style={({ pressed }) => ({
-                  flexDirection: 'row', alignItems: 'center', backgroundColor: colors.midnight,
-                  borderWidth: 1, borderColor: selectedCategoryId ? colors.neonPurple : colors.borderDark,
+                  flexDirection: 'row', alignItems: 'center', backgroundColor: theme.background,
+                  borderWidth: 1, borderColor: selectedCategoryId ? colors.neonPurple : theme.border,
                   borderRadius: 12, paddingHorizontal: 16, paddingVertical: 13, opacity: pressed ? 0.7 : 1,
                 })}
                 accessibilityLabel={t('home.addBusiness.category')}
                 accessibilityRole="button"
               >
-                <AppText style={{ flex: 1, color: selectedCategoryId ? colors.white : colors.textSlate500, fontSize: 15 }}>
+                <AppText style={{ flex: 1, color: selectedCategoryId ? theme.text : theme.textMuted, fontSize: 15 }}>
                   {selectedCategoryId ? selectedCategoryName : t('home.addBusiness.categoryPlaceholder')}
                 </AppText>
-                <MaterialCommunityIcons name="chevron-down" size={22} color={colors.textSlate500} />
+                <MaterialCommunityIcons name="chevron-down" size={22} color={theme.textMuted} />
               </Pressable>
             </View>
 
@@ -351,7 +351,7 @@ export default function AddBusinessScreen() {
               value={location}
               onChangeText={setLocation}
               accessibilityLabel={t('home.addBusiness.location')}
-              rightIcon={<MaterialCommunityIcons name="map-marker-outline" size={22} color={colors.textSlate500} />}
+              rightIcon={<MaterialCommunityIcons name="map-marker-outline" size={22} color={theme.textMuted} />}
             />
 
             <AppInput
@@ -368,11 +368,11 @@ export default function AddBusinessScreen() {
 
         {/* Media Card */}
         <View style={{ paddingHorizontal: 24, marginTop: 16 }}>
-          <Card style={CARD_STYLE}>
-            <AppText style={{ fontSize: 15, fontWeight: '700', color: colors.white, marginBottom: 4 }}>
+          <Card style={{ backgroundColor: theme.card, borderWidth: 1, borderColor: theme.border, borderRadius: 16, padding: 20 }}>
+            <AppText style={{ fontSize: 15, fontWeight: '700', color: theme.text, marginBottom: 4 }}>
               {t('home.addBusiness.media')}
             </AppText>
-            <AppText style={{ fontSize: 12, color: colors.textSlate500, marginBottom: 16 }}>
+            <AppText style={{ fontSize: 12, color: theme.textMuted, marginBottom: 16 }}>
               ({t('home.addBusiness.optional')})
             </AppText>
             <View style={{ flexDirection: 'row', gap: 12 }}>
@@ -423,7 +423,7 @@ export default function AddBusinessScreen() {
             accessibilityLabel={t('common.cancel')}
             accessibilityRole="button"
           >
-            <AppText style={{ color: colors.textSlate400, fontSize: 15, fontWeight: '600' }}>
+            <AppText style={{ color: theme.textSecondary, fontSize: 15, fontWeight: '600' }}>
               {t('common.cancel')}
             </AppText>
           </Pressable>
@@ -433,13 +433,13 @@ export default function AddBusinessScreen() {
       {/* Category Picker Modal */}
       <Modal visible={showCategoryPicker} animationType="slide" transparent>
         <View style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.6)', justifyContent: 'flex-end' }}>
-          <View style={{ backgroundColor: colors.cardDark, borderTopLeftRadius: 24, borderTopRightRadius: 24, maxHeight: '70%' }}>
-            <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', padding: 20, borderBottomWidth: 1, borderBottomColor: colors.borderDark }}>
-              <AppText style={{ fontSize: 17, fontWeight: '700', color: colors.white }}>
+          <View style={{ backgroundColor: theme.card, borderTopLeftRadius: 24, borderTopRightRadius: 24, maxHeight: '70%' }}>
+            <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', padding: 20, borderBottomWidth: 1, borderBottomColor: theme.border }}>
+              <AppText style={{ fontSize: 17, fontWeight: '700', color: theme.text }}>
                 {t('home.addBusiness.category')}
               </AppText>
               <Pressable onPress={() => setShowCategoryPicker(false)} accessibilityRole="button" accessibilityLabel="Close">
-                <MaterialCommunityIcons name="close" size={24} color={colors.textSlate400} />
+                <MaterialCommunityIcons name="close" size={24} color={theme.textSecondary} />
               </Pressable>
             </View>
             <FlatList
@@ -466,12 +466,12 @@ export default function AddBusinessScreen() {
                   <MaterialCommunityIcons
                     name={item.icon as keyof typeof MaterialCommunityIcons.glyphMap}
                     size={22}
-                    color={item.id === selectedCategoryId ? colors.neonPurple : colors.textSlate400}
+                    color={item.id === selectedCategoryId ? colors.neonPurple : theme.textSecondary}
                     style={{ marginRight: 14 }}
                   />
                   <AppText style={{
                     fontSize: 15, flex: 1,
-                    color: item.id === selectedCategoryId ? colors.neonPurple : colors.white,
+                    color: item.id === selectedCategoryId ? colors.neonPurple : theme.text,
                     fontWeight: item.id === selectedCategoryId ? '700' : '500',
                   }}>
                     {item.name}

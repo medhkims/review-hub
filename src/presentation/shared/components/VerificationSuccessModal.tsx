@@ -5,33 +5,37 @@ import { useTranslation } from 'react-i18next';
 import { AppText } from '@/presentation/shared/components/ui/AppText';
 import { AppButton } from '@/presentation/shared/components/ui/AppButton';
 import { colors } from '@/core/theme/colors';
+import { useTheme } from '@/core/theme/useTheme';
 
 interface VerificationSuccessModalProps {
   visible: boolean;
   onClose: () => void;
   phoneNumber: string;
-  onChangeDetails: () => void;
+  fullName: string;
+  onGoHome: () => void;
 }
 
 export const VerificationSuccessModal: React.FC<VerificationSuccessModalProps> = ({
   visible,
   onClose,
   phoneNumber,
-  onChangeDetails,
+  fullName,
+  onGoHome,
 }) => {
   const { t } = useTranslation();
+  const theme = useTheme();
 
   return (
     <Modal visible={visible} transparent animationType="fade" onRequestClose={onClose}>
       <View style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.7)', justifyContent: 'center', padding: 24 }}>
-        <View style={{ backgroundColor: colors.cardDark, borderRadius: 20, padding: 28, borderWidth: 1, borderColor: 'rgba(255,255,255,0.05)' }}>
+        <View style={{ backgroundColor: theme.card, borderRadius: 20, padding: 28, borderWidth: 1, borderColor: theme.border }}>
           <Pressable
             onPress={onClose}
             accessibilityLabel={t('verification.close')}
             accessibilityRole="button"
             style={{ position: 'absolute', top: 16, right: 16, zIndex: 1 }}
           >
-            <MaterialCommunityIcons name="close" size={24} color={colors.textSlate400} />
+            <MaterialCommunityIcons name="close" size={24} color={theme.textMuted} />
           </Pressable>
 
           <View style={{ alignItems: 'center', marginBottom: 20 }}>
@@ -40,36 +44,50 @@ export const VerificationSuccessModal: React.FC<VerificationSuccessModalProps> =
             </View>
           </View>
 
-          <AppText style={{ fontSize: 16, color: colors.textWhite, textAlign: 'center', marginBottom: 20 }}>
+          <AppText style={{ fontSize: 16, color: theme.text, textAlign: 'center', marginBottom: 20 }}>
             {t('verification.successMessage')}
           </AppText>
 
-          <View style={{ alignItems: 'center', marginBottom: 24 }}>
+          <View style={{ gap: 10, marginBottom: 24 }}>
             <View style={{
               flexDirection: 'row',
               alignItems: 'center',
-              backgroundColor: colors.midnight,
-              borderRadius: 9999,
+              backgroundColor: theme.background,
+              borderRadius: 12,
+              paddingHorizontal: 20,
+              paddingVertical: 12,
+              gap: 10,
+            }}>
+              <MaterialCommunityIcons name="account" size={18} color={colors.neonPurple} />
+              <AppText style={{ fontSize: 16, fontWeight: '600', color: theme.text }}>
+                {fullName}
+              </AppText>
+            </View>
+            <View style={{
+              flexDirection: 'row',
+              alignItems: 'center',
+              backgroundColor: theme.background,
+              borderRadius: 12,
               paddingHorizontal: 20,
               paddingVertical: 12,
               gap: 10,
             }}>
               <MaterialCommunityIcons name="phone" size={18} color={colors.neonPurple} />
-              <AppText style={{ fontSize: 16, fontWeight: '600', color: colors.textWhite }}>
+              <AppText style={{ fontSize: 16, fontWeight: '600', color: theme.text }}>
                 {phoneNumber}
               </AppText>
             </View>
           </View>
 
           <AppButton
-            title={t('verification.changeDetails')}
+            title={t('common.goBackToHome')}
             size="lg"
             shape="pill"
-            onPress={onChangeDetails}
-            accessibilityLabel={t('verification.changeDetails')}
+            onPress={onGoHome}
+            accessibilityLabel={t('common.goBackToHome')}
           />
 
-          <AppText style={{ fontSize: 13, color: colors.textSlate400, textAlign: 'center', marginTop: 20, lineHeight: 18 }}>
+          <AppText style={{ fontSize: 13, color: theme.textMuted, textAlign: 'center', marginTop: 16, lineHeight: 18 }}>
             {t('verification.contactNotice')}
           </AppText>
         </View>

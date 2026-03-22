@@ -6,6 +6,7 @@ import { AppText } from '@/presentation/shared/components/ui/AppText';
 import { SectionHeader } from '@/presentation/shared/components/ui/SectionHeader';
 import { Card } from '@/presentation/shared/components/ui/Card';
 import { colors } from '@/core/theme/colors';
+import { useTheme } from '@/core/theme/useTheme';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useAnalyticsScreen } from '@/presentation/shared/hooks/useAnalyticsScreen';
 import { AnalyticsScreens } from '@/core/analytics/analyticsKeys';
@@ -37,6 +38,7 @@ interface TabPillProps {
 }
 
 const TabPill: React.FC<TabPillProps> = ({ label, isActive, onPress }) => {
+  const theme = useTheme();
   return (
     <Pressable
       onPress={onPress}
@@ -49,14 +51,14 @@ const TabPill: React.FC<TabPillProps> = ({ label, isActive, onPress }) => {
         borderRadius: 20,
         backgroundColor: isActive ? colors.neonPurple : 'transparent',
         borderWidth: isActive ? 0 : 1,
-        borderColor: colors.borderDark,
+        borderColor: theme.border,
       }}
     >
       <AppText
         style={{
           fontSize: 12,
           fontWeight: '700',
-          color: isActive ? colors.white : colors.textSlate400,
+          color: isActive ? '#FFFFFF' : theme.textSecondary,
           letterSpacing: 0.5,
         }}
       >
@@ -83,6 +85,7 @@ const ModeratorRow: React.FC<ModeratorRowProps> = ({
   points,
   reviews,
 }) => {
+  const theme = useTheme();
   return (
     <View
       style={{
@@ -91,7 +94,7 @@ const ModeratorRow: React.FC<ModeratorRowProps> = ({
         paddingVertical: 14,
         paddingHorizontal: 12,
         borderBottomWidth: rank < 5 ? 1 : 0,
-        borderBottomColor: `${colors.borderDark}50`,
+        borderBottomColor: `${theme.border}50`,
       }}
     >
       {/* Rank Number */}
@@ -99,7 +102,7 @@ const ModeratorRow: React.FC<ModeratorRowProps> = ({
         style={{
           fontSize: 22,
           fontWeight: '800',
-          color: colors.textSlate400,
+          color: theme.textSecondary,
           width: 28,
           textAlign: 'center',
         }}
@@ -129,7 +132,7 @@ const ModeratorRow: React.FC<ModeratorRowProps> = ({
           style={{
             fontSize: 14,
             fontWeight: '700',
-            color: colors.white,
+            color: theme.text,
             marginBottom: 6,
           }}
         >
@@ -139,19 +142,19 @@ const ModeratorRow: React.FC<ModeratorRowProps> = ({
         {/* Metric columns */}
         <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
           <View style={{ alignItems: 'center' }}>
-            <AppText style={{ fontSize: 13, fontWeight: '700', color: colors.white }}>
+            <AppText style={{ fontSize: 13, fontWeight: '700', color: theme.text }}>
               {companies}
             </AppText>
-            <AppText style={{ fontSize: 9, fontWeight: '500', color: colors.textSlate500, letterSpacing: 0.3 }}>
+            <AppText style={{ fontSize: 9, fontWeight: '500', color: theme.textMuted, letterSpacing: 0.3 }}>
               COMPANIES
             </AppText>
           </View>
 
           <View style={{ alignItems: 'center' }}>
-            <AppText style={{ fontSize: 13, fontWeight: '700', color: colors.white }}>
+            <AppText style={{ fontSize: 13, fontWeight: '700', color: theme.text }}>
               {users}
             </AppText>
-            <AppText style={{ fontSize: 9, fontWeight: '500', color: colors.textSlate500, letterSpacing: 0.3 }}>
+            <AppText style={{ fontSize: 9, fontWeight: '500', color: theme.textMuted, letterSpacing: 0.3 }}>
               USERS
             </AppText>
           </View>
@@ -160,7 +163,7 @@ const ModeratorRow: React.FC<ModeratorRowProps> = ({
             <AppText style={{ fontSize: 13, fontWeight: '700', color: colors.neonPurple }}>
               {points}
             </AppText>
-            <AppText style={{ fontSize: 9, fontWeight: '500', color: colors.textSlate500, letterSpacing: 0.3 }}>
+            <AppText style={{ fontSize: 9, fontWeight: '500', color: theme.textMuted, letterSpacing: 0.3 }}>
               POINTS
             </AppText>
           </View>
@@ -169,7 +172,7 @@ const ModeratorRow: React.FC<ModeratorRowProps> = ({
             <AppText style={{ fontSize: 13, fontWeight: '700', color: colors.neonPurple }}>
               {reviews}
             </AppText>
-            <AppText style={{ fontSize: 9, fontWeight: '500', color: colors.textSlate500, letterSpacing: 0.3 }}>
+            <AppText style={{ fontSize: 9, fontWeight: '500', color: theme.textMuted, letterSpacing: 0.3 }}>
               REVIEWS
             </AppText>
           </View>
@@ -186,6 +189,7 @@ const ModeratorRow: React.FC<ModeratorRowProps> = ({
 export default function ModeratorHomeScreen() {
   useAnalyticsScreen(AnalyticsScreens.MODERATOR_DASHBOARD);
   const { t } = useTranslation();
+  const theme = useTheme();
   const [activeTab, setActiveTab] = useState<Tab>('MODERATOR');
   const [searchText, setSearchText] = useState('');
 
@@ -221,7 +225,7 @@ export default function ModeratorHomeScreen() {
               marginRight: 12,
             }}
           >
-            <MaterialCommunityIcons name="account" size={24} color={colors.midnight} />
+            <MaterialCommunityIcons name="account" size={24} color={theme.background} />
           </View>
 
           {/* Welcome text */}
@@ -230,7 +234,7 @@ export default function ModeratorHomeScreen() {
               style={{
                 fontSize: 18,
                 fontWeight: '700',
-                color: colors.white,
+                color: theme.text,
               }}
             >
               {t('moderator.home.welcomeTitle', { defaultValue: 'Welcome back, Moderator' })}
@@ -245,12 +249,12 @@ export default function ModeratorHomeScreen() {
               width: 40,
               height: 40,
               borderRadius: 12,
-              backgroundColor: colors.cardDark,
+              backgroundColor: theme.card,
               justifyContent: 'center',
               alignItems: 'center',
             }}
           >
-            <MaterialCommunityIcons name="bell-outline" size={22} color={colors.white} />
+            <MaterialCommunityIcons name="bell-outline" size={22} color={theme.text} />
           </Pressable>
         </View>
 
@@ -270,25 +274,25 @@ export default function ModeratorHomeScreen() {
               flex: 1,
               flexDirection: 'row',
               alignItems: 'center',
-              backgroundColor: colors.cardDark,
+              backgroundColor: theme.card,
               borderRadius: 12,
               borderWidth: 1,
-              borderColor: colors.borderDark,
+              borderColor: theme.border,
               paddingHorizontal: 12,
               height: 44,
             }}
           >
-            <MaterialCommunityIcons name="magnify" size={20} color={colors.textSlate400} />
+            <MaterialCommunityIcons name="magnify" size={20} color={theme.textSecondary} />
             <TextInput
               value={searchText}
               onChangeText={setSearchText}
               placeholder={t('moderator.home.searchPlaceholder', { defaultValue: 'Search...' })}
-              placeholderTextColor={colors.textSlate500}
+              placeholderTextColor={theme.textMuted}
               style={{
                 flex: 1,
                 marginLeft: 8,
                 fontSize: 14,
-                color: colors.white,
+                color: theme.text,
               }}
               accessibilityLabel={t('moderator.home.searchPlaceholder', { defaultValue: 'Search...' })}
             />
@@ -302,14 +306,14 @@ export default function ModeratorHomeScreen() {
               width: 44,
               height: 44,
               borderRadius: 12,
-              backgroundColor: colors.cardDark,
+              backgroundColor: theme.card,
               borderWidth: 1,
-              borderColor: colors.borderDark,
+              borderColor: theme.border,
               justifyContent: 'center',
               alignItems: 'center',
             }}
           >
-            <MaterialCommunityIcons name="tune-variant" size={20} color={colors.textSlate400} />
+            <MaterialCommunityIcons name="tune-variant" size={20} color={theme.textSecondary} />
           </Pressable>
 
           {/* Calendar icon */}
@@ -320,14 +324,14 @@ export default function ModeratorHomeScreen() {
               width: 44,
               height: 44,
               borderRadius: 12,
-              backgroundColor: colors.cardDark,
+              backgroundColor: theme.card,
               borderWidth: 1,
-              borderColor: colors.borderDark,
+              borderColor: theme.border,
               justifyContent: 'center',
               alignItems: 'center',
             }}
           >
-            <MaterialCommunityIcons name="calendar-outline" size={20} color={colors.textSlate400} />
+            <MaterialCommunityIcons name="calendar-outline" size={20} color={theme.textSecondary} />
           </Pressable>
         </View>
 
@@ -362,7 +366,7 @@ export default function ModeratorHomeScreen() {
                   style={{
                     fontSize: 11,
                     fontWeight: '600',
-                    color: colors.textSlate400,
+                    color: theme.textSecondary,
                     letterSpacing: 0.8,
                     marginBottom: 8,
                   }}
@@ -370,7 +374,7 @@ export default function ModeratorHomeScreen() {
                   {t('moderator.home.totalModerators', { defaultValue: 'TOTAL MODERATORS' })}
                 </AppText>
                 <View style={{ flexDirection: 'row', alignItems: 'baseline', gap: 8 }}>
-                  <AppText style={{ fontSize: 32, fontWeight: '800', color: colors.white }}>
+                  <AppText style={{ fontSize: 32, fontWeight: '800', color: theme.text }}>
                     124
                   </AppText>
                   <AppText style={{ fontSize: 12, fontWeight: '600', color: colors.success }}>
@@ -401,7 +405,7 @@ export default function ModeratorHomeScreen() {
                   style={{
                     fontSize: 11,
                     fontWeight: '600',
-                    color: colors.textSlate400,
+                    color: theme.textSecondary,
                     letterSpacing: 0.8,
                     marginBottom: 8,
                   }}
@@ -409,7 +413,7 @@ export default function ModeratorHomeScreen() {
                   {t('moderator.home.flaggedModerators', { defaultValue: 'FLAGGED MODERATORS' })}
                 </AppText>
                 <View style={{ flexDirection: 'row', alignItems: 'baseline', gap: 8 }}>
-                  <AppText style={{ fontSize: 32, fontWeight: '800', color: colors.white }}>
+                  <AppText style={{ fontSize: 32, fontWeight: '800', color: theme.text }}>
                     8
                   </AppText>
                   <AppText style={{ fontSize: 12, fontWeight: '600', color: colors.success }}>

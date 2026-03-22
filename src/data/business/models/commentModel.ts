@@ -7,9 +7,11 @@ export interface CommentModel {
   text: string;
   created_at: Timestamp;
   reply_count?: number;
+  like_count?: number;
   // Enriched
   author_name?: string;
   author_avatar_url?: string | null;
+  is_liked_by_current_user?: boolean;
 }
 
 export interface ReplyModel {
@@ -19,7 +21,10 @@ export interface ReplyModel {
   user_id: string;
   text: string;
   created_at: Timestamp;
+  like_count?: number;
+  replying_to_name?: string;
   // Enriched
   author_name?: string;
   author_avatar_url?: string | null;
+  is_liked_by_current_user?: boolean;
 }

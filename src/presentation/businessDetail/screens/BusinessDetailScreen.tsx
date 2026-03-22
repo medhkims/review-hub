@@ -4,6 +4,7 @@ import { useRouter } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { colors } from '@/core/theme/colors';
+import { useTheme } from '@/core/theme/useTheme';
 import { LoadingIndicator } from '@/presentation/shared/components/ui/LoadingIndicator';
 import { ErrorView } from '@/presentation/shared/components/ui/ErrorView';
 import { AppText } from '@/presentation/shared/components/ui/AppText';
@@ -41,6 +42,7 @@ interface BusinessDetailScreenProps {
 export default function BusinessDetailScreen({ businessId }: BusinessDetailScreenProps) {
   useAnalyticsScreen(AnalyticsScreens.BUSINESS_DETAIL);
   const router = useRouter();
+  const theme = useTheme();
   const { t } = useTranslation();
   const { business, reviews, isLoading, error, toggleWishlist, isWishlisted, checkHasReviewed, refresh } = useBusinessDetail(businessId);
   const [alreadyReviewedVisible, setAlreadyReviewedVisible] = useState(false);
@@ -99,7 +101,7 @@ export default function BusinessDetailScreen({ businessId }: BusinessDetailScree
 
   if (isLoading && !business) {
     return (
-      <View style={{ flex: 1, backgroundColor: colors.midnight }}>
+      <View style={{ flex: 1, backgroundColor: theme.background }}>
         <LoadingIndicator />
       </View>
     );
@@ -107,7 +109,7 @@ export default function BusinessDetailScreen({ businessId }: BusinessDetailScree
 
   if (error && !business) {
     return (
-      <View style={{ flex: 1, backgroundColor: colors.midnight, justifyContent: 'center' }}>
+      <View style={{ flex: 1, backgroundColor: theme.background, justifyContent: 'center' }}>
         <ErrorView message={error} onRetry={refresh} />
       </View>
     );
@@ -145,7 +147,7 @@ export default function BusinessDetailScreen({ businessId }: BusinessDetailScree
   };
 
   return (
-    <View style={{ flex: 1, backgroundColor: colors.midnight }}>
+    <View style={{ flex: 1, backgroundColor: theme.background }}>
       {/* Already Reviewed Modal */}
       <Modal
         visible={alreadyReviewedVisible}
@@ -165,13 +167,13 @@ export default function BusinessDetailScreen({ businessId }: BusinessDetailScree
         >
           <View
             style={{
-              backgroundColor: colors.cardDark,
+              backgroundColor: theme.card,
               borderRadius: 24,
               padding: 28,
               width: '100%',
               alignItems: 'center',
               borderWidth: 1,
-              borderColor: 'rgba(255,255,255,0.08)',
+              borderColor: theme.border,
             }}
           >
             {/* Icon */}
@@ -201,7 +203,7 @@ export default function BusinessDetailScreen({ businessId }: BusinessDetailScree
               style={{
                 fontSize: 18,
                 fontWeight: '700',
-                color: colors.white,
+                color: theme.text,
                 textAlign: 'center',
                 marginBottom: 10,
               }}
@@ -213,7 +215,7 @@ export default function BusinessDetailScreen({ businessId }: BusinessDetailScree
             <AppText
               style={{
                 fontSize: 14,
-                color: colors.textSlate400,
+                color: theme.textSecondary,
                 textAlign: 'center',
                 lineHeight: 20,
                 marginBottom: 24,
@@ -245,7 +247,7 @@ export default function BusinessDetailScreen({ businessId }: BusinessDetailScree
                 accessibilityRole="button"
                 style={{ paddingVertical: 12, alignItems: 'center' }}
               >
-                <AppText style={{ fontSize: 15, fontWeight: '600', color: colors.textSlate400 }}>
+                <AppText style={{ fontSize: 15, fontWeight: '600', color: theme.textSecondary }}>
                   {t('businessDetail.alreadyReviewed.goHome')}
                 </AppText>
               </Pressable>
@@ -265,13 +267,13 @@ export default function BusinessDetailScreen({ businessId }: BusinessDetailScree
         <View style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.7)', justifyContent: 'flex-end' }}>
           <View
             style={{
-              backgroundColor: colors.cardDark,
+              backgroundColor: theme.card,
               borderTopLeftRadius: 28,
               borderTopRightRadius: 28,
               padding: 24,
               paddingBottom: 40,
               borderWidth: 1,
-              borderColor: 'rgba(255,255,255,0.08)',
+              borderColor: theme.border,
             }}
           >
             {reportDone ? (
@@ -291,10 +293,10 @@ export default function BusinessDetailScreen({ businessId }: BusinessDetailScree
                 >
                   <MaterialCommunityIcons name="check-circle-outline" size={30} color={colors.success} />
                 </View>
-                <AppText style={{ fontSize: 18, fontWeight: '700', color: colors.white, textAlign: 'center', marginBottom: 8 }}>
+                <AppText style={{ fontSize: 18, fontWeight: '700', color: theme.text, textAlign: 'center', marginBottom: 8 }}>
                   {t('businessDetail.reportSuccess')}
                 </AppText>
-                <AppText style={{ fontSize: 14, color: colors.textSlate400, textAlign: 'center', lineHeight: 20, marginBottom: 24 }}>
+                <AppText style={{ fontSize: 14, color: theme.textSecondary, textAlign: 'center', lineHeight: 20, marginBottom: 24 }}>
                   {t('businessDetail.reportSuccessMessage')}
                 </AppText>
                 <AppButton
@@ -311,11 +313,11 @@ export default function BusinessDetailScreen({ businessId }: BusinessDetailScree
               <>
                 <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 20 }}>
                   <MaterialCommunityIcons name="flag-outline" size={22} color={colors.neonPurple} />
-                  <AppText style={{ fontSize: 18, fontWeight: '700', color: colors.white, marginLeft: 8 }}>
+                  <AppText style={{ fontSize: 18, fontWeight: '700', color: theme.text, marginLeft: 8 }}>
                     {t('businessDetail.reportBusiness')}
                   </AppText>
                 </View>
-                <AppText style={{ fontSize: 14, color: colors.textSlate400, marginBottom: 16 }}>
+                <AppText style={{ fontSize: 14, color: theme.textSecondary, marginBottom: 16 }}>
                   {t('businessDetail.reportReasonTitle')}
                 </AppText>
                 <View style={{ gap: 10, marginBottom: 24 }}>
@@ -341,7 +343,7 @@ export default function BusinessDetailScreen({ businessId }: BusinessDetailScree
                           height: 20,
                           borderRadius: 10,
                           borderWidth: 2,
-                          borderColor: selectedReason === key ? colors.neonPurple : colors.textSlate600,
+                          borderColor: selectedReason === key ? colors.neonPurple : theme.textMuted,
                           alignItems: 'center',
                           justifyContent: 'center',
                           marginRight: 12,
@@ -351,7 +353,7 @@ export default function BusinessDetailScreen({ businessId }: BusinessDetailScree
                           <View style={{ width: 10, height: 10, borderRadius: 5, backgroundColor: colors.neonPurple }} />
                         )}
                       </View>
-                      <AppText style={{ fontSize: 14, color: selectedReason === key ? colors.white : colors.textSlate400, flex: 1 }}>
+                      <AppText style={{ fontSize: 14, color: selectedReason === key ? theme.text : theme.textSecondary, flex: 1 }}>
                         {label}
                       </AppText>
                     </Pressable>
@@ -365,7 +367,7 @@ export default function BusinessDetailScreen({ businessId }: BusinessDetailScree
                       value={otherText}
                       onChangeText={setOtherText}
                       placeholder={t('businessDetail.reportOtherPlaceholder')}
-                      placeholderTextColor={colors.textSlate600}
+                      placeholderTextColor={theme.textMuted}
                       multiline
                       maxLength={200}
                       accessibilityLabel={t('businessDetail.reportOtherPlaceholder')}
@@ -377,13 +379,13 @@ export default function BusinessDetailScreen({ businessId }: BusinessDetailScree
                         borderColor: otherText.trim() ? colors.neonPurple : 'rgba(255,255,255,0.15)',
                         borderRadius: 12,
                         padding: 14,
-                        color: colors.white,
+                        color: theme.text,
                         fontSize: 14,
                         minHeight: 90,
                         textAlignVertical: 'top',
                       }}
                     />
-                    <AppText style={{ fontSize: 12, color: otherText.length >= 200 ? colors.error : colors.textSlate600, textAlign: 'right', marginBottom: 16 }}>
+                    <AppText style={{ fontSize: 12, color: otherText.length >= 200 ? colors.error : theme.textMuted, textAlign: 'right', marginBottom: 16 }}>
                       {otherText.length}/200
                     </AppText>
                   </>
@@ -406,7 +408,7 @@ export default function BusinessDetailScreen({ businessId }: BusinessDetailScree
                     accessibilityRole="button"
                     style={{ paddingVertical: 12, alignItems: 'center' }}
                   >
-                    <AppText style={{ fontSize: 15, fontWeight: '600', color: colors.textSlate400 }}>
+                    <AppText style={{ fontSize: 15, fontWeight: '600', color: theme.textSecondary }}>
                       {t('common.cancel')}
                     </AppText>
                   </Pressable>

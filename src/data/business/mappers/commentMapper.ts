@@ -12,6 +12,9 @@ export class CommentMapper {
       authorAvatarUrl: model.author_avatar_url ?? null,
       text: model.text,
       createdAt: model.created_at.toDate(),
+      likeCount: model.like_count ?? 0,
+      isLikedByCurrentUser: model.is_liked_by_current_user ?? false,
+      replyingToName: model.replying_to_name,
     };
   }
 
@@ -26,6 +29,8 @@ export class CommentMapper {
       createdAt: model.created_at.toDate(),
       replyCount: model.reply_count ?? replies.length,
       replies,
+      likeCount: model.like_count ?? 0,
+      isLikedByCurrentUser: model.is_liked_by_current_user ?? false,
     };
   }
 }

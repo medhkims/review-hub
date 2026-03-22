@@ -4,6 +4,7 @@ import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useTranslation } from 'react-i18next';
 import { AppText } from '@/presentation/shared/components/ui/AppText';
 import { colors } from '@/core/theme/colors';
+import { useTheme } from '@/core/theme/useTheme';
 
 interface ActionButtonsProps {
   isWishlisted: boolean;
@@ -17,6 +18,7 @@ export const ActionButtons: React.FC<ActionButtonsProps> = ({
   onToggleWishlist,
 }) => {
   const { t } = useTranslation();
+  const theme = useTheme();
 
   return (
     <View style={{ flexDirection: 'row', gap: 12, paddingHorizontal: 24, marginTop: 24, marginBottom: 32 }}>
@@ -42,8 +44,8 @@ export const ActionButtons: React.FC<ActionButtonsProps> = ({
           transform: [{ scale: pressed ? 0.95 : 1 }],
         })}
       >
-        <MaterialCommunityIcons name="pencil-box-outline" size={20} color={colors.white} />
-        <AppText style={{ fontSize: 16, fontWeight: '700', color: colors.white }}>
+        <MaterialCommunityIcons name="pencil-box-outline" size={20} color="#FFFFFF" />
+        <AppText style={{ fontSize: 16, fontWeight: '700', color: '#FFFFFF' }}>
           {t('businessDetail.addReview')}
         </AppText>
       </Pressable>
@@ -54,7 +56,7 @@ export const ActionButtons: React.FC<ActionButtonsProps> = ({
         accessibilityRole="button"
         style={({ pressed }) => ({
           width: 56,
-          backgroundColor: colors.cardDark,
+          backgroundColor: theme.card,
           borderRadius: 16,
           alignItems: 'center',
           justifyContent: 'center',
@@ -66,7 +68,7 @@ export const ActionButtons: React.FC<ActionButtonsProps> = ({
         <MaterialCommunityIcons
           name={isWishlisted ? 'heart' : 'heart-outline'}
           size={24}
-          color={isWishlisted ? colors.error : colors.white}
+          color={isWishlisted ? colors.error : theme.text}
         />
       </Pressable>
     </View>

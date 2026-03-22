@@ -4,6 +4,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { AppText } from '@/presentation/shared/components/ui/AppText';
 import { BannerEntity } from '@/domain/banner/entities/bannerEntity';
 import { colors } from '@/core/theme/colors';
+import { useTheme } from '@/core/theme/useTheme';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 const SLIDE_HEIGHT = Platform.OS === 'web' || SCREEN_WIDTH >= 600 ? 320 : 190;
@@ -21,59 +22,65 @@ interface BannerSlideProps {
   onPress: (banner: BannerEntity) => void;
 }
 
-const BannerSlide = React.memo<BannerSlideProps>(({ banner, slideWidth, onPress }) => (
-  <Pressable
-    style={{ width: slideWidth }}
-    onPress={() => onPress(banner)}
-    accessibilityLabel={banner.title}
-    accessibilityRole="button"
-  >
-    <View
-      style={{
-        width: slideWidth,
-        height: SLIDE_HEIGHT,
-        borderRadius: 16,
-        overflow: 'hidden',
-        backgroundColor: colors.cardDark,
-      }}
-    >
-      <Image
-        source={{ uri: banner.imageUrl }}
-        style={{ width: '100%', height: '100%' }}
-        resizeMode="cover"
-      />
-      <LinearGradient
-        colors={['transparent', 'rgba(0,0,0,0.72)']}
-        style={{
-          position: 'absolute',
-          bottom: 0,
-          left: 0,
-          right: 0,
-          paddingHorizontal: 16,
-          paddingBottom: 16,
-          paddingTop: 32,
-        }}
+const BannerSlide = React.memo<BannerSlideProps>(
+  ({ banner, slideWidth, onPress }) => {
+    const theme = useTheme();
+    return (
+      <Pressable
+        style={{ width: slideWidth }}
+        onPress={() => onPress(banner)}
+        accessibilityLabel={banner.title}
+        accessibilityRole="button"
       >
-        <AppText
-          style={{ color: colors.white, fontSize: 16, fontWeight: '700', letterSpacing: -0.2 }}
-          numberOfLines={1}
+        <View
+          style={{
+            width: slideWidth,
+            height: SLIDE_HEIGHT,
+            borderRadius: 16,
+            overflow: 'hidden',
+            backgroundColor: theme.card,
+          }}
         >
-          {banner.title}
-        </AppText>
-        {banner.description.trim().length > 0 && (
-          <AppText
-            style={{ color: 'rgba(255,255,255,0.8)', fontSize: 12, marginTop: 2 }}
-            numberOfLines={2}
+          <Image
+            source={{ uri: banner.imageUrl }}
+            style={{ width: '100%', height: '100%' }}
+            resizeMode="cover"
+          />
+          <LinearGradient
+            colors={['transparent', 'rgba(0,0,0,0.72)']}
+            style={{
+              position: 'absolute',
+              bottom: 0,
+              left: 0,
+              right: 0,
+              paddingHorizontal: 16,
+              paddingBottom: 16,
+              paddingTop: 32,
+            }}
           >
-            {banner.description}
-          </AppText>
-        )}
-      </LinearGradient>
-    </View>
-  </Pressable>
-));
+            <AppText
+              style={{ color: '#FFFFFF', fontSize: 16, fontWeight: '700', letterSpacing: -0.2 }}
+              numberOfLines={1}
+            >
+              {banner.title}
+            </AppText>
+            {banner.description.trim().length > 0 && (
+              <AppText
+                style={{ color: 'rgba(255,255,255,0.8)', fontSize: 12, marginTop: 2 }}
+                numberOfLines={2}
+              >
+                {banner.description}
+              </AppText>
+            )}
+          </LinearGradient>
+        </View>
+      </Pressable>
+    );
+  },
+);
 
 export const BannerSlider = React.memo<BannerSliderProps>(({ banners, isLoading, onPress }) => {
+  const theme = useTheme();
   const flatListRef = useRef<FlatList<BannerEntity>>(null);
   const [activeIndex, setActiveIndex] = useState(0);
   const [containerWidth, setContainerWidth] = useState(0);
@@ -218,7 +225,7 @@ export const BannerSlider = React.memo<BannerSliderProps>(({ banners, isLoading,
                     height: 6,
                     borderRadius: 3,
                     backgroundColor:
-                      i === activeIndex ? colors.neonPurple : colors.textSlate500,
+                      i === activeIndex ? colors.neonPurple : theme.textMuted,
                   }}
                 />
               ))}

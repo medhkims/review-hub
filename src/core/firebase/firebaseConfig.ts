@@ -3,6 +3,7 @@ import {
   initializeFirestore,
   persistentLocalCache,
   persistentMultipleTabManager,
+  persistentSingleTabManager,
 } from 'firebase/firestore';
 import {
   initializeAuth,
@@ -34,9 +35,10 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 
 // Initialize Firestore with offline persistence
+// Web uses single-tab manager to avoid IndexedDB primary lease conflicts
 export const firestore = initializeFirestore(app, {
   localCache: persistentLocalCache({
-    tabManager: persistentMultipleTabManager(),
+    tabManager: isWeb ? persistentSingleTabManager({}) : persistentMultipleTabManager(),
   }),
 });
 

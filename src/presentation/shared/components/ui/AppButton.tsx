@@ -2,6 +2,7 @@ import React from 'react';
 import { Pressable, PressableProps, ActivityIndicator } from 'react-native';
 import { AppText } from './AppText';
 import { colors } from '@/core/theme/colors';
+import { useTheme } from '@/core/theme/useTheme';
 
 interface AppButtonProps extends PressableProps {
   title?: string;
@@ -13,20 +14,6 @@ interface AppButtonProps extends PressableProps {
   className?: string;
   icon?: React.ReactNode;
 }
-
-const variantBgColors = {
-  primary: colors.neonPurple,
-  secondary: colors.cardDark,
-  danger: colors.error,
-  ghost: 'transparent',
-};
-
-const variantTextColors = {
-  primary: colors.textWhite,
-  secondary: colors.textSlate200,
-  danger: colors.textWhite,
-  ghost: colors.primary,
-};
 
 const sizePadding = {
   sm: { paddingHorizontal: 12, paddingVertical: 8 },
@@ -52,8 +39,23 @@ export const AppButton: React.FC<AppButtonProps> = ({
   disabled,
   ...props
 }) => {
+  const theme = useTheme();
   const normalizedSize = size === 'large' ? 'lg' : size;
   const isPill = shape === 'pill';
+
+  const variantBgColors = {
+    primary: colors.neonPurple,
+    secondary: theme.card,
+    danger: colors.error,
+    ghost: 'transparent',
+  };
+
+  const variantTextColors = {
+    primary: colors.textWhite,
+    secondary: theme.text,
+    danger: colors.textWhite,
+    ghost: colors.primary,
+  };
 
   const content = children || title;
 
@@ -69,7 +71,7 @@ export const AppButton: React.FC<AppButtonProps> = ({
         opacity: disabled ? 0.5 : 1,
         height: isPill && normalizedSize === 'lg' ? 56 : undefined,
         ...sizePadding[normalizedSize],
-        ...(variant === 'secondary' ? { borderWidth: 1, borderColor: colors.borderDark } : {}),
+        ...(variant === 'secondary' ? { borderWidth: 1, borderColor: theme.border } : {}),
       }}
       disabled={disabled || isLoading}
       {...props}

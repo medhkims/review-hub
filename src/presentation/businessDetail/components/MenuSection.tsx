@@ -4,6 +4,7 @@ import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useTranslation } from 'react-i18next';
 import { AppText } from '@/presentation/shared/components/ui/AppText';
 import { colors } from '@/core/theme/colors';
+import { useTheme } from '@/core/theme/useTheme';
 import { SectionCard } from './SectionCard';
 import { MenuCategory, MenuItem } from '@/domain/business/entities/businessDetailEntity';
 import { trackMenuItemClick } from '@/core/utils/premiumTracking';
@@ -13,61 +14,67 @@ interface MenuSectionProps {
   businessId?: string;
 }
 
-const MenuItemRow: React.FC<{ item: MenuItem; onPress: (item: MenuItem) => void }> = React.memo(({ item, onPress }) => (
-  <Pressable
-    onPress={() => onPress(item)}
-    accessibilityLabel={item.name}
-    accessibilityRole="button"
-    style={({ pressed }) => ({
-      flexDirection: 'row',
-      alignItems: 'center',
-      justifyContent: 'space-between',
-      paddingVertical: 10,
-      borderBottomWidth: 1,
-      borderBottomColor: 'rgba(255, 255, 255, 0.05)',
-      opacity: pressed ? 0.75 : 1,
-    })}
-  >
-    <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12, flex: 1 }}>
-      {item.imageUrl ? (
-        <Image
-          source={{ uri: item.imageUrl }}
-          style={{
-            width: 56,
-            height: 56,
-            borderRadius: 10,
-            borderWidth: 1,
-            borderColor: 'rgba(255, 255, 255, 0.1)',
-          }}
-          resizeMode="cover"
-          accessibilityLabel={item.name}
-        />
-      ) : (
-        <View
-          style={{
-            width: 56,
-            height: 56,
-            borderRadius: 10,
-            backgroundColor: `${colors.neonPurple}1A`,
-            alignItems: 'center',
-            justifyContent: 'center',
-          }}
-        >
-          <MaterialCommunityIcons name="food" size={24} color={colors.neonPurple} />
+const MenuItemRow: React.FC<{ item: MenuItem; onPress: (item: MenuItem) => void }> = React.memo(
+  ({ item, onPress }) => {
+    const theme = useTheme();
+    return (
+      <Pressable
+        onPress={() => onPress(item)}
+        accessibilityLabel={item.name}
+        accessibilityRole="button"
+        style={({ pressed }) => ({
+          flexDirection: 'row',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          paddingVertical: 10,
+          borderBottomWidth: 1,
+          borderBottomColor: 'rgba(255, 255, 255, 0.05)',
+          opacity: pressed ? 0.75 : 1,
+        })}
+      >
+        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12, flex: 1 }}>
+          {item.imageUrl ? (
+            <Image
+              source={{ uri: item.imageUrl }}
+              style={{
+                width: 56,
+                height: 56,
+                borderRadius: 10,
+                borderWidth: 1,
+                borderColor: 'rgba(255, 255, 255, 0.1)',
+              }}
+              resizeMode="cover"
+              accessibilityLabel={item.name}
+            />
+          ) : (
+            <View
+              style={{
+                width: 56,
+                height: 56,
+                borderRadius: 10,
+                backgroundColor: `${colors.neonPurple}1A`,
+                alignItems: 'center',
+                justifyContent: 'center',
+              }}
+            >
+              <MaterialCommunityIcons name="food" size={24} color={colors.neonPurple} />
+            </View>
+          )}
+          <AppText style={{ fontSize: 14, fontWeight: '500', color: theme.text, flex: 1 }}>
+            {item.name}
+          </AppText>
         </View>
-      )}
-      <AppText style={{ fontSize: 14, fontWeight: '500', color: colors.white, flex: 1 }}>
-        {item.name}
-      </AppText>
-    </View>
-    <AppText style={{ fontSize: 14, fontWeight: '700', color: colors.neonPurple }}>
-      {item.currency}{item.price.toFixed(2)}
-    </AppText>
-  </Pressable>
-));
+        <AppText style={{ fontSize: 14, fontWeight: '700', color: colors.neonPurple }}>
+          {item.currency}{item.price.toFixed(2)}
+        </AppText>
+      </Pressable>
+    );
+  },
+);
 
 export const MenuSection: React.FC<MenuSectionProps> = ({ menuCategories, businessId }) => {
   const { t } = useTranslation();
+  const theme = useTheme();
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [detailItem, setDetailItem] = useState<MenuItem | null>(null);
 
@@ -104,7 +111,7 @@ export const MenuSection: React.FC<MenuSectionProps> = ({ menuCategories, busine
             accessibilityRole="button"
           />
           {detailItem && (
-            <View style={{ backgroundColor: colors.cardDark, borderTopLeftRadius: 28, borderTopRightRadius: 28, overflow: 'hidden' }}>
+            <View style={{ backgroundColor: theme.card, borderTopLeftRadius: 28, borderTopRightRadius: 28, overflow: 'hidden' }}>
               {/* Image container */}
               <View style={{ width: '100%', height: 200, backgroundColor: `${colors.neonPurple}10`, alignItems: 'center', justifyContent: 'center' }}>
                 {detailItem.imageUrl ? (
@@ -120,7 +127,7 @@ export const MenuSection: React.FC<MenuSectionProps> = ({ menuCategories, busine
               </View>
               <View style={{ padding: 24, gap: 12, paddingBottom: 36 }}>
                 <View style={{ flexDirection: 'row', alignItems: 'flex-start', justifyContent: 'space-between', gap: 12 }}>
-                  <AppText style={{ fontSize: 18, fontWeight: '700', color: colors.white, flex: 1 }}>
+                  <AppText style={{ fontSize: 18, fontWeight: '700', color: theme.text, flex: 1 }}>
                     {detailItem.name}
                   </AppText>
                   <Pressable
@@ -128,7 +135,7 @@ export const MenuSection: React.FC<MenuSectionProps> = ({ menuCategories, busine
                     accessibilityLabel={t('common.cancel')}
                     accessibilityRole="button"
                   >
-                    <MaterialCommunityIcons name="close" size={20} color={colors.textSlate400} />
+                    <MaterialCommunityIcons name="close" size={20} color={theme.textSecondary} />
                   </Pressable>
                 </View>
                 <AppText style={{ fontSize: 22, fontWeight: '800', color: colors.neonPurple }}>
@@ -137,7 +144,7 @@ export const MenuSection: React.FC<MenuSectionProps> = ({ menuCategories, busine
                 {!!detailItem.description && (
                   <>
                     <View style={{ height: 1, backgroundColor: 'rgba(255,255,255,0.07)' }} />
-                    <AppText style={{ fontSize: 14, color: colors.textSlate400, lineHeight: 22 }}>
+                    <AppText style={{ fontSize: 14, color: theme.textSecondary, lineHeight: 22 }}>
                       {detailItem.description}
                     </AppText>
                   </>
@@ -163,7 +170,7 @@ export const MenuSection: React.FC<MenuSectionProps> = ({ menuCategories, busine
             paddingHorizontal: 16,
             paddingVertical: 6,
             borderRadius: 20,
-            backgroundColor: selectedCategory === null ? colors.neonPurple : colors.midnight,
+            backgroundColor: selectedCategory === null ? colors.neonPurple : theme.background,
             borderWidth: 1,
             borderColor: selectedCategory === null ? colors.neonPurple : 'rgba(255, 255, 255, 0.1)',
             ...(selectedCategory === null && {
@@ -178,7 +185,7 @@ export const MenuSection: React.FC<MenuSectionProps> = ({ menuCategories, busine
             style={{
               fontSize: 12,
               fontWeight: '500',
-              color: selectedCategory === null ? colors.white : colors.textSlate400,
+              color: selectedCategory === null ? '#FFFFFF' : theme.textSecondary,
             }}
           >
             {t('businessDetail.all')}
@@ -195,7 +202,7 @@ export const MenuSection: React.FC<MenuSectionProps> = ({ menuCategories, busine
               paddingHorizontal: 16,
               paddingVertical: 6,
               borderRadius: 20,
-              backgroundColor: selectedCategory === name ? colors.neonPurple : colors.midnight,
+              backgroundColor: selectedCategory === name ? colors.neonPurple : theme.background,
               borderWidth: 1,
               borderColor: selectedCategory === name ? colors.neonPurple : 'rgba(255, 255, 255, 0.1)',
               ...(selectedCategory === name && {
@@ -210,7 +217,7 @@ export const MenuSection: React.FC<MenuSectionProps> = ({ menuCategories, busine
               style={{
                 fontSize: 12,
                 fontWeight: '500',
-                color: selectedCategory === name ? colors.white : colors.textSlate400,
+                color: selectedCategory === name ? '#FFFFFF' : theme.textSecondary,
               }}
             >
               {name}
@@ -225,7 +232,7 @@ export const MenuSection: React.FC<MenuSectionProps> = ({ menuCategories, busine
           <View
             key={category.id}
             style={{
-              backgroundColor: colors.midnight,
+              backgroundColor: theme.background,
               borderRadius: 16,
               borderWidth: 1,
               borderColor: 'rgba(255, 255, 255, 0.05)',
@@ -234,7 +241,7 @@ export const MenuSection: React.FC<MenuSectionProps> = ({ menuCategories, busine
           >
             <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 16 }}>
               <View style={{ width: 4, height: 16, backgroundColor: colors.neonPurple, borderRadius: 2, marginRight: 12 }} />
-              <AppText style={{ fontSize: 14, fontWeight: '600', color: colors.white }}>
+              <AppText style={{ fontSize: 14, fontWeight: '600', color: theme.text }}>
                 {category.name}
               </AppText>
             </View>

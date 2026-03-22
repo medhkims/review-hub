@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef } from 'react';
 import { useSettingsStore } from '../store/settingsStore';
+import { useAuthStore } from '@/presentation/auth/store/authStore';
 import { container } from '@/core/di/container';
 import { SettingsEntity } from '@/domain/settings/entities/settingsEntity';
 import { useTranslation } from 'react-i18next';
@@ -8,6 +9,7 @@ import { AnalyticsEvents, AnalyticsParams } from '@/core/analytics/analyticsKeys
 
 export const useSettings = () => {
   const { settings, isLoading, error, setSettings, setLoading, setError } = useSettingsStore();
+  const user = useAuthStore((state) => state.user);
   const { i18n } = useTranslation();
   const hasLoadedRef = useRef(false);
 
@@ -59,7 +61,11 @@ export const useSettings = () => {
       [AnalyticsParams.ENABLED]: enabled,
     });
     await updateSettings({ notificationsEnabled: enabled });
-  }, [updateSettings]);
+    // Sync preference to Firestore profile so the server respects it
+    if (user?.id) {
+      await container.updateProfileUseCase.execute(user.id, { notificationsEnabled: enabled });
+    }
+  }, [updateSettings, user]);
 
   const toggleDarkMode = useCallback(async (enabled: boolean) => {
     const theme = enabled ? 'dark' : 'light';

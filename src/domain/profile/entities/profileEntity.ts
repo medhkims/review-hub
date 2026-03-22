@@ -14,5 +14,7 @@ export interface ProfileEntity {
   followingCount: number;
   role: UserRole;
   gender: Gender | null;
+  dateOfBirth: Date | null;
   updatedAt: Date;
+  notificationsEnabled?: boolean;
 }

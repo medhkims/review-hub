@@ -8,6 +8,7 @@ import { ImageCropModal } from '@/presentation/shared/components/ui/ImageCropMod
 import { useImagePickerWithPreview } from '@/presentation/shared/hooks/useImagePickerWithPreview';
 import { AppButton } from '@/presentation/shared/components/ui/AppButton';
 import { AppInput } from '@/presentation/shared/components/ui/AppInput';
+import { DatePickerField } from '@/presentation/shared/components/ui/DatePickerField';
 import { Avatar } from '@/presentation/shared/components/ui/Avatar';
 import { SectionHeader } from '@/presentation/shared/components/ui/SectionHeader';
 import { ScreenLayout } from '@/presentation/shared/layouts/ScreenLayout';
@@ -16,10 +17,12 @@ import { useAuth } from '@/presentation/auth/hooks/useAuth';
 import { useAnalyticsScreen } from '@/presentation/shared/hooks/useAnalyticsScreen';
 import { AnalyticsScreens } from '@/core/analytics/analyticsKeys';
 import { colors } from '@/core/theme/colors';
+import { useTheme } from '@/core/theme/useTheme';
 
 export default function PersonalInfoScreen() {
   useAnalyticsScreen(AnalyticsScreens.PERSONAL_INFO);
   const { t } = useTranslation();
+  const theme = useTheme();
   const router = useRouter();
   const { user } = useAuth();
   const { profile, isLoading, error, isUploading, uploadProgress, updateProfile, updateEmail, uploadAvatar } = useProfile(user?.id);
@@ -28,6 +31,7 @@ export default function PersonalInfoScreen() {
   const [email, setEmail] = useState('');
   const [phoneNumber, setPhoneNumber] = useState('');
   const [gender, setGender] = useState<'male' | 'female' | null>(null);
+  const [dateOfBirth, setDateOfBirth] = useState<Date | null>(null);
   const [genderDropdownOpen, setGenderDropdownOpen] = useState(false);
   const [isUpdating, setIsUpdating] = useState(false);
 
@@ -37,6 +41,7 @@ export default function PersonalInfoScreen() {
       setEmail(profile.email);
       setPhoneNumber(profile.phoneNumber || '');
       setGender(profile.gender ?? null);
+      setDateOfBirth(profile.dateOfBirth ?? null);
     } else if (user) {
       setDisplayName(user.displayName);
       setEmail(user.email);
@@ -50,12 +55,13 @@ export default function PersonalInfoScreen() {
       displayName,
       phoneNumber: phoneNumber || null,
       gender: gender ?? null,
+      dateOfBirth: dateOfBirth ?? null,
     });
     setIsUpdating(false);
     if (!error) {
       Alert.alert(t('personalInfo.success'), t('personalInfo.updateSuccess'), [{ text: t('common.ok') }]);
     }
-  }, [user, displayName, phoneNumber, gender, error, updateProfile, t]);
+  }, [user, displayName, phoneNumber, gender, dateOfBirth, error, updateProfile, t]);
 
   const handleChangeEmail = useCallback(async () => {
     if (!user) return;
@@ -117,7 +123,8 @@ export default function PersonalInfoScreen() {
   const hasNameChanged = displayName !== (profile?.displayName || user?.displayName || '');
   const hasPhoneChanged = phoneNumber !== (profile?.phoneNumber || '');
   const hasGenderChanged = gender !== (profile?.gender ?? null);
-  const hasProfileChanges = hasNameChanged || hasPhoneChanged || hasGenderChanged;
+  const hasDobChanged = (dateOfBirth?.getTime() ?? null) !== (profile?.dateOfBirth?.getTime() ?? null);
+  const hasProfileChanges = hasNameChanged || hasPhoneChanged || hasGenderChanged || hasDobChanged;
   const hasEmailChanged = email !== (profile?.email || user?.email || '');
 
   return (
@@ -151,12 +158,12 @@ export default function PersonalInfoScreen() {
           style={{
             padding: 8,
             borderRadius: 9999,
-            backgroundColor: 'rgba(30, 41, 59, 0.5)',
+            backgroundColor: theme.isDark ? 'rgba(30, 41, 59, 0.5)' : 'rgba(148,163,184,0.2)',
           }}
         >
-          <MaterialCommunityIcons name="chevron-left" size={24} color={colors.textWhite} />
+          <MaterialCommunityIcons name="chevron-left" size={24} color={theme.text} />
         </Pressable>
-        <AppText style={{ fontSize: 16, fontWeight: '600', color: colors.textSlate100 }}>
+        <AppText style={{ fontSize: 16, fontWeight: '600', color: theme.text }}>
           {t('personalInfo.title')}
         </AppText>
         <View style={{ width: 40 }} />
@@ -193,7 +200,7 @@ export default function PersonalInfoScreen() {
                 }}
               >
                 <ActivityIndicator color={colors.neonPurple} size="small" />
-                <AppText style={{ color: colors.textWhite, fontSize: 11, marginTop: 4 }}>
+                <AppText style={{ color: theme.text, fontSize: 11, marginTop: 4 }}>
                   {Math.round(uploadProgress * 100)}%
                 </AppText>
               </View>
@@ -201,10 +208,10 @@ export default function PersonalInfoScreen() {
           </View>
 
           <View style={{ marginTop: 16, alignItems: 'center' }}>
-            <AppText style={{ fontSize: 20, fontWeight: '700', color: colors.textWhite, letterSpacing: -0.3 }}>
+            <AppText style={{ fontSize: 20, fontWeight: '700', color: theme.text, letterSpacing: -0.3 }}>
               {displayUser?.displayName || 'Guest'}
             </AppText>
-            <AppText style={{ color: colors.textSlate400, fontSize: 13, marginTop: 4 }}>
+            <AppText style={{ color: theme.textSecondary, fontSize: 13, marginTop: 4 }}>
               {displayUser?.email || ''}
             </AppText>
           </View>
@@ -214,10 +221,10 @@ export default function PersonalInfoScreen() {
         <SectionHeader title={t('settings.profile')} />
         <View
           style={{
-            backgroundColor: colors.cardDark,
+            backgroundColor: theme.card,
             borderRadius: 16,
             borderWidth: 1,
-            borderColor: 'rgba(51, 65, 85, 0.3)',
+            borderColor: theme.border,
             padding: 16,
             marginBottom: 24,
             gap: 4,
@@ -253,7 +260,7 @@ export default function PersonalInfoScreen() {
                 height: 52,
                 borderRadius: 14,
                 borderWidth: 1,
-                borderColor: genderDropdownOpen ? colors.neonPurple : colors.borderDark,
+                borderColor: genderDropdownOpen ? colors.neonPurple : theme.border,
                 backgroundColor: 'transparent',
                 paddingHorizontal: 16,
                 gap: 10,
@@ -267,12 +274,12 @@ export default function PersonalInfoScreen() {
                   color={colors.neonPurple}
                 />
               ) : (
-                <MaterialCommunityIcons name="gender-male-female" size={18} color={colors.textSlate500} />
+                <MaterialCommunityIcons name="gender-male-female" size={18} color={theme.textMuted} />
               )}
               <AppText style={{
                 flex: 1,
                 fontSize: 15,
-                color: gender ? colors.textWhite : colors.textSlate500,
+                color: gender ? theme.text : theme.textMuted,
               }}>
                 {gender
                   ? t(`personalInfo.gender${gender === 'male' ? 'Male' : 'Female'}`)
@@ -281,7 +288,7 @@ export default function PersonalInfoScreen() {
               <MaterialCommunityIcons
                 name={genderDropdownOpen ? 'chevron-up' : 'chevron-down'}
                 size={20}
-                color={colors.textSlate400}
+                color={theme.textSecondary}
               />
             </Pressable>
 
@@ -289,8 +296,8 @@ export default function PersonalInfoScreen() {
               <View style={{
                 borderRadius: 14,
                 borderWidth: 1,
-                borderColor: colors.borderDark,
-                backgroundColor: colors.cardDark,
+                borderColor: theme.border,
+                backgroundColor: theme.card,
                 marginTop: 4,
                 overflow: 'hidden',
               }}>
@@ -309,20 +316,20 @@ export default function PersonalInfoScreen() {
                         paddingHorizontal: 16,
                         paddingVertical: 13,
                         borderTopWidth: index === 0 ? 0 : 1,
-                        borderTopColor: colors.borderDark,
+                        borderTopColor: theme.border,
                         backgroundColor: isSelected ? 'rgba(168,85,247,0.1)' : 'transparent',
                       }}
                     >
                       <MaterialCommunityIcons
                         name={g === 'male' ? 'gender-male' : 'gender-female'}
                         size={18}
-                        color={isSelected ? colors.neonPurple : colors.textSlate400}
+                        color={isSelected ? colors.neonPurple : theme.textSecondary}
                       />
                       <AppText style={{
                         flex: 1,
                         fontSize: 15,
                         fontWeight: isSelected ? '600' : '400',
-                        color: isSelected ? colors.neonPurple : colors.textSlate200,
+                        color: isSelected ? colors.neonPurple : theme.text,
                       }}>
                         {t(`personalInfo.gender${g === 'male' ? 'Male' : 'Female'}`)}
                       </AppText>
@@ -336,35 +343,57 @@ export default function PersonalInfoScreen() {
             )}
           </View>
 
-          <AppButton
-            variant="primary"
-            size="lg"
-            onPress={handleSaveChanges}
-            disabled={isUpdating || !hasProfileChanges}
-            isLoading={isUpdating}
-            accessibilityRole="button"
-            accessibilityLabel={t('personalInfo.saveChanges')}
-            style={{
-              marginTop: 4,
-              shadowColor: colors.neonPurple,
-              shadowOffset: { width: 0, height: 0 },
-              shadowOpacity: hasProfileChanges ? 0.4 : 0,
-              shadowRadius: 12,
-              elevation: hasProfileChanges ? 6 : 0,
-            }}
-          >
-            {t('personalInfo.saveChanges')}
-          </AppButton>
+          <DatePickerField
+            value={dateOfBirth}
+            onChange={setDateOfBirth}
+            placeholder={t('personalInfo.birthdayPlaceholder')}
+            disabled={isUpdating}
+            accessibilityLabel={t('personalInfo.birthday')}
+          />
         </View>
+
+        <Pressable
+          onPress={handleSaveChanges}
+          disabled={isUpdating || !hasProfileChanges}
+          accessibilityRole="button"
+          accessibilityLabel={t('personalInfo.saveChanges')}
+          style={{
+            marginBottom: 24,
+            borderRadius: 16,
+            overflow: 'hidden',
+            shadowColor: colors.neonPurple,
+            shadowOffset: { width: 0, height: 4 },
+            shadowOpacity: hasProfileChanges ? 0.6 : 0,
+            shadowRadius: 16,
+            elevation: hasProfileChanges ? 10 : 0,
+            backgroundColor: hasProfileChanges ? colors.neonPurple : theme.card,
+            borderWidth: hasProfileChanges ? 0 : 1,
+            borderColor: theme.border,
+            flexDirection: 'row',
+            alignItems: 'center',
+            justifyContent: 'center',
+            gap: 10,
+            paddingVertical: 18,
+          }}
+        >
+          <MaterialCommunityIcons
+            name={isUpdating ? 'loading' : 'content-save-outline'}
+            size={22}
+            color={hasProfileChanges ? colors.textWhite : theme.textSecondary}
+          />
+          <AppText style={{ fontSize: 17, fontWeight: '700', color: hasProfileChanges ? colors.textWhite : theme.textSecondary, letterSpacing: 0.3 }}>
+            {isUpdating ? t('common.saving') : t('personalInfo.saveChanges')}
+          </AppText>
+        </Pressable>
 
         {/* Email Section */}
         <SectionHeader title={t('changeEmail.title')} />
         <View
           style={{
-            backgroundColor: colors.cardDark,
+            backgroundColor: theme.card,
             borderRadius: 16,
             borderWidth: 1,
-            borderColor: 'rgba(51, 65, 85, 0.3)',
+            borderColor: theme.border,
             padding: 16,
             marginBottom: 24,
             gap: 4,
@@ -380,18 +409,40 @@ export default function PersonalInfoScreen() {
             editable={!isUpdating}
             accessibilityLabel={t('personalInfo.email')}
           />
-          <AppButton
-            variant="secondary"
-            size="lg"
-            onPress={handleChangeEmail}
-            disabled={isUpdating || !hasEmailChanged}
-            accessibilityRole="button"
-            accessibilityLabel={t('personalInfo.changeEmail')}
-            style={{ marginTop: 4 }}
-          >
-            {t('personalInfo.changeEmail')}
-          </AppButton>
         </View>
+
+        <Pressable
+          onPress={handleChangeEmail}
+          disabled={isUpdating || !hasEmailChanged}
+          accessibilityRole="button"
+          accessibilityLabel={t('personalInfo.changeEmail')}
+          style={{
+            marginBottom: 24,
+            borderRadius: 16,
+            shadowColor: colors.neonPurple,
+            shadowOffset: { width: 0, height: 4 },
+            shadowOpacity: hasEmailChanged ? 0.6 : 0,
+            shadowRadius: 16,
+            elevation: hasEmailChanged ? 10 : 0,
+            backgroundColor: hasEmailChanged ? colors.neonPurple : theme.card,
+            borderWidth: hasEmailChanged ? 0 : 1,
+            borderColor: theme.border,
+            flexDirection: 'row',
+            alignItems: 'center',
+            justifyContent: 'center',
+            gap: 10,
+            paddingVertical: 18,
+          }}
+        >
+          <MaterialCommunityIcons
+            name="email-edit-outline"
+            size={22}
+            color={hasEmailChanged ? colors.textWhite : theme.textSecondary}
+          />
+          <AppText style={{ fontSize: 17, fontWeight: '700', color: hasEmailChanged ? colors.textWhite : theme.textSecondary, letterSpacing: 0.3 }}>
+            {t('personalInfo.changeEmail')}
+          </AppText>
+        </Pressable>
 
         {/* Error Message */}
         {error && (

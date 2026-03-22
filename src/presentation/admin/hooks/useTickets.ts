@@ -34,21 +34,37 @@ export const useTickets = () => {
     result.fold(
       (failure) => setError(failure.message),
       () => setTickets((prev) =>
+        prev.map((t) => {
+          if (t.id !== ticketId) return t;
+          if (status === 'IN_PROGRESS') {
+            return { ...t, status, updatedAt: new Date(), assignedToId: assignee?.id, assignedToName: assignee?.name, assignedToRole: assignee?.role };
+          }
+          if (status === 'OPEN') {
+            return { ...t, status, updatedAt: new Date(), assignedToId: undefined, assignedToName: undefined, assignedToRole: undefined };
+          }
+          // RESOLVED / CLOSED — keep existing handler
+          return { ...t, status, updatedAt: new Date() };
+        })
+      ),
+    );
+  }, [user, role]);
+
+  // Claim an already-IN_PROGRESS ticket that has no handler recorded yet
+  const claimTicket = useCallback(async (ticketId: string) => {
+    if (!user || (role !== 'admin' && role !== 'moderator')) return;
+    const assignee = { id: user.id, name: user.displayName, role: role as 'admin' | 'moderator' };
+    const result = await container.updateTicketStatusUseCase.execute(ticketId, 'IN_PROGRESS', assignee);
+    result.fold(
+      (failure) => setError(failure.message),
+      () => setTickets((prev) =>
         prev.map((t) =>
           t.id === ticketId
-            ? {
-                ...t,
-                status,
-                updatedAt: new Date(),
-                assignedToId:   assignee?.id,
-                assignedToName: assignee?.name,
-                assignedToRole: assignee?.role,
-              }
+            ? { ...t, updatedAt: new Date(), assignedToId: assignee.id, assignedToName: assignee.name, assignedToRole: assignee.role }
             : t
         )
       ),
     );
   }, [user, role]);
 
-  return { tickets, isLoading, error, refresh: load, updateStatus };
+  return { tickets, isLoading, error, refresh: load, updateStatus, claimTicket };
 };

@@ -48,14 +48,17 @@ export class TicketRemoteDataSourceImpl implements TicketRemoteDataSource {
         updated_at: serverTimestamp(),
       };
       if (status === 'in_progress' && assignee) {
+        // Save who picked it up
         payload.assigned_to_id   = assignee.id;
         payload.assigned_to_name = assignee.name;
         payload.assigned_to_role = assignee.role;
-      } else {
+      } else if (status === 'pending') {
+        // Reopened → clear handler
         payload.assigned_to_id   = null;
         payload.assigned_to_name = null;
         payload.assigned_to_role = null;
       }
+      // resolved / closed → leave existing handler fields untouched
       await updateDoc(doc(firestore, this.COLLECTION, ticketId), payload);
     } catch (error: unknown) {
       const message = error instanceof Error ? error.message : 'Failed to update ticket status';

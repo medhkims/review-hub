@@ -8,35 +8,30 @@ import { Avatar } from '@/presentation/shared/components/ui/Avatar';
 import { SectionHeader } from '@/presentation/shared/components/ui/SectionHeader';
 import { SettingRow } from '@/presentation/shared/components/ui/SettingRow';
 import { useSettingsStore } from '@/presentation/settings/store/settingsStore';
+import { useSettings } from '@/presentation/settings/hooks/useSettings';
 import { useAuthStore } from '@/presentation/auth/store/authStore';
 import { useAuth } from '@/presentation/auth/hooks/useAuth';
 import { useRoleStore } from '@/presentation/auth/store/roleStore';
 import { useAnalyticsScreen } from '@/presentation/shared/hooks/useAnalyticsScreen';
 import { AnalyticsScreens } from '@/core/analytics/analyticsKeys';
 import { colors } from '@/core/theme/colors';
+import { useTheme } from '@/core/theme/useTheme';
 
 export default function SettingsScreen() {
   useAnalyticsScreen(AnalyticsScreens.SETTINGS);
   const { t } = useTranslation();
   const router = useRouter();
   const settings = useSettingsStore((state) => state.settings);
-  const setSettings = useSettingsStore((state) => state.setSettings);
+  const { toggleNotifications, toggleDarkMode } = useSettings();
   const { user } = useAuthStore();
   const { signOut } = useAuth();
   const { role } = useRoleStore();
   const isAdmin = role === 'admin';
   const isAdminOrModerator = role === 'admin' || role === 'moderator';
+  const theme = useTheme();
 
   const notificationsEnabled = settings?.notificationsEnabled ?? true;
   const darkModeEnabled = settings?.theme === 'dark';
-
-  const toggleNotifications = (value: boolean) => {
-    setSettings({ ...settings!, notificationsEnabled: value });
-  };
-
-  const toggleDarkMode = (value: boolean) => {
-    setSettings({ ...settings!, theme: value ? 'dark' : 'light' });
-  };
 
   const handleLogout = async () => {
     await signOut();
@@ -61,8 +56,38 @@ export default function SettingsScreen() {
     avatarUrl: null,
   };
 
+  const SettingCard = ({ children }: { children: React.ReactNode }) => (
+    <View
+      style={{
+        backgroundColor: theme.card,
+        borderRadius: 16,
+        borderWidth: 1,
+        borderColor: theme.border,
+        overflow: 'hidden',
+        width: '100%',
+      }}
+    >
+      {children}
+    </View>
+  );
+
   return (
     <ScreenLayout>
+      {/* Header title */}
+      <View
+        style={{
+          width: '100%',
+          alignItems: 'center',
+          paddingVertical: 14,
+          borderBottomWidth: 1,
+          borderBottomColor: theme.border,
+        }}
+      >
+        <AppText style={{ fontSize: 17, fontWeight: '600', color: theme.text }}>
+          {t('settings.profile')}
+        </AppText>
+      </View>
+
       <ScrollView
         style={{ flex: 1, width: '100%' }}
         contentContainerStyle={{ flexGrow: 1 }}
@@ -88,14 +113,14 @@ export default function SettingsScreen() {
                   fontSize: 24,
                   fontWeight: '700',
                   letterSpacing: -0.3,
-                  color: colors.textWhite,
+                  color: theme.text,
                 }}
               >
                 {displayUser.displayName}
               </AppText>
               <AppText
                 style={{
-                  color: colors.textSlate400,
+                  color: theme.textSecondary,
                   fontSize: 14,
                   marginTop: 4,
                 }}
@@ -106,162 +131,75 @@ export default function SettingsScreen() {
           </Pressable>
 
           <SectionHeader title={t('settings.profile')} />
-          <View
-            style={{
-              backgroundColor: colors.cardDark,
-              borderRadius: 16,
-              borderWidth: 1,
-              borderColor: 'rgba(51, 65, 85, 0.3)',
-              overflow: 'hidden',
-              width: '100%',
-            }}
-          >
-            <SettingRow
-              iconName="account"
-              iconColor="blue"
-              label={t('settings.personalInfo')}
-              onPress={navigateToPersonalInfo}
-            />
-            <SettingRow
-              iconName="heart"
-              iconColor="pink"
-              label={t('settings.wishlist')}
-              onPress={() => router.push('/(main)/(settings)/wishlist')}
-            />
-            <SettingRow
-              iconName="shield-check"
-              iconColor="green"
-              label={t('settings.verifyAccount')}
-              onPress={() => router.push('/(main)/(settings)/personal-info')}
-              isLast
-            />
-          </View>
+          <SettingCard>
+            <SettingRow iconName="account" iconColor="blue" label={t('settings.personalInfo')} onPress={navigateToPersonalInfo} isLast />
+          </SettingCard>
+          <SettingCard>
+            <SettingRow iconName="heart" iconColor="pink" label={t('settings.wishlist')} onPress={() => router.push('/(main)/(settings)/wishlist')} isLast />
+          </SettingCard>
+          <SettingCard>
+            <SettingRow iconName="shield-check" iconColor="green" label={t('settings.verifyAccount')} onPress={() => router.push('/(main)/(profile)/verify-account')} isLast />
+          </SettingCard>
+          <SettingCard>
+            <SettingRow iconName="lock-reset" iconColor="orange" label={t('settings.resetPassword')} onPress={() => router.push('/(main)/(profile)/change-password')} isLast />
+          </SettingCard>
 
           <SectionHeader title={t('settings.settingsSection')} />
-          <View
-            style={{
-              backgroundColor: colors.cardDark,
-              borderRadius: 16,
-              borderWidth: 1,
-              borderColor: 'rgba(51, 65, 85, 0.3)',
-              overflow: 'hidden',
-              width: '100%',
-            }}
-          >
-            <SettingRow
-              iconName="bell"
-              iconColor="indigo"
-              label={t('settings.notifications')}
-              rightElement="toggle"
-              toggleValue={notificationsEnabled}
-              onToggle={toggleNotifications}
-            />
-            <SettingRow
-              iconName="theme-light-dark"
-              iconColor="purple"
-              label={t('settings.darkMode')}
-              rightElement="toggle"
-              toggleValue={darkModeEnabled}
-              onToggle={toggleDarkMode}
-            />
-            <SettingRow
-              iconName="translate"
-              iconColor="emerald"
-              label={t('settings.language')}
-              value="English"
-              onPress={() => {}}
-              isLast
-            />
-          </View>
+          <SettingCard>
+            <SettingRow iconName="bell-outline" iconColor="purple" label={t('settings.notifications')} hint={t('settings.notificationsHint')} rightElement="toggle" toggleValue={notificationsEnabled} onToggle={toggleNotifications} isLast />
+          </SettingCard>
+          <SettingCard>
+            <SettingRow iconName="moon-waxing-crescent" iconColor="purple" label={t('settings.darkMode')} hint={t('settings.darkModeHint')} rightElement="toggle" toggleValue={darkModeEnabled} onToggle={toggleDarkMode} isLast />
+          </SettingCard>
 
           {isAdminOrModerator && (
             <>
               <SectionHeader title={t('settings.adminSection')} />
-              <View
-                style={{
-                  backgroundColor: colors.cardDark,
-                  borderRadius: 16,
-                  borderWidth: 1,
-                  borderColor: 'rgba(51, 65, 85, 0.3)',
-                  overflow: 'hidden',
-                  width: '100%',
-                }}
-              >
-                <SettingRow
-                  iconName="clock-check-outline"
-                  iconColor="yellow"
-                  label={t('settings.pendingBusinesses')}
-                  onPress={() => router.push('/(main)/(settings)/pending-businesses')}
-                />
-                {isAdmin && (
-                  <SettingRow
-                    iconName="image-multiple"
-                    iconColor="purple"
-                    label={t('settings.manageBanners')}
-                    onPress={() => router.push('/(main)/(settings)/manage-banners')}
-                  />
-                )}
-                {isAdmin && (
-                  <SettingRow
-                    iconName="shape"
-                    iconColor="emerald"
-                    label={t('settings.manageCategories')}
-                    onPress={() => router.push('/(main)/(settings)/manage-categories')}
-                  />
-                )}
-                {isAdmin && (
-                  <SettingRow
-                    iconName="account-circle-outline"
-                    iconColor="cyan"
-                    label={t('settings.adminInfo')}
-                    onPress={() => router.push('/(main)/(settings)/admin-info')}
-                  />
-                )}
-                <SettingRow
-                  iconName="shield-account"
-                  iconColor="blue"
-                  label={t('settings.adminDashboard')}
-                  onPress={() => {}}
-                  isLast
-                />
-              </View>
+              <SettingCard>
+                <SettingRow iconName="clock-check-outline" iconColor="yellow" label={t('settings.pendingBusinesses')} onPress={() => router.push('/(main)/(settings)/pending-businesses')} isLast />
+              </SettingCard>
+              <SettingCard>
+                <SettingRow iconName="shield-account" iconColor="green" label={t('admin.verifications.title')} onPress={() => router.push('/(main)/(settings)/admin-verifications')} isLast />
+              </SettingCard>
+              {isAdmin && (
+                <SettingCard>
+                  <SettingRow iconName="image-multiple" iconColor="purple" label={t('settings.manageBanners')} onPress={() => router.push('/(main)/(settings)/manage-banners')} isLast />
+                </SettingCard>
+              )}
+              {isAdmin && (
+                <SettingCard>
+                  <SettingRow iconName="shape" iconColor="emerald" label={t('settings.manageCategories')} onPress={() => router.push('/(main)/(settings)/manage-categories')} isLast />
+                </SettingCard>
+              )}
+              {isAdmin && (
+                <SettingCard>
+                  <SettingRow iconName="account-circle-outline" iconColor="cyan" label={t('settings.adminInfo')} onPress={() => router.push('/(main)/(settings)/admin-info')} isLast />
+                </SettingCard>
+              )}
+              {isAdmin && (
+                <SettingCard>
+                  <SettingRow iconName="help-circle" iconColor="green" label={t('settings.manageFaq')} onPress={() => router.push('/(main)/(settings)/manage-faq')} isLast />
+                </SettingCard>
+              )}
+              <SettingCard>
+                <SettingRow iconName="shield-account" iconColor="blue" label={t('settings.adminDashboard')} onPress={() => {}} isLast />
+              </SettingCard>
             </>
           )}
 
           <SectionHeader title={t('settings.support')} />
-          <View
-            style={{
-              backgroundColor: colors.cardDark,
-              borderRadius: 16,
-              borderWidth: 1,
-              borderColor: 'rgba(51, 65, 85, 0.3)',
-              overflow: 'hidden',
-              width: '100%',
-            }}
-          >
-            <SettingRow
-              iconName="help-circle"
-              iconColor="yellow"
-              label={t('settings.helpCenter')}
-              rightElement="external"
-              onPress={() => {}}
-            />
-            <SettingRow
-              iconName="file-document"
-              iconColor="cyan"
-              label={t('settings.privacyPolicy')}
-              rightElement="external"
-              onPress={() => {}}
-            />
-            <SettingRow
-              iconName="logout"
-              iconColor="red"
-              label={t('settings.logout')}
-              onPress={handleLogout}
-              variant="danger"
-              isLast
-            />
-          </View>
+          <SettingCard>
+            <SettingRow iconName="ticket-outline" iconColor="purple" label={t('settings.contactSupport')} onPress={() => router.push('/(main)/(settings)/support')} isLast />
+          </SettingCard>
+          <SettingCard>
+            <SettingRow iconName="help-circle-outline" iconColor="yellow" label={t('settings.helpCenter')} onPress={() => router.push(isAdmin ? '/(main)/(settings)/manage-faq' : '/(main)/(settings)/help-center')} isLast />
+          </SettingCard>
+          <SettingCard>
+            <SettingRow iconName="shield-outline" iconColor="cyan" label={t('settings.privacyPolicy')} onPress={() => router.push('/(main)/(settings)/privacy-policy')} isLast />
+          </SettingCard>
+          <SettingCard>
+            <SettingRow iconName="logout-variant" iconColor="red" label={t('settings.logout')} onPress={handleLogout} variant="danger" isLast />
+          </SettingCard>
         </View>
       </ScrollView>
     </ScreenLayout>

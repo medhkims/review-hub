@@ -6,23 +6,19 @@ import {
   Image,
   ActivityIndicator,
   ListRenderItemInfo,
-  StyleSheet,
-  Text,
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useTranslation } from 'react-i18next';
 import { ScreenLayout } from '@/presentation/shared/layouts/ScreenLayout';
+import { AppText } from '@/presentation/shared/components/ui/AppText';
 import { useWishlist } from '../hooks/useWishlist';
 import { useAuthStore } from '@/presentation/auth/store/authStore';
 import { useAnalyticsScreen } from '@/presentation/shared/hooks/useAnalyticsScreen';
 import { AnalyticsScreens } from '@/core/analytics/analyticsKeys';
+import { colors } from '@/core/theme/colors';
+import { useTheme } from '@/core/theme/useTheme';
 import { WishlistItemEntity } from '@/domain/wishlist/entities/wishlistItemEntity';
-
-const NEON_PURPLE = '#A855F7';
-const MIDNIGHT = '#0F172A';
-const CARD_BG = '#1E293B';
-const BORDER = '#334155';
 
 // ─── Wishlist Card ────────────────────────────────────────────────────────────
 
@@ -33,60 +29,118 @@ interface WishlistCardProps {
 }
 
 const WishlistCard = React.memo(({ item, onRemove, onPress }: WishlistCardProps) => {
+  const theme = useTheme();
   return (
     <Pressable
       onPress={() => onPress(item)}
-      style={({ pressed }) => [styles.card, pressed && { opacity: 0.75 }]}
+      style={({ pressed }) => ({
+        flexDirection: 'row',
+        alignItems: 'center',
+        backgroundColor: theme.card,
+        borderRadius: 12,
+        padding: 8,
+        marginBottom: 10,
+        borderWidth: 1,
+        borderColor: theme.border,
+        gap: 12,
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.25,
+        shadowRadius: 8,
+        elevation: 4,
+        opacity: pressed ? 0.75 : 1,
+      })}
       accessibilityLabel={`View ${item.placeName}`}
       accessibilityRole="button"
     >
       {/* Place image */}
-      <View style={styles.imageContainer}>
+      <View
+        style={{
+          width: 48,
+          height: 48,
+          borderRadius: 8,
+          overflow: 'hidden',
+          backgroundColor: theme.card,
+          flexShrink: 0,
+        }}
+      >
         {item.placeImageUrl ? (
           <Image
             source={{ uri: item.placeImageUrl }}
-            style={styles.image}
+            style={{ width: '100%', height: '100%' }}
             resizeMode="cover"
             accessibilityLabel={item.placeName}
           />
         ) : (
-          <View style={styles.imagePlaceholder}>
-            <MaterialCommunityIcons name="store" size={24} color="#64748B" />
+          <View
+            style={{
+              width: '100%',
+              height: '100%',
+              alignItems: 'center',
+              justifyContent: 'center',
+              backgroundColor: theme.border,
+            }}
+          >
+            <MaterialCommunityIcons name="store" size={24} color={theme.textMuted} />
           </View>
         )}
       </View>
 
       {/* Info */}
-      <View style={styles.infoContainer}>
-        <Text style={styles.placeName} numberOfLines={1}>
+      <View style={{ flex: 1, minWidth: 0, gap: 2 }}>
+        <AppText
+          style={{ fontSize: 13, fontWeight: '700', color: theme.text, lineHeight: 18 }}
+          numberOfLines={1}
+        >
           {item.placeName}
-        </Text>
+        </AppText>
 
         {/* Rating row */}
-        <View style={styles.ratingRow}>
-          <MaterialCommunityIcons name="star" size={10} color="#FBBF24" />
-          <Text style={styles.ratingText}>{item.rating.toFixed(1)}</Text>
-          <Text style={styles.reviewCountText}>({item.reviewCount})</Text>
+        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
+          <MaterialCommunityIcons name="star" size={10} color={colors.ratingGold} />
+          <AppText style={{ fontSize: 11, fontWeight: '700', color: theme.text }}>
+            {item.rating.toFixed(1)}
+          </AppText>
+          <AppText style={{ fontSize: 9, color: theme.textSecondary, marginLeft: 2 }}>
+            ({item.reviewCount})
+          </AppText>
         </View>
 
         {/* Location row */}
-        <View style={styles.locationRow}>
-          <MaterialCommunityIcons name="map-marker" size={10} color="#64748B" style={{ marginTop: 1 }} />
-          <Text style={styles.locationText} numberOfLines={1}>
+        <View style={{ flexDirection: 'row', alignItems: 'flex-start', gap: 4 }}>
+          <MaterialCommunityIcons name="map-marker" size={10} color={theme.textMuted} style={{ marginTop: 1 }} />
+          <AppText
+            style={{ fontSize: 9, color: theme.textSecondary, flex: 1, lineHeight: 13 }}
+            numberOfLines={1}
+          >
             {item.location}
-          </Text>
+          </AppText>
         </View>
       </View>
 
       {/* Heart / remove button */}
       <Pressable
         onPress={() => onRemove(item.id)}
-        style={({ pressed }) => [styles.heartButton, pressed && { opacity: 0.7 }]}
+        style={({ pressed }) => ({
+          width: 40,
+          height: 40,
+          borderRadius: 8,
+          backgroundColor: colors.neonPurple,
+          alignItems: 'center',
+          justifyContent: 'center',
+          flexShrink: 0,
+          shadowColor: colors.neonPurple,
+          shadowOffset: { width: 0, height: 0 },
+          shadowOpacity: 0.3,
+          shadowRadius: 8,
+          elevation: 6,
+          opacity: pressed ? 0.7 : 1,
+        })}
         accessibilityLabel={`Remove ${item.placeName} from wishlist`}
         accessibilityRole="button"
         hitSlop={6}
       >
-        <MaterialCommunityIcons name="heart" size={20} color="#FFFFFF" />
+        <MaterialCommunityIcons name="heart" size={20} color={colors.textWhite} />
       </Pressable>
     </Pressable>
   );
@@ -98,11 +152,40 @@ WishlistCard.displayName = 'WishlistCard';
 
 const EmptyState = () => {
   const { t } = useTranslation();
+  const theme = useTheme();
   return (
-    <View style={styles.emptyContainer}>
-      <MaterialCommunityIcons name="heart-off-outline" size={64} color="#334155" />
-      <Text style={styles.emptyTitle}>{t('wishlist.empty')}</Text>
-      <Text style={styles.emptyDesc}>{t('wishlist.emptyDescription')}</Text>
+    <View
+      style={{
+        flex: 1,
+        alignItems: 'center',
+        justifyContent: 'center',
+        paddingHorizontal: 32,
+        paddingVertical: 64,
+      }}
+    >
+      <MaterialCommunityIcons name="heart-off-outline" size={64} color={theme.textMuted} />
+      <AppText
+        style={{
+          fontSize: 18,
+          fontWeight: '700',
+          color: theme.text,
+          marginTop: 16,
+          textAlign: 'center',
+        }}
+      >
+        {t('wishlist.empty')}
+      </AppText>
+      <AppText
+        style={{
+          fontSize: 14,
+          color: theme.textSecondary,
+          marginTop: 8,
+          textAlign: 'center',
+          lineHeight: 20,
+        }}
+      >
+        {t('wishlist.emptyDescription')}
+      </AppText>
     </View>
   );
 };
@@ -113,6 +196,7 @@ export default function WishlistScreen() {
   useAnalyticsScreen(AnalyticsScreens.WISHLIST);
   const { t } = useTranslation();
   const router = useRouter();
+  const theme = useTheme();
   const { user } = useAuthStore();
 
   const { items, isLoading, error, removeFromWishlist } = useWishlist(user?.id);
@@ -144,48 +228,92 @@ export default function WishlistScreen() {
   return (
     <ScreenLayout>
       {/* Header */}
-      <View style={styles.header}>
+      <View
+        style={{
+          flexDirection: 'row',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          paddingHorizontal: 24,
+          paddingTop: 12,
+          paddingBottom: 16,
+        }}
+      >
         <Pressable
           onPress={() => router.back()}
-          style={({ pressed }) => [styles.backButton, pressed && { backgroundColor: '#1E293B' }]}
+          style={({ pressed }) => ({
+            padding: 4,
+            borderRadius: 20,
+            backgroundColor: theme.isDark ? 'rgba(30,41,59,0.5)' : 'rgba(148,163,184,0.2)',
+            opacity: pressed ? 0.7 : 1,
+          })}
           accessibilityLabel="Go back"
           accessibilityRole="button"
         >
-          <MaterialCommunityIcons name="chevron-left" size={24} color="#FFFFFF" />
+          <MaterialCommunityIcons name="chevron-left" size={24} color={theme.text} />
         </Pressable>
-        <Text style={styles.headerTitle}>{t('wishlist.title')}</Text>
+        <AppText style={{ fontSize: 17, fontWeight: '600', color: theme.text }}>
+          {t('wishlist.title')}
+        </AppText>
         <View style={{ width: 32 }} />
       </View>
 
       {/* Heart hero */}
-      <View style={styles.heroContainer}>
-        <View style={styles.heroCircle}>
-          <MaterialCommunityIcons name="heart" size={40} color={NEON_PURPLE} />
+      <View style={{ alignItems: 'center', paddingTop: 8, paddingBottom: 24 }}>
+        <View
+          style={{
+            width: 80,
+            height: 80,
+            borderRadius: 40,
+            backgroundColor: 'rgba(168,85,247,0.2)',
+            alignItems: 'center',
+            justifyContent: 'center',
+          }}
+        >
+          <MaterialCommunityIcons name="heart" size={40} color={colors.neonPurple} />
         </View>
       </View>
 
       {/* Content */}
       {isLoading ? (
-        <View style={styles.centered}>
-          <ActivityIndicator size="large" color={NEON_PURPLE} />
+        <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center', paddingHorizontal: 32 }}>
+          <ActivityIndicator size="large" color={colors.neonPurple} />
         </View>
       ) : error ? (
-        <View style={styles.centered}>
-          <MaterialCommunityIcons name="alert-circle-outline" size={48} color="#64748B" />
-          <Text style={styles.errorText}>{error}</Text>
+        <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center', paddingHorizontal: 32 }}>
+          <MaterialCommunityIcons name="alert-circle-outline" size={48} color={theme.textMuted} />
+          <AppText style={{ fontSize: 14, color: theme.textSecondary, textAlign: 'center', marginTop: 12 }}>
+            {error}
+          </AppText>
         </View>
       ) : (
-        <View style={styles.listWrapper}>
+        <View style={{ flex: 1, paddingHorizontal: 20 }}>
           {/* Section header */}
           {items.length > 0 && (
-            <View style={styles.sectionHeader}>
-              <Text style={styles.sectionTitle}>{t('wishlist.allResults')}</Text>
+            <View
+              style={{
+                flexDirection: 'row',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                marginBottom: 16,
+                paddingHorizontal: 4,
+              }}
+            >
+              <AppText style={{ fontSize: 18, fontWeight: '700', color: theme.text, letterSpacing: -0.3 }}>
+                {t('wishlist.allResults')}
+              </AppText>
               <Pressable
-                style={({ pressed }) => [styles.filterButton, pressed && { opacity: 0.7 }]}
+                style={({ pressed }) => ({
+                  padding: 6,
+                  borderRadius: 8,
+                  backgroundColor: theme.card,
+                  borderWidth: 1,
+                  borderColor: theme.border,
+                  opacity: pressed ? 0.7 : 1,
+                })}
                 accessibilityLabel="Filter wishlist"
                 accessibilityRole="button"
               >
-                <MaterialCommunityIcons name="tune" size={18} color={NEON_PURPLE} />
+                <MaterialCommunityIcons name="tune" size={18} color={colors.neonPurple} />
               </Pressable>
             </View>
           )}
@@ -205,195 +333,3 @@ export default function WishlistScreen() {
     </ScreenLayout>
   );
 }
-
-// ─── Styles ───────────────────────────────────────────────────────────────────
-
-const styles = StyleSheet.create({
-  // Header
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: 24,
-    paddingTop: 12,
-    paddingBottom: 16,
-  },
-  backButton: {
-    padding: 4,
-    borderRadius: 20,
-    backgroundColor: 'rgba(30,41,59,0.5)',
-  },
-  headerTitle: {
-    fontSize: 17,
-    fontWeight: '600',
-    color: '#FFFFFF',
-  },
-
-  // Hero
-  heroContainer: {
-    alignItems: 'center',
-    paddingTop: 8,
-    paddingBottom: 24,
-  },
-  heroCircle: {
-    width: 80,
-    height: 80,
-    borderRadius: 40,
-    backgroundColor: 'rgba(168,85,247,0.2)',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-
-  // Section header
-  listWrapper: {
-    flex: 1,
-    paddingHorizontal: 20,
-  },
-  sectionHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    marginBottom: 16,
-    paddingHorizontal: 4,
-  },
-  sectionTitle: {
-    fontSize: 18,
-    fontWeight: '700',
-    color: '#FFFFFF',
-    letterSpacing: -0.3,
-  },
-  filterButton: {
-    padding: 6,
-    borderRadius: 8,
-    backgroundColor: CARD_BG,
-    borderWidth: 1,
-    borderColor: BORDER,
-  },
-
-  // Card
-  card: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: CARD_BG,
-    borderRadius: 12,
-    padding: 8,
-    marginBottom: 10,
-    borderWidth: 1,
-    borderColor: 'rgba(51,65,85,0.3)',
-    gap: 12,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.25,
-    shadowRadius: 8,
-    elevation: 4,
-  },
-  imageContainer: {
-    width: 48,
-    height: 48,
-    borderRadius: 8,
-    overflow: 'hidden',
-    backgroundColor: '#1E293B',
-    flexShrink: 0,
-  },
-  image: {
-    width: '100%',
-    height: '100%',
-  },
-  imagePlaceholder: {
-    width: '100%',
-    height: '100%',
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: '#334155',
-  },
-  infoContainer: {
-    flex: 1,
-    minWidth: 0,
-    gap: 2,
-  },
-  placeName: {
-    fontSize: 13,
-    fontWeight: '700',
-    color: '#FFFFFF',
-    lineHeight: 18,
-  },
-  ratingRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 4,
-  },
-  ratingText: {
-    fontSize: 11,
-    fontWeight: '700',
-    color: '#FFFFFF',
-  },
-  reviewCountText: {
-    fontSize: 9,
-    color: '#94A3B8',
-    marginLeft: 2,
-  },
-  locationRow: {
-    flexDirection: 'row',
-    alignItems: 'flex-start',
-    gap: 4,
-  },
-  locationText: {
-    fontSize: 9,
-    color: '#94A3B8',
-    flex: 1,
-    lineHeight: 13,
-  },
-
-  // Heart button
-  heartButton: {
-    width: 40,
-    height: 40,
-    borderRadius: 8,
-    backgroundColor: NEON_PURPLE,
-    alignItems: 'center',
-    justifyContent: 'center',
-    flexShrink: 0,
-    shadowColor: NEON_PURPLE,
-    shadowOffset: { width: 0, height: 0 },
-    shadowOpacity: 0.3,
-    shadowRadius: 8,
-    elevation: 6,
-  },
-
-  // States
-  centered: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingHorizontal: 32,
-  },
-  errorText: {
-    fontSize: 14,
-    color: '#94A3B8',
-    textAlign: 'center',
-    marginTop: 12,
-  },
-
-  // Empty
-  emptyContainer: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingHorizontal: 32,
-    paddingVertical: 64,
-  },
-  emptyTitle: {
-    fontSize: 18,
-    fontWeight: '700',
-    color: '#FFFFFF',
-    marginTop: 16,
-    textAlign: 'center',
-  },
-  emptyDesc: {
-    fontSize: 14,
-    color: '#94A3B8',
-    marginTop: 8,
-    textAlign: 'center',
-    lineHeight: 20,
-  },
-});

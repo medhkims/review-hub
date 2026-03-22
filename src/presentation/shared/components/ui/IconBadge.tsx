@@ -10,17 +10,17 @@ interface IconBadgeProps {
   size?: 'sm' | 'md' | 'lg';
 }
 
-const colorMap: Record<IconColor, { bg: string; text: string }> = {
-  blue: { bg: 'bg-blue-500/10', text: '#3B82F6' },
-  pink: { bg: 'bg-pink-500/10', text: '#EC4899' },
-  green: { bg: 'bg-green-500/10', text: '#22C55E' },
-  orange: { bg: 'bg-orange-500/10', text: '#F97316' },
-  indigo: { bg: 'bg-indigo-500/10', text: '#6366F1' },
-  purple: { bg: 'bg-purple-500/10', text: '#A855F7' },
-  emerald: { bg: 'bg-emerald-500/10', text: '#10B981' },
-  yellow: { bg: 'bg-yellow-500/10', text: '#EAB308' },
-  cyan: { bg: 'bg-cyan-500/10', text: '#06B6D4' },
-  red: { bg: 'bg-red-500/10', text: '#EF4444' },
+const colorMap: Record<IconColor, { bg: string; glow: string; icon: string }> = {
+  blue:    { bg: 'rgba(59, 130, 246, 0.18)',  glow: 'rgba(59, 130, 246, 0.55)',  icon: '#60A5FA' },
+  pink:    { bg: 'rgba(236, 72, 153, 0.18)',  glow: 'rgba(236, 72, 153, 0.55)',  icon: '#F472B6' },
+  green:   { bg: 'rgba(34, 197, 94, 0.18)',   glow: 'rgba(34, 197, 94, 0.55)',   icon: '#4ADE80' },
+  orange:  { bg: 'rgba(249, 115, 22, 0.18)',  glow: 'rgba(249, 115, 22, 0.55)',  icon: '#FB923C' },
+  indigo:  { bg: 'rgba(99, 102, 241, 0.18)',  glow: 'rgba(99, 102, 241, 0.55)',  icon: '#818CF8' },
+  purple:  { bg: 'rgba(168, 85, 247, 0.18)',  glow: 'rgba(168, 85, 247, 0.55)',  icon: '#C084FC' },
+  emerald: { bg: 'rgba(16, 185, 129, 0.18)',  glow: 'rgba(16, 185, 129, 0.55)',  icon: '#34D399' },
+  yellow:  { bg: 'rgba(234, 179, 8, 0.18)',   glow: 'rgba(234, 179, 8, 0.55)',   icon: '#FACC15' },
+  cyan:    { bg: 'rgba(6, 182, 212, 0.18)',   glow: 'rgba(6, 182, 212, 0.55)',   icon: '#22D3EE' },
+  red:     { bg: 'rgba(239, 68, 68, 0.18)',   glow: 'rgba(239, 68, 68, 0.55)',   icon: '#F87171' },
 };
 
 const sizeMap = {
@@ -30,15 +30,26 @@ const sizeMap = {
 };
 
 export const IconBadge: React.FC<IconBadgeProps> = ({ iconName, color, size = 'md' }) => {
-  const { bg, text } = colorMap[color];
-  const { container, icon } = sizeMap[size];
+  const { bg, glow, icon } = colorMap[color];
+  const { container, icon: iconSize } = sizeMap[size];
 
   return (
     <View
-      className={`${bg} rounded-xl`}
-      style={{ width: container, height: container, alignItems: 'center', justifyContent: 'center' }}
+      style={{
+        width: container,
+        height: container,
+        borderRadius: 12,
+        backgroundColor: bg,
+        alignItems: 'center',
+        justifyContent: 'center',
+        shadowColor: glow,
+        shadowOffset: { width: 0, height: 0 },
+        shadowOpacity: 1,
+        shadowRadius: 8,
+        elevation: 4,
+      }}
     >
-      <MaterialCommunityIcons name={iconName} size={icon} color={text} />
+      <MaterialCommunityIcons name={iconName} size={iconSize} color={icon} />
     </View>
   );
 };

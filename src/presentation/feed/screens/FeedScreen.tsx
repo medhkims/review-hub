@@ -8,13 +8,16 @@ import { ErrorView } from '@/presentation/shared/components/ui/ErrorView';
 import { useAnalyticsScreen } from '@/presentation/shared/hooks/useAnalyticsScreen';
 import { AnalyticsScreens } from '@/core/analytics/analyticsKeys';
 import { colors } from '@/core/theme/colors';
+import { useTheme } from '@/core/theme/useTheme';
 import { PostEntity } from '@/domain/feed/entities/postEntity';
 import { useFeed } from '../hooks/useFeed';
 import { PostCard } from '../components/PostCard';
 
 const NEON_PURPLE = colors.neonPurple;
 
-const EmptyState = () => (
+const EmptyState = () => {
+  const theme = useTheme();
+  return (
   <View
     style={{
       flex: 1,
@@ -45,7 +48,7 @@ const EmptyState = () => (
       style={{
         fontSize: 18,
         fontWeight: '700',
-        color: colors.textWhite,
+        color: theme.text,
         textAlign: 'center',
         marginBottom: 8,
       }}
@@ -55,7 +58,7 @@ const EmptyState = () => (
     <AppText
       style={{
         fontSize: 14,
-        color: colors.textSlate400,
+        color: theme.textSecondary,
         textAlign: 'center',
         lineHeight: 20,
       }}
@@ -63,7 +66,8 @@ const EmptyState = () => (
       Be the first to share something with the community.
     </AppText>
   </View>
-);
+  );
+};
 
 interface FooterProps {
   isLoading: boolean;
@@ -128,6 +132,8 @@ export default function FeedScreen() {
     );
   }
 
+  const theme = useTheme();
+
   const ListHeaderComponent = useCallback(
     () => (
       <View style={{ paddingTop: 16, paddingBottom: 8 }}>
@@ -135,7 +141,7 @@ export default function FeedScreen() {
           style={{
             fontSize: 24,
             fontWeight: '700',
-            color: colors.textWhite,
+            color: theme.text,
           }}
         >
           Feed
@@ -143,7 +149,7 @@ export default function FeedScreen() {
         <AppText
           style={{
             fontSize: 14,
-            color: colors.textSlate400,
+            color: theme.textSecondary,
             marginTop: 4,
             marginBottom: 16,
           }}
@@ -152,7 +158,7 @@ export default function FeedScreen() {
         </AppText>
       </View>
     ),
-    [],
+    [theme],
   );
 
   return (

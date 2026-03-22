@@ -5,6 +5,7 @@ import { useTranslation } from 'react-i18next';
 import { AppText } from '@/presentation/shared/components/ui/AppText';
 import { Card } from '@/presentation/shared/components/ui/Card';
 import { colors } from '@/core/theme/colors';
+import { useTheme } from '@/core/theme/useTheme';
 import { BusinessEntity, BusinessStatus, BusinessOpeningHours } from '@/domain/business/entities/businessEntity';
 import { getCategoryDefaultCover, getCategoryDefaultLogo } from '@/core/utils/categoryDefaultImages';
 import { ImageSourcePropType } from 'react-native';
@@ -58,6 +59,7 @@ const BusinessCardComponent: React.FC<BusinessCardProps> = ({
   isNew = false,
 }) => {
   const { t } = useTranslation();
+  const theme = useTheme();
   const [coverError, setCoverError] = useState(false);
   const [logoError, setLogoError] = useState(false);
   const remoteDefaults = useCategoryDefaultStore((s) => s.defaults[business.categoryId]);
@@ -136,10 +138,12 @@ const BusinessCardComponent: React.FC<BusinessCardProps> = ({
         style={{
           flexDirection: 'row',
           alignItems: 'center',
-          backgroundColor: colors.cardDark,
+          backgroundColor: theme.card,
           borderRadius: 18,
           marginBottom: 12,
           overflow: 'hidden',
+          borderWidth: 1,
+          borderColor: theme.border,
         }}
       >
         {/* Main tappable area (thumbnail + text) */}
@@ -162,7 +166,7 @@ const BusinessCardComponent: React.FC<BusinessCardProps> = ({
               height: 80,
               borderRadius: 14,
               overflow: 'hidden',
-              backgroundColor: colors.borderDark,
+              backgroundColor: theme.border,
             }}
           >
             {logoSource !== null && !logoError ? (
@@ -202,23 +206,23 @@ const BusinessCardComponent: React.FC<BusinessCardProps> = ({
           {/* Text info */}
           <View style={{ flex: 1, minWidth: 0, gap: 4 }}>
             <AppText
-              style={{ fontSize: 15, fontWeight: '700', color: colors.white }}
+              style={{ fontSize: 15, fontWeight: '700', color: theme.text }}
               numberOfLines={1}
             >
               {business.name}
             </AppText>
             <AppText
-              style={{ fontSize: 12, color: colors.textSlate400 }}
+              style={{ fontSize: 12, color: theme.textSecondary }}
               numberOfLines={1}
             >
               {business.location}{business.categoryName ? ` • ${business.categoryName}` : ''}
             </AppText>
             <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4, marginTop: 2 }}>
               <MaterialCommunityIcons name="star" size={13} color={colors.ratingGold} />
-              <AppText style={{ fontSize: 12, fontWeight: '700', color: colors.white }}>
+              <AppText style={{ fontSize: 12, fontWeight: '700', color: theme.text }}>
                 {business.rating.toFixed(1)}
               </AppText>
-              <AppText style={{ fontSize: 12, color: colors.textSlate400 }}>
+              <AppText style={{ fontSize: 12, color: theme.textSecondary }}>
                 ({business.reviewCount} reviews)
               </AppText>
               {openStatus !== null && (

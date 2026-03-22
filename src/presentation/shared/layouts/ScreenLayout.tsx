@@ -2,7 +2,7 @@ import React from 'react';
 import { View, KeyboardAvoidingView, Platform } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { NetworkBanner } from '../components/NetworkBanner';
-import { colors } from '@/core/theme/colors';
+import { useTheme } from '@/core/theme/useTheme';
 
 interface ScreenLayoutProps {
   children: React.ReactNode;
@@ -14,11 +14,11 @@ export const ScreenLayout: React.FC<ScreenLayoutProps> = ({
   withKeyboardAvoid = false,
 }) => {
   const insets = useSafeAreaInsets();
+  const theme = useTheme();
 
   const content = (
     <View
-      className="flex-1 bg-midnight"
-      style={{ flex: 1, backgroundColor: colors.midnight, paddingTop: insets.top, paddingBottom: insets.bottom }}
+      style={{ flex: 1, backgroundColor: theme.background, paddingTop: insets.top, paddingBottom: insets.bottom }}
     >
       <NetworkBanner />
       {children}

@@ -4,6 +4,7 @@ import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { AppText } from './ui/AppText';
 import { AppButton } from './ui/AppButton';
 import { colors } from '@/core/theme/colors';
+import { useTheme } from '@/core/theme/useTheme';
 import { BusinessEntity } from '@/domain/business/entities/businessEntity';
 
 interface NoResultsViewProps {
@@ -21,6 +22,7 @@ export const NoResultsView: React.FC<NoResultsViewProps> = ({
   onOpenSuggestion,
   onAddNew,
 }) => {
+  const theme = useTheme();
   const [imageError, setImageError] = useState(false);
 
   // ── Fuzzy suggestion view ────────────────────────────────────────────────
@@ -49,7 +51,7 @@ export const NoResultsView: React.FC<NoResultsViewProps> = ({
           style={{
             fontSize: 20,
             fontWeight: '800',
-            color: colors.textWhite,
+            color: theme.text,
             textAlign: 'center',
             marginBottom: 6,
           }}
@@ -59,7 +61,7 @@ export const NoResultsView: React.FC<NoResultsViewProps> = ({
 
         {/* Subtitle */}
         <View style={{ flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'center', marginBottom: 24 }}>
-          <AppText style={{ fontSize: 14, color: colors.textSlate400 }}>Did you mean </AppText>
+          <AppText style={{ fontSize: 14, color: theme.textSecondary }}>Did you mean </AppText>
           <AppText
             style={{
               fontSize: 14,
@@ -70,23 +72,23 @@ export const NoResultsView: React.FC<NoResultsViewProps> = ({
           >
             {`"${fuzzyMatch.name}"`}
           </AppText>
-          <AppText style={{ fontSize: 14, color: colors.textSlate400 }}>?</AppText>
+          <AppText style={{ fontSize: 14, color: theme.textSecondary }}>?</AppText>
         </View>
 
         {/* Business Card */}
         <View
           style={{
             width: '100%',
-            backgroundColor: colors.cardDark,
+            backgroundColor: theme.card,
             borderRadius: 20,
             overflow: 'hidden',
             borderWidth: 1,
-            borderColor: colors.borderDark,
+            borderColor: theme.border,
             marginBottom: 20,
           }}
         >
           {/* Cover image */}
-          <View style={{ width: '100%', height: 180, backgroundColor: colors.borderDark }}>
+          <View style={{ width: '100%', height: 180, backgroundColor: theme.border }}>
             {fuzzyMatch.coverImageUrl && !imageError ? (
               <Image
                 source={{ uri: fuzzyMatch.coverImageUrl }}
@@ -97,7 +99,7 @@ export const NoResultsView: React.FC<NoResultsViewProps> = ({
               />
             ) : (
               <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
-                <MaterialCommunityIcons name="store" size={48} color={colors.textSlate500} />
+                <MaterialCommunityIcons name="store" size={48} color={theme.textMuted} />
               </View>
             )}
 
@@ -144,21 +146,21 @@ export const NoResultsView: React.FC<NoResultsViewProps> = ({
           <View style={{ padding: 16, gap: 8 }}>
             {/* Name + category tag */}
             <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
-              <AppText style={{ fontSize: 18, fontWeight: '800', color: colors.textWhite, flex: 1 }} numberOfLines={1}>
+              <AppText style={{ fontSize: 18, fontWeight: '800', color: theme.text, flex: 1 }} numberOfLines={1}>
                 {fuzzyMatch.name}
               </AppText>
               {fuzzyMatch.categoryName ? (
                 <View
                   style={{
-                    backgroundColor: `${colors.borderDark}99`,
+                    backgroundColor: theme.border,
                     borderRadius: 8,
                     paddingHorizontal: 10,
                     paddingVertical: 3,
                     borderWidth: 1,
-                    borderColor: colors.borderDark,
+                    borderColor: theme.border,
                   }}
                 >
-                  <AppText style={{ fontSize: 12, color: colors.textSlate200, fontWeight: '600' }}>
+                  <AppText style={{ fontSize: 12, color: theme.text, fontWeight: '600' }}>
                     {fuzzyMatch.categoryName}
                   </AppText>
                 </View>
@@ -169,7 +171,7 @@ export const NoResultsView: React.FC<NoResultsViewProps> = ({
             {fuzzyMatch.location ? (
               <View style={{ flexDirection: 'row', alignItems: 'center', gap: 5 }}>
                 <MaterialCommunityIcons name="map-marker-outline" size={14} color={colors.neonPurple} />
-                <AppText style={{ fontSize: 13, color: colors.textSlate400 }} numberOfLines={1}>
+                <AppText style={{ fontSize: 13, color: theme.textSecondary }} numberOfLines={1}>
                   {fuzzyMatch.location}
                 </AppText>
               </View>
@@ -177,8 +179,8 @@ export const NoResultsView: React.FC<NoResultsViewProps> = ({
 
             {/* Review count */}
             <View style={{ flexDirection: 'row', alignItems: 'center', gap: 5 }}>
-              <MaterialCommunityIcons name="comment-outline" size={14} color={colors.textSlate500} />
-              <AppText style={{ fontSize: 13, color: colors.textSlate400 }}>
+              <MaterialCommunityIcons name="comment-outline" size={14} color={theme.textMuted} />
+              <AppText style={{ fontSize: 13, color: theme.textSecondary }}>
                 {`${fuzzyMatch.reviewCount} reviews`}
               </AppText>
             </View>
@@ -222,7 +224,7 @@ export const NoResultsView: React.FC<NoResultsViewProps> = ({
     return (
       <View style={{ flex: 1, alignItems: 'center', paddingTop: 60 }}>
         <ActivityIndicator size="large" color={colors.neonPurple} />
-        <AppText style={{ marginTop: 12, color: colors.textSlate400, fontSize: 14 }}>
+        <AppText style={{ marginTop: 12, color: theme.textSecondary, fontSize: 14 }}>
           Looking for suggestions…
         </AppText>
       </View>
@@ -237,7 +239,7 @@ export const NoResultsView: React.FC<NoResultsViewProps> = ({
           width: 120,
           height: 120,
           borderRadius: 60,
-          backgroundColor: colors.cardDark,
+          backgroundColor: theme.card,
           alignItems: 'center',
           justifyContent: 'center',
           marginBottom: 32,
@@ -249,18 +251,18 @@ export const NoResultsView: React.FC<NoResultsViewProps> = ({
       <View
         style={{
           width: '100%',
-          backgroundColor: colors.cardDark,
+          backgroundColor: theme.card,
           borderRadius: 16,
           padding: 24,
           alignItems: 'center',
           borderWidth: 1,
-          borderColor: `${colors.borderDark}50`,
+          borderColor: theme.border,
         }}
       >
-        <AppText style={{ fontSize: 18, fontWeight: '700', color: colors.textWhite, marginBottom: 8, textAlign: 'center' }}>
+        <AppText style={{ fontSize: 18, fontWeight: '700', color: theme.text, marginBottom: 8, textAlign: 'center' }}>
           {searchQuery ? `No results found for "${searchQuery}"` : 'Oops! No results found'}
         </AppText>
-        <AppText style={{ fontSize: 14, color: colors.textSlate400, textAlign: 'center', lineHeight: 20 }}>
+        <AppText style={{ fontSize: 14, color: theme.textSecondary, textAlign: 'center', lineHeight: 20 }}>
           It looks like the business you're searching for isn't in our database yet.
         </AppText>
       </View>

@@ -11,6 +11,11 @@ export default function SettingsLayout() {
       <Stack.Screen name="media-control" />
       <Stack.Screen name="category-defaults" />
       <Stack.Screen name="admin-info" />
+      <Stack.Screen name="support" />
+      <Stack.Screen name="help-center" />
+      <Stack.Screen name="manage-faq" />
+      <Stack.Screen name="privacy-policy" />
+      <Stack.Screen name="admin-verifications" />
     </Stack>
   );
 }

@@ -11,12 +11,14 @@ import { useAnalyticsScreen } from '@/presentation/shared/hooks/useAnalyticsScre
 import { AnalyticsScreens } from '@/core/analytics/analyticsKeys';
 import { CategoryEntity } from '@/domain/business/entities/categoryEntity';
 import { colors } from '@/core/theme/colors';
+import { useTheme } from '@/core/theme/useTheme';
 import { useRoleStore } from '@/presentation/auth/store/roleStore';
 import { AdminMenuButton } from '@/presentation/admin/components/AdminMenuButton';
 
 export default function AllCategoriesScreen() {
   useAnalyticsScreen(AnalyticsScreens.ALL_CATEGORIES);
   const { t } = useTranslation();
+  const theme = useTheme();
   const router = useRouter();
   const { categories, isCategoryLoading } = useHome();
   const role = useRoleStore((s) => s.role);
@@ -115,7 +117,7 @@ export default function AllCategoriesScreen() {
               borderRadius: 20,
               backgroundColor: pressed
                 ? 'rgba(255,255,255,0.1)'
-                : 'rgba(30,41,59,0.5)',
+                : theme.isDark ? 'rgba(30,41,59,0.5)' : 'rgba(148,163,184,0.2)',
               alignItems: 'center',
               justifyContent: 'center',
             })}
@@ -125,7 +127,7 @@ export default function AllCategoriesScreen() {
             <MaterialCommunityIcons
               name="chevron-left"
               size={28}
-              color={colors.white}
+              color={theme.text}
             />
           </Pressable>
         )}
@@ -133,7 +135,7 @@ export default function AllCategoriesScreen() {
           style={{
             fontSize: 20,
             fontWeight: '700',
-            color: colors.white,
+            color: theme.text,
             flex: 1,
             marginLeft: 16,
             letterSpacing: -0.3,
@@ -149,9 +151,9 @@ export default function AllCategoriesScreen() {
           style={{
             flexDirection: 'row',
             alignItems: 'center',
-            backgroundColor: colors.cardDark,
+            backgroundColor: theme.card,
             borderWidth: 1,
-            borderColor: colors.borderDark,
+            borderColor: theme.border,
             borderRadius: 16,
             paddingHorizontal: 16,
             paddingVertical: 12,
@@ -164,11 +166,11 @@ export default function AllCategoriesScreen() {
             style={{ marginRight: 12 }}
           />
           <TextInput
-            style={{ flex: 1, color: colors.textWhite, fontSize: 16, padding: 0 }}
+            style={{ flex: 1, color: theme.text, fontSize: 16, padding: 0 }}
             value={searchQuery}
             onChangeText={setSearchQuery}
             placeholder={t('home.allCategories.searchPlaceholder')}
-            placeholderTextColor={colors.textSlate500}
+            placeholderTextColor={theme.textMuted}
             accessibilityLabel={t('home.allCategories.searchPlaceholder')}
             accessibilityRole="search"
           />
@@ -193,7 +195,7 @@ export default function AllCategoriesScreen() {
           showsVerticalScrollIndicator={false}
           ListEmptyComponent={
             <View style={{ paddingVertical: 40, alignItems: 'center' }}>
-              <AppText style={{ color: colors.textSlate500, fontSize: 16 }}>
+              <AppText style={{ color: theme.textMuted, fontSize: 16 }}>
                 {t('home.allCategories.empty')}
               </AppText>
             </View>
@@ -212,9 +214,9 @@ export default function AllCategoriesScreen() {
             paddingHorizontal: 24,
             paddingVertical: 20,
             paddingBottom: 32,
-            backgroundColor: colors.midnight,
+            backgroundColor: theme.background,
             borderTopWidth: 1,
-            borderTopColor: colors.borderDark,
+            borderTopColor: theme.border,
           }}
         >
           <Pressable

@@ -2,6 +2,7 @@ import React, { useCallback, useState, useRef, useEffect } from 'react';
 import { View, FlatList, Pressable, Modal, ActivityIndicator, ListRenderItemInfo, Animated } from 'react-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useTranslation } from 'react-i18next';
+import { router } from 'expo-router';
 import { ScreenLayout } from '@/presentation/shared/layouts/ScreenLayout';
 import { AppText } from '@/presentation/shared/components/ui/AppText';
 import { AppButton } from '@/presentation/shared/components/ui/AppButton';
@@ -10,15 +11,14 @@ import { Card } from '@/presentation/shared/components/ui/Card';
 import { useAnalyticsScreen } from '@/presentation/shared/hooks/useAnalyticsScreen';
 import { AnalyticsScreens } from '@/core/analytics/analyticsKeys';
 import { colors } from '@/core/theme/colors';
+import { useTheme } from '@/core/theme/useTheme';
+import { auth } from '@/core/firebase/firebaseConfig';
 import { UserReviewEntity } from '@/domain/reviews/entities/userReviewEntity';
 import { useMyReviews, ReviewTab } from '../hooks/useMyReviews';
 
 // ── Constants ─────────────────────────────────────────────────────────────────
 
 const NEON_PURPLE = colors.neonPurple;
-const SLATE_600 = '#475569';
-const SLATE_700 = '#334155';
-const CARD_DARK = '#1E293B';
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
@@ -55,6 +55,7 @@ interface StarRatingProps {
 }
 
 const StarRating = React.memo(({ rating, size = 14 }: StarRatingProps) => {
+  const theme = useTheme();
   const stars = [];
   for (let i = 1; i <= 5; i++) {
     stars.push(
@@ -62,7 +63,7 @@ const StarRating = React.memo(({ rating, size = 14 }: StarRatingProps) => {
         key={i}
         name="star"
         size={size}
-        color={i <= Math.round(rating) ? NEON_PURPLE : SLATE_600}
+        color={i <= Math.round(rating) ? NEON_PURPLE : theme.textMuted}
       />,
     );
   }
@@ -89,6 +90,7 @@ interface StatCardProps {
 }
 
 const StatCard = React.memo(({ icon, iconColor, value, label }: StatCardProps) => {
+  const theme = useTheme();
   const formatted = value >= 1000 ? `${(value / 1000).toFixed(1)}k` : String(value);
   return (
     <Card style={{ flex: 1, alignItems: 'center', paddingVertical: 16, paddingHorizontal: 8 }}>
@@ -105,10 +107,10 @@ const StatCard = React.memo(({ icon, iconColor, value, label }: StatCardProps) =
       >
         <MaterialCommunityIcons name={icon} size={20} color={iconColor} />
       </View>
-      <AppText style={{ fontSize: 20, fontWeight: '700', color: colors.white, textAlign: 'center' }}>
+      <AppText style={{ fontSize: 20, fontWeight: '700', color: theme.text, textAlign: 'center' }}>
         {formatted}
       </AppText>
-      <AppText style={{ fontSize: 10, color: colors.textSlate400, marginTop: 2, textAlign: 'center', textTransform: 'uppercase', letterSpacing: 0.5 }}>
+      <AppText style={{ fontSize: 10, color: theme.textSecondary, marginTop: 2, textAlign: 'center', textTransform: 'uppercase', letterSpacing: 0.5 }}>
         {label}
       </AppText>
     </Card>
@@ -143,6 +145,7 @@ interface AnimatedTabProps {
 
 const AnimatedTab = ({ tabKey, labelKey, activeColor, isActive, count, onPress }: AnimatedTabProps) => {
   const { t } = useTranslation();
+  const theme = useTheme();
   const anim = useRef(new Animated.Value(isActive ? 1 : 0)).current;
 
   useEffect(() => {
@@ -165,12 +168,12 @@ const AnimatedTab = ({ tabKey, labelKey, activeColor, isActive, count, onPress }
 
   const textColor = anim.interpolate({
     inputRange: [0, 1],
-    outputRange: [colors.textSlate500, activeColor],
+    outputRange: [theme.textMuted, activeColor],
   });
 
   const countColor = anim.interpolate({
     inputRange: [0, 1],
-    outputRange: [SLATE_600, activeColor],
+    outputRange: [theme.textSecondary, activeColor],
   });
 
   return (
@@ -218,30 +221,37 @@ const AnimatedTab = ({ tabKey, labelKey, activeColor, isActive, count, onPress }
   );
 };
 
-const TabBar = React.memo(({ activeTab, tabCounts, onTabChange }: TabBarProps) => (
-  <View
-    style={{
-      flexDirection: 'row',
-      backgroundColor: CARD_DARK,
-      borderRadius: 14,
-      padding: 4,
-      marginBottom: 20,
-      gap: 4,
-    }}
-  >
-    {TAB_CONFIG.map(({ key, labelKey, activeColor }) => (
-      <AnimatedTab
-        key={key}
-        tabKey={key}
-        labelKey={labelKey}
-        activeColor={activeColor}
-        isActive={activeTab === key}
-        count={tabCounts[key]}
-        onPress={() => onTabChange(key)}
-      />
-    ))}
-  </View>
-));
+const TabBar = React.memo(
+  ({ activeTab, tabCounts, onTabChange }: TabBarProps) => {
+    const theme = useTheme();
+    return (
+      <View
+        style={{
+          flexDirection: 'row',
+          backgroundColor: theme.card,
+          borderRadius: 14,
+          padding: 4,
+          marginBottom: 20,
+          gap: 4,
+          borderWidth: 1,
+          borderColor: theme.border,
+        }}
+      >
+        {TAB_CONFIG.map(({ key, labelKey, activeColor }) => (
+          <AnimatedTab
+            key={key}
+            tabKey={key}
+            labelKey={labelKey}
+            activeColor={activeColor}
+            isActive={activeTab === key}
+            count={tabCounts[key]}
+            onPress={() => onTabChange(key)}
+          />
+        ))}
+      </View>
+    );
+  },
+);
 
 TabBar.displayName = 'TabBar';
 
@@ -250,106 +260,112 @@ TabBar.displayName = 'TabBar';
 interface ReviewCardProps {
   review: UserReviewEntity;
   onDeleteRequest: (reviewId: string) => void;
+  onPress: (review: UserReviewEntity) => void;
 }
 
-const ReviewCard = React.memo(({ review, onDeleteRequest }: ReviewCardProps) => {
+const ReviewCard = React.memo(({ review, onDeleteRequest, onPress }: ReviewCardProps) => {
+  const theme = useTheme();
   const initials = getInitials(review.businessName);
   const timeAgo = getTimeAgo(review.createdAt);
 
   return (
-    <Card style={{ padding: 16, marginBottom: 12, overflow: 'visible' }}>
-      {/* Top row */}
-      <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 10 }}>
-        {/* Business initials square */}
-        <View
-          style={{
-            width: 42,
-            height: 42,
-            borderRadius: 10,
-            backgroundColor: SLATE_700,
-            alignItems: 'center',
-            justifyContent: 'center',
-            marginRight: 10,
-            borderWidth: 1,
-            borderColor: '#475569',
-          }}
-        >
-          <AppText style={{ fontSize: 13, fontWeight: '700', color: colors.textSlate200 }}>
-            {initials}
-          </AppText>
-        </View>
+    <View style={{ marginBottom: 12 }}>
+      <Pressable onPress={() => onPress(review)} accessibilityLabel={`View review for ${review.businessName}`} accessibilityRole="button">
+        <Card style={{ padding: 16, overflow: 'visible', paddingRight: review.status !== 'removed' ? 52 : 16 }}>
+          {/* Top row */}
+          <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 10 }}>
+            {/* Business initials square */}
+            <View
+              style={{
+                width: 42,
+                height: 42,
+                borderRadius: 10,
+                backgroundColor: theme.isDark ? theme.border : '#E2E8F0',
+                alignItems: 'center',
+                justifyContent: 'center',
+                marginRight: 10,
+                borderWidth: 1,
+                borderColor: theme.border,
+              }}
+            >
+              <AppText style={{ fontSize: 13, fontWeight: '700', color: theme.text }}>
+                {initials}
+              </AppText>
+            </View>
 
-        {/* Name + subtitle */}
-        <View style={{ flex: 1, minWidth: 0 }}>
+            {/* Name + subtitle */}
+            <View style={{ flex: 1, minWidth: 0 }}>
+              <AppText
+                style={{ fontSize: 14, fontWeight: '700', color: theme.text }}
+                numberOfLines={1}
+              >
+                {review.businessName}
+              </AppText>
+            </View>
+
+            {/* Time ago pill */}
+            <View
+              style={{
+                backgroundColor: theme.isDark ? `${theme.card}99` : theme.border,
+                borderRadius: 20,
+                paddingHorizontal: 8,
+                paddingVertical: 3,
+                marginLeft: 8,
+              }}
+            >
+              <AppText style={{ fontSize: 10, color: theme.textMuted }}>{timeAgo}</AppText>
+            </View>
+          </View>
+
+          {/* Stars */}
+          <View style={{ marginBottom: 8 }}>
+            <StarRating rating={review.overallRating} />
+          </View>
+
+          {/* Text */}
           <AppText
-            style={{ fontSize: 14, fontWeight: '700', color: colors.white }}
-            numberOfLines={1}
+            style={{ fontSize: 13, color: theme.textSecondary, lineHeight: 19, marginBottom: 12 }}
+            numberOfLines={3}
           >
-            {review.businessName}
+            {review.reviewText}
           </AppText>
-        </View>
 
-        {/* Time ago pill */}
-        <View
-          style={{
-            backgroundColor: `${CARD_DARK}99`,
-            borderRadius: 20,
-            paddingHorizontal: 8,
-            paddingVertical: 3,
-            marginLeft: 8,
-          }}
-        >
-          <AppText style={{ fontSize: 10, color: colors.textSlate500 }}>{timeAgo}</AppText>
-        </View>
-
-        {/* Delete button — hidden for already-removed reviews */}
-        {review.status !== 'removed' && (
-          <Pressable
-            style={{ padding: 10, marginLeft: 6 }}
-            onPress={() => onDeleteRequest(review.id)}
-            accessibilityLabel={`Delete review for ${review.businessName}`}
-            accessibilityRole="button"
-            hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+          {/* Footer: likes + views */}
+          <View
+            style={{
+              borderTopWidth: 1,
+              borderTopColor: theme.border,
+              paddingTop: 10,
+              flexDirection: 'row',
+              alignItems: 'center',
+              gap: 16,
+            }}
           >
-            <MaterialCommunityIcons name="trash-can-outline" size={18} color={colors.red} />
-          </Pressable>
-        )}
-      </View>
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
+              <MaterialCommunityIcons name="heart" size={13} color={review.likesCount > 0 ? colors.red : theme.textMuted} />
+              <AppText style={{ fontSize: 11, color: theme.textSecondary }}>{review.likesCount}</AppText>
+            </View>
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
+              <MaterialCommunityIcons name="eye" size={13} color={theme.textMuted} />
+              <AppText style={{ fontSize: 11, color: theme.textSecondary }}>{review.viewsCount}</AppText>
+            </View>
+          </View>
+        </Card>
+      </Pressable>
 
-      {/* Stars */}
-      <View style={{ marginBottom: 8 }}>
-        <StarRating rating={review.overallRating} />
-      </View>
-
-      {/* Text */}
-      <AppText
-        style={{ fontSize: 13, color: colors.textSlate200, lineHeight: 19, marginBottom: 12 }}
-        numberOfLines={3}
-      >
-        {review.reviewText}
-      </AppText>
-
-      {/* Footer: likes + views */}
-      <View
-        style={{
-          borderTopWidth: 1,
-          borderTopColor: '#1E293B',
-          paddingTop: 10,
-          flexDirection: 'row',
-          alignItems: 'center',
-          gap: 16,
-        }}
-      >
-        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
-          <MaterialCommunityIcons name="heart" size={13} color={colors.red} />
-          <AppText style={{ fontSize: 11, color: colors.textSlate400 }}>{review.likesCount}</AppText>
-        </View>
-        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
-          <MaterialCommunityIcons name="eye" size={13} color={colors.textSlate500} />
-          <AppText style={{ fontSize: 11, color: colors.textSlate400 }}>{review.viewsCount}</AppText>
-        </View>
-      </View>
-    </Card>
+      {/* Delete button — outside the card Pressable to avoid nested buttons on web */}
+      {review.status !== 'removed' && (
+        <Pressable
+          style={{ position: 'absolute', top: 12, right: 12, padding: 10 }}
+          onPress={() => onDeleteRequest(review.id)}
+          accessibilityLabel={`Delete review for ${review.businessName}`}
+          accessibilityRole="button"
+          hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+        >
+          <MaterialCommunityIcons name="trash-can-outline" size={18} color={colors.red} />
+        </Pressable>
+      )}
+    </View>
   );
 });
 
@@ -363,6 +379,7 @@ interface EmptyStateProps {
 
 const EmptyState = ({ activeTab }: EmptyStateProps) => {
   const { t } = useTranslation();
+  const theme = useTheme();
 
   const config: Record<ReviewTab, { icon: React.ComponentProps<typeof MaterialCommunityIcons>['name']; titleKey: string; descKey: string; showWrite: boolean }> = {
     posted: { icon: 'star', titleKey: 'myReviews.emptyTitle', descKey: 'myReviews.emptyDescription', showWrite: true },
@@ -389,12 +406,12 @@ const EmptyState = ({ activeTab }: EmptyStateProps) => {
         <MaterialCommunityIcons name={icon} size={30} color={NEON_PURPLE} />
       </View>
       <AppText
-        style={{ fontSize: 16, fontWeight: '700', color: colors.white, textAlign: 'center', marginBottom: 6 }}
+        style={{ fontSize: 16, fontWeight: '700', color: theme.text, textAlign: 'center', marginBottom: 6 }}
       >
         {t(titleKey)}
       </AppText>
       <AppText
-        style={{ fontSize: 13, color: colors.textSlate400, textAlign: 'center', lineHeight: 19, marginBottom: 20 }}
+        style={{ fontSize: 13, color: theme.textSecondary, textAlign: 'center', lineHeight: 19, marginBottom: 20 }}
       >
         {t(descKey)}
       </AppText>
@@ -417,6 +434,7 @@ const EmptyState = ({ activeTab }: EmptyStateProps) => {
 
 const HeroHeader = () => {
   const { t } = useTranslation();
+  const theme = useTheme();
   return (
     <View style={{ alignItems: 'center', paddingVertical: 24 }}>
       <View
@@ -432,12 +450,12 @@ const HeroHeader = () => {
         <MaterialCommunityIcons name="star" size={38} color={NEON_PURPLE} />
       </View>
       <AppText
-        style={{ fontSize: 22, fontWeight: '700', color: colors.white, textAlign: 'center', marginTop: 14 }}
+        style={{ fontSize: 22, fontWeight: '700', color: theme.text, textAlign: 'center', marginTop: 14 }}
       >
         {t('myReviews.title')}
       </AppText>
       <AppText
-        style={{ fontSize: 14, color: colors.textSlate400, textAlign: 'center', marginTop: 4 }}
+        style={{ fontSize: 14, color: theme.textSecondary, textAlign: 'center', marginTop: 4 }}
       >
         {t('myReviews.subtitle')}
       </AppText>
@@ -450,6 +468,7 @@ const HeroHeader = () => {
 export default function MyReviewsScreen() {
   useAnalyticsScreen(AnalyticsScreens.MY_REVIEWS);
   const { t } = useTranslation();
+  const theme = useTheme();
   const { reviews, isLoading, error, stats, tabCounts, activeTab, setActiveTab, deleteReview } = useMyReviews();
   const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
 
@@ -459,11 +478,37 @@ export default function MyReviewsScreen() {
     await deleteReview(confirmDeleteId);
   }, [confirmDeleteId, deleteReview]);
 
+  const handleReviewPress = useCallback((review: UserReviewEntity) => {
+    const currentUser = auth.currentUser;
+    const serialized = JSON.stringify({
+      id: review.id,
+      authorId: review.userId,
+      authorName: currentUser?.displayName ?? '',
+      authorAvatarUrl: currentUser?.photoURL ?? null,
+      rating: review.overallRating,
+      text: review.reviewText,
+      createdAtMs: review.createdAt.getTime(),
+      likeCount: review.likesCount,
+      viewCount: review.viewsCount,
+      commentCount: review.commentCount,
+      isLikedByCurrentUser: review.isLikedByCurrentUser,
+    });
+    router.push({
+      pathname: '/(main)/(feed)/review-detail',
+      params: {
+        reviewId: review.id,
+        businessName: review.businessName,
+        reviewData: serialized,
+        from: 'my-reviews',
+      },
+    });
+  }, []);
+
   const renderReviewItem = useCallback(
     ({ item }: ListRenderItemInfo<UserReviewEntity>) => (
-      <ReviewCard review={item} onDeleteRequest={setConfirmDeleteId} />
+      <ReviewCard review={item} onDeleteRequest={setConfirmDeleteId} onPress={handleReviewPress} />
     ),
-    [],
+    [handleReviewPress],
   );
 
   const keyExtractor = useCallback((item: UserReviewEntity) => item.id, []);
@@ -497,7 +542,7 @@ export default function MyReviewsScreen() {
         {!isLoading && error && (
           <Card style={{ alignItems: 'center', padding: 24 }}>
             <MaterialCommunityIcons name="alert-circle-outline" size={32} color={colors.red} />
-            <AppText style={{ fontSize: 13, color: colors.textSlate400, marginTop: 8, textAlign: 'center' }}>
+            <AppText style={{ fontSize: 13, color: theme.textSecondary, marginTop: 8, textAlign: 'center' }}>
               {error}
             </AppText>
           </Card>
@@ -526,28 +571,29 @@ export default function MyReviewsScreen() {
         animationType="fade"
         onRequestClose={() => setConfirmDeleteId(null)}
       >
-        <Pressable
-          style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.65)', justifyContent: 'center', alignItems: 'center', padding: 32 }}
-          onPress={() => setConfirmDeleteId(null)}
-        >
+        <View style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.65)', justifyContent: 'center', alignItems: 'center', padding: 32 }}>
+          {/* Backdrop tap to close */}
           <Pressable
-            style={{ backgroundColor: '#1E293B', borderRadius: 16, padding: 24, width: '100%', borderWidth: 1, borderColor: '#334155' }}
-            onPress={() => {}}
-          >
-            <AppText style={{ fontSize: 17, fontWeight: '700', color: '#F1F5F9', marginBottom: 8 }}>
+            style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0 }}
+            onPress={() => setConfirmDeleteId(null)}
+            accessibilityLabel="Close dialog"
+            accessibilityRole="button"
+          />
+          <View style={{ backgroundColor: theme.card, borderRadius: 16, padding: 24, width: '100%', borderWidth: 1, borderColor: theme.border }}>
+            <AppText style={{ fontSize: 17, fontWeight: '700', color: theme.text, marginBottom: 8 }}>
               {t('myReviews.deleteConfirmTitle')}
             </AppText>
-            <AppText style={{ fontSize: 14, color: '#94A3B8', lineHeight: 20, marginBottom: 24 }}>
+            <AppText style={{ fontSize: 14, color: theme.textSecondary, lineHeight: 20, marginBottom: 24 }}>
               {t('myReviews.deleteConfirmMessage')}
             </AppText>
             <View style={{ flexDirection: 'row', gap: 12 }}>
               <Pressable
-                style={{ flex: 1, paddingVertical: 13, borderRadius: 10, borderWidth: 1, borderColor: '#334155', alignItems: 'center' }}
+                style={{ flex: 1, paddingVertical: 13, borderRadius: 10, borderWidth: 1, borderColor: theme.border, alignItems: 'center' }}
                 onPress={() => setConfirmDeleteId(null)}
                 accessibilityLabel="Cancel delete"
                 accessibilityRole="button"
               >
-                <AppText style={{ color: '#94A3B8', fontWeight: '600', fontSize: 15 }}>
+                <AppText style={{ color: theme.textSecondary, fontWeight: '600', fontSize: 15 }}>
                   {t('common.cancel')}
                 </AppText>
               </Pressable>
@@ -562,8 +608,8 @@ export default function MyReviewsScreen() {
                 </AppText>
               </Pressable>
             </View>
-          </Pressable>
-        </Pressable>
+          </View>
+        </View>
       </Modal>
     </ScreenLayout>
   );

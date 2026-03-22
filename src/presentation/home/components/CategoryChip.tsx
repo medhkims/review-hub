@@ -3,6 +3,7 @@ import { Pressable } from 'react-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { AppText } from '@/presentation/shared/components/ui/AppText';
 import { colors } from '@/core/theme/colors';
+import { useTheme } from '@/core/theme/useTheme';
 import { CategoryEntity } from '@/domain/business/entities/categoryEntity';
 
 interface CategoryChipProps {
@@ -16,14 +17,10 @@ const CategoryChipComponent: React.FC<CategoryChipProps> = ({
   isSelected,
   onPress,
 }) => {
+  const theme = useTheme();
   return (
     <Pressable
       onPress={onPress}
-      className={`flex-row items-center px-5 py-2.5 rounded-full mr-3 ${
-        isSelected
-          ? 'bg-neon-purple'
-          : 'bg-card-dark border border-border-dark/50'
-      }`}
       style={{
         flexDirection: 'row',
         alignItems: 'center',
@@ -31,9 +28,9 @@ const CategoryChipComponent: React.FC<CategoryChipProps> = ({
         paddingVertical: 10,
         borderRadius: 999,
         marginRight: 12,
-        backgroundColor: isSelected ? colors.neonPurple : colors.cardDark,
+        backgroundColor: isSelected ? colors.neonPurple : theme.card,
         borderWidth: isSelected ? 0 : 1,
-        borderColor: isSelected ? undefined : colors.borderDark,
+        borderColor: isSelected ? undefined : theme.border,
       }}
       accessibilityLabel={category.name}
       accessibilityRole="button"
@@ -42,15 +39,14 @@ const CategoryChipComponent: React.FC<CategoryChipProps> = ({
       <MaterialCommunityIcons
         name={category.icon as keyof typeof MaterialCommunityIcons.glyphMap}
         size={18}
-        color={isSelected ? colors.white : colors.textSlate400}
+        color={isSelected ? colors.white : theme.textSecondary}
         style={{ marginRight: 8 }}
       />
       <AppText
-        className={`text-sm font-semibold ${isSelected ? 'text-white' : 'text-slate-300'}`}
         style={{
           fontSize: 14,
           fontWeight: '600',
-          color: isSelected ? colors.white : colors.textSlate400,
+          color: isSelected ? colors.white : theme.text,
         }}
       >
         {category.name}

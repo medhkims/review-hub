@@ -17,7 +17,9 @@ export class ProfileMapper {
       followingCount: model.following_count,
       role: isValidRole(model.role) ? model.role : DEFAULT_ROLE,
       gender: (model.gender === 'male' || model.gender === 'female') ? model.gender as Gender : null,
+      dateOfBirth: model.date_of_birth ? model.date_of_birth.toDate() : null,
       updatedAt: model.updated_at.toDate(),
+      notificationsEnabled: model.notifications_enabled ?? true,
     };
   }
 
@@ -34,6 +36,7 @@ export class ProfileMapper {
       following_count: entity.followingCount,
       role: entity.role,
       gender: entity.gender,
+      date_of_birth: entity.dateOfBirth ? Timestamp.fromDate(entity.dateOfBirth) : null,
     };
   }
 
@@ -49,6 +52,10 @@ export class ProfileMapper {
     if (updates.followingCount !== undefined) model.following_count = updates.followingCount;
     if (updates.role !== undefined) model.role = updates.role;
     if (updates.gender !== undefined) model.gender = updates.gender;
+    if (updates.dateOfBirth !== undefined) {
+      model.date_of_birth = updates.dateOfBirth ? Timestamp.fromDate(updates.dateOfBirth) : null;
+    }
+    if (updates.notificationsEnabled !== undefined) model.notifications_enabled = updates.notificationsEnabled;
 
     return model;
   }

@@ -7,6 +7,7 @@ import { ImageCropModal } from '@/presentation/shared/components/ui/ImageCropMod
 import { useImagePickerWithPreview } from '@/presentation/shared/hooks/useImagePickerWithPreview';
 import { AppButton } from '@/presentation/shared/components/ui/AppButton';
 import { colors } from '@/core/theme/colors';
+import { useTheme } from '@/core/theme/useTheme';
 
 interface CompanySignUpStep3Props {
   onFinish: (data: CompanyStep3Data) => void;
@@ -42,88 +43,91 @@ const ImageUploadBox: React.FC<ImageUploadBoxProps> = ({
   onPick,
   onRemove,
   height,
-}) => (
-  <View>
-    <AppText
-      style={{
-        color: colors.textSlate200,
-        fontSize: 14,
-        fontWeight: '500',
-        marginBottom: 8,
-        marginLeft: 4,
-      }}
-    >
-      {label}
-    </AppText>
-    <Pressable
-      onPress={onPick}
-      accessibilityLabel={selectText}
-      style={{
-        width: '100%',
-        height,
-        borderWidth: 2,
-        borderStyle: 'dashed',
-        borderColor: colors.borderDark,
-        borderRadius: 16,
-        backgroundColor: colors.cardDark,
-        alignItems: 'center',
-        justifyContent: 'center',
-        overflow: 'hidden',
-      }}
-    >
-      {imageUri ? (
-        <Image
-          source={{ uri: imageUri }}
-          style={{ width: '100%', height: '100%' }}
-          resizeMode="cover"
-          accessibilityLabel={label}
-        />
-      ) : (
-        <View style={{ alignItems: 'center' }}>
-          <View
-            style={{
-              width: 48,
-              height: 48,
-              borderRadius: 24,
-              backgroundColor: 'rgba(30, 41, 59, 0.8)',
-              alignItems: 'center',
-              justifyContent: 'center',
-              marginBottom: 12,
-            }}
-          >
-            <MaterialCommunityIcons name={icon} size={24} color={colors.textSlate500} />
-          </View>
-          <AppText style={{ fontSize: 14, fontWeight: '500', color: colors.textSlate200 }}>
-            {selectText}
-          </AppText>
-          <AppText style={{ fontSize: 12, color: colors.textSlate500, marginTop: 4 }}>
-            {hintText}
-          </AppText>
-        </View>
-      )}
-    </Pressable>
-    {imageUri && (
-      <Pressable
-        onPress={onRemove}
-        accessibilityRole="button"
-        accessibilityLabel={`Remove ${label.toLowerCase()}`}
+}) => {
+  const theme = useTheme();
+  return (
+    <View>
+      <AppText
         style={{
-          position: 'absolute',
-          top: 36,
-          right: 8,
-          width: 32,
-          height: 32,
-          borderRadius: 16,
-          backgroundColor: 'rgba(15, 23, 42, 0.8)',
-          alignItems: 'center',
-          justifyContent: 'center',
+          color: theme.text,
+          fontSize: 14,
+          fontWeight: '500',
+          marginBottom: 8,
+          marginLeft: 4,
         }}
       >
-        <MaterialCommunityIcons name="close" size={18} color={colors.textWhite} />
+        {label}
+      </AppText>
+      <Pressable
+        onPress={onPick}
+        accessibilityLabel={selectText}
+        style={{
+          width: '100%',
+          height,
+          borderWidth: 2,
+          borderStyle: 'dashed',
+          borderColor: theme.border,
+          borderRadius: 16,
+          backgroundColor: theme.card,
+          alignItems: 'center',
+          justifyContent: 'center',
+          overflow: 'hidden',
+        }}
+      >
+        {imageUri ? (
+          <Image
+            source={{ uri: imageUri }}
+            style={{ width: '100%', height: '100%' }}
+            resizeMode="cover"
+            accessibilityLabel={label}
+          />
+        ) : (
+          <View style={{ alignItems: 'center' }}>
+            <View
+              style={{
+                width: 48,
+                height: 48,
+                borderRadius: 24,
+                backgroundColor: theme.isDark ? 'rgba(30, 41, 59, 0.8)' : 'rgba(148,163,184,0.2)',
+                alignItems: 'center',
+                justifyContent: 'center',
+                marginBottom: 12,
+              }}
+            >
+              <MaterialCommunityIcons name={icon} size={24} color={theme.textMuted} />
+            </View>
+            <AppText style={{ fontSize: 14, fontWeight: '500', color: theme.text }}>
+              {selectText}
+            </AppText>
+            <AppText style={{ fontSize: 12, color: theme.textMuted, marginTop: 4 }}>
+              {hintText}
+            </AppText>
+          </View>
+        )}
       </Pressable>
-    )}
-  </View>
-);
+      {imageUri && (
+        <Pressable
+          onPress={onRemove}
+          accessibilityRole="button"
+          accessibilityLabel={`Remove ${label.toLowerCase()}`}
+          style={{
+            position: 'absolute',
+            top: 36,
+            right: 8,
+            width: 32,
+            height: 32,
+            borderRadius: 16,
+            backgroundColor: 'rgba(15, 23, 42, 0.8)',
+            alignItems: 'center',
+            justifyContent: 'center',
+          }}
+        >
+          <MaterialCommunityIcons name="close" size={18} color={colors.textWhite} />
+        </Pressable>
+      )}
+    </View>
+  );
+};
 
 // --- Main Component ---
 
@@ -134,6 +138,7 @@ export const CompanySignUpStep3: React.FC<CompanySignUpStep3Props> = ({
   error,
 }) => {
   const { t } = useTranslation();
+  const theme = useTheme();
   const [logoUri, setLogoUri] = useState<string | null>(null);
   const [coverUri, setCoverUri] = useState<string | null>(null);
 
@@ -172,20 +177,20 @@ export const CompanySignUpStep3: React.FC<CompanySignUpStep3Props> = ({
             width: 40,
             height: 40,
             borderRadius: 20,
-            backgroundColor: 'rgba(30, 41, 59, 0.5)',
+            backgroundColor: theme.isDark ? 'rgba(30, 41, 59, 0.5)' : 'rgba(148,163,184,0.2)',
             alignItems: 'center',
             justifyContent: 'center',
           }}
         >
-          <MaterialCommunityIcons name="arrow-left" size={22} color={colors.textWhite} />
+          <MaterialCommunityIcons name="arrow-left" size={22} color={theme.text} />
         </Pressable>
 
         <View style={{ alignItems: 'center' }}>
-          <AppText style={{ fontSize: 18, fontWeight: '700', color: colors.textWhite }}>
+          <AppText style={{ fontSize: 18, fontWeight: '700', color: theme.text }}>
             {t('auth.companySignUp.step3Title')}
           </AppText>
           <AppText
-            style={{ fontSize: 12, fontWeight: '500', color: colors.textSlate400, marginTop: 2 }}
+            style={{ fontSize: 12, fontWeight: '500', color: theme.textSecondary, marginTop: 2 }}
           >
             {t('auth.companySignUp.stepOf', { current: 3, total: 3 })}
           </AppText>
@@ -198,7 +203,7 @@ export const CompanySignUpStep3: React.FC<CompanySignUpStep3Props> = ({
       <View
         style={{
           height: 6,
-          backgroundColor: colors.borderDark,
+          backgroundColor: theme.border,
           borderRadius: 3,
           marginBottom: 28,
           overflow: 'hidden',
@@ -221,12 +226,12 @@ export const CompanySignUpStep3: React.FC<CompanySignUpStep3Props> = ({
 
       {/* Title & subtitle */}
       <AppText
-        style={{ fontSize: 28, fontWeight: '700', color: colors.textWhite, marginBottom: 8 }}
+        style={{ fontSize: 28, fontWeight: '700', color: theme.text, marginBottom: 8 }}
       >
         {t('auth.companySignUp.step3Subtitle')}
       </AppText>
       <AppText
-        style={{ fontSize: 15, color: colors.textSlate400, marginBottom: 28, lineHeight: 22 }}
+        style={{ fontSize: 15, color: theme.textSecondary, marginBottom: 28, lineHeight: 22 }}
       >
         {t('auth.companySignUp.step3Description')}
       </AppText>
@@ -287,9 +292,9 @@ export const CompanySignUpStep3: React.FC<CompanySignUpStep3Props> = ({
           bottom: 0,
           left: -24,
           right: -24,
-          backgroundColor: 'rgba(15, 23, 42, 0.8)',
+          backgroundColor: theme.isDark ? 'rgba(15, 23, 42, 0.8)' : 'rgba(241,245,249,0.95)',
           borderTopWidth: 1,
-          borderTopColor: 'rgba(51, 65, 85, 0.5)',
+          borderTopColor: theme.border,
           paddingHorizontal: 24,
           paddingTop: 20,
           paddingBottom: Platform.OS === 'ios' ? 36 : 24,

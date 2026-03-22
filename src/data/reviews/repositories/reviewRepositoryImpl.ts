@@ -50,8 +50,10 @@ export class ReviewRepositoryImpl implements ReviewRepository {
         reviewText: m.review_text,
         photoUrls: m.photo_urls ?? [],
         createdAt: m.created_at?.toDate() ?? new Date(),
-        likesCount: m.likes_count ?? 0,
-        viewsCount: m.views_count ?? 0,
+        likesCount: m.like_count ?? 0,
+        viewsCount: m.view_count ?? 0,
+        commentCount: m.comment_count ?? 0,
+        isLikedByCurrentUser: m.is_liked_by_current_user ?? false,
         status: (m.status as ReviewStatus | undefined) ?? 'pending',
       }));
       return right(entities);
@@ -87,8 +89,10 @@ export class ReviewRepositoryImpl implements ReviewRepository {
         reviewText: m.review_text,
         photoUrls: m.photo_urls ?? [],
         createdAt: m.created_at?.toDate() ?? new Date(),
-        likesCount: m.likes_count ?? 0,
-        viewsCount: m.views_count ?? 0,
+        likesCount: m.like_count ?? 0,
+        viewsCount: m.view_count ?? 0,
+        commentCount: m.comment_count ?? 0,
+        isLikedByCurrentUser: m.is_liked_by_current_user ?? false,
         status: (m.status as ReviewStatus | undefined) ?? 'pending',
       }));
       return right(entities);
@@ -110,8 +114,10 @@ export class ReviewRepositoryImpl implements ReviewRepository {
         reviewText: m.review_text,
         photoUrls: m.photo_urls ?? [],
         createdAt: m.created_at?.toDate() ?? new Date(),
-        likesCount: m.likes_count ?? 0,
-        viewsCount: m.views_count ?? 0,
+        likesCount: m.like_count ?? 0,
+        viewsCount: m.view_count ?? 0,
+        commentCount: m.comment_count ?? 0,
+        isLikedByCurrentUser: m.is_liked_by_current_user ?? false,
         status: (m.status as ReviewStatus | undefined) ?? 'posted',
       }));
       return right(entities);
@@ -133,8 +139,10 @@ export class ReviewRepositoryImpl implements ReviewRepository {
         reviewText: m.review_text,
         photoUrls: m.photo_urls ?? [],
         createdAt: m.created_at?.toDate() ?? new Date(),
-        likesCount: m.likes_count ?? 0,
-        viewsCount: m.views_count ?? 0,
+        likesCount: m.like_count ?? 0,
+        viewsCount: m.view_count ?? 0,
+        commentCount: m.comment_count ?? 0,
+        isLikedByCurrentUser: m.is_liked_by_current_user ?? false,
         status: (m.status as ReviewStatus | undefined) ?? 'removed',
       }));
       return right(entities);

@@ -9,6 +9,7 @@ import { ErrorView } from '@/presentation/shared/components/ui/ErrorView';
 import { useNotifications } from '../hooks/useNotifications';
 import { NotificationEntity, NotificationType } from '@/domain/notifications/entities/notificationEntity';
 import { colors } from '@/core/theme/colors';
+import { useTheme } from '@/core/theme/useTheme';
 
 // -- Helpers ------------------------------------------------------------------
 
@@ -172,66 +173,57 @@ interface TabToggleProps {
   onTabChange: (tab: TabFilter) => void;
 }
 
-const TabToggle: React.FC<TabToggleProps> = ({ activeTab, onTabChange }) => (
-  <View
-    style={{
-      flexDirection: 'row',
-      marginHorizontal: 24,
-      marginTop: 12,
-      marginBottom: 16,
-      borderRadius: 28,
-      backgroundColor: colors.cardDark,
-      padding: 4,
-      borderWidth: 1,
-      borderColor: colors.borderDark,
-    }}
-  >
-    <Pressable
-      onPress={() => onTabChange('all')}
+const TabToggle: React.FC<TabToggleProps> = ({ activeTab, onTabChange }) => {
+  const theme = useTheme();
+  return (
+    <View
       style={{
-        flex: 1,
-        paddingVertical: 10,
-        borderRadius: 24,
-        backgroundColor: activeTab === 'all' ? colors.neonPurple : 'transparent',
-        alignItems: 'center',
+        flexDirection: 'row',
+        marginHorizontal: 24,
+        marginTop: 12,
+        marginBottom: 16,
+        borderRadius: 28,
+        backgroundColor: theme.card,
+        padding: 4,
+        borderWidth: 1,
+        borderColor: theme.border,
       }}
-      accessibilityLabel="Show all notifications"
-      accessibilityRole="tab"
     >
-      <AppText
+      <Pressable
+        onPress={() => onTabChange('all')}
         style={{
-          fontSize: 14,
-          fontWeight: '600',
-          color: activeTab === 'all' ? colors.textWhite : colors.textSlate400,
+          flex: 1,
+          paddingVertical: 10,
+          borderRadius: 24,
+          backgroundColor: activeTab === 'all' ? colors.neonPurple : 'transparent',
+          alignItems: 'center',
         }}
+        accessibilityLabel="Show all notifications"
+        accessibilityRole="tab"
       >
-        All
-      </AppText>
-    </Pressable>
-    <Pressable
-      onPress={() => onTabChange('unread')}
-      style={{
-        flex: 1,
-        paddingVertical: 10,
-        borderRadius: 24,
-        backgroundColor: activeTab === 'unread' ? colors.neonPurple : 'transparent',
-        alignItems: 'center',
-      }}
-      accessibilityLabel="Show unread notifications"
-      accessibilityRole="tab"
-    >
-      <AppText
+        <AppText style={{ fontSize: 14, fontWeight: '600', color: activeTab === 'all' ? colors.white : theme.textSecondary }}>
+          All
+        </AppText>
+      </Pressable>
+      <Pressable
+        onPress={() => onTabChange('unread')}
         style={{
-          fontSize: 14,
-          fontWeight: '600',
-          color: activeTab === 'unread' ? colors.textWhite : colors.textSlate400,
+          flex: 1,
+          paddingVertical: 10,
+          borderRadius: 24,
+          backgroundColor: activeTab === 'unread' ? colors.neonPurple : 'transparent',
+          alignItems: 'center',
         }}
+        accessibilityLabel="Show unread notifications"
+        accessibilityRole="tab"
       >
-        Unread
-      </AppText>
-    </Pressable>
-  </View>
-);
+        <AppText style={{ fontSize: 14, fontWeight: '600', color: activeTab === 'unread' ? colors.white : theme.textSecondary }}>
+          Unread
+        </AppText>
+      </Pressable>
+    </View>
+  );
+};
 
 // -- Notification Row ---------------------------------------------------------
 
@@ -242,6 +234,7 @@ interface NotificationRowProps {
 
 const NotificationRow: React.FC<NotificationRowProps> = React.memo(
   ({ notification, onPress }) => {
+    const theme = useTheme();
     const config =
       NOTIFICATION_TYPE_CONFIG[notification.type] ?? NOTIFICATION_TYPE_CONFIG.system;
     const isUnread = !notification.isRead;
@@ -255,7 +248,9 @@ const NotificationRow: React.FC<NotificationRowProps> = React.memo(
         onPress={handlePress}
         style={{
           position: 'relative',
-          backgroundColor: colors.cardDark,
+          backgroundColor: theme.card,
+          borderWidth: 1,
+          borderColor: theme.border,
           opacity: isUnread ? 1 : 0.6,
           padding: 16,
           borderRadius: 24,
@@ -304,7 +299,7 @@ const NotificationRow: React.FC<NotificationRowProps> = React.memo(
               style={{
                 fontSize: 15,
                 fontWeight: '700',
-                color: isUnread ? colors.textWhite : colors.textSlate200,
+                color: isUnread ? theme.text : theme.textSecondary,
                 flex: 1,
                 lineHeight: 20,
               }}
@@ -315,7 +310,7 @@ const NotificationRow: React.FC<NotificationRowProps> = React.memo(
             <AppText
               style={{
                 fontSize: 12,
-                color: colors.textSlate400,
+                color: theme.textMuted,
                 marginLeft: 8,
                 flexShrink: 0,
               }}
@@ -327,7 +322,7 @@ const NotificationRow: React.FC<NotificationRowProps> = React.memo(
           <AppText
             style={{
               fontSize: 13,
-              color: colors.textSlate400,
+              color: theme.textSecondary,
               lineHeight: 20,
             }}
           >
@@ -431,6 +426,7 @@ type ListItem =
 
 export default function NotificationsScreen() {
   const router = useRouter();
+  const theme = useTheme();
   const [activeTab, setActiveTab] = useState<TabFilter>('all');
 
   const {
@@ -565,7 +561,7 @@ export default function NotificationsScreen() {
           <MaterialCommunityIcons
             name="arrow-left"
             size={24}
-            color={colors.textWhite}
+            color={theme.text}
           />
         </Pressable>
 
@@ -573,7 +569,7 @@ export default function NotificationsScreen() {
           style={{
             fontSize: 18,
             fontWeight: '700',
-            color: colors.textWhite,
+            color: theme.text,
             letterSpacing: -0.3,
           }}
         >
@@ -594,7 +590,7 @@ export default function NotificationsScreen() {
           <MaterialCommunityIcons
             name="dots-horizontal"
             size={24}
-            color={colors.textSlate400}
+            color={theme.textSecondary}
           />
         </Pressable>
       </View>

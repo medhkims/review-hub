@@ -3,6 +3,7 @@ import { View, FlatList, Pressable, NativeSyntheticEvent, NativeScrollEvent } fr
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { AppText } from '@/presentation/shared/components/ui/AppText';
 import { colors } from '@/core/theme/colors';
+import { useTheme } from '@/core/theme/useTheme';
 
 interface SuggestionItem {
   id: string;
@@ -28,6 +29,7 @@ export const SearchSuggestions: React.FC<SearchSuggestionsProps> = ({
   onSelect,
   onVisible,
 }) => {
+  const theme = useTheme();
   if (items.length === 0) return null;
 
   // seenIds persists for the entire search session — never reset while the dropdown is open.
@@ -69,17 +71,17 @@ export const SearchSuggestions: React.FC<SearchSuggestionsProps> = ({
           alignItems: 'center',
           paddingHorizontal: 16,
           paddingVertical: 13,
-          backgroundColor: pressed ? `${colors.borderDark}80` : 'transparent',
+          backgroundColor: pressed ? theme.border : 'transparent',
           borderTopWidth: 1,
-          borderTopColor: `${colors.borderDark}60`,
+          borderTopColor: theme.border,
         })}
         accessibilityLabel={item.name}
         accessibilityRole="button"
       >
-        <AppText style={{ flex: 1, color: colors.white, fontSize: 15 }} numberOfLines={1}>
+        <AppText style={{ flex: 1, color: theme.text, fontSize: 15 }} numberOfLines={1}>
           {item.name}
         </AppText>
-        <MaterialCommunityIcons name="magnify" size={18} color={colors.textSlate500} />
+        <MaterialCommunityIcons name="magnify" size={18} color={theme.textMuted} />
       </Pressable>
     ),
     [onSelect],
@@ -89,10 +91,10 @@ export const SearchSuggestions: React.FC<SearchSuggestionsProps> = ({
     <View
       style={{
         marginHorizontal: 24,
-        backgroundColor: colors.cardDark,
+        backgroundColor: theme.card,
         borderRadius: 16,
         borderWidth: 1,
-        borderColor: colors.borderDark,
+        borderColor: theme.border,
         overflow: 'hidden',
         shadowColor: '#000',
         shadowOffset: { width: 0, height: 6 },
@@ -102,7 +104,7 @@ export const SearchSuggestions: React.FC<SearchSuggestionsProps> = ({
       }}
     >
       <View style={{ paddingHorizontal: 16, paddingTop: 12, paddingBottom: 6 }}>
-        <AppText style={{ color: colors.textSlate400, fontSize: 11, fontWeight: '700', letterSpacing: 0.8 }}>
+        <AppText style={{ color: theme.textSecondary, fontSize: 11, fontWeight: '700', letterSpacing: 0.8 }}>
           {sectionTitle.toUpperCase()}
         </AppText>
       </View>

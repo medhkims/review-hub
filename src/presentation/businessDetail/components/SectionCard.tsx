@@ -3,6 +3,7 @@ import { View, Pressable } from 'react-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { AppText } from '@/presentation/shared/components/ui/AppText';
 import { colors } from '@/core/theme/colors';
+import { useTheme } from '@/core/theme/useTheme';
 
 interface SectionCardProps {
   title: string;
@@ -15,12 +16,13 @@ export const SectionCard: React.FC<SectionCardProps> = ({
   children,
   defaultExpanded = true,
 }) => {
+  const theme = useTheme();
   const [expanded, setExpanded] = useState(defaultExpanded);
 
   return (
     <View
       style={{
-        backgroundColor: colors.cardDark,
+        backgroundColor: theme.card,
         borderRadius: 24,
         overflow: 'hidden',
         borderWidth: 1,

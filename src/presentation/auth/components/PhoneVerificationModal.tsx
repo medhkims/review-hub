@@ -15,6 +15,7 @@ import { useTranslation } from 'react-i18next';
 import { AppText } from '@/presentation/shared/components/ui/AppText';
 import { AppButton } from '@/presentation/shared/components/ui/AppButton';
 import { colors } from '@/core/theme/colors';
+import { useTheme } from '@/core/theme/useTheme';
 import { container } from '@/core/di/container';
 import { COUNTRIES, Country, findCountryByDialCode } from '@/core/utils/countries';
 
@@ -54,6 +55,7 @@ export function PhoneVerificationModal({
   onDismiss,
 }: PhoneVerificationModalProps) {
   const { t } = useTranslation();
+  const theme = useTheme();
   const [step, setStep] = useState<Step>('phone');
   const [selectedCountry, setSelectedCountry] = useState<Country>(() => parsePhone(initialPhone).country);
   const [phoneNumber, setPhoneNumber] = useState(() => parsePhone(initialPhone).number);
@@ -184,32 +186,32 @@ export function PhoneVerificationModal({
       })}
     >
       <AppText style={{ fontSize: 24 }}>{item.flag}</AppText>
-      <AppText style={{ flex: 1, fontSize: 15, color: colors.textWhite }}>{item.name}</AppText>
-      <AppText style={{ fontSize: 14, color: colors.textSlate400 }}>{item.dialCode}</AppText>
+      <AppText style={{ flex: 1, fontSize: 15, color: theme.text }}>{item.name}</AppText>
+      <AppText style={{ fontSize: 14, color: theme.textSecondary }}>{item.dialCode}</AppText>
       {item.code === selectedCountry.code && (
         <MaterialCommunityIcons name="check" size={16} color={colors.neonPurple} />
       )}
     </Pressable>
-  ), [selectedCountry.code]);
+  ), [selectedCountry.code, theme]);
 
   // Sheet height: tall for country picker, auto for other steps
   const isCountryStep = step === 'country';
   const sheetStyle = isCountryStep
     ? {
         height: SCREEN_HEIGHT * 0.78,
-        backgroundColor: colors.cardDark,
+        backgroundColor: theme.card,
         borderTopLeftRadius: 28,
         borderTopRightRadius: 28,
         borderTopWidth: 1,
-        borderTopColor: colors.borderDark,
+        borderTopColor: theme.border,
         paddingTop: 16,
       }
     : {
-        backgroundColor: colors.cardDark,
+        backgroundColor: theme.card,
         borderTopLeftRadius: 28,
         borderTopRightRadius: 28,
         borderTopWidth: 1,
-        borderTopColor: colors.borderDark,
+        borderTopColor: theme.border,
         paddingHorizontal: 24,
         paddingBottom: Platform.OS === 'ios' ? 40 : 28,
         paddingTop: 20,
@@ -240,7 +242,7 @@ export function PhoneVerificationModal({
               width: 40,
               height: 4,
               borderRadius: 2,
-              backgroundColor: colors.borderDark,
+              backgroundColor: theme.border,
               alignSelf: 'center',
               marginBottom: isCountryStep ? 16 : 24,
             }}
@@ -265,9 +267,9 @@ export function PhoneVerificationModal({
                   accessibilityLabel="Back"
                   style={{ padding: 4 }}
                 >
-                  <MaterialCommunityIcons name="arrow-left" size={22} color={colors.textSlate400} />
+                  <MaterialCommunityIcons name="arrow-left" size={22} color={theme.textSecondary} />
                 </Pressable>
-                <AppText style={{ fontSize: 17, fontWeight: '700', color: colors.textWhite, flex: 1 }}>
+                <AppText style={{ fontSize: 17, fontWeight: '700', color: theme.text, flex: 1 }}>
                   {t('phoneVerification.selectCountry')}
                 </AppText>
               </View>
@@ -281,24 +283,24 @@ export function PhoneVerificationModal({
                   marginBottom: 8,
                   borderRadius: 12,
                   borderWidth: 1,
-                  borderColor: colors.borderDark,
-                  backgroundColor: colors.midnight,
+                  borderColor: theme.border,
+                  backgroundColor: theme.background,
                   paddingHorizontal: 12,
                   gap: 8,
                 }}
               >
-                <MaterialCommunityIcons name="magnify" size={18} color={colors.textSlate400} />
+                <MaterialCommunityIcons name="magnify" size={18} color={theme.textSecondary} />
                 <TextInput
                   value={pickerSearch}
                   onChangeText={setPickerSearch}
                   placeholder={t('phoneVerification.searchCountry')}
-                  placeholderTextColor={colors.textSlate500}
+                  placeholderTextColor={theme.textMuted}
                   autoFocus
                   style={{
                     flex: 1,
                     paddingVertical: 10,
                     fontSize: 15,
-                    color: colors.textWhite,
+                    color: theme.text,
                   }}
                 />
                 {!!pickerSearch && (
@@ -307,7 +309,7 @@ export function PhoneVerificationModal({
                     accessibilityRole="button"
                     accessibilityLabel="Clear search"
                   >
-                    <MaterialCommunityIcons name="close-circle" size={16} color={colors.textSlate400} />
+                    <MaterialCommunityIcons name="close-circle" size={16} color={theme.textSecondary} />
                   </Pressable>
                 )}
               </View>
@@ -347,10 +349,10 @@ export function PhoneVerificationModal({
                   />
                 </View>
                 <View style={{ flex: 1 }}>
-                  <AppText style={{ fontSize: 18, fontWeight: '700', color: colors.textWhite }}>
+                  <AppText style={{ fontSize: 18, fontWeight: '700', color: theme.text }}>
                     {step === 'phone' ? t('phoneVerification.title') : t('phoneVerification.otpTitle')}
                   </AppText>
-                  <AppText style={{ fontSize: 13, color: colors.textSlate400, marginTop: 2 }}>
+                  <AppText style={{ fontSize: 13, color: theme.textSecondary, marginTop: 2 }}>
                     {step === 'phone'
                       ? t('phoneVerification.subtitle')
                       : t('phoneVerification.otpSubtitle', {
@@ -387,7 +389,7 @@ export function PhoneVerificationModal({
                         color={colors.neonPurple}
                         style={{ marginTop: 1 }}
                       />
-                      <AppText style={{ flex: 1, fontSize: 12, color: colors.textSlate400, lineHeight: 18 }}>
+                      <AppText style={{ flex: 1, fontSize: 12, color: theme.textSecondary, lineHeight: 18 }}>
                         {t('phoneVerification.info')}
                       </AppText>
                     </View>
@@ -398,8 +400,8 @@ export function PhoneVerificationModal({
                         flexDirection: 'row',
                         borderRadius: 14,
                         borderWidth: 1,
-                        borderColor: colors.borderDark,
-                        backgroundColor: colors.midnight,
+                        borderColor: theme.border,
+                        backgroundColor: theme.background,
                         overflow: 'hidden',
                       }}
                     >
@@ -415,15 +417,15 @@ export function PhoneVerificationModal({
                           paddingVertical: 14,
                           gap: 6,
                           borderRightWidth: 1,
-                          borderRightColor: colors.borderDark,
+                          borderRightColor: theme.border,
                           backgroundColor: pressed ? 'rgba(255,255,255,0.04)' : 'transparent',
                         })}
                       >
                         <AppText style={{ fontSize: 22 }}>{selectedCountry.flag}</AppText>
-                        <AppText style={{ fontSize: 15, color: colors.textWhite, fontWeight: '600' }}>
+                        <AppText style={{ fontSize: 15, color: theme.text, fontWeight: '600' }}>
                           {selectedCountry.dialCode}
                         </AppText>
-                        <MaterialCommunityIcons name="chevron-down" size={16} color={colors.textSlate400} />
+                        <MaterialCommunityIcons name="chevron-down" size={16} color={theme.textSecondary} />
                       </Pressable>
 
                       {/* Number input */}
@@ -431,7 +433,7 @@ export function PhoneVerificationModal({
                         value={phoneNumber}
                         onChangeText={(text) => { setPhoneNumber(text); setError(null); }}
                         placeholder="XX XXX XXX"
-                        placeholderTextColor={colors.textSlate500}
+                        placeholderTextColor={theme.textMuted}
                         keyboardType="phone-pad"
                         accessibilityLabel={t('phoneVerification.phoneLabel')}
                         style={{
@@ -439,7 +441,7 @@ export function PhoneVerificationModal({
                           paddingHorizontal: 14,
                           paddingVertical: 14,
                           fontSize: 16,
-                          color: colors.textWhite,
+                          color: theme.text,
                         }}
                       />
                     </View>
@@ -494,11 +496,11 @@ export function PhoneVerificationModal({
                             height: 56,
                             borderRadius: 14,
                             borderWidth: 1.5,
-                            borderColor: digit ? colors.neonPurple : colors.borderDark,
-                            backgroundColor: digit ? 'rgba(168,85,247,0.08)' : colors.midnight,
+                            borderColor: digit ? colors.neonPurple : theme.border,
+                            backgroundColor: digit ? 'rgba(168,85,247,0.08)' : theme.background,
                             fontSize: 22,
                             fontWeight: '700',
-                            color: colors.textWhite,
+                            color: theme.text,
                             textAlign: 'center',
                           }}
                         />
@@ -535,7 +537,7 @@ export function PhoneVerificationModal({
                     />
 
                     <View style={{ flexDirection: 'row', justifyContent: 'center', alignItems: 'center', gap: 6 }}>
-                      <AppText style={{ fontSize: 13, color: colors.textSlate500 }}>
+                      <AppText style={{ fontSize: 13, color: theme.textMuted }}>
                         {t('phoneVerification.didntReceive')}
                       </AppText>
                       <Pressable
@@ -545,7 +547,7 @@ export function PhoneVerificationModal({
                         accessibilityLabel={t('phoneVerification.resend')}
                       >
                         {countdown > 0 ? (
-                          <AppText style={{ fontSize: 13, color: colors.textSlate500 }}>
+                          <AppText style={{ fontSize: 13, color: theme.textMuted }}>
                             {t('phoneVerification.resendIn', { seconds: countdown })}
                           </AppText>
                         ) : (
@@ -562,7 +564,7 @@ export function PhoneVerificationModal({
                       accessibilityLabel={t('phoneVerification.changePhone')}
                       style={{ alignItems: 'center', paddingVertical: 4 }}
                     >
-                      <AppText style={{ fontSize: 13, color: colors.textSlate500 }}>
+                      <AppText style={{ fontSize: 13, color: theme.textMuted }}>
                         {t('phoneVerification.changePhone')}
                       </AppText>
                     </Pressable>

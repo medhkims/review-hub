@@ -3,6 +3,7 @@ import { View, Pressable, Modal } from 'react-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { AppText } from './AppText';
 import { colors } from '@/core/theme/colors';
+import { useTheme } from '@/core/theme/useTheme';
 
 export interface DateRange { start: Date; end: Date }
 
@@ -20,6 +21,7 @@ function startOfDay(d: Date): Date { return new Date(d.getFullYear(),d.getMonth(
 function shortDate(d: Date): string { return `${d.getDate()} ${MON_SHORT[d.getMonth()]} ${d.getFullYear()}`; }
 
 export const RangeCalendar: React.FC<RangeCalendarProps> = ({ initial, onConfirm, onClose }) => {
+  const theme = useTheme();
   const today = useMemo(() => startOfDay(new Date()), []);
   const [viewMonth, setViewMonth] = useState(() => new Date(initial.start.getFullYear(), initial.start.getMonth(), 1));
   const [rangeStart, setRangeStart] = useState<Date|null>(startOfDay(initial.start));
@@ -48,16 +50,16 @@ export const RangeCalendar: React.FC<RangeCalendarProps> = ({ initial, onConfirm
     <Modal transparent animationType="fade" onRequestClose={onClose}>
       <Pressable style={{ flex:1,backgroundColor:'rgba(0,0,0,0.65)',justifyContent:'center',alignItems:'center' }} onPress={onClose}>
         <Pressable onPress={(e)=>e.stopPropagation()}
-          style={{ backgroundColor:colors.cardDark,borderRadius:20,padding:20,width:320,borderWidth:1,borderColor:'rgba(255,255,255,0.1)' }}>
+          style={{ backgroundColor:theme.card,borderRadius:20,padding:20,width:320,borderWidth:1,borderColor:theme.border }}>
 
           {/* Month nav */}
           <View style={{ flexDirection:'row',justifyContent:'space-between',alignItems:'center',marginBottom:12 }}>
             <Pressable onPress={()=>setViewMonth(d=>new Date(d.getFullYear(),d.getMonth()-1,1))} style={{ padding:6 }} accessibilityRole="button" accessibilityLabel="Previous month">
-              <MaterialCommunityIcons name="chevron-left" size={22} color={colors.textSlate400} />
+              <MaterialCommunityIcons name="chevron-left" size={22} color={theme.textMuted} />
             </Pressable>
-            <AppText style={{ fontSize:15,fontWeight:'700',color:colors.white }}>{MON_FULL[viewMonth.getMonth()]} {viewMonth.getFullYear()}</AppText>
+            <AppText style={{ fontSize:15,fontWeight:'700',color:theme.text }}>{MON_FULL[viewMonth.getMonth()]} {viewMonth.getFullYear()}</AppText>
             <Pressable onPress={()=>{ if(canGoNext) setViewMonth(d=>new Date(d.getFullYear(),d.getMonth()+1,1)); }} style={{ padding:6,opacity:canGoNext?1:0.3 }} accessibilityRole="button" accessibilityLabel="Next month">
-              <MaterialCommunityIcons name="chevron-right" size={22} color={colors.textSlate400} />
+              <MaterialCommunityIcons name="chevron-right" size={22} color={theme.textMuted} />
             </Pressable>
           </View>
 
@@ -65,7 +67,7 @@ export const RangeCalendar: React.FC<RangeCalendarProps> = ({ initial, onConfirm
           <View style={{ flexDirection:'row',marginBottom:6 }}>
             {DOW.map((d)=>(
               <View key={d} style={{ flex:1,alignItems:'center' }}>
-                <AppText style={{ fontSize:10,fontWeight:'600',color:colors.textSlate500 }}>{d[0]}</AppText>
+                <AppText style={{ fontSize:10,fontWeight:'600',color:theme.textMuted }}>{d[0]}</AppText>
               </View>
             ))}
           </View>
@@ -84,7 +86,7 @@ export const RangeCalendar: React.FC<RangeCalendarProps> = ({ initial, onConfirm
                 return (
                   <Pressable key={col} onPress={()=>handleDayPress(cellDate)} accessibilityRole="button" accessibilityLabel={String(day)}
                     style={{ flex:1,height:36,alignItems:'center',justifyContent:'center',opacity:isFuture?0.25:1,borderRadius:isSel?9999:inRange?0:9999,backgroundColor:isSel?colors.neonPurple:inRange?`${colors.neonPurple}30`:'transparent' }}>
-                    <AppText style={{ fontSize:13,fontWeight:isSel?'700':'400',color:isSel?colors.white:inRange?colors.neonPurple:colors.textSlate200 }}>{day}</AppText>
+                    <AppText style={{ fontSize:13,fontWeight:isSel?'700':'400',color:isSel?theme.text:inRange?colors.neonPurple:theme.textSecondary }}>{day}</AppText>
                   </Pressable>
                 );
               })}
@@ -92,21 +94,21 @@ export const RangeCalendar: React.FC<RangeCalendarProps> = ({ initial, onConfirm
           ))}
 
           {/* Range display */}
-          <View style={{ marginTop:14,paddingTop:12,borderTopWidth:1,borderColor:colors.borderDark,flexDirection:'row',justifyContent:'space-between' }}>
-            <AppText style={{ fontSize:11,color:colors.textSlate400 }}>{'From: '}<AppText style={{ color:colors.white,fontWeight:'600' }}>{rangeStart?shortDate(rangeStart):'—'}</AppText></AppText>
-            <AppText style={{ fontSize:11,color:colors.textSlate400 }}>{'To: '}<AppText style={{ color:colors.white,fontWeight:'600' }}>{rangeEnd?shortDate(rangeEnd):rangeStart?shortDate(rangeStart):'—'}</AppText></AppText>
+          <View style={{ marginTop:14,paddingTop:12,borderTopWidth:1,borderColor:theme.border,flexDirection:'row',justifyContent:'space-between' }}>
+            <AppText style={{ fontSize:11,color:theme.textMuted }}>{'From: '}<AppText style={{ color:theme.text,fontWeight:'600' }}>{rangeStart?shortDate(rangeStart):'—'}</AppText></AppText>
+            <AppText style={{ fontSize:11,color:theme.textMuted }}>{'To: '}<AppText style={{ color:theme.text,fontWeight:'600' }}>{rangeEnd?shortDate(rangeEnd):rangeStart?shortDate(rangeStart):'—'}</AppText></AppText>
           </View>
 
           {/* Actions */}
           <View style={{ flexDirection:'row',gap:10,marginTop:14 }}>
             <Pressable onPress={onClose} accessibilityRole="button" accessibilityLabel="Cancel"
-              style={{ flex:1,paddingVertical:12,borderRadius:9999,borderWidth:1,borderColor:colors.borderDark,alignItems:'center' }}>
-              <AppText style={{ fontSize:13,fontWeight:'600',color:colors.textSlate400 }}>Cancel</AppText>
+              style={{ flex:1,paddingVertical:12,borderRadius:9999,borderWidth:1,borderColor:theme.border,alignItems:'center' }}>
+              <AppText style={{ fontSize:13,fontWeight:'600',color:theme.textMuted }}>Cancel</AppText>
             </Pressable>
             <Pressable onPress={()=>rangeStart&&onConfirm({start:rangeStart,end:rangeEnd??rangeStart})}
               accessibilityRole="button" accessibilityLabel="Confirm"
-              style={{ flex:1,paddingVertical:12,borderRadius:9999,backgroundColor:rangeStart?colors.neonPurple:colors.borderDark,alignItems:'center',opacity:rangeStart?1:0.5 }}>
-              <AppText style={{ fontSize:13,fontWeight:'700',color:colors.white }}>Confirm</AppText>
+              style={{ flex:1,paddingVertical:12,borderRadius:9999,backgroundColor:rangeStart?colors.neonPurple:theme.border,alignItems:'center',opacity:rangeStart?1:0.5 }}>
+              <AppText style={{ fontSize:13,fontWeight:'700',color:theme.text }}>Confirm</AppText>
             </Pressable>
           </View>
         </Pressable>

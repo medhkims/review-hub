@@ -11,5 +11,7 @@ export interface UserReviewEntity {
   createdAt: Date;
   likesCount: number;
   viewsCount: number;
+  commentCount: number;
+  isLikedByCurrentUser: boolean;
   status: ReviewStatus;
 }

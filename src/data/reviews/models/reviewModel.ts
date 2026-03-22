@@ -22,7 +22,9 @@ export interface UserReviewModel {
   review_text: string;
   photo_urls: string[];
   created_at: Timestamp;
-  likes_count?: number;
-  views_count?: number;
+  like_count?: number;
+  view_count?: number;
+  comment_count?: number;
+  is_liked_by_current_user?: boolean;
   status?: string;
 }

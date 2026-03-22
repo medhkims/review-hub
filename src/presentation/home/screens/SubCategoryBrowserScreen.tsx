@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import React, { useCallback, useMemo, useState } from 'react';
 import {
   View,
   FlatList,
@@ -14,9 +14,13 @@ import { ScreenLayout } from '@/presentation/shared/layouts/ScreenLayout';
 import { AppText } from '@/presentation/shared/components/ui/AppText';
 import { LoadingIndicator } from '@/presentation/shared/components/ui/LoadingIndicator';
 import { ErrorView } from '@/presentation/shared/components/ui/ErrorView';
+import { SubcategoryPickerModal } from '@/presentation/shared/components/ui/SubcategoryPickerModal';
+import { FilterBySheet, FilterState, DEFAULT_FILTER_STATE } from '@/presentation/shared/components/FilterBySheet';
+import { SortBySheet, SortOption } from '@/presentation/shared/components/SortBySheet';
 import { useAnalyticsScreen } from '@/presentation/shared/hooks/useAnalyticsScreen';
 import { AnalyticsScreens } from '@/core/analytics/analyticsKeys';
 import { colors } from '@/core/theme/colors';
+import { useTheme } from '@/core/theme/useTheme';
 import { container } from '@/core/di/container';
 import { useAuthStore } from '@/presentation/auth/store/authStore';
 import { useHomeStore } from '../store/homeStore';
@@ -39,39 +43,43 @@ interface SubCategoryTabProps {
   onPress: () => void;
 }
 
-const SubCategoryTab: React.FC<SubCategoryTabProps> = ({ label, isSelected, onPress }) => (
-  <Pressable
-    onPress={onPress}
-    style={({ pressed }) => ({
-      paddingHorizontal: 18,
-      paddingVertical: 9,
-      borderRadius: 20,
-      backgroundColor: isSelected ? colors.neonPurple : colors.cardDark,
-      borderWidth: 1,
-      borderColor: isSelected ? colors.neonPurple : colors.borderDark,
-      marginRight: 10,
-      opacity: pressed ? 0.8 : 1,
-    })}
-    accessibilityRole="button"
-    accessibilityLabel={label}
-  >
-    <AppText
-      style={{
-        fontSize: 14,
-        fontWeight: isSelected ? '600' : '400',
-        color: isSelected ? colors.white : colors.textSlate400,
-      }}
+const SubCategoryTab: React.FC<SubCategoryTabProps> = ({ label, isSelected, onPress }) => {
+  const theme = useTheme();
+  return (
+    <Pressable
+      onPress={onPress}
+      style={({ pressed }) => ({
+        paddingHorizontal: 18,
+        paddingVertical: 9,
+        borderRadius: 20,
+        backgroundColor: isSelected ? colors.neonPurple : theme.card,
+        borderWidth: 1,
+        borderColor: isSelected ? colors.neonPurple : theme.border,
+        marginRight: 10,
+        opacity: pressed ? 0.8 : 1,
+      })}
+      accessibilityRole="button"
+      accessibilityLabel={label}
     >
-      {label}
-    </AppText>
-  </Pressable>
-);
+      <AppText
+        style={{
+          fontSize: 14,
+          fontWeight: isSelected ? '600' : '400',
+          color: isSelected ? colors.white : theme.textSecondary,
+        }}
+      >
+        {label}
+      </AppText>
+    </Pressable>
+  );
+};
 
 // ── Main Screen ───────────────────────────────────────────────────────────────
 
 export default function SubCategoryBrowserScreen() {
   useAnalyticsScreen(AnalyticsScreens.SUB_CATEGORY_BROWSER);
   const { t } = useTranslation();
+  const theme = useTheme();
   const router = useRouter();
   const { user } = useAuthStore();
   const { categoryId, categoryName } = useLocalSearchParams<{
@@ -89,7 +97,12 @@ export default function SubCategoryBrowserScreen() {
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
-  const [selectedSubCategory, setSelectedSubCategory] = useState<string | null>(null);
+  const [selectedSubCategories, setSelectedSubCategories] = useState<string[]>([]);
+  const [showSubCategoryPicker, setShowSubCategoryPicker] = useState(false);
+  const [showFilter, setShowFilter] = useState(false);
+  const [showSort, setShowSort] = useState(false);
+  const [activeFilters, setActiveFilters] = useState<FilterState>(DEFAULT_FILTER_STATE);
+  const [activeSort, setActiveSort] = useState<SortOption | null>(null);
 
   const loadBusinesses = useCallback(async () => {
     setError(null);
@@ -132,47 +145,74 @@ export default function SubCategoryBrowserScreen() {
 
   const filteredData = useMemo(() => {
     let data = businesses;
-    if (selectedSubCategory) {
-      data = data.filter(
-        (b) =>
-          b.subCategory === selectedSubCategory ||
-          b.subCategories?.includes(selectedSubCategory),
+    if (selectedSubCategories.length > 0) {
+      data = data.filter((b) =>
+        selectedSubCategories.some(
+          (subId) => b.subCategory === subId || b.subCategories?.includes(subId),
+        ),
       );
     }
     if (searchQuery.trim()) {
       const query = searchQuery.toLowerCase();
       data = data.filter((b) => b.name.toLowerCase().includes(query));
     }
-    return data;
-  }, [businesses, selectedSubCategory, searchQuery]);
+    if (activeFilters.locations.length > 0) {
+      data = data.filter((b) =>
+        activeFilters.locations.some((loc) =>
+          b.location?.toLowerCase().includes(loc.toLowerCase()),
+        ),
+      );
+    }
+    if (activeFilters.minRating > 0) {
+      data = data.filter((b) => b.rating >= activeFilters.minRating);
+    }
+    switch (activeSort) {
+      case 'top_rating':
+        return [...data].sort((a, b) => b.rating - a.rating);
+      case 'top_result':
+        return [...data].sort((a, b) => b.reviewCount - a.reviewCount);
+      case 'new_businesses':
+        return [...data].sort((a, b) => {
+          const aTime = a.createdAt instanceof Date ? a.createdAt.getTime() : 0;
+          const bTime = b.createdAt instanceof Date ? b.createdAt.getTime() : 0;
+          return bTime - aTime;
+        });
+      default:
+        return data;
+    }
+  }, [businesses, selectedSubCategories, searchQuery, activeFilters, activeSort]);
 
   const handleBack = useCallback(() => {
     router.back();
   }, [router]);
 
-  const handleSubCategorySelect = useCallback(
-    (subId: string | null) => {
-      setSelectedSubCategory(subId);
-      if (subId && businesses.length > 0) {
+  const handleSubCategoryPickerConfirm = useCallback(
+    (values: string[]) => {
+      setSelectedSubCategories(values);
+      setShowSubCategoryPicker(false);
+      values.forEach((subId) => {
         const sub = subCategories.find((s) => s.id === subId);
         const subName = sub?.name ?? subId;
         businesses
           .filter((b) => b.subCategory === subId || b.subCategories?.includes(subId))
           .forEach((b) => trackSubcategoryEvent(b.id, subName, false));
-      }
+      });
     },
     [businesses, subCategories],
   );
 
+
   const handleItemPress = useCallback(
     (id: string) => {
-      if (selectedSubCategory) {
-        const sub = subCategories.find((s) => s.id === selectedSubCategory);
-        trackSubcategoryEvent(id, sub?.name ?? selectedSubCategory, true);
+      if (selectedSubCategories.length > 0) {
+        selectedSubCategories.forEach((subId) => {
+          const sub = subCategories.find((s) => s.id === subId);
+          trackSubcategoryEvent(id, sub?.name ?? subId, true);
+        });
       }
       router.push({ pathname: '/(main)/(feed)/business/[businessId]', params: { businessId: id } });
     },
-    [router, selectedSubCategory, subCategories],
+    [router, selectedSubCategories, subCategories],
   );
 
   const handleFavorite = useCallback(
@@ -210,16 +250,17 @@ export default function SubCategoryBrowserScreen() {
 
   const keyExtractor = useCallback((item: BusinessEntity) => item.id, []);
 
-  const selectedSubCategoryName = selectedSubCategory
-    ? (subCategories.find((s) => s.id === selectedSubCategory)?.name ?? selectedSubCategory)
-    : null;
+  const selectedSubCategoryNames = selectedSubCategories
+    .map((id) => subCategories.find((s) => s.id === id)?.name ?? id)
+    .join(', ');
 
-  const emptyMessage = selectedSubCategoryName
-    ? t('subCategory.emptySubCategory', {
-        subCategory: selectedSubCategoryName,
-        category: categoryDisplayName,
-      })
-    : t('subCategory.emptyCategory', { category: categoryDisplayName });
+  const emptyMessage =
+    selectedSubCategories.length > 0
+      ? t('subCategory.emptySubCategory', {
+          subCategory: selectedSubCategoryNames,
+          category: categoryDisplayName,
+        })
+      : t('subCategory.emptyCategory', { category: categoryDisplayName });
 
   // ── Shared Header ──────────────────────────────────────────────────────────
 
@@ -241,20 +282,20 @@ export default function SubCategoryBrowserScreen() {
             width: 40,
             height: 40,
             borderRadius: 20,
-            backgroundColor: pressed ? 'rgba(255,255,255,0.1)' : 'rgba(30,41,59,0.5)',
+            backgroundColor: pressed ? 'rgba(255,255,255,0.1)' : theme.isDark ? 'rgba(30,41,59,0.5)' : 'rgba(148,163,184,0.2)',
             alignItems: 'center',
             justifyContent: 'center',
           })}
           accessibilityLabel={t('common.back')}
           accessibilityRole="button"
         >
-          <MaterialCommunityIcons name="chevron-left" size={28} color={colors.white} />
+          <MaterialCommunityIcons name="chevron-left" size={28} color={theme.text} />
         </Pressable>
         <AppText
           style={{
             fontSize: 20,
             fontWeight: '700',
-            color: colors.white,
+            color: theme.text,
             flex: 1,
             marginLeft: 16,
             letterSpacing: -0.3,
@@ -272,9 +313,9 @@ export default function SubCategoryBrowserScreen() {
               flex: 1,
               flexDirection: 'row',
               alignItems: 'center',
-              backgroundColor: colors.cardDark,
+              backgroundColor: theme.card,
               borderWidth: 1,
-              borderColor: colors.borderDark,
+              borderColor: theme.border,
               borderRadius: 16,
               paddingHorizontal: 16,
               paddingVertical: 12,
@@ -287,11 +328,11 @@ export default function SubCategoryBrowserScreen() {
               style={{ marginRight: 12 }}
             />
             <TextInput
-              style={{ flex: 1, color: colors.textWhite, fontSize: 15, padding: 0 }}
+              style={{ flex: 1, color: theme.text, fontSize: 15, padding: 0 }}
               value={searchQuery}
               onChangeText={setSearchQuery}
               placeholder={searchPlaceholder}
-              placeholderTextColor={colors.textSlate500}
+              placeholderTextColor={theme.textMuted}
               accessibilityLabel={searchPlaceholder}
               accessibilityRole="search"
             />
@@ -299,13 +340,14 @@ export default function SubCategoryBrowserScreen() {
 
           {/* Sort Button */}
           <Pressable
+            onPress={() => setShowSort(true)}
             style={({ pressed }) => ({
               width: 44,
               height: 44,
               borderRadius: 14,
-              backgroundColor: colors.cardDark,
+              backgroundColor: activeSort ? 'rgba(168,85,247,0.15)' : theme.card,
               borderWidth: 1,
-              borderColor: colors.borderDark,
+              borderColor: activeSort ? colors.neonPurple : theme.border,
               alignItems: 'center',
               justifyContent: 'center',
               marginLeft: 10,
@@ -317,19 +359,26 @@ export default function SubCategoryBrowserScreen() {
             <MaterialCommunityIcons
               name="sort-variant"
               size={20}
-              color={colors.textSlate400}
+              color={activeSort ? colors.neonPurple : theme.textSecondary}
             />
           </Pressable>
 
           {/* Filter Button */}
           <Pressable
+            onPress={() => setShowFilter(true)}
             style={({ pressed }) => ({
               width: 44,
               height: 44,
               borderRadius: 14,
-              backgroundColor: colors.cardDark,
+              backgroundColor:
+                activeFilters.locations.length > 0 || activeFilters.minRating > 0
+                  ? 'rgba(168,85,247,0.15)'
+                  : theme.card,
               borderWidth: 1,
-              borderColor: colors.borderDark,
+              borderColor:
+                activeFilters.locations.length > 0 || activeFilters.minRating > 0
+                  ? colors.neonPurple
+                  : theme.border,
               alignItems: 'center',
               justifyContent: 'center',
               marginLeft: 8,
@@ -341,7 +390,11 @@ export default function SubCategoryBrowserScreen() {
             <MaterialCommunityIcons
               name="filter-variant"
               size={20}
-              color={colors.textSlate400}
+              color={
+                activeFilters.locations.length > 0 || activeFilters.minRating > 0
+                  ? colors.neonPurple
+                  : theme.textSecondary
+              }
             />
           </Pressable>
         </View>
@@ -349,26 +402,45 @@ export default function SubCategoryBrowserScreen() {
 
       {/* Sub-Category Tabs — shown whenever the category has defined subcategories */}
       {subCategories.length > 0 && (
-        <ScrollView
-          horizontal
-          showsHorizontalScrollIndicator={false}
-          style={{ flexGrow: 0 }}
-          contentContainerStyle={{ paddingHorizontal: 24, paddingBottom: 14, alignItems: 'center' }}
-        >
-          <SubCategoryTab
-            label={t('subCategory.all')}
-            isSelected={selectedSubCategory === null}
-            onPress={() => handleSubCategorySelect(null)}
-          />
-          {subCategories.map((sub) => (
+        <>
+          {/* See All row — sits between search bar and tabs */}
+          <Pressable
+            onPress={() => setShowSubCategoryPicker(true)}
+            style={({ pressed }) => ({
+              alignSelf: 'flex-end',
+              paddingHorizontal: 24,
+              paddingBottom: 8,
+              opacity: pressed ? 0.7 : 1,
+            })}
+            accessibilityRole="button"
+            accessibilityLabel={t('subCategory.seeAll')}
+          >
+            <AppText style={{ fontSize: 13, fontWeight: '600', color: colors.neonPurple }}>
+              {t('subCategory.seeAll')}
+            </AppText>
+          </Pressable>
+
+          <ScrollView
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            style={{ flexGrow: 0 }}
+            contentContainerStyle={{ paddingHorizontal: 24, paddingBottom: 14, alignItems: 'center' }}
+          >
             <SubCategoryTab
-              key={sub.id}
-              label={sub.name}
-              isSelected={selectedSubCategory === sub.id}
-              onPress={() => handleSubCategorySelect(sub.id)}
+              label={t('subCategory.all')}
+              isSelected={selectedSubCategories.length === 0}
+              onPress={() => setSelectedSubCategories([])}
             />
-          ))}
-        </ScrollView>
+            {subCategories.map((sub) => (
+              <SubCategoryTab
+                key={sub.id}
+                label={sub.name}
+                isSelected={selectedSubCategories.includes(sub.id)}
+                onPress={() => setSelectedSubCategories([sub.id])}
+              />
+            ))}
+          </ScrollView>
+        </>
       )}
     </>
   );
@@ -400,6 +472,15 @@ export default function SubCategoryBrowserScreen() {
   return (
     <ScreenLayout>
       {renderHeader()}
+      <SubcategoryPickerModal
+        visible={showSubCategoryPicker}
+        title={t('subCategory.selectTitle')}
+        options={subCategories.map((s) => ({ label: s.name, value: s.id }))}
+        values={selectedSubCategories}
+        minSelect={1}
+        onClose={() => setShowSubCategoryPicker(false)}
+        onConfirm={handleSubCategoryPickerConfirm}
+      />
       <FlatList
         data={filteredData}
         renderItem={renderItem}
@@ -420,11 +501,11 @@ export default function SubCategoryBrowserScreen() {
             <MaterialCommunityIcons
               name="store-search-outline"
               size={52}
-              color={colors.textSlate500}
+              color={theme.textMuted}
             />
             <AppText
               style={{
-                color: colors.textSlate400,
+                color: theme.textSecondary,
                 fontSize: 16,
                 fontWeight: '600',
                 marginTop: 16,
@@ -435,6 +516,27 @@ export default function SubCategoryBrowserScreen() {
             </AppText>
           </View>
         }
+      />
+
+      <FilterBySheet
+        visible={showFilter}
+        onClose={() => setShowFilter(false)}
+        onApply={(filters) => {
+          setActiveFilters(filters);
+          setShowFilter(false);
+        }}
+        initialFilters={activeFilters}
+        showCategories={false}
+      />
+
+      <SortBySheet
+        visible={showSort}
+        onClose={() => setShowSort(false)}
+        onApply={(option) => {
+          setActiveSort(option);
+          setShowSort(false);
+        }}
+        initialValue={activeSort}
       />
     </ScreenLayout>
   );

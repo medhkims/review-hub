@@ -5,6 +5,7 @@ import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { AppText } from '@/presentation/shared/components/ui/AppText';
 import { colors } from '@/core/theme/colors';
+import { useTheme } from '@/core/theme/useTheme';
 
 const WINDOW_HEIGHT = Dimensions.get('window').height;
 const HERO_HEIGHT = Math.min(Math.round(WINDOW_HEIGHT * 0.4), 320);
@@ -18,9 +19,10 @@ interface BannerDetailScreenProps {
 
 export function BannerDetailScreen({ title, description, content, imageUrl }: BannerDetailScreenProps) {
   const router = useRouter();
+  const theme = useTheme();
 
   return (
-    <View style={{ flex: 1, backgroundColor: colors.midnight }}>
+    <View style={{ flex: 1, backgroundColor: theme.background }}>
       <StatusBar barStyle="light-content" />
       <ScrollView
         style={{ flex: 1 }}
@@ -40,7 +42,7 @@ export function BannerDetailScreen({ title, description, content, imageUrl }: Ba
             style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 90 }}
           />
           <LinearGradient
-            colors={['transparent', colors.midnight]}
+            colors={['transparent', theme.background]}
             style={{ position: 'absolute', bottom: 0, left: 0, right: 0, height: 80 }}
           />
           {/* Back button */}
@@ -70,7 +72,7 @@ export function BannerDetailScreen({ title, description, content, imageUrl }: Ba
             style={{
               fontSize: 24,
               fontWeight: '700',
-              color: colors.white,
+              color: theme.text,
               letterSpacing: -0.3,
               marginBottom: 8,
             }}
@@ -81,7 +83,7 @@ export function BannerDetailScreen({ title, description, content, imageUrl }: Ba
             <AppText
               style={{
                 fontSize: 14,
-                color: colors.textSlate400,
+                color: theme.textSecondary,
                 lineHeight: 20,
                 marginBottom: content.trim().length > 0 ? 20 : 0,
               }}
@@ -93,7 +95,7 @@ export function BannerDetailScreen({ title, description, content, imageUrl }: Ba
             <AppText
               style={{
                 fontSize: 15,
-                color: colors.white,
+                color: theme.text,
                 lineHeight: 24,
               }}
             >

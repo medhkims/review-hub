@@ -107,6 +107,13 @@ export class NotificationRemoteDataSourceImpl implements NotificationRemoteDataS
 
   async createNotification(params: CreateNotificationParams): Promise<void> {
     try {
+      // Respect the user's notification preference stored in their profile
+      const profileRef = doc(firestore, 'profiles', params.userId);
+      const profileSnap = await getDoc(profileRef);
+      if (profileSnap.exists() && profileSnap.data().notifications_enabled === false) {
+        return;
+      }
+
       await addDoc(collection(firestore, 'notifications'), {
         user_id: params.userId,
         type: params.type,

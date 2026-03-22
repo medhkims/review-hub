@@ -4,6 +4,7 @@ import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useTranslation } from 'react-i18next';
 import { AppText } from '@/presentation/shared/components/ui/AppText';
 import { colors } from '@/core/theme/colors';
+import { useTheme } from '@/core/theme/useTheme';
 import { SectionCard } from './SectionCard';
 import { ContactInfo, OpeningHours, DayKey } from '@/domain/business/entities/businessDetailEntity';
 import { trackProfileClick } from '@/core/utils/premiumTracking';
@@ -41,6 +42,7 @@ export const InformationSection: React.FC<InformationSectionProps> = ({
   openingHoursVisible,
 }) => {
   const { t } = useTranslation();
+  const theme = useTheme();
 
   const contactRows: ContactRowData[] = [];
 
@@ -114,7 +116,7 @@ export const InformationSection: React.FC<InformationSectionProps> = ({
   return (
     <SectionCard title={t('businessDetail.information')}>
       {/* Location */}
-      <AppText style={{ fontWeight: '700', fontSize: 14, color: colors.white, marginBottom: 16, flexDirection: 'row', alignItems: 'center' }}>
+      <AppText style={{ fontWeight: '700', fontSize: 14, color: theme.text, marginBottom: 16, flexDirection: 'row', alignItems: 'center' }}>
         <View style={{ width: 6, height: 6, borderRadius: 3, backgroundColor: colors.neonPurple, marginRight: 8 }} />
         {t('businessDetail.location')}
       </AppText>
@@ -148,10 +150,10 @@ export const InformationSection: React.FC<InformationSectionProps> = ({
             <MaterialCommunityIcons name="web" size={24} color={colors.neonPurple} />
           </View>
           <View style={{ flex: 1 }}>
-            <AppText style={{ fontSize: 15, fontWeight: '700', color: colors.white }}>
+            <AppText style={{ fontSize: 15, fontWeight: '700', color: theme.text }}>
               {t('businessDetail.onlineBusiness')}
             </AppText>
-            <AppText style={{ fontSize: 12, color: colors.textSlate400, marginTop: 2 }}>
+            <AppText style={{ fontSize: 12, color: theme.textSecondary, marginTop: 2 }}>
               {t('businessDetail.onlineBusinessDescription')}
             </AppText>
           </View>
@@ -165,14 +167,14 @@ export const InformationSection: React.FC<InformationSectionProps> = ({
             overflow: 'hidden',
             marginBottom: 24,
             borderWidth: 1,
-            borderColor: 'rgba(255, 255, 255, 0.1)',
-            backgroundColor: '#0b101e',
+            borderColor: theme.border,
+            backgroundColor: theme.background,
             alignItems: 'center',
             justifyContent: 'center',
           }}
         >
           <MaterialCommunityIcons name="map-marker-outline" size={32} color={colors.neonPurple} />
-          <AppText style={{ fontSize: 12, color: colors.textSlate400, marginTop: 8 }}>
+          <AppText style={{ fontSize: 12, color: theme.textSecondary, marginTop: 8 }}>
             {location}
           </AppText>
         </View>
@@ -181,7 +183,7 @@ export const InformationSection: React.FC<InformationSectionProps> = ({
       {/* Opening Hours */}
       {openingHours && openingHoursVisible !== false && (
         <View style={{ marginBottom: 24 }}>
-          <AppText style={{ fontWeight: '700', fontSize: 14, color: colors.white, marginBottom: 12 }}>
+          <AppText style={{ fontWeight: '700', fontSize: 14, color: theme.text, marginBottom: 12 }}>
             {t('businessDetail.openingHours')}
           </AppText>
           <View style={{ gap: 8 }}>
@@ -203,15 +205,15 @@ export const InformationSection: React.FC<InformationSectionProps> = ({
                     borderColor: isOpen ? `${colors.neonPurple}30` : 'rgba(255,255,255,0.06)',
                   }}
                 >
-                  <AppText style={{ fontSize: 13, fontWeight: '600', color: isOpen ? colors.white : colors.textSlate500, width: 36 }}>
+                  <AppText style={{ fontSize: 13, fontWeight: '600', color: isOpen ? theme.text : theme.textMuted, width: 36 }}>
                     {t(`businessOwner.companyProfile.${SHORT_KEYS[day]}`)}
                   </AppText>
                   {isOpen && schedule ? (
-                    <AppText style={{ fontSize: 13, color: colors.textSlate400 }}>
+                    <AppText style={{ fontSize: 13, color: theme.textSecondary }}>
                       {schedule.openTime} – {schedule.closeTime}
                     </AppText>
                   ) : (
-                    <AppText style={{ fontSize: 12, color: colors.textSlate500 }}>
+                    <AppText style={{ fontSize: 12, color: theme.textMuted }}>
                       {t('businessDetail.closedDay')}
                     </AppText>
                   )}
@@ -225,7 +227,7 @@ export const InformationSection: React.FC<InformationSectionProps> = ({
       {/* Contact & Socials */}
       {contactRows.length > 0 && (
         <>
-          <AppText style={{ fontWeight: '700', fontSize: 14, color: colors.white, marginBottom: 16 }}>
+          <AppText style={{ fontWeight: '700', fontSize: 14, color: theme.text, marginBottom: 16 }}>
             {t('businessDetail.contactAndSocials')}
           </AppText>
 
@@ -240,7 +242,7 @@ export const InformationSection: React.FC<InformationSectionProps> = ({
                   flexDirection: 'row',
                   alignItems: 'center',
                   justifyContent: 'space-between',
-                  backgroundColor: colors.midnight,
+                  backgroundColor: theme.background,
                   padding: 14,
                   borderRadius: 16,
                   borderWidth: 1,
@@ -266,11 +268,11 @@ export const InformationSection: React.FC<InformationSectionProps> = ({
                     />
                   </View>
                   <View>
-                    <AppText style={{ fontSize: 10, color: colors.textSlate500, textTransform: 'uppercase', letterSpacing: 1 }}>
+                    <AppText style={{ fontSize: 10, color: theme.textMuted, textTransform: 'uppercase', letterSpacing: 1 }}>
                       {row.label}
                     </AppText>
                     <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
-                      <AppText style={{ fontSize: 12, color: row.verified ? colors.success : colors.white, fontWeight: '500', letterSpacing: 0.5 }}>
+                      <AppText style={{ fontSize: 12, color: row.verified ? colors.success : theme.text, fontWeight: '500', letterSpacing: 0.5 }}>
                         {row.value}
                       </AppText>
                       {row.verified && (
@@ -282,7 +284,7 @@ export const InformationSection: React.FC<InformationSectionProps> = ({
                 <MaterialCommunityIcons
                   name="arrow-top-right"
                   size={14}
-                  color={colors.textSlate500}
+                  color={theme.textMuted}
                 />
               </Pressable>
             ))}

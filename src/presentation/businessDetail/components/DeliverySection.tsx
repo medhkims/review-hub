@@ -4,6 +4,7 @@ import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useTranslation } from 'react-i18next';
 import { AppText } from '@/presentation/shared/components/ui/AppText';
 import { colors } from '@/core/theme/colors';
+import { useTheme } from '@/core/theme/useTheme';
 import { SectionCard } from './SectionCard';
 import { DeliveryService } from '@/domain/business/entities/businessDetailEntity';
 import { trackProfileClick } from '@/core/utils/premiumTracking';
@@ -20,6 +21,7 @@ const SERVICE_COLORS: Record<string, { bg: string; text: string; border: string 
 
 export const DeliverySection: React.FC<DeliverySectionProps> = ({ deliveryServices, businessId }) => {
   const { t } = useTranslation();
+  const theme = useTheme();
   const [choiceService, setChoiceService] = useState<DeliveryService | null>(null);
 
   if (deliveryServices.length === 0) return null;
@@ -50,10 +52,10 @@ export const DeliverySection: React.FC<DeliverySectionProps> = ({ deliveryServic
         <Pressable
           onPress={(e) => e.stopPropagation()}
           accessibilityRole="none"
-          style={{ backgroundColor: colors.cardDark, borderRadius: 20, padding: 24, gap: 16 }}
+          style={{ backgroundColor: theme.card, borderRadius: 20, padding: 24, gap: 16 }}
         >
-          <AppText style={{ fontSize: 18, fontWeight: '700', color: colors.white }}>{choiceService?.name}</AppText>
-          <AppText style={{ fontSize: 14, color: colors.textSlate400 }}>{t('businessDetail.deliveryOpenWith')}</AppText>
+          <AppText style={{ fontSize: 18, fontWeight: '700', color: theme.text }}>{choiceService?.name}</AppText>
+          <AppText style={{ fontSize: 14, color: theme.textSecondary }}>{t('businessDetail.deliveryOpenWith')}</AppText>
           <Pressable
             onPress={() => { Linking.openURL(choiceService!.url!).catch(() => {}); setChoiceService(null); }}
             accessibilityLabel={t('businessDetail.openWebsite')}
@@ -86,9 +88,9 @@ export const DeliverySection: React.FC<DeliverySectionProps> = ({ deliveryServic
             onPress={() => setChoiceService(null)}
             accessibilityLabel={t('common.cancel')}
             accessibilityRole="button"
-            style={{ padding: 14, borderRadius: 14, borderWidth: 1, borderColor: colors.borderDark, alignItems: 'center' }}
+            style={{ padding: 14, borderRadius: 14, borderWidth: 1, borderColor: theme.border, alignItems: 'center' }}
           >
-            <AppText style={{ color: colors.textSlate400, fontWeight: '600' }}>{t('common.cancel')}</AppText>
+            <AppText style={{ color: theme.textSecondary, fontWeight: '600' }}>{t('common.cancel')}</AppText>
           </Pressable>
         </Pressable>
       </Pressable>
@@ -98,7 +100,7 @@ export const DeliverySection: React.FC<DeliverySectionProps> = ({ deliveryServic
         {deliveryServices.map((service) => {
           const style = SERVICE_COLORS[service.abbreviation] ?? {
             bg: 'rgba(168, 85, 247, 0.1)',
-            text: colors.white,
+            text: theme.text,
             border: 'rgba(255, 255, 255, 0.05)',
           };
           const isClickable = !!(service.url || service.phone);
@@ -113,7 +115,7 @@ export const DeliverySection: React.FC<DeliverySectionProps> = ({ deliveryServic
               style={({ pressed }) => ({
                 flex: 1,
                 minWidth: '40%',
-                backgroundColor: colors.midnight,
+                backgroundColor: theme.background,
                 padding: 16,
                 borderRadius: 16,
                 borderWidth: 1,
@@ -160,7 +162,7 @@ export const DeliverySection: React.FC<DeliverySectionProps> = ({ deliveryServic
                   {service.abbreviation}
                 </AppText>
               </View>
-              <AppText style={{ fontSize: 14, fontWeight: '600', color: colors.white, letterSpacing: 0.5, textAlign: 'center' }}>
+              <AppText style={{ fontSize: 14, fontWeight: '600', color: theme.text, letterSpacing: 0.5, textAlign: 'center' }}>
                 {t('businessDetail.orderVia')} {service.name}
               </AppText>
               {/* Hint icons */}

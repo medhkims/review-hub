@@ -83,7 +83,11 @@ export interface BusinessRemoteDataSource {
   incrementReviewView(reviewId: string): Promise<void>;
   getReviewComments(reviewId: string): Promise<CommentModel[]>;
   addReviewComment(reviewId: string, userId: string, text: string): Promise<CommentModel>;
-  addCommentReply(commentId: string, reviewId: string, userId: string, text: string): Promise<ReplyModel>;
+  addCommentReply(commentId: string, reviewId: string, userId: string, text: string, replyingToName?: string): Promise<ReplyModel>;
+  likeComment(commentId: string, userId: string): Promise<void>;
+  unlikeComment(commentId: string, userId: string): Promise<void>;
+  likeReply(replyId: string, userId: string): Promise<void>;
+  unlikeReply(replyId: string, userId: string): Promise<void>;
 }
 
 export class BusinessRemoteDataSourceImpl implements BusinessRemoteDataSource {
@@ -466,15 +470,40 @@ export class BusinessRemoteDataSourceImpl implements BusinessRemoteDataSource {
         })
       );
 
+      // Batch-fetch comment and reply like status for current user
+      const currentUserId = auth.currentUser?.uid ?? '';
+      const commentLikedSet = new Set<string>();
+      const replyLikedSet = new Set<string>();
+      if (currentUserId) {
+        await Promise.all([
+          ...rawComments.map(async (c) => {
+            try {
+              const snap = await getDoc(doc(firestore, 'comment_likes', `${currentUserId}_${c.id}`));
+              if (snap.exists()) commentLikedSet.add(c.id);
+            } catch { /* non-critical */ }
+          }),
+          ...Object.values(repliesMap).flat().map(async (r) => {
+            try {
+              const snap = await getDoc(doc(firestore, 'reply_likes', `${currentUserId}_${r.id}`));
+              if (snap.exists()) replyLikedSet.add(r.id);
+            } catch { /* non-critical */ }
+          }),
+        ]);
+      }
+
       return rawComments.map((c) => ({
         ...c,
         author_name: profileMap[c.user_id]?.display_name ?? `User ${c.user_id.slice(0, 6)}`,
         author_avatar_url: profileMap[c.user_id]?.avatar_url ?? null,
         reply_count: repliesMap[c.id]?.length ?? 0,
+        like_count: (c as CommentModel & { like_count?: number }).like_count ?? 0,
+        is_liked_by_current_user: commentLikedSet.has(c.id),
         _replies: (repliesMap[c.id] ?? []).map((r) => ({
           ...r,
           author_name: profileMap[r.user_id]?.display_name ?? `User ${r.user_id.slice(0, 6)}`,
           author_avatar_url: profileMap[r.user_id]?.avatar_url ?? null,
+          like_count: (r as import('../models/commentModel').ReplyModel & { like_count?: number }).like_count ?? 0,
+          is_liked_by_current_user: replyLikedSet.has(r.id),
         })),
       }));
     } catch (error: unknown) {
@@ -494,6 +523,7 @@ export class BusinessRemoteDataSourceImpl implements BusinessRemoteDataSource {
         text: text.trim(),
         created_at: serverTimestamp(),
         reply_count: 0,
+        like_count: 0,
       });
       updateDoc(doc(firestore, this.REVIEWS, reviewId), { comment_count: increment(1) }).catch(() => {});
 
@@ -504,8 +534,10 @@ export class BusinessRemoteDataSourceImpl implements BusinessRemoteDataSource {
         text: text.trim(),
         created_at: Timestamp.now(),
         reply_count: 0,
+        like_count: 0,
         author_name: profile?.display_name ?? `User ${userId.slice(0, 6)}`,
         author_avatar_url: profile?.avatar_url ?? null,
+        is_liked_by_current_user: false,
       };
     } catch (error: unknown) {
       const message = error instanceof Error ? error.message : 'Failed to add comment';
@@ -513,18 +545,22 @@ export class BusinessRemoteDataSourceImpl implements BusinessRemoteDataSource {
     }
   }
 
-  async addCommentReply(commentId: string, reviewId: string, userId: string, text: string): Promise<import('../models/commentModel').ReplyModel> {
+  async addCommentReply(commentId: string, reviewId: string, userId: string, text: string, replyingToName?: string): Promise<import('../models/commentModel').ReplyModel> {
     try {
       const profileSnap = await getDoc(doc(firestore, 'profiles', userId)).catch(() => null);
       const profile = profileSnap?.exists() ? profileSnap.data() as { display_name?: string; avatar_url?: string } : null;
 
-      const docRef = await addDoc(collection(firestore, 'review_replies'), {
+      const replyData: Record<string, unknown> = {
         comment_id: commentId,
         review_id: reviewId,
         user_id: userId,
         text: text.trim(),
         created_at: serverTimestamp(),
-      });
+        like_count: 0,
+      };
+      if (replyingToName) replyData.replying_to_name = replyingToName;
+
+      const docRef = await addDoc(collection(firestore, 'review_replies'), replyData);
       updateDoc(doc(firestore, 'review_comments', commentId), { reply_count: increment(1) }).catch(() => {});
 
       return {
@@ -534,11 +570,66 @@ export class BusinessRemoteDataSourceImpl implements BusinessRemoteDataSource {
         user_id: userId,
         text: text.trim(),
         created_at: Timestamp.now(),
+        like_count: 0,
+        replying_to_name: replyingToName,
         author_name: profile?.display_name ?? `User ${userId.slice(0, 6)}`,
         author_avatar_url: profile?.avatar_url ?? null,
+        is_liked_by_current_user: false,
       };
     } catch (error: unknown) {
       const message = error instanceof Error ? error.message : 'Failed to add reply';
+      throw new ServerException(message);
+    }
+  }
+
+  async likeComment(commentId: string, userId: string): Promise<void> {
+    try {
+      const likeId = `${userId}_${commentId}`;
+      await setDoc(doc(firestore, 'comment_likes', likeId), {
+        comment_id: commentId,
+        user_id: userId,
+        created_at: serverTimestamp(),
+      });
+      updateDoc(doc(firestore, 'review_comments', commentId), { like_count: increment(1) }).catch(() => {});
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : 'Failed to like comment';
+      throw new ServerException(message);
+    }
+  }
+
+  async unlikeComment(commentId: string, userId: string): Promise<void> {
+    try {
+      const likeId = `${userId}_${commentId}`;
+      await deleteDoc(doc(firestore, 'comment_likes', likeId));
+      updateDoc(doc(firestore, 'review_comments', commentId), { like_count: increment(-1) }).catch(() => {});
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : 'Failed to unlike comment';
+      throw new ServerException(message);
+    }
+  }
+
+  async likeReply(replyId: string, userId: string): Promise<void> {
+    try {
+      const likeId = `${userId}_${replyId}`;
+      await setDoc(doc(firestore, 'reply_likes', likeId), {
+        reply_id: replyId,
+        user_id: userId,
+        created_at: serverTimestamp(),
+      });
+      updateDoc(doc(firestore, 'review_replies', replyId), { like_count: increment(1) }).catch(() => {});
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : 'Failed to like reply';
+      throw new ServerException(message);
+    }
+  }
+
+  async unlikeReply(replyId: string, userId: string): Promise<void> {
+    try {
+      const likeId = `${userId}_${replyId}`;
+      await deleteDoc(doc(firestore, 'reply_likes', likeId));
+      updateDoc(doc(firestore, 'review_replies', replyId), { like_count: increment(-1) }).catch(() => {});
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : 'Failed to unlike reply';
       throw new ServerException(message);
     }
   }

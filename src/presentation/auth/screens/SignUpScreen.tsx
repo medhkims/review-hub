@@ -15,6 +15,7 @@ import { useAuth } from '../hooks/useAuth';
 import { useAnalyticsScreen } from '@/presentation/shared/hooks/useAnalyticsScreen';
 import { AnalyticsScreens } from '@/core/analytics/analyticsKeys';
 import { colors } from '@/core/theme/colors';
+import { useTheme } from '@/core/theme/useTheme';
 
 type UserType = 'simple' | 'company';
 
@@ -24,25 +25,28 @@ interface SocialButtonProps {
   accessibilityLabel: string;
 }
 
-const SocialButton: React.FC<SocialButtonProps> = ({ onPress, icon, accessibilityLabel }) => (
-  <Pressable
-    onPress={onPress}
-    accessibilityRole="button"
-    accessibilityLabel={accessibilityLabel}
-    style={{
-      width: 56,
-      height: 56,
-      borderRadius: 28,
-      backgroundColor: colors.cardDark,
-      borderWidth: 1,
-      borderColor: colors.borderDark,
-      alignItems: 'center',
-      justifyContent: 'center',
-    }}
-  >
-    {icon}
-  </Pressable>
-);
+const SocialButton: React.FC<SocialButtonProps> = ({ onPress, icon, accessibilityLabel }) => {
+  const theme = useTheme();
+  return (
+    <Pressable
+      onPress={onPress}
+      accessibilityRole="button"
+      accessibilityLabel={accessibilityLabel}
+      style={{
+        width: 56,
+        height: 56,
+        borderRadius: 28,
+        backgroundColor: theme.card,
+        borderWidth: 1,
+        borderColor: theme.border,
+        alignItems: 'center',
+        justifyContent: 'center',
+      }}
+    >
+      {icon}
+    </Pressable>
+  );
+};
 
 interface UserTypeToggleProps {
   selected: UserType;
@@ -51,15 +55,16 @@ interface UserTypeToggleProps {
 
 const UserTypeToggle: React.FC<UserTypeToggleProps> = ({ selected, onSelect }) => {
   const { t } = useTranslation();
+  const theme = useTheme();
   return (
     <View
       style={{
         flexDirection: 'row',
         padding: 4,
-        backgroundColor: colors.cardDark,
+        backgroundColor: theme.card,
         borderRadius: 9999,
         borderWidth: 1,
-        borderColor: colors.borderDark,
+        borderColor: theme.border,
       }}
     >
       {(['simple', 'company'] as const).map((type) => {
@@ -97,7 +102,7 @@ const UserTypeToggle: React.FC<UserTypeToggleProps> = ({ selected, onSelect }) =
               style={{
                 fontSize: 14,
                 fontWeight: isSelected ? '700' : '500',
-                color: isSelected ? colors.textWhite : colors.textSlate400,
+                color: isSelected ? colors.textWhite : theme.textSecondary,
               }}
             >
               {type === 'simple'
@@ -115,6 +120,7 @@ export default function SignUpScreen() {
   useAnalyticsScreen(AnalyticsScreens.SIGN_UP);
   const router = useRouter();
   const { t } = useTranslation();
+  const theme = useTheme();
   const { signUp, signUpAsBusinessOwner, signInWithGoogle, isLoading, error } = useAuth();
 
   const [userType, setUserType] = useState<UserType>('simple');
@@ -241,7 +247,7 @@ export default function SignUpScreen() {
             style={{
               fontSize: 28,
               fontWeight: '800',
-              color: colors.textWhite,
+              color: theme.text,
               marginBottom: 8,
               textAlign: 'center',
             }}
@@ -251,7 +257,7 @@ export default function SignUpScreen() {
           <AppText
             style={{
               fontSize: 14,
-              color: colors.textSlate400,
+              color: theme.textSecondary,
               fontWeight: '500',
               textAlign: 'center',
               maxWidth: 280,
@@ -343,12 +349,12 @@ export default function SignUpScreen() {
                   marginBottom: 8,
                 }}
               >
-                <View style={{ flex: 1, height: 1, backgroundColor: colors.borderDark }} />
-                <View style={{ backgroundColor: colors.midnight, paddingHorizontal: 12 }}>
+                <View style={{ flex: 1, height: 1, backgroundColor: theme.border }} />
+                <View style={{ backgroundColor: theme.background, paddingHorizontal: 12 }}>
                   <AppText
                     style={{
                       fontSize: 11,
-                      color: colors.textSlate500,
+                      color: theme.textMuted,
                       fontWeight: '600',
                       textTransform: 'uppercase',
                       letterSpacing: 1,
@@ -357,7 +363,7 @@ export default function SignUpScreen() {
                     {t('auth.signUp.orRegisterWithEmail')}
                   </AppText>
                 </View>
-                <View style={{ flex: 1, height: 1, backgroundColor: colors.borderDark }} />
+                <View style={{ flex: 1, height: 1, backgroundColor: theme.border }} />
               </View>
             </View>
 
@@ -404,8 +410,8 @@ export default function SignUpScreen() {
                     height: 52,
                     borderRadius: 14,
                     borderWidth: 1,
-                    borderColor: genderDropdownOpen ? colors.neonPurple : colors.borderDark,
-                    backgroundColor: colors.cardDark,
+                    borderColor: genderDropdownOpen ? colors.neonPurple : theme.border,
+                    backgroundColor: theme.card,
                     paddingHorizontal: 16,
                     gap: 10,
                   }}
@@ -422,7 +428,7 @@ export default function SignUpScreen() {
                   <AppText style={{
                     flex: 1,
                     fontSize: 15,
-                    color: gender ? colors.textWhite : colors.textSlate500,
+                    color: gender ? theme.text : theme.textMuted,
                   }}>
                     {gender
                       ? t(`auth.signUp.gender${gender === 'male' ? 'Male' : 'Female'}`)
@@ -431,7 +437,7 @@ export default function SignUpScreen() {
                   <MaterialCommunityIcons
                     name={genderDropdownOpen ? 'chevron-up' : 'chevron-down'}
                     size={20}
-                    color={colors.textSlate400}
+                    color={theme.textSecondary}
                   />
                 </Pressable>
 
@@ -439,8 +445,8 @@ export default function SignUpScreen() {
                   <View style={{
                     borderRadius: 14,
                     borderWidth: 1,
-                    borderColor: colors.borderDark,
-                    backgroundColor: colors.cardDark,
+                    borderColor: theme.border,
+                    backgroundColor: theme.card,
                     marginTop: 4,
                     overflow: 'hidden',
                   }}>
@@ -459,20 +465,20 @@ export default function SignUpScreen() {
                             paddingHorizontal: 16,
                             paddingVertical: 13,
                             borderTopWidth: index === 0 ? 0 : 1,
-                            borderTopColor: colors.borderDark,
+                            borderTopColor: theme.border,
                             backgroundColor: isSelected ? 'rgba(168,85,247,0.1)' : 'transparent',
                           }}
                         >
                           <MaterialCommunityIcons
                             name={g === 'male' ? 'gender-male' : 'gender-female'}
                             size={18}
-                            color={isSelected ? colors.neonPurple : colors.textSlate400}
+                            color={isSelected ? colors.neonPurple : theme.textSecondary}
                           />
                           <AppText style={{
                             flex: 1,
                             fontSize: 15,
                             fontWeight: isSelected ? '600' : '400',
-                            color: isSelected ? colors.neonPurple : colors.textSlate200,
+                            color: isSelected ? colors.neonPurple : theme.text,
                           }}>
                             {t(`auth.signUp.gender${g === 'male' ? 'Male' : 'Female'}`)}
                           </AppText>
@@ -529,8 +535,8 @@ export default function SignUpScreen() {
                     height: 20,
                     borderRadius: 4,
                     borderWidth: 1.5,
-                    borderColor: agreedToTerms ? colors.neonPurple : colors.borderDark,
-                    backgroundColor: agreedToTerms ? colors.neonPurple : colors.cardDark,
+                    borderColor: agreedToTerms ? colors.neonPurple : theme.border,
+                    backgroundColor: agreedToTerms ? colors.neonPurple : theme.card,
                     alignItems: 'center',
                     justifyContent: 'center',
                     marginTop: 2,
@@ -541,7 +547,7 @@ export default function SignUpScreen() {
                   )}
                 </Pressable>
                 <AppText
-                  style={{ flex: 1, fontSize: 12, color: colors.textSlate400, lineHeight: 20 }}
+                  style={{ flex: 1, fontSize: 12, color: theme.textSecondary, lineHeight: 20 }}
                 >
                   {t('auth.signUp.agreeTerms')}{' '}
                   <AppText style={{ fontSize: 12, color: colors.neonPurple, fontWeight: '700' }}>
@@ -581,7 +587,7 @@ export default function SignUpScreen() {
               style={{ marginTop: 'auto', paddingVertical: 32, alignItems: 'center' }}
             >
               <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                <AppText style={{ fontSize: 14, color: colors.textSlate400 }}>
+                <AppText style={{ fontSize: 14, color: theme.textSecondary }}>
                   {t('auth.signUp.hasAccount')}{' '}
                 </AppText>
                 <Pressable
@@ -590,7 +596,7 @@ export default function SignUpScreen() {
                   accessibilityLabel={t('auth.signUp.login')}
                 >
                   <AppText
-                    style={{ fontSize: 14, color: colors.textWhite, fontWeight: '700' }}
+                    style={{ fontSize: 14, color: theme.text, fontWeight: '700' }}
                   >
                     {t('auth.signUp.login')}
                   </AppText>

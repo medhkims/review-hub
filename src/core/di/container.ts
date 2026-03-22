@@ -13,6 +13,10 @@ import { ChangePasswordUseCase } from '@/domain/auth/usecases/changePasswordUseC
 import { SignInWithGoogleUseCase } from '@/domain/auth/usecases/signInWithGoogleUseCase';
 import { SendPhoneOtpUseCase } from '@/domain/auth/usecases/sendPhoneOtpUseCase';
 import { VerifyPhoneOtpUseCase } from '@/domain/auth/usecases/verifyPhoneOtpUseCase';
+import { SendPasswordChangeEmailVerificationUseCase } from '@/domain/auth/usecases/sendPasswordChangeEmailVerificationUseCase';
+import { SendEmailOtpUseCase } from '@/domain/auth/usecases/sendEmailOtpUseCase';
+import { VerifyEmailOtpUseCase } from '@/domain/auth/usecases/verifyEmailOtpUseCase';
+import { VerifyCurrentPasswordUseCase } from '@/domain/auth/usecases/verifyCurrentPasswordUseCase';
 
 // ---- Settings ----
 import { SettingsLocalDataSourceImpl } from '@/data/settings/datasources/settingsLocalDataSource';
@@ -95,12 +99,29 @@ import { GetSuspendedBusinessesUseCase } from '@/domain/business/usecases/getSus
 import { IncrementSearchCountUseCase } from '@/domain/business/usecases/incrementSearchCountUseCase';
 import { IncrementGlobalSearchCountUseCase } from '@/domain/business/usecases/incrementGlobalSearchCountUseCase';
 import { ReportBusinessUseCase } from '@/domain/business/usecases/reportBusinessUseCase';
+import { LikeReviewUseCase } from '@/domain/business/usecases/likeReviewUseCase';
+import { UnlikeReviewUseCase } from '@/domain/business/usecases/unlikeReviewUseCase';
+import { IncrementReviewViewUseCase } from '@/domain/business/usecases/incrementReviewViewUseCase';
+import { GetReviewCommentsUseCase } from '@/domain/business/usecases/getReviewCommentsUseCase';
+import { AddReviewCommentUseCase } from '@/domain/business/usecases/addReviewCommentUseCase';
+import { AddCommentReplyUseCase } from '@/domain/business/usecases/addCommentReplyUseCase';
+import { LikeCommentUseCase } from '@/domain/business/usecases/likeCommentUseCase';
+import { UnlikeCommentUseCase } from '@/domain/business/usecases/unlikeCommentUseCase';
+import { LikeReplyUseCase } from '@/domain/business/usecases/likeReplyUseCase';
+import { UnlikeReplyUseCase } from '@/domain/business/usecases/unlikeReplyUseCase';
 
 // ---- Ticket ----
 import { TicketRemoteDataSourceImpl } from '@/data/ticket/datasources/ticketRemoteDataSource';
 import { TicketRepositoryImpl } from '@/data/ticket/repositories/ticketRepositoryImpl';
 import { GetTicketsUseCase } from '@/domain/ticket/usecases/getTicketsUseCase';
 import { UpdateTicketStatusUseCase } from '@/domain/ticket/usecases/updateTicketStatusUseCase';
+
+// ---- Support Tickets ----
+import { SupportTicketRemoteDataSourceImpl } from '@/data/support/datasources/supportTicketRemoteDataSource';
+import { SupportTicketRepositoryImpl } from '@/data/support/repositories/supportTicketRepositoryImpl';
+import { SubmitSupportTicketUseCase } from '@/domain/support/usecases/submitSupportTicketUseCase';
+import { GetUserSupportTicketsUseCase } from '@/domain/support/usecases/getUserSupportTicketsUseCase';
+import { GetAllSupportTicketsUseCase } from '@/domain/support/usecases/getAllSupportTicketsUseCase';
 
 // ---- Feed ----
 import { FeedRemoteDataSourceImpl } from '@/data/feed/datasources/feedRemoteDataSource';
@@ -145,6 +166,26 @@ import { CreateBannerUseCase } from '@/domain/banner/usecases/createBannerUseCas
 import { UpdateBannerUseCase } from '@/domain/banner/usecases/updateBannerUseCase';
 import { DeleteBannerUseCase } from '@/domain/banner/usecases/deleteBannerUseCase';
 
+// ---- Verification ----
+import { VerificationRemoteDataSourceImpl } from '@/data/verification/datasources/verificationRemoteDataSource';
+import { VerificationRepositoryImpl } from '@/data/verification/repositories/verificationRepositoryImpl';
+import { SubmitVerificationUseCase } from '@/domain/verification/usecases/submitVerificationUseCase';
+import { GetUserVerificationUseCase } from '@/domain/verification/usecases/getUserVerificationUseCase';
+import { GetPendingVerificationsUseCase } from '@/domain/verification/usecases/getPendingVerificationsUseCase';
+import { UpdateVerificationStatusUseCase } from '@/domain/verification/usecases/updateVerificationStatusUseCase';
+import { SendVerificationOtpUseCase } from '@/domain/verification/usecases/sendVerificationOtpUseCase';
+import { VerifyVerificationOtpUseCase } from '@/domain/verification/usecases/verifyVerificationOtpUseCase';
+import { GetVerificationsByStatusUseCase } from '@/domain/verification/usecases/getVerificationsByStatusUseCase';
+
+// ---- FAQ ----
+import { FaqRemoteDataSourceImpl } from '@/data/faq/datasources/faqRemoteDataSource';
+import { FaqRepositoryImpl } from '@/data/faq/repositories/faqRepositoryImpl';
+import { GetFaqsUseCase } from '@/domain/faq/usecases/getFaqsUseCase';
+import { GetAdminFaqsUseCase } from '@/domain/faq/usecases/getAdminFaqsUseCase';
+import { CreateFaqUseCase } from '@/domain/faq/usecases/createFaqUseCase';
+import { UpdateFaqUseCase } from '@/domain/faq/usecases/updateFaqUseCase';
+import { DeleteFaqUseCase } from '@/domain/faq/usecases/deleteFaqUseCase';
+
 // ---- Admin ----
 import { AdminRemoteDataSourceImpl } from '@/data/admin/datasources/adminRemoteDataSource';
 import { AdminRepositoryImpl } from '@/data/admin/repositories/adminRepositoryImpl';
@@ -179,6 +220,10 @@ const changePasswordUseCase = new ChangePasswordUseCase(authRepository);
 const signInWithGoogleUseCase = new SignInWithGoogleUseCase(authRepository);
 const sendPhoneOtpUseCase = new SendPhoneOtpUseCase(authRepository);
 const verifyPhoneOtpUseCase = new VerifyPhoneOtpUseCase(authRepository);
+const sendPasswordChangeEmailVerificationUseCase = new SendPasswordChangeEmailVerificationUseCase(authRepository);
+const sendEmailOtpUseCase = new SendEmailOtpUseCase(authRepository);
+const verifyEmailOtpUseCase = new VerifyEmailOtpUseCase(authRepository);
+const verifyCurrentPasswordUseCase = new VerifyCurrentPasswordUseCase(authRepository);
 
 // ---- Settings ----
 const settingsLocalDataSource = new SettingsLocalDataSourceImpl();
@@ -268,12 +313,29 @@ const getSuspendedBusinessesUseCase = new GetSuspendedBusinessesUseCase(business
 const incrementSearchCountUseCase = new IncrementSearchCountUseCase(businessRepository);
 const incrementGlobalSearchCountUseCase = new IncrementGlobalSearchCountUseCase(businessRepository);
 const reportBusinessUseCase = new ReportBusinessUseCase(businessRepository);
+const likeReviewUseCase = new LikeReviewUseCase(businessRepository);
+const unlikeReviewUseCase = new UnlikeReviewUseCase(businessRepository);
+const incrementReviewViewUseCase = new IncrementReviewViewUseCase(businessRepository);
+const getReviewCommentsUseCase = new GetReviewCommentsUseCase(businessRepository);
+const addReviewCommentUseCase = new AddReviewCommentUseCase(businessRepository);
+const addCommentReplyUseCase = new AddCommentReplyUseCase(businessRepository);
+const likeCommentUseCase = new LikeCommentUseCase(businessRepository);
+const unlikeCommentUseCase = new UnlikeCommentUseCase(businessRepository);
+const likeReplyUseCase = new LikeReplyUseCase(businessRepository);
+const unlikeReplyUseCase = new UnlikeReplyUseCase(businessRepository);
 
 // ---- Ticket ----
 const ticketRemoteDataSource = new TicketRemoteDataSourceImpl();
 const ticketRepository = new TicketRepositoryImpl(ticketRemoteDataSource);
 const getTicketsUseCase = new GetTicketsUseCase(ticketRepository);
 const updateTicketStatusUseCase = new UpdateTicketStatusUseCase(ticketRepository);
+
+// ---- Support Tickets ----
+const supportTicketRemoteDataSource = new SupportTicketRemoteDataSourceImpl();
+const supportTicketRepository = new SupportTicketRepositoryImpl(supportTicketRemoteDataSource);
+const submitSupportTicketUseCase = new SubmitSupportTicketUseCase(supportTicketRepository);
+const getUserSupportTicketsUseCase = new GetUserSupportTicketsUseCase(supportTicketRepository);
+const getAllSupportTicketsUseCase = new GetAllSupportTicketsUseCase(supportTicketRepository);
 
 // ---- Feed ----
 const feedRemoteDataSource = new FeedRemoteDataSourceImpl();
@@ -322,6 +384,17 @@ const createBannerUseCase = new CreateBannerUseCase(bannerRepository);
 const updateBannerUseCase = new UpdateBannerUseCase(bannerRepository);
 const deleteBannerUseCase = new DeleteBannerUseCase(bannerRepository);
 
+// ---- Verification ----
+const verificationRemoteDataSource = new VerificationRemoteDataSourceImpl();
+const verificationRepository = new VerificationRepositoryImpl(verificationRemoteDataSource);
+const submitVerificationUseCase = new SubmitVerificationUseCase(verificationRepository);
+const getUserVerificationUseCase = new GetUserVerificationUseCase(verificationRepository);
+const getPendingVerificationsUseCase = new GetPendingVerificationsUseCase(verificationRepository);
+const updateVerificationStatusUseCase = new UpdateVerificationStatusUseCase(verificationRepository);
+const sendVerificationOtpUseCase = new SendVerificationOtpUseCase(verificationRepository);
+const verifyVerificationOtpUseCase = new VerifyVerificationOtpUseCase(verificationRepository);
+const getVerificationsByStatusUseCase = new GetVerificationsByStatusUseCase(verificationRepository);
+
 // ---- Admin ----
 const adminRemoteDataSource = new AdminRemoteDataSourceImpl();
 const adminRepository = new AdminRepositoryImpl(adminRemoteDataSource);
@@ -334,6 +407,15 @@ const adminInfoRepository = new AdminInfoRepositoryImpl(adminInfoRemoteDataSourc
 const getAdminInfoUseCase = new GetAdminInfoUseCase(adminInfoRepository);
 const updateAdminInfoUseCase = new UpdateAdminInfoUseCase(adminInfoRepository);
 const uploadAdminPictureUseCase = new UploadAdminPictureUseCase(adminInfoRepository);
+
+// ---- FAQ ----
+const faqRemoteDataSource = new FaqRemoteDataSourceImpl();
+const faqRepository = new FaqRepositoryImpl(faqRemoteDataSource);
+const getFaqsUseCase = new GetFaqsUseCase(faqRepository);
+const getAdminFaqsUseCase = new GetAdminFaqsUseCase(faqRepository);
+const createFaqUseCase = new CreateFaqUseCase(faqRepository);
+const updateFaqUseCase = new UpdateFaqUseCase(faqRepository);
+const deleteFaqUseCase = new DeleteFaqUseCase(faqRepository);
 
 // ---- Notifications (use cases) ----
 const getNotificationsUseCase = new GetNotificationsUseCase(notificationRepository);
@@ -350,6 +432,10 @@ export const container = {
   signInWithGoogleUseCase,
   sendPhoneOtpUseCase,
   verifyPhoneOtpUseCase,
+  sendPasswordChangeEmailVerificationUseCase,
+  sendEmailOtpUseCase,
+  verifyEmailOtpUseCase,
+  verifyCurrentPasswordUseCase,
   // Settings use cases
   getSettingsUseCase,
   updateSettingsUseCase,
@@ -407,8 +493,23 @@ export const container = {
   incrementSearchCountUseCase,
   incrementGlobalSearchCountUseCase,
   reportBusinessUseCase,
+  // Review interaction use cases
+  likeReviewUseCase,
+  unlikeReviewUseCase,
+  incrementReviewViewUseCase,
+  getReviewCommentsUseCase,
+  addReviewCommentUseCase,
+  addCommentReplyUseCase,
+  likeCommentUseCase,
+  unlikeCommentUseCase,
+  likeReplyUseCase,
+  unlikeReplyUseCase,
   getTicketsUseCase,
   updateTicketStatusUseCase,
+  // Support Ticket use cases
+  submitSupportTicketUseCase,
+  getUserSupportTicketsUseCase,
+  getAllSupportTicketsUseCase,
   // Feed use cases
   getPostsUseCase,
   createPostUseCase,
@@ -444,4 +545,18 @@ export const container = {
   // Category default use cases
   getCategoryDefaultsUseCase,
   updateCategoryDefaultUseCase,
+  // Verification use cases
+  submitVerificationUseCase,
+  getUserVerificationUseCase,
+  getPendingVerificationsUseCase,
+  updateVerificationStatusUseCase,
+  sendVerificationOtpUseCase,
+  verifyVerificationOtpUseCase,
+  getVerificationsByStatusUseCase,
+  // FAQ use cases
+  getFaqsUseCase,
+  getAdminFaqsUseCase,
+  createFaqUseCase,
+  updateFaqUseCase,
+  deleteFaqUseCase,
 };

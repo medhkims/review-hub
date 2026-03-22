@@ -474,15 +474,63 @@ export class BusinessRepositoryImpl implements BusinessRepository {
     }
   }
 
-  async addCommentReply(commentId: string, reviewId: string, text: string): Promise<Either<Failure, ReplyEntity>> {
+  async addCommentReply(commentId: string, reviewId: string, text: string, replyingToName?: string): Promise<Either<Failure, ReplyEntity>> {
     const userId = auth.currentUser?.uid;
     if (!userId) return left(new ServerFailure('Not authenticated'));
     try {
-      const model = await this.remote.addCommentReply(commentId, reviewId, userId, text);
+      const model = await this.remote.addCommentReply(commentId, reviewId, userId, text, replyingToName);
       return right(CommentMapper.replyToEntity(model));
     } catch (error) {
       if (error instanceof ServerException) return left(new ServerFailure(error.message));
       return left(new ServerFailure('Failed to add reply'));
+    }
+  }
+
+  async likeComment(commentId: string): Promise<Either<Failure, void>> {
+    const userId = auth.currentUser?.uid;
+    if (!userId) return left(new ServerFailure('Not authenticated'));
+    try {
+      await this.remote.likeComment(commentId, userId);
+      return right(undefined);
+    } catch (error) {
+      if (error instanceof ServerException) return left(new ServerFailure(error.message));
+      return left(new ServerFailure('Failed to like comment'));
+    }
+  }
+
+  async unlikeComment(commentId: string): Promise<Either<Failure, void>> {
+    const userId = auth.currentUser?.uid;
+    if (!userId) return left(new ServerFailure('Not authenticated'));
+    try {
+      await this.remote.unlikeComment(commentId, userId);
+      return right(undefined);
+    } catch (error) {
+      if (error instanceof ServerException) return left(new ServerFailure(error.message));
+      return left(new ServerFailure('Failed to unlike comment'));
+    }
+  }
+
+  async likeReply(replyId: string): Promise<Either<Failure, void>> {
+    const userId = auth.currentUser?.uid;
+    if (!userId) return left(new ServerFailure('Not authenticated'));
+    try {
+      await this.remote.likeReply(replyId, userId);
+      return right(undefined);
+    } catch (error) {
+      if (error instanceof ServerException) return left(new ServerFailure(error.message));
+      return left(new ServerFailure('Failed to like reply'));
+    }
+  }
+
+  async unlikeReply(replyId: string): Promise<Either<Failure, void>> {
+    const userId = auth.currentUser?.uid;
+    if (!userId) return left(new ServerFailure('Not authenticated'));
+    try {
+      await this.remote.unlikeReply(replyId, userId);
+      return right(undefined);
+    } catch (error) {
+      if (error instanceof ServerException) return left(new ServerFailure(error.message));
+      return left(new ServerFailure('Failed to unlike reply'));
     }
   }
 }

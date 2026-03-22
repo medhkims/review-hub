@@ -5,6 +5,7 @@ import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useTranslation } from 'react-i18next';
 import { AppText } from '@/presentation/shared/components/ui/AppText';
 import { colors } from '@/core/theme/colors';
+import { useTheme } from '@/core/theme/useTheme';
 
 const MAX_PHOTOS = 5;
 
@@ -20,6 +21,7 @@ interface PhotoPickerProps {
 
 export const PhotoPicker = React.memo(({ photos, onChange }: PhotoPickerProps) => {
   const { t } = useTranslation();
+  const theme = useTheme();
 
   const handlePick = useCallback(async () => {
     const remaining = MAX_PHOTOS - photos.length;
@@ -70,7 +72,7 @@ export const PhotoPicker = React.memo(({ photos, onChange }: PhotoPickerProps) =
             <View key={photo.uri} style={{ position: 'relative' }}>
               <Image
                 source={{ uri: photo.uri }}
-                style={{ width: 90, height: 90, borderRadius: 10, backgroundColor: colors.cardDark }}
+                style={{ width: 90, height: 90, borderRadius: 10, backgroundColor: theme.card }}
                 accessibilityLabel={t('writeReview.photoThumbnail', { index: index + 1 })}
               />
               <Pressable
@@ -90,7 +92,7 @@ export const PhotoPicker = React.memo(({ photos, onChange }: PhotoPickerProps) =
                   justifyContent: 'center',
                 }}
               >
-                <MaterialCommunityIcons name="close" size={13} color={colors.textWhite} />
+                <MaterialCommunityIcons name="close" size={13} color="#FFFFFF" />
               </Pressable>
             </View>
           ))}
@@ -104,17 +106,17 @@ export const PhotoPicker = React.memo(({ photos, onChange }: PhotoPickerProps) =
           accessibilityRole="button"
           style={{
             borderWidth: 1.5,
-            borderColor: colors.borderDark,
+            borderColor: theme.border,
             borderStyle: 'dashed',
             borderRadius: 14,
             paddingVertical: 28,
             alignItems: 'center',
             justifyContent: 'center',
-            backgroundColor: `${colors.cardDark}80`,
+            backgroundColor: `${theme.card}80`,
           }}
         >
-          <MaterialCommunityIcons name="camera-plus-outline" size={32} color={colors.textSlate400} />
-          <AppText style={{ fontSize: 13, color: colors.textSlate400, marginTop: 8 }}>
+          <MaterialCommunityIcons name="camera-plus-outline" size={32} color={theme.textSecondary} />
+          <AppText style={{ fontSize: 13, color: theme.textSecondary, marginTop: 8 }}>
             {photos.length === 0
               ? t('writeReview.uploadPhotos')
               : t('writeReview.addMorePhotos', { remaining: MAX_PHOTOS - photos.length })}

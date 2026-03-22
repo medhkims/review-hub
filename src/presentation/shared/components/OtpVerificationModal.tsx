@@ -5,6 +5,7 @@ import { useTranslation } from 'react-i18next';
 import { AppText } from '@/presentation/shared/components/ui/AppText';
 import { AppButton } from '@/presentation/shared/components/ui/AppButton';
 import { colors } from '@/core/theme/colors';
+import { useTheme } from '@/core/theme/useTheme';
 
 const OTP_LENGTH = 6;
 
@@ -22,6 +23,7 @@ export const OtpVerificationModal: React.FC<OtpVerificationModalProps> = ({
   onResend,
 }) => {
   const { t } = useTranslation();
+  const theme = useTheme();
   const [digits, setDigits] = useState<string[]>(Array(OTP_LENGTH).fill(''));
   const refs = useRef<Array<TextInput | null>>(Array(OTP_LENGTH).fill(null));
 
@@ -55,14 +57,14 @@ export const OtpVerificationModal: React.FC<OtpVerificationModalProps> = ({
   return (
     <Modal visible={visible} transparent animationType="fade" onRequestClose={onClose}>
       <View style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.7)', justifyContent: 'center', padding: 24 }}>
-        <View style={{ backgroundColor: colors.cardDark, borderRadius: 20, padding: 28, borderWidth: 1, borderColor: 'rgba(255,255,255,0.05)' }}>
+        <View style={{ backgroundColor: theme.card, borderRadius: 20, padding: 28, borderWidth: 1, borderColor: theme.border }}>
           <Pressable
             onPress={onClose}
             accessibilityLabel={t('verification.close')}
             accessibilityRole="button"
             style={{ position: 'absolute', top: 16, right: 16, zIndex: 1 }}
           >
-            <MaterialCommunityIcons name="close" size={24} color={colors.textSlate400} />
+            <MaterialCommunityIcons name="close" size={24} color={theme.textMuted} />
           </Pressable>
 
           <View style={{ alignItems: 'center', marginBottom: 16 }}>
@@ -71,10 +73,10 @@ export const OtpVerificationModal: React.FC<OtpVerificationModalProps> = ({
             </View>
           </View>
 
-          <AppText style={{ fontSize: 20, fontWeight: '700', color: colors.textWhite, textAlign: 'center', marginBottom: 8 }}>
+          <AppText style={{ fontSize: 20, fontWeight: '700', color: theme.text, textAlign: 'center', marginBottom: 8 }}>
             {t('verification.otpTitle')}
           </AppText>
-          <AppText style={{ fontSize: 14, color: colors.textSlate400, textAlign: 'center', marginBottom: 24 }}>
+          <AppText style={{ fontSize: 14, color: theme.textMuted, textAlign: 'center', marginBottom: 24 }}>
             {t('verification.otpSubtitle')}
           </AppText>
 
@@ -94,10 +96,10 @@ export const OtpVerificationModal: React.FC<OtpVerificationModalProps> = ({
                   width: 48,
                   height: 56,
                   borderRadius: 12,
-                  backgroundColor: colors.cardDark,
+                  backgroundColor: theme.card,
                   borderWidth: 1,
-                  borderColor: i === digits.findIndex((d) => d === '') ? colors.neonPurple : colors.borderDark,
-                  color: colors.textWhite,
+                  borderColor: i === digits.findIndex((d) => d === '') ? colors.neonPurple : theme.border,
+                  color: theme.text,
                   fontSize: 20,
                   fontWeight: '700',
                   textAlign: 'center',
@@ -117,7 +119,7 @@ export const OtpVerificationModal: React.FC<OtpVerificationModalProps> = ({
           />
 
           <View style={{ flexDirection: 'row', justifyContent: 'center', marginTop: 20 }}>
-            <AppText style={{ fontSize: 14, color: colors.textSlate400 }}>
+            <AppText style={{ fontSize: 14, color: theme.textMuted }}>
               {t('verification.didntReceive')}{' '}
             </AppText>
             <Pressable onPress={onResend} accessibilityLabel={t('verification.resend')} accessibilityRole="button">

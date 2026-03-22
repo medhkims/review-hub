@@ -9,6 +9,7 @@ import { LoadingIndicator } from '@/presentation/shared/components/ui/LoadingInd
 import { useAnalyticsScreen } from '@/presentation/shared/hooks/useAnalyticsScreen';
 import { AnalyticsScreens } from '@/core/analytics/analyticsKeys';
 import { colors } from '@/core/theme/colors';
+import { useTheme } from '@/core/theme/useTheme';
 import { useHomeStore } from '../store/homeStore';
 import { useHome } from '../hooks/useHome';
 import { CategoryEntity } from '@/domain/business/entities/categoryEntity';
@@ -32,6 +33,7 @@ interface CategoryRowProps {
 }
 
 const CategoryRow = React.memo(({ item, isSelected, onToggle }: CategoryRowProps) => {
+  const theme = useTheme();
   const handlePress = useCallback(() => {
     onToggle(item.id);
   }, [item.id, onToggle]);
@@ -42,7 +44,7 @@ const CategoryRow = React.memo(({ item, isSelected, onToggle }: CategoryRowProps
       style={({ pressed }) => ({
         flexDirection: 'row',
         alignItems: 'center',
-        backgroundColor: pressed ? 'rgba(168,85,247,0.08)' : colors.cardDark,
+        backgroundColor: pressed ? 'rgba(168,85,247,0.08)' : theme.card,
         borderRadius: 16,
         marginBottom: 10,
         overflow: 'hidden',
@@ -79,7 +81,7 @@ const CategoryRow = React.memo(({ item, isSelected, onToggle }: CategoryRowProps
         <MaterialCommunityIcons
           name={item.icon}
           size={22}
-          color={isSelected ? colors.neonPurple : colors.textSlate400}
+          color={isSelected ? colors.neonPurple : theme.textSecondary}
         />
       </View>
 
@@ -90,7 +92,7 @@ const CategoryRow = React.memo(({ item, isSelected, onToggle }: CategoryRowProps
           marginLeft: 14,
           fontSize: 16,
           fontWeight: '600',
-          color: isSelected ? colors.textWhite : colors.textSlate400,
+          color: isSelected ? theme.text : theme.textSecondary,
         }}
       >
         {item.name}
@@ -118,7 +120,7 @@ const CategoryRow = React.memo(({ item, isSelected, onToggle }: CategoryRowProps
               height: 26,
               borderRadius: 13,
               borderWidth: 2,
-              borderColor: colors.borderDark,
+              borderColor: theme.border,
               backgroundColor: 'transparent',
             }}
           />
@@ -135,6 +137,7 @@ CategoryRow.displayName = 'CategoryRow';
 export default function CategorySelectionScreen() {
   useAnalyticsScreen(AnalyticsScreens.CATEGORY_SELECTION);
   const { t } = useTranslation();
+  const theme = useTheme();
   const router = useRouter();
   const { categories: storeCategories, isCategoryLoading, selectedCategoryId } = useHomeStore();
   const { selectCategory } = useHome();
@@ -244,7 +247,7 @@ export default function CategorySelectionScreen() {
             borderRadius: 20,
             backgroundColor: pressed
               ? 'rgba(255,255,255,0.1)'
-              : 'rgba(30,41,59,0.5)',
+              : theme.card + '80',
             alignItems: 'center',
             justifyContent: 'center',
           })}
@@ -254,14 +257,14 @@ export default function CategorySelectionScreen() {
           <MaterialCommunityIcons
             name="chevron-left"
             size={28}
-            color={colors.white}
+            color={theme.text}
           />
         </Pressable>
         <AppText
           style={{
             fontSize: 20,
             fontWeight: '700',
-            color: colors.white,
+            color: theme.text,
             flex: 1,
             textAlign: 'center',
             marginRight: 40,
@@ -278,9 +281,9 @@ export default function CategorySelectionScreen() {
           style={{
             flexDirection: 'row',
             alignItems: 'center',
-            backgroundColor: colors.cardDark,
+            backgroundColor: theme.card,
             borderWidth: 1,
-            borderColor: colors.borderDark,
+            borderColor: theme.border,
             borderRadius: 16,
             paddingHorizontal: 16,
             paddingVertical: 12,
@@ -293,7 +296,7 @@ export default function CategorySelectionScreen() {
             style={{ marginRight: 12 }}
           />
           <TextInput
-            style={{ flex: 1, color: colors.textWhite, fontSize: 16, padding: 0 }}
+            style={{ flex: 1, color: theme.text, fontSize: 16, padding: 0 }}
             value={searchQuery}
             onChangeText={setSearchQuery}
             placeholder={t('home.categorySelection.searchPlaceholder')}
@@ -321,8 +324,8 @@ export default function CategorySelectionScreen() {
           paddingHorizontal: 24,
           paddingVertical: 16,
           borderTopWidth: 1,
-          borderTopColor: colors.borderDark,
-          backgroundColor: colors.midnight,
+          borderTopColor: theme.border,
+          backgroundColor: theme.background,
           gap: 12,
         }}
       >
@@ -334,7 +337,7 @@ export default function CategorySelectionScreen() {
             paddingVertical: 14,
             borderRadius: 14,
             borderWidth: 1.5,
-            borderColor: colors.borderDark,
+            borderColor: theme.border,
             backgroundColor: pressed ? 'rgba(255,255,255,0.05)' : 'transparent',
             alignItems: 'center',
             justifyContent: 'center',
@@ -346,7 +349,7 @@ export default function CategorySelectionScreen() {
             style={{
               fontSize: 16,
               fontWeight: '600',
-              color: colors.textSlate200,
+              color: theme.text,
             }}
           >
             {t('home.categorySelection.reset')}

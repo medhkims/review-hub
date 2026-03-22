@@ -12,5 +12,7 @@ export interface ProfileModel {
   following_count: number;
   role: string;
   gender: string | null;
+  date_of_birth: Timestamp | null;
   updated_at: Timestamp;
+  notifications_enabled?: boolean;
 }

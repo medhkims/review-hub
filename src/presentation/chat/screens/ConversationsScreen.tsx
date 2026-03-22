@@ -17,6 +17,7 @@ import { useConversations } from '../hooks/useConversations';
 import { useAdminConversations } from '../hooks/useAdminConversations';
 import { ConversationEntity, ConversationType } from '@/domain/chat/entities/conversationEntity';
 import { colors } from '@/core/theme/colors';
+import { useTheme } from '@/core/theme/useTheme';
 import { useRoleStore } from '@/presentation/auth/store/roleStore';
 
 // ---- Helpers ----------------------------------------------------------------
@@ -45,6 +46,7 @@ interface ConversationCardProps {
 
 const ConversationCard = React.memo(
   ({ conversation, onPress }: ConversationCardProps) => {
+    const theme = useTheme();
     const hasUnread = conversation.unreadCount > 0;
 
     return (
@@ -56,9 +58,9 @@ const ConversationCard = React.memo(
       >
         <View
           className="w-12 h-12 rounded-full items-center justify-center shrink-0"
-          style={{ backgroundColor: colors.cardDark, borderWidth: 1, borderColor: colors.borderDark }}
+          style={{ backgroundColor: theme.card, borderWidth: 1, borderColor: theme.border }}
         >
-          <MaterialCommunityIcons name="account" size={24} color={colors.textSlate400} />
+          <MaterialCommunityIcons name="account" size={24} color={theme.textSecondary} />
         </View>
 
         <View className="flex-1 ml-3 min-w-0">
@@ -66,7 +68,7 @@ const ConversationCard = React.memo(
             <AppText
               className="font-semibold text-sm flex-1 mr-2"
               style={{
-                color: hasUnread ? colors.textWhite : colors.textSlate200,
+                color: hasUnread ? theme.text : theme.textSecondary,
                 fontSize: 15,
                 fontWeight: hasUnread ? '700' : '600',
               }}
@@ -78,7 +80,7 @@ const ConversationCard = React.memo(
             </AppText>
             <AppText
               className="text-xs shrink-0"
-              style={{ color: hasUnread ? colors.neonPurple : colors.textSlate500, fontSize: 12 }}
+              style={{ color: hasUnread ? colors.neonPurple : theme.textMuted, fontSize: 12 }}
             >
               {formatTimestamp(conversation.lastMessageAt)}
             </AppText>
@@ -88,7 +90,7 @@ const ConversationCard = React.memo(
             <AppText
               className="text-sm flex-1 mr-2"
               style={{
-                color: hasUnread ? colors.textSlate200 : colors.textSlate500,
+                color: hasUnread ? theme.textSecondary : theme.textMuted,
                 fontSize: 13,
                 fontWeight: hasUnread ? '500' : '400',
               }}
@@ -108,7 +110,7 @@ const ConversationCard = React.memo(
                 }}
               >
                 <AppText
-                  style={{ fontSize: 11, color: colors.textWhite, fontWeight: '700' }}
+                  style={{ fontSize: 11, color: '#FFFFFF', fontWeight: '700' }}
                 >
                   {conversation.unreadCount > 99 ? '99+' : conversation.unreadCount}
                 </AppText>
@@ -125,23 +127,26 @@ ConversationCard.displayName = 'ConversationCard';
 
 // ---- Empty State ------------------------------------------------------------
 
-const EmptyState = () => (
+const EmptyState = () => {
+  const theme = useTheme();
+  return (
   <View className="flex-1 items-center justify-center px-8 py-16">
-    <MaterialCommunityIcons name="chat-outline" size={64} color={colors.borderDark} />
+    <MaterialCommunityIcons name="chat-outline" size={64} color={theme.border} />
     <AppText
       className="font-bold text-lg mt-4 text-center"
-      style={{ color: colors.textWhite, fontSize: 18, fontWeight: '700' }}
+      style={{ color: theme.text, fontSize: 18, fontWeight: '700' }}
     >
       No conversations yet
     </AppText>
     <AppText
       className="text-sm mt-2 text-center leading-relaxed"
-      style={{ color: colors.textSlate400, fontSize: 14 }}
+      style={{ color: theme.textSecondary, fontSize: 14 }}
     >
       Start a conversation to connect with others
     </AppText>
   </View>
-);
+  );
+};
 
 // ---- Admin Tab Switcher -----------------------------------------------------
 
@@ -150,7 +155,9 @@ interface AdminTabsProps {
   onChange: (tab: ConversationType) => void;
 }
 
-const AdminTabs = ({ active, onChange }: AdminTabsProps) => (
+const AdminTabs = ({ active, onChange }: AdminTabsProps) => {
+  const theme = useTheme();
+  return (
   <View
     style={{
       flexDirection: 'row',
@@ -158,7 +165,7 @@ const AdminTabs = ({ active, onChange }: AdminTabsProps) => (
       marginBottom: 12,
       borderRadius: 10,
       overflow: 'hidden',
-      backgroundColor: colors.cardDark,
+      backgroundColor: theme.card,
     }}
   >
     <Pressable
@@ -177,7 +184,7 @@ const AdminTabs = ({ active, onChange }: AdminTabsProps) => (
         style={{
           fontSize: 14,
           fontWeight: '600',
-          color: active === 'business' ? colors.textWhite : colors.textSlate400,
+          color: active === 'business' ? '#FFFFFF' : theme.textSecondary,
         }}
       >
         Business
@@ -200,14 +207,15 @@ const AdminTabs = ({ active, onChange }: AdminTabsProps) => (
         style={{
           fontSize: 14,
           fontWeight: '600',
-          color: active === 'moderator' ? colors.textWhite : colors.textSlate400,
+          color: active === 'moderator' ? '#FFFFFF' : theme.textSecondary,
         }}
       >
         Moderator
       </AppText>
     </Pressable>
   </View>
-);
+  );
+};
 
 // ---- Admin Conversation List (tabbed) ---------------------------------------
 
@@ -217,6 +225,7 @@ interface AdminConversationListProps {
 }
 
 const AdminConversationList = ({ type, onPress }: AdminConversationListProps) => {
+  const theme = useTheme();
   const { conversations, isLoading, error, refresh } = useAdminConversations(type);
 
   const renderItem = useCallback(
@@ -233,13 +242,13 @@ const AdminConversationList = ({ type, onPress }: AdminConversationListProps) =>
       <View
         style={{
           height: 1,
-          backgroundColor: colors.borderDark,
+          backgroundColor: theme.border,
           marginLeft: 72,
           opacity: 0.3,
         }}
       />
     ),
-    [],
+    [theme.border],
   );
 
   if (isLoading && conversations.length === 0) return <LoadingIndicator />;
@@ -272,6 +281,7 @@ const AdminConversationList = ({ type, onPress }: AdminConversationListProps) =>
 
 export default function ConversationsScreen() {
   const router = useRouter();
+  const theme = useTheme();
   const { conversations, isLoading, error, refresh } = useConversations();
   const role = useRoleStore((s) => s.role);
   const isAdmin = role === 'admin';
@@ -298,13 +308,13 @@ export default function ConversationsScreen() {
       <View
         style={{
           height: 1,
-          backgroundColor: colors.borderDark,
+          backgroundColor: theme.border,
           marginLeft: 72,
           opacity: 0.3,
         }}
       />
     ),
-    [],
+    [theme.border],
   );
 
   return (
@@ -324,7 +334,7 @@ export default function ConversationsScreen() {
         <AppText
           style={{
             flex: 1,
-            color: colors.textWhite,
+            color: theme.text,
             fontSize: 17,
             fontWeight: '700',
             textAlign: isAdmin ? 'left' : 'center',

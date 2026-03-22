@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { TextInput, TextInputProps, View, Pressable } from 'react-native';
 import { AppText } from './AppText';
 import { colors } from '@/core/theme/colors';
+import { useTheme } from '@/core/theme/useTheme';
 
 interface AppInputProps extends TextInputProps {
   label?: string;
@@ -19,6 +20,7 @@ export const AppInput: React.FC<AppInputProps> = ({
   className = '',
   ...props
 }) => {
+  const theme = useTheme();
   const [isPasswordVisible, setIsPasswordVisible] = useState(false);
   const isPassword = secureTextEntry !== undefined;
   const isPill = variant === 'pill';
@@ -29,7 +31,7 @@ export const AppInput: React.FC<AppInputProps> = ({
         <AppText
           className="text-slate-400 text-sm mb-1 font-medium"
           style={{
-            color: colors.textSlate400,
+            color: theme.textSecondary,
             fontSize: 14,
             marginBottom: 4,
             fontWeight: '500',
@@ -46,9 +48,9 @@ export const AppInput: React.FC<AppInputProps> = ({
         style={{
           flexDirection: 'row',
           alignItems: 'center',
-          backgroundColor: colors.cardDark,
+          backgroundColor: theme.card,
           borderWidth: 1,
-          borderColor: error ? colors.error : colors.borderDark,
+          borderColor: error ? colors.error : theme.border,
           borderRadius: isPill ? 9999 : 12,
           paddingHorizontal: isPill ? 24 : 16,
           height: isPill ? 56 : undefined,
@@ -58,11 +60,11 @@ export const AppInput: React.FC<AppInputProps> = ({
           className={`flex-1 text-white text-base ${className}`}
           style={{
             flex: 1,
-            color: colors.textWhite,
+            color: theme.text,
             paddingVertical: isPill ? 0 : 12,
             fontSize: 16,
           }}
-          placeholderTextColor={colors.textSlate500}
+          placeholderTextColor={theme.textMuted}
           secureTextEntry={isPassword && !isPasswordVisible}
           accessibilityLabel={label}
           {...props}
@@ -76,7 +78,7 @@ export const AppInput: React.FC<AppInputProps> = ({
           >
             <AppText
               className="text-slate-400 text-sm"
-              style={{ color: colors.textSlate400, fontSize: 14 }}
+              style={{ color: theme.textSecondary, fontSize: 14 }}
             >
               {isPasswordVisible ? 'Hide' : 'Show'}
             </AppText>

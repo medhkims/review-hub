@@ -14,6 +14,9 @@
     "back": "رجوع",
     "done": "تم",
     "close": "إغلاق",
+    "permissionDenied": "تم رفض الإذن. يرجى السماح بالوصول من إعدادات جهازك.",
+    "goHome": "الذهاب إلى الرئيسية",
+    "goBackToHome": "العودة إلى الرئيسية",
     "months": {
       "jan": "يناير", "feb": "فبراير", "mar": "مارس", "apr": "أبريل",
       "may": "مايو", "jun": "يونيو", "jul": "يوليو", "aug": "أغسطس",
@@ -353,9 +356,12 @@
     "verifyAccount": "التحقق من الحساب",
     "resetPassword": "إعادة تعيين كلمة المرور",
     "notifications": "الإشعارات",
+    "notificationsHint": "استقبل تنبيهات للنشاط الجديد",
     "darkMode": "الوضع الداكن",
+    "darkModeHint": "التبديل بين المظهر الفاتح والداكن",
     "language": "اللغة",
     "support": "الدعم",
+    "contactSupport": "تواصل مع الدعم",
     "helpCenter": "مركز المساعدة",
     "privacyPolicy": "سياسة الخصوصية",
     "logout": "تسجيل الخروج",
@@ -364,7 +370,29 @@
     "manageCategories": "إدارة التصنيفات",
     "pendingBusinesses": "الأعمال المعلقة",
     "adminDashboard": "لوحة الإدارة",
-    "adminInfo": "معلومات الإدارة"
+    "adminInfo": "معلومات الإدارة",
+    "manageFaq": "إدارة الأسئلة الشائعة"
+  },
+  "helpCenter": {
+    "title": "مركز المساعدة",
+    "subtitle": "اعثر على إجابات للأسئلة الأكثر شيوعاً أدناه.",
+    "empty": "لا توجد أسئلة متاحة بعد.",
+    "admin": {
+      "title": "إدارة الأسئلة الشائعة",
+      "addFaq": "إضافة سؤال",
+      "editFaq": "تعديل السؤال",
+      "empty": "لا توجد أسئلة شائعة بعد. اضغط الزر لإضافة واحدة.",
+      "deleteTitle": "حذف السؤال",
+      "deleteConfirm": "هل تريد حذف \"{{question}}\"؟",
+      "questionLabel": "السؤال",
+      "questionPlaceholder": "أدخل السؤال...",
+      "answerLabel": "الإجابة",
+      "answerPlaceholder": "أدخل الإجابة...",
+      "orderLabel": "ترتيب العرض",
+      "errorQuestion": "السؤال مطلوب.",
+      "errorAnswer": "الإجابة مطلوبة.",
+      "errorOrder": "يجب أن يكون الترتيب رقماً صحيحاً."
+    }
   },
   "adminInfo": {
     "title": "معلومات الإدارة",
@@ -452,7 +480,26 @@
   "support": {
     "helpCenter": "مركز المساعدة",
     "privacyPolicy": "سياسة الخصوصية",
-    "logout": "تسجيل الخروج"
+    "logout": "تسجيل الخروج",
+    "title": "الدعم",
+    "newTicket": "تذكرة جديدة",
+    "myTickets": "تذاكري",
+    "infoBanner": "صف مشكلتك وسيتواصل معك فريق الدعم خلال 2-3 أيام.",
+    "subjectLabel": "الموضوع",
+    "subjectPlaceholder": "وصف مختصر لمشكلتك",
+    "messageLabel": "الرسالة",
+    "messagePlaceholder": "يرجى وصف مشكلتك بالتفصيل (10 أحرف على الأقل)...",
+    "submit": "إرسال التذكرة",
+    "noTickets": "لم تقم بإرسال أي تذاكر بعد.",
+    "submitFirst": "أرسل أول تذكرة",
+    "category": {
+      "label": "الفئة",
+      "account": "الحساب",
+      "technical": "تقني",
+      "billing": "الفواتير",
+      "general": "عام",
+      "other": "أخرى"
+    }
   },
   "personalInfo": {
     "title": "المعلومات الشخصية",
@@ -465,6 +512,8 @@
     "gender": "الجنس",
     "genderMale": "ذكر",
     "genderFemale": "أنثى",
+    "birthday": "تاريخ الميلاد",
+    "birthdayPlaceholder": "اختر تاريخ ميلادك",
     "changeEmail": "تغيير البريد الإلكتروني",
     "saveChanges": "حفظ التغييرات",
     "success": "نجح",
@@ -516,7 +565,17 @@
     "phoneHelper": "يرجى التحقق من رقم هاتفك قبل الإرسال.",
     "uploadCin": "تحميل بطاقة الهوية",
     "selectFile": "اختر ملف",
-    "submit": "إرسال"
+    "changeFile": "تغيير الملف",
+    "idCardHint": "JPG أو PNG، واضح ومقروء",
+    "errorFullName": "يرجى إدخال اسمك الكامل كما في بطاقة هويتك.",
+    "errorPhone": "يرجى إدخال رقم هاتفك.",
+    "errorIdCard": "يرجى تحميل صورة بطاقة هويتك.",
+    "submit": "إرسال",
+    "alreadyVerifiedTitle": "الحساب موثق",
+    "alreadyVerifiedSubtitle": "تم توثيق حسابك من قِبل فريقنا. يمكنك الآن الوصول إلى جميع الميزات.",
+    "rejectedTitle": "تم رفض الطلب",
+    "rejectedSubtitle": "تم رفض طلب التحقق الخاص بك. يرجى المحاولة مرة أخرى بمعلومات صحيحة.",
+    "makeNewSubmit": "إرسال طلب جديد"
   },
   "changePassword": {
     "title": "تغيير كلمة المرور",
@@ -533,7 +592,29 @@
     "errorNewRequired": "يرجى إدخال كلمة مرور جديدة.",
     "errorMinLength": "يجب أن تتكون كلمة المرور من 6 أحرف على الأقل.",
     "errorMismatch": "كلمتا المرور غير متطابقتين.",
-    "errorSamePassword": "يجب أن تكون كلمة المرور الجديدة مختلفة عن كلمة المرور الحالية."
+    "errorSamePassword": "يجب أن تكون كلمة المرور الجديدة مختلفة عن كلمة المرور الحالية.",
+    "confirmModal": {
+      "title": "تأكيد هويتك",
+      "description": "اختر طريقة تأكيد تغيير كلمة المرور.",
+      "viaEmail": "عبر البريد الإلكتروني",
+      "viaPhone": "عبر الهاتف",
+      "noEmail": "لم يتم إضافة بريد إلكتروني",
+      "noPhone": "لم يتم إضافة رقم هاتف"
+    },
+    "emailStep": {
+      "title": "تحقق من بريدك الإلكتروني",
+      "description": "أرسلنا رمزاً مكوناً من 6 أرقام إلى {{email}}. أدخله أدناه للتأكيد.",
+      "verifyButton": "تحقق وغير كلمة المرور",
+      "invalidCode": "يرجى إدخال الرمز المكون من 6 أرقام كاملاً.",
+      "resend": "إعادة إرسال الرمز"
+    },
+    "phoneStep": {
+      "title": "أدخل رمز التحقق",
+      "description": "أرسلنا رمزاً مكوناً من 6 أرقام إلى {{phone}}.",
+      "verifyButton": "تحقق وغير كلمة المرور",
+      "invalidCode": "يرجى إدخال الرمز المكون من 6 أرقام كاملاً.",
+      "resend": "إعادة إرسال الرمز"
+    }
   },
   "confirmPasswordEmail": {
     "heading": "تأكيد بريدك الإلكتروني",
@@ -555,6 +636,24 @@
     "tickets": {
       "title": "التذاكر",
       "empty": "لا توجد تذاكر"
+    },
+    "verifications": {
+      "title": "طلبات التحقق",
+      "empty": "لا توجد طلبات تحقق معلقة",
+      "emptyApproved": "لا توجد طلبات تحقق مقبولة",
+      "emptyRejected": "لا توجد طلبات تحقق مرفوضة",
+      "pending": "معلق",
+      "approved": "مقبول",
+      "rejected": "مرفوض",
+      "approve": "قبول",
+      "reject": "رفض",
+      "rejectTitle": "رفض طلب التحقق",
+      "rejectSubtitle": "يرجى تقديم سبب لرفض هذا الطلب.",
+      "rejectReasonPlaceholder": "سبب الرفض (اختياري)",
+      "viewIdCard": "عرض بطاقة الهوية",
+      "idCard": "بطاقة الهوية",
+      "reviewedAt": "تاريخ المراجعة",
+      "rejectionReason": "سبب الرفض"
     },
     "banners": {
       "title": "إدارة البانرات",
@@ -884,6 +983,25 @@
     "reportSuccessMessage": "شكراً لك على بلاغك. سيقوم فريقنا بمراجعته قريباً.",
     "reportAlreadySubmitted": "لقد أبلغت عن هذا النشاط التجاري مسبقاً."
   },
+  "review": {
+    "reviewDetail": "التقييم",
+    "comments": "التعليقات",
+    "noComments": "لا توجد تعليقات بعد — كن أول من يعلق!",
+    "writeComment": "اكتب تعليقاً...",
+    "cannotCommentOwnReview": "لا يمكنك التعليق على مراجعتك الخاصة",
+    "writeReply": "اكتب رداً...",
+    "replyingTo": "رداً على",
+    "like": "إعجاب",
+    "unlike": "إلغاء الإعجاب",
+    "likeComment": "أعجبني التعليق",
+    "unlikeComment": "إلغاء الإعجاب بالتعليق",
+    "likeReply": "أعجبني الرد",
+    "unlikeReply": "إلغاء الإعجاب بالرد",
+    "replyToReply": "رد",
+    "seeAllAnswers_one": "عرض {{count}} رد",
+    "seeAllAnswers_other": "عرض جميع الردود ({{count}})",
+    "hideAnswers": "إخفاء الردود"
+  },
   "permissions": {
     "denied": "تم رفض الوصول",
     "deniedMessage": "ليس لديك إذن لعرض هذه الصفحة."
@@ -942,17 +1060,20 @@
   },
   "sortBy": {
     "title": "ترتيب حسب",
-    "recommended": "موصى به",
-    "highestRated": "الأعلى تقييماً",
-    "mostReviewed": "الأكثر مراجعة",
-    "nearest": "الأقرب إلي",
-    "apply": "تطبيق الفلاتر"
+    "topRating": "الأعلى تقييماً",
+    "topResult": "الأفضل نتيجةً",
+    "newBusinesses": "أعمال جديدة",
+    "apply": "تطبيق"
   },
   "filterBy": {
     "title": "تصفية حسب",
     "reset": "إعادة تعيين",
     "location": "الموقع",
+    "allCities": "جميع المدن",
+    "citiesSelected": "{{count}} مدن مختارة",
     "categories": "الفئات",
+    "allCategories": "جميع الفئات",
+    "categoriesSelected": "{{count}} فئات مختارة",
     "minRating": "الحد الأدنى للتقييم",
     "apply": "تطبيق الفلاتر"
   },
@@ -1000,7 +1121,11 @@
     "reviews": "مراجعات",
     "km": "كم",
     "emptyCategory": "لا توجد أعمال في {{category}} حتى الآن",
-    "emptySubCategory": "لا توجد أعمال {{subCategory}} في {{category}} حتى الآن"
+    "emptySubCategory": "لا توجد أعمال {{subCategory}} في {{category}} حتى الآن",
+    "add": "إضافة",
+    "seeAll": "عرض الكل",
+    "selectTitle": "اختر الفئات الفرعية",
+    "selectAtLeastOne": "يرجى اختيار فئة فرعية واحدة على الأقل"
   },
   "categories": {
     "restaurant": "مطعم",

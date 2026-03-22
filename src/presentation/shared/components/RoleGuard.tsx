@@ -3,7 +3,7 @@ import { View } from 'react-native';
 import { useRoleStore } from '@/presentation/auth/store/roleStore';
 import { UserRole } from '@/domain/profile/entities/userRole';
 import { AppText } from './ui/AppText';
-import { colors } from '@/core/theme';
+import { useTheme } from '@/core/theme/useTheme';
 
 interface RoleGuardProps {
   allowedRoles: UserRole[];
@@ -13,13 +13,14 @@ interface RoleGuardProps {
 
 export const RoleGuard: React.FC<RoleGuardProps> = ({ allowedRoles, children, fallback }) => {
   const { role } = useRoleStore();
+  const theme = useTheme();
 
   if (!role || !allowedRoles.includes(role)) {
     if (fallback) return <>{fallback}</>;
     return (
       <View
         className="flex-1 items-center justify-center px-6"
-        style={{ backgroundColor: colors.midnight }}
+        style={{ backgroundColor: theme.background }}
         accessibilityRole="alert"
       >
         <AppText className="text-lg font-semibold text-white mb-2">

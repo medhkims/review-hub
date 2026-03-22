@@ -11,6 +11,7 @@ import { useTranslation } from 'react-i18next';
 import { AppText } from '@/presentation/shared/components/ui/AppText';
 import { AppButton } from '@/presentation/shared/components/ui/AppButton';
 import { colors } from '@/core/theme/colors';
+import { useTheme } from '@/core/theme/useTheme';
 
 // ─── Shared data ─────────────────────────────────────────────────────────────
 
@@ -33,6 +34,7 @@ interface ColumnPickerProps {
 }
 
 const ColumnPicker: React.FC<ColumnPickerProps> = ({ items, selectedIndex, onSelect }) => {
+  const theme = useTheme();
   const scrollRef = useRef<ScrollView>(null);
 
   const handleScroll = useCallback(
@@ -75,7 +77,7 @@ const ColumnPicker: React.FC<ColumnPickerProps> = ({ items, selectedIndex, onSel
             <AppText style={{
               fontSize: 16,
               fontWeight: index === selectedIndex ? '700' : '400',
-              color: index === selectedIndex ? colors.textWhite : colors.textSlate500,
+              color: index === selectedIndex ? theme.text : theme.textMuted,
             }}>
               {item}
             </AppText>
@@ -96,6 +98,7 @@ interface WebDropdownProps {
 }
 
 const WebDropdown: React.FC<WebDropdownProps> = ({ label, items, selectedIndex, onSelect }) => {
+  const theme = useTheme();
   const [open, setOpen] = useState(false);
 
   return (
@@ -103,7 +106,7 @@ const WebDropdown: React.FC<WebDropdownProps> = ({ label, items, selectedIndex, 
       <AppText style={{
         textAlign: 'center',
         fontSize: 11,
-        color: colors.textSlate500,
+        color: theme.textMuted,
         fontWeight: '600',
         textTransform: 'uppercase',
         letterSpacing: 1,
@@ -125,17 +128,17 @@ const WebDropdown: React.FC<WebDropdownProps> = ({ label, items, selectedIndex, 
           paddingVertical: 10,
           borderRadius: 10,
           borderWidth: 1,
-          borderColor: open ? colors.neonPurple : colors.borderDark,
-          backgroundColor: open ? 'rgba(168,85,247,0.1)' : colors.cardDark,
+          borderColor: open ? colors.neonPurple : theme.border,
+          backgroundColor: open ? 'rgba(168,85,247,0.1)' : theme.card,
         }}
       >
-        <AppText style={{ fontSize: 15, fontWeight: '600', color: colors.textWhite }}>
+        <AppText style={{ fontSize: 15, fontWeight: '600', color: theme.text }}>
           {items[selectedIndex]}
         </AppText>
         <MaterialCommunityIcons
           name={open ? 'chevron-up' : 'chevron-down'}
           size={16}
-          color={colors.textSlate400}
+          color={theme.textSecondary}
         />
       </Pressable>
 
@@ -144,8 +147,8 @@ const WebDropdown: React.FC<WebDropdownProps> = ({ label, items, selectedIndex, 
         <View style={{
           borderRadius: 10,
           borderWidth: 1,
-          borderColor: colors.borderDark,
-          backgroundColor: colors.cardDark,
+          borderColor: theme.border,
+          backgroundColor: theme.card,
           marginTop: 4,
           maxHeight: 200,
           overflow: 'hidden',
@@ -172,7 +175,7 @@ const WebDropdown: React.FC<WebDropdownProps> = ({ label, items, selectedIndex, 
                   <AppText style={{
                     fontSize: 14,
                     fontWeight: isSelected ? '600' : '400',
-                    color: isSelected ? colors.neonPurple : colors.textSlate200,
+                    color: isSelected ? colors.neonPurple : theme.text,
                   }}>
                     {item}
                   </AppText>
@@ -198,6 +201,7 @@ interface BirthdayPickerProps {
 
 export const BirthdayPicker: React.FC<BirthdayPickerProps> = ({ value, onChange }) => {
   const { t } = useTranslation();
+  const theme = useTheme();
   const [open, setOpen] = useState(false);
 
   const now = value ?? new Date(2000, 0, 1);
@@ -234,8 +238,8 @@ export const BirthdayPicker: React.FC<BirthdayPickerProps> = ({ value, onChange 
         height: 52,
         borderRadius: 14,
         borderWidth: 1,
-        borderColor: open ? colors.neonPurple : colors.borderDark,
-        backgroundColor: colors.cardDark,
+        borderColor: open ? colors.neonPurple : theme.border,
+        backgroundColor: theme.card,
         paddingHorizontal: 16,
         gap: 10,
         marginBottom: 16,
@@ -244,15 +248,15 @@ export const BirthdayPicker: React.FC<BirthdayPickerProps> = ({ value, onChange 
       <MaterialCommunityIcons
         name="cake-variant-outline"
         size={18}
-        color={value ? colors.neonPurple : colors.textSlate500}
+        color={value ? colors.neonPurple : theme.textMuted}
       />
-      <AppText style={{ flex: 1, fontSize: 15, color: value ? colors.textWhite : colors.textSlate500 }}>
+      <AppText style={{ flex: 1, fontSize: 15, color: value ? theme.text : theme.textMuted }}>
         {value ? formatDate(value) : t('auth.signUp.birthdayPlaceholder')}
       </AppText>
       <MaterialCommunityIcons
         name={open ? 'chevron-up' : 'chevron-down'}
         size={20}
-        color={colors.textSlate400}
+        color={theme.textSecondary}
       />
     </Pressable>
   );
@@ -272,8 +276,8 @@ export const BirthdayPicker: React.FC<BirthdayPickerProps> = ({ value, onChange 
             height: 52,
             borderRadius: 14,
             borderWidth: 1,
-            borderColor: open ? colors.neonPurple : colors.borderDark,
-            backgroundColor: colors.cardDark,
+            borderColor: open ? colors.neonPurple : theme.border,
+            backgroundColor: theme.card,
             paddingHorizontal: 16,
             gap: 10,
           }}
@@ -281,15 +285,15 @@ export const BirthdayPicker: React.FC<BirthdayPickerProps> = ({ value, onChange 
           <MaterialCommunityIcons
             name="cake-variant-outline"
             size={18}
-            color={value ? colors.neonPurple : colors.textSlate500}
+            color={value ? colors.neonPurple : theme.textMuted}
           />
-          <AppText style={{ flex: 1, fontSize: 15, color: value ? colors.textWhite : colors.textSlate500 }}>
+          <AppText style={{ flex: 1, fontSize: 15, color: value ? theme.text : theme.textMuted }}>
             {value ? formatDate(value) : t('auth.signUp.birthdayPlaceholder')}
           </AppText>
           <MaterialCommunityIcons
             name={open ? 'chevron-up' : 'chevron-down'}
             size={20}
-            color={colors.textSlate400}
+            color={theme.textSecondary}
           />
         </Pressable>
 
@@ -298,8 +302,8 @@ export const BirthdayPicker: React.FC<BirthdayPickerProps> = ({ value, onChange 
             marginTop: 8,
             borderRadius: 14,
             borderWidth: 1,
-            borderColor: colors.borderDark,
-            backgroundColor: colors.cardDark,
+            borderColor: theme.border,
+            backgroundColor: theme.card,
             padding: 16,
           }}>
             <View style={{ flexDirection: 'row', gap: 12, alignItems: 'flex-start' }}>
@@ -354,18 +358,18 @@ export const BirthdayPicker: React.FC<BirthdayPickerProps> = ({ value, onChange 
           <Pressable
             onPress={(e) => e.stopPropagation()}
             style={{
-              backgroundColor: colors.cardDark,
+              backgroundColor: theme.card,
               borderTopLeftRadius: 24,
               borderTopRightRadius: 24,
               borderTopWidth: 1,
-              borderColor: colors.borderDark,
+              borderColor: theme.border,
               padding: 24,
             }}
           >
             <AppText style={{
               fontSize: 17,
               fontWeight: '700',
-              color: colors.textWhite,
+              color: theme.text,
               textAlign: 'center',
               marginBottom: 20,
             }}>
@@ -378,7 +382,7 @@ export const BirthdayPicker: React.FC<BirthdayPickerProps> = ({ value, onChange 
                   flex: 1,
                   textAlign: 'center',
                   fontSize: 11,
-                  color: colors.textSlate500,
+                  color: theme.textMuted,
                   fontWeight: '600',
                   textTransform: 'uppercase',
                   letterSpacing: 1,

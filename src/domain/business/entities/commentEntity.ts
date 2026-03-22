@@ -7,6 +7,9 @@ export interface ReplyEntity {
   authorAvatarUrl: string | null;
   text: string;
   createdAt: Date;
+  likeCount: number;
+  isLikedByCurrentUser: boolean;
+  replyingToName?: string;
 }
 
 export interface CommentEntity {
@@ -19,4 +22,6 @@ export interface CommentEntity {
   createdAt: Date;
   replyCount: number;
   replies: ReplyEntity[];
+  likeCount: number;
+  isLikedByCurrentUser: boolean;
 }

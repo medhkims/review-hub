@@ -141,7 +141,16 @@ service cloud.firestore {
         && request.resource.data.status == 'pending';
 
       // Review owner or admin/moderator can update or delete
-      allow update, delete: if isAuthenticated()
+      // Any authenticated user can update engagement counters (like_count, view_count, comment_count)
+      allow update: if isAuthenticated()
+        && (
+          resource.data.user_id == request.auth.uid
+          || isAdminOrModerator()
+          || request.resource.data.diff(resource.data).affectedKeys()
+               .hasOnly(['like_count', 'view_count', 'comment_count'])
+        );
+
+      allow delete: if isAuthenticated()
         && (resource.data.user_id == request.auth.uid || isAdminOrModerator());
     }
 
@@ -425,6 +434,136 @@ service cloud.firestore {
 
       // Only admins/moderators can update or delete reports
       allow update, delete: if isAuthenticated() && isAdminOrModerator();
+    }
+
+    // ========================================
+    // REVIEW LIKES
+    // ========================================
+    match /review_likes/{likeId} {
+      allow read: if isAuthenticated();
+      allow create: if isAuthenticated()
+        && request.resource.data.user_id == request.auth.uid;
+      allow delete: if isAuthenticated()
+        && resource.data.user_id == request.auth.uid;
+    }
+
+    // ========================================
+    // REVIEW COMMENTS
+    // ========================================
+    match /review_comments/{commentId} {
+      allow read: if isAuthenticated();
+      allow create: if isAuthenticated()
+        && request.resource.data.user_id == request.auth.uid;
+      allow update: if isAuthenticated()
+        && (
+          resource.data.user_id == request.auth.uid
+          || isAdminOrModerator()
+          || request.resource.data.diff(resource.data).affectedKeys()
+               .hasOnly(['like_count', 'reply_count'])
+        );
+      allow delete: if isAuthenticated()
+        && (resource.data.user_id == request.auth.uid || isAdminOrModerator());
+    }
+
+    // ========================================
+    // REVIEW REPLIES
+    // ========================================
+    match /review_replies/{replyId} {
+      allow read: if isAuthenticated();
+      allow create: if isAuthenticated()
+        && request.resource.data.user_id == request.auth.uid;
+      allow update: if isAuthenticated()
+        && (
+          resource.data.user_id == request.auth.uid
+          || isAdminOrModerator()
+          || request.resource.data.diff(resource.data).affectedKeys()
+               .hasOnly(['like_count'])
+        );
+      allow delete: if isAuthenticated()
+        && (resource.data.user_id == request.auth.uid || isAdminOrModerator());
+    }
+
+    // ========================================
+    // COMMENT LIKES
+    // ========================================
+    match /comment_likes/{likeId} {
+      allow read: if isAuthenticated();
+      allow create: if isAuthenticated()
+        && request.resource.data.user_id == request.auth.uid;
+      allow delete: if isAuthenticated()
+        && resource.data.user_id == request.auth.uid;
+    }
+
+    // ========================================
+    // REPLY LIKES
+    // ========================================
+    match /reply_likes/{likeId} {
+      allow read: if isAuthenticated();
+      allow create: if isAuthenticated()
+        && request.resource.data.user_id == request.auth.uid;
+      allow delete: if isAuthenticated()
+        && resource.data.user_id == request.auth.uid;
+    }
+
+    // ========================================
+    // SUPPORT TICKETS
+    // ========================================
+    match /support_tickets/{ticketId} {
+      // User can read their own tickets; admin/moderator can read all
+      allow read: if isAuthenticated()
+        && (resource.data.user_id == request.auth.uid || isAdminOrModerator());
+
+      // Any authenticated user can create a ticket for themselves
+      allow create: if isAuthenticated()
+        && request.resource.data.user_id == request.auth.uid
+        && isValidString(request.resource.data.subject, 1, 100)
+        && isValidString(request.resource.data.message, 10, 1000)
+        && request.resource.data.status == 'open';
+
+      // Only admin/moderator can update (change status, add reply)
+      allow update: if isAuthenticated() && isAdminOrModerator();
+
+      allow delete: if isAuthenticated() && isAdmin();
+    }
+
+    // ========================================
+    // FAQs COLLECTION (Admin-managed, public read)
+    // ========================================
+    match /faqs/{faqId} {
+      // Any authenticated user can read FAQs
+      allow read: if isAuthenticated();
+
+      // Only admins can create, update, or delete FAQs
+      allow create, update, delete: if isAuthenticated() && isAdmin();
+    }
+
+    // ========================================
+    // VERIFICATION REQUESTS
+    // ========================================
+    match /verification_requests/{requestId} {
+      // User can read their own request; admin/moderator can read all
+      allow read: if isAuthenticated()
+        && (resource.data.user_id == request.auth.uid || isAdminOrModerator());
+
+      // Any authenticated user can create a verification request for themselves
+      allow create: if isAuthenticated()
+        && request.resource.data.user_id == request.auth.uid
+        && request.resource.data.status == 'pending';
+
+      // Only admin/moderator can update (approve/reject)
+      allow update: if isAuthenticated() && isAdminOrModerator();
+
+      allow delete: if isAuthenticated() && isAdmin();
+    }
+
+    // ========================================
+    // VERIFICATION OTPs (short-lived, user-scoped)
+    // ========================================
+    match /verification_otps/{phoneKey} {
+      // Authenticated users can write (create/overwrite) their own OTP doc
+      allow create, update: if isAuthenticated();
+      // Authenticated users can read and delete (to verify the code)
+      allow read, delete: if isAuthenticated();
     }
 
     // Deny all other access by default

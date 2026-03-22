@@ -4,6 +4,7 @@ import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useTranslation } from 'react-i18next';
 import { AppText } from '@/presentation/shared/components/ui/AppText';
 import { colors } from '@/core/theme/colors';
+import { useTheme } from '@/core/theme/useTheme';
 import { StarRating } from './BusinessCoverSection';
 import { SectionCard } from './SectionCard';
 import {
@@ -47,11 +48,12 @@ export const ReviewsSection: React.FC<ReviewsSectionProps> = ({
   onViewAllReviews,
 }) => {
   const { t } = useTranslation();
+  const theme = useTheme();
 
   return (
     <View
       style={{
-        backgroundColor: colors.cardDark,
+        backgroundColor: theme.card,
         borderRadius: 24,
         overflow: 'hidden',
         borderWidth: 1,
@@ -92,7 +94,7 @@ export const ReviewsSection: React.FC<ReviewsSectionProps> = ({
           {/* Big Rating Number */}
           <View
             style={{
-              backgroundColor: '#0b101e',
+              backgroundColor: theme.background,
               borderRadius: 16,
               padding: 16,
               alignItems: 'center',
@@ -102,7 +104,7 @@ export const ReviewsSection: React.FC<ReviewsSectionProps> = ({
               borderColor: 'rgba(255, 255, 255, 0.05)',
             }}
           >
-            <AppText style={{ fontSize: 48, fontWeight: '700', color: colors.white, marginBottom: 4 }}>
+            <AppText style={{ fontSize: 48, fontWeight: '700', color: theme.text, marginBottom: 4 }}>
               {rating.toFixed(1)}
             </AppText>
             <StarRating rating={rating} size={10} color={colors.neonPurple} />
@@ -115,10 +117,10 @@ export const ReviewsSection: React.FC<ReviewsSectionProps> = ({
               const percentage = dist?.percentage ?? 0;
               return (
                 <View key={star} style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
-                  <AppText style={{ width: 10, fontSize: 10, fontWeight: '500', color: colors.textSlate400 }}>
+                  <AppText style={{ width: 10, fontSize: 10, fontWeight: '500', color: theme.textSecondary }}>
                     {star}
                   </AppText>
-                  <View style={{ flex: 1, height: 6, backgroundColor: '#0b101e', borderRadius: 3, overflow: 'hidden' }}>
+                  <View style={{ flex: 1, height: 6, backgroundColor: theme.background, borderRadius: 3, overflow: 'hidden' }}>
                     <View
                       style={{
                         height: '100%',
@@ -156,12 +158,14 @@ export const ReviewsSection: React.FC<ReviewsSectionProps> = ({
                 key={cr.name}
                 style={{
                   flex: 1,
-                  backgroundColor: '#263346',
+                  backgroundColor: theme.background,
                   borderRadius: 16,
                   padding: 12,
                   alignItems: 'center',
                   justifyContent: 'center',
                   gap: 6,
+                  borderWidth: 1,
+                  borderColor: theme.border,
                 }}
               >
                 <View
@@ -169,7 +173,7 @@ export const ReviewsSection: React.FC<ReviewsSectionProps> = ({
                     width: 40,
                     height: 40,
                     borderRadius: 20,
-                    backgroundColor: '#3c2a52',
+                    backgroundColor: 'rgba(168,85,247,0.15)',
                     alignItems: 'center',
                     justifyContent: 'center',
                     marginBottom: 4,
@@ -195,7 +199,7 @@ export const ReviewsSection: React.FC<ReviewsSectionProps> = ({
         {reviews.length > 0 && (
           <View
             style={{
-              backgroundColor: '#0f172a',
+              backgroundColor: theme.background,
               borderRadius: 16,
               padding: 16,
               borderWidth: 1,
@@ -203,7 +207,7 @@ export const ReviewsSection: React.FC<ReviewsSectionProps> = ({
             }}
           >
             <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
-              <AppText style={{ fontWeight: '700', fontSize: 16, color: colors.white }}>
+              <AppText style={{ fontWeight: '700', fontSize: 16, color: theme.text }}>
                 {t('businessDetail.recentReviews')}
               </AppText>
               {onViewAllReviews && (
@@ -247,7 +251,7 @@ export const ReviewsSection: React.FC<ReviewsSectionProps> = ({
                       style={{
                         width: '100%',
                         height: '100%',
-                        backgroundColor: colors.cardDark,
+                        backgroundColor: theme.card,
                         alignItems: 'center',
                         justifyContent: 'center',
                       }}
@@ -262,21 +266,21 @@ export const ReviewsSection: React.FC<ReviewsSectionProps> = ({
                 <View style={{ flex: 1 }}>
                   <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 4 }}>
                     <View>
-                      <AppText style={{ fontSize: 14, fontWeight: '700', color: colors.white }}>
+                      <AppText style={{ fontSize: 14, fontWeight: '700', color: theme.text }}>
                         {review.authorName}
                       </AppText>
                       <View style={{ marginTop: 2 }}>
                         <StarRating rating={review.rating} size={10} color={colors.neonPurple} />
                       </View>
                     </View>
-                    <View style={{ backgroundColor: colors.cardDark, paddingHorizontal: 8, paddingVertical: 2, borderRadius: 12 }}>
-                      <AppText style={{ fontSize: 10, color: colors.textSlate500 }}>
+                    <View style={{ backgroundColor: theme.card, paddingHorizontal: 8, paddingVertical: 2, borderRadius: 12 }}>
+                      <AppText style={{ fontSize: 10, color: theme.textMuted }}>
                         {formatTimeAgo(review.createdAt)}
                       </AppText>
                     </View>
                   </View>
                   <AppText
-                    style={{ fontSize: 12, color: colors.textSlate400, lineHeight: 18, marginTop: 4 }}
+                    style={{ fontSize: 12, color: theme.textSecondary, lineHeight: 18, marginTop: 4 }}
                     numberOfLines={3}
                   >
                     {review.text}

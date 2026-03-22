@@ -5,6 +5,7 @@ import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { AppText } from '@/presentation/shared/components/ui/AppText';
 import { AppButton } from '@/presentation/shared/components/ui/AppButton';
 import { colors } from '@/core/theme/colors';
+import { useTheme } from '@/core/theme/useTheme';
 
 interface CompanySignUpStep2Props {
   onNext: (data: CompanyStep2Data) => void;
@@ -42,56 +43,59 @@ const IconInputField: React.FC<IconInputFieldProps> = ({
   keyboardType,
   autoCapitalize,
   autoComplete,
-}) => (
-  <View>
-    <AppText
-      style={{
-        color: colors.textSlate200,
-        fontSize: 14,
-        fontWeight: '500',
-        marginBottom: 6,
-        marginLeft: 4,
-      }}
-    >
-      {label}
-    </AppText>
-    <View
-      style={{
-        flexDirection: 'row',
-        alignItems: 'center',
-        backgroundColor: colors.cardDark,
-        borderWidth: 1,
-        borderColor: colors.borderDark,
-        borderRadius: 16,
-        paddingHorizontal: 16,
-        height: 52,
-      }}
-    >
-      <MaterialCommunityIcons
-        name={icon}
-        size={20}
-        color={colors.textSlate400}
-        style={{ marginRight: 12 }}
-      />
-      <TextInput
-        placeholder={placeholder}
-        value={value}
-        onChangeText={onChangeText}
-        keyboardType={keyboardType}
-        autoCapitalize={autoCapitalize}
-        autoComplete={autoComplete}
-        placeholderTextColor={colors.textSlate500}
-        accessibilityLabel={label}
+}) => {
+  const theme = useTheme();
+  return (
+    <View>
+      <AppText
         style={{
-          flex: 1,
-          color: colors.textWhite,
-          fontSize: 16,
-          paddingVertical: 0,
+          color: theme.text,
+          fontSize: 14,
+          fontWeight: '500',
+          marginBottom: 6,
+          marginLeft: 4,
         }}
-      />
+      >
+        {label}
+      </AppText>
+      <View
+        style={{
+          flexDirection: 'row',
+          alignItems: 'center',
+          backgroundColor: theme.card,
+          borderWidth: 1,
+          borderColor: theme.border,
+          borderRadius: 16,
+          paddingHorizontal: 16,
+          height: 52,
+        }}
+      >
+        <MaterialCommunityIcons
+          name={icon}
+          size={20}
+          color={theme.textSecondary}
+          style={{ marginRight: 12 }}
+        />
+        <TextInput
+          placeholder={placeholder}
+          value={value}
+          onChangeText={onChangeText}
+          keyboardType={keyboardType}
+          autoCapitalize={autoCapitalize}
+          autoComplete={autoComplete}
+          placeholderTextColor={theme.textMuted}
+          accessibilityLabel={label}
+          style={{
+            flex: 1,
+            color: theme.text,
+            fontSize: 16,
+            paddingVertical: 0,
+          }}
+        />
+      </View>
     </View>
-  </View>
-);
+  );
+};
 
 // --- Main Component ---
 
@@ -102,6 +106,7 @@ export const CompanySignUpStep2: React.FC<CompanySignUpStep2Props> = ({
   isLoading = false,
 }) => {
   const { t } = useTranslation();
+  const theme = useTheme();
   const [location, setLocation] = useState('');
   const [website, setWebsite] = useState('');
   const [facebook, setFacebook] = useState('');
@@ -135,19 +140,19 @@ export const CompanySignUpStep2: React.FC<CompanySignUpStep2Props> = ({
             width: 40,
             height: 40,
             borderRadius: 20,
-            backgroundColor: 'rgba(30, 41, 59, 0.5)',
+            backgroundColor: theme.isDark ? 'rgba(30, 41, 59, 0.5)' : 'rgba(148,163,184,0.2)',
             alignItems: 'center',
             justifyContent: 'center',
           }}
         >
-          <MaterialCommunityIcons name="arrow-left" size={22} color={colors.textWhite} />
+          <MaterialCommunityIcons name="arrow-left" size={22} color={theme.text} />
         </Pressable>
 
         <View style={{ alignItems: 'center' }}>
-          <AppText style={{ fontSize: 18, fontWeight: '700', color: colors.textWhite }}>
+          <AppText style={{ fontSize: 18, fontWeight: '700', color: theme.text }}>
             {t('auth.companySignUp.step2Title')}
           </AppText>
-          <AppText style={{ fontSize: 12, fontWeight: '500', color: colors.textSlate400, marginTop: 2 }}>
+          <AppText style={{ fontSize: 12, fontWeight: '500', color: theme.textSecondary, marginTop: 2 }}>
             {t('auth.companySignUp.stepOf', { current: 2, total: 3 })}
           </AppText>
         </View>
@@ -159,7 +164,7 @@ export const CompanySignUpStep2: React.FC<CompanySignUpStep2Props> = ({
       <View
         style={{
           height: 6,
-          backgroundColor: colors.borderDark,
+          backgroundColor: theme.border,
           borderRadius: 3,
           marginBottom: 28,
           overflow: 'hidden',
@@ -182,11 +187,11 @@ export const CompanySignUpStep2: React.FC<CompanySignUpStep2Props> = ({
 
       {/* Title & subtitle */}
       <AppText
-        style={{ fontSize: 28, fontWeight: '700', color: colors.textWhite, marginBottom: 8 }}
+        style={{ fontSize: 28, fontWeight: '700', color: theme.text, marginBottom: 8 }}
       >
         {t('auth.companySignUp.step2Subtitle')}
       </AppText>
-      <AppText style={{ fontSize: 15, color: colors.textSlate400, marginBottom: 28, lineHeight: 22 }}>
+      <AppText style={{ fontSize: 15, color: theme.textSecondary, marginBottom: 28, lineHeight: 22 }}>
         {t('auth.companySignUp.step2Description')}
       </AppText>
 
@@ -243,9 +248,9 @@ export const CompanySignUpStep2: React.FC<CompanySignUpStep2Props> = ({
           bottom: 0,
           left: -24,
           right: -24,
-          backgroundColor: 'rgba(15, 23, 42, 0.8)',
+          backgroundColor: theme.isDark ? 'rgba(15, 23, 42, 0.8)' : 'rgba(241,245,249,0.95)',
           borderTopWidth: 1,
-          borderTopColor: 'rgba(51, 65, 85, 0.5)',
+          borderTopColor: theme.border,
           paddingHorizontal: 24,
           paddingTop: 20,
           paddingBottom: Platform.OS === 'ios' ? 36 : 24,
@@ -274,7 +279,7 @@ export const CompanySignUpStep2: React.FC<CompanySignUpStep2Props> = ({
           accessibilityLabel="Skip for now"
           style={{ marginTop: 16, alignItems: 'center', paddingVertical: 8 }}
         >
-          <AppText style={{ fontSize: 14, fontWeight: '500', color: colors.textSlate400 }}>
+          <AppText style={{ fontSize: 14, fontWeight: '500', color: theme.textSecondary }}>
             {t('auth.companySignUp.skipForNow')}
           </AppText>
         </Pressable>

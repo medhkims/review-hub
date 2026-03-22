@@ -13,9 +13,12 @@ import { useTranslation } from 'react-i18next';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { ScreenLayout } from '@/presentation/shared/layouts/ScreenLayout';
 import { AppText } from '@/presentation/shared/components/ui/AppText';
+import { FilterBySheet, FilterState, DEFAULT_FILTER_STATE } from '@/presentation/shared/components/FilterBySheet';
+import { SortBySheet, SortOption } from '@/presentation/shared/components/SortBySheet';
 import { useAnalyticsScreen } from '@/presentation/shared/hooks/useAnalyticsScreen';
 import { AnalyticsScreens } from '@/core/analytics/analyticsKeys';
 import { colors } from '@/core/theme/colors';
+import { useTheme } from '@/core/theme/useTheme';
 import { container } from '@/core/di/container';
 import { useAuthStore } from '@/presentation/auth/store/authStore';
 import { BusinessEntity } from '@/domain/business/entities/businessEntity';
@@ -29,6 +32,7 @@ interface BusinessCardProps {
 }
 
 const BusinessCard = React.memo<BusinessCardProps>(({ item, onPress, onFavorite }) => {
+  const theme = useTheme();
   const handlePress = useCallback(() => onPress(item.id), [item.id, onPress]);
   const handleFavorite = useCallback(() => onFavorite(item.id), [item.id, onFavorite]);
 
@@ -38,7 +42,7 @@ const BusinessCard = React.memo<BusinessCardProps>(({ item, onPress, onFavorite 
       style={({ pressed }) => ({
         marginBottom: 14,
         borderRadius: 16,
-        backgroundColor: colors.cardDark,
+        backgroundColor: theme.card,
         overflow: 'hidden',
         opacity: pressed ? 0.9 : 1,
         flexDirection: 'row',
@@ -55,7 +59,7 @@ const BusinessCard = React.memo<BusinessCardProps>(({ item, onPress, onFavorite 
             width: 72,
             height: 72,
             borderRadius: 36,
-            backgroundColor: colors.borderDark,
+            backgroundColor: theme.border,
             alignItems: 'center',
             justifyContent: 'center',
             overflow: 'hidden',
@@ -68,7 +72,7 @@ const BusinessCard = React.memo<BusinessCardProps>(({ item, onPress, onFavorite 
               accessibilityLabel={item.name}
             />
           ) : (
-            <MaterialCommunityIcons name="store" size={32} color={colors.textSlate500} />
+            <MaterialCommunityIcons name="store" size={32} color={theme.textMuted} />
           )}
         </View>
 
@@ -96,7 +100,7 @@ const BusinessCard = React.memo<BusinessCardProps>(({ item, onPress, onFavorite 
       {/* Info */}
       <View style={{ flex: 1 }}>
         <AppText
-          style={{ fontSize: 16, fontWeight: '700', color: colors.white, marginBottom: 3 }}
+          style={{ fontSize: 16, fontWeight: '700', color: theme.text, marginBottom: 3 }}
           numberOfLines={1}
         >
           {item.name}
@@ -111,10 +115,10 @@ const BusinessCard = React.memo<BusinessCardProps>(({ item, onPress, onFavorite 
           <MaterialCommunityIcons
             name="map-marker-outline"
             size={13}
-            color={colors.textSlate400}
+            color={theme.textSecondary}
           />
           <AppText
-            style={{ fontSize: 12, color: colors.textSlate400, marginLeft: 3 }}
+            style={{ fontSize: 12, color: theme.textSecondary, marginLeft: 3 }}
             numberOfLines={1}
           >
             {item.location}
@@ -138,7 +142,7 @@ const BusinessCard = React.memo<BusinessCardProps>(({ item, onPress, onFavorite 
         <MaterialCommunityIcons
           name={item.isFavorite ? 'heart' : 'heart-outline'}
           size={22}
-          color={item.isFavorite ? colors.neonPurple : colors.textSlate400}
+          color={item.isFavorite ? colors.neonPurple : theme.textSecondary}
         />
       </Pressable>
     </Pressable>
@@ -152,6 +156,7 @@ BusinessCard.displayName = 'BusinessCard';
 export default function MultiCategoryResultsScreen() {
   useAnalyticsScreen(AnalyticsScreens.MULTI_CATEGORY_RESULTS);
   const { t } = useTranslation();
+  const theme = useTheme();
   const router = useRouter();
   const { user } = useAuthStore();
   const { categoryIds, categoryNames } = useLocalSearchParams<{
@@ -176,6 +181,10 @@ export default function MultiCategoryResultsScreen() {
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
+  const [showFilter, setShowFilter] = useState(false);
+  const [showSort, setShowSort] = useState(false);
+  const [activeFilters, setActiveFilters] = useState<FilterState>(DEFAULT_FILTER_STATE);
+  const [activeSort, setActiveSort] = useState<SortOption | null>(null);
 
   const loadBusinesses = useCallback(async () => {
     if (parsedIds.length === 0) {
@@ -223,11 +232,63 @@ export default function MultiCategoryResultsScreen() {
     loadBusinesses();
   }, [loadBusinesses]);
 
+  // Unique categories present in the loaded businesses (for the filter dropdown)
+  const availableCategories = useMemo(() => {
+    const seen = new Set<string>();
+    const result: { id: string; name: string }[] = [];
+    businesses.forEach((b) => {
+      if (!seen.has(b.categoryId)) {
+        seen.add(b.categoryId);
+        result.push({ id: b.categoryId, name: b.categoryName });
+      }
+    });
+    return result;
+  }, [businesses]);
+
   const filteredData = useMemo(() => {
-    if (!searchQuery.trim()) return businesses;
-    const query = searchQuery.toLowerCase();
-    return businesses.filter((b) => b.name.toLowerCase().includes(query));
-  }, [businesses, searchQuery]);
+    let data = businesses;
+
+    if (searchQuery.trim()) {
+      const query = searchQuery.toLowerCase();
+      data = data.filter((b) => b.name.toLowerCase().includes(query));
+    }
+
+    if (activeFilters.locations.length > 0) {
+      data = data.filter((b) =>
+        activeFilters.locations.some((loc) =>
+          b.location?.toLowerCase().includes(loc.toLowerCase()),
+        ),
+      );
+    }
+
+    if (activeFilters.categories.length > 0) {
+      data = data.filter((b) => activeFilters.categories.includes(b.categoryId));
+    }
+
+    if (activeFilters.minRating > 0) {
+      data = data.filter((b) => b.rating >= activeFilters.minRating);
+    }
+
+    switch (activeSort) {
+      case 'top_rating':
+        return [...data].sort((a, b) => b.rating - a.rating);
+      case 'top_result':
+        return [...data].sort((a, b) => b.reviewCount - a.reviewCount);
+      case 'new_businesses':
+        return [...data].sort((a, b) => {
+          const aTime = a.createdAt instanceof Date ? a.createdAt.getTime() : 0;
+          const bTime = b.createdAt instanceof Date ? b.createdAt.getTime() : 0;
+          return bTime - aTime;
+        });
+      default:
+        return data;
+    }
+  }, [businesses, searchQuery, activeFilters, activeSort]);
+
+  const isFilterActive =
+    activeFilters.locations.length > 0 ||
+    activeFilters.categories.length > 0 ||
+    activeFilters.minRating > 0;
 
   const handleBack = useCallback(() => {
     router.back();
@@ -283,20 +344,20 @@ export default function MultiCategoryResultsScreen() {
             width: 40,
             height: 40,
             borderRadius: 20,
-            backgroundColor: pressed ? 'rgba(255,255,255,0.1)' : 'rgba(30,41,59,0.5)',
+            backgroundColor: pressed ? 'rgba(255,255,255,0.1)' : theme.isDark ? 'rgba(30,41,59,0.5)' : 'rgba(148,163,184,0.2)',
             alignItems: 'center',
             justifyContent: 'center',
           })}
           accessibilityLabel={t('common.back')}
           accessibilityRole="button"
         >
-          <MaterialCommunityIcons name="chevron-left" size={28} color={colors.white} />
+          <MaterialCommunityIcons name="chevron-left" size={28} color={theme.text} />
         </Pressable>
         <AppText
           style={{
             fontSize: 20,
             fontWeight: '700',
-            color: colors.white,
+            color: theme.text,
             flex: 1,
             marginLeft: 16,
             letterSpacing: -0.3,
@@ -307,15 +368,24 @@ export default function MultiCategoryResultsScreen() {
         </AppText>
       </View>
 
-      {/* Search Bar */}
-      <View style={{ paddingHorizontal: 24, paddingBottom: 12 }}>
+      {/* Search + Sort + Filter row */}
+      <View
+        style={{
+          flexDirection: 'row',
+          alignItems: 'center',
+          paddingHorizontal: 24,
+          paddingBottom: 12,
+          gap: 10,
+        }}
+      >
         <View
           style={{
+            flex: 1,
             flexDirection: 'row',
             alignItems: 'center',
-            backgroundColor: colors.cardDark,
+            backgroundColor: theme.card,
             borderWidth: 1,
-            borderColor: colors.borderDark,
+            borderColor: theme.border,
             borderRadius: 16,
             paddingHorizontal: 16,
             paddingVertical: 12,
@@ -328,15 +398,61 @@ export default function MultiCategoryResultsScreen() {
             style={{ marginRight: 12 }}
           />
           <TextInput
-            style={{ flex: 1, color: colors.textWhite, fontSize: 15, padding: 0 }}
+            style={{ flex: 1, color: theme.text, fontSize: 15, padding: 0 }}
             value={searchQuery}
             onChangeText={setSearchQuery}
             placeholder={t('home.searchPlaceholder')}
-            placeholderTextColor={colors.textSlate500}
+            placeholderTextColor={theme.textMuted}
             accessibilityLabel={t('home.searchPlaceholder')}
             accessibilityRole="search"
           />
         </View>
+
+        {/* Sort button */}
+        <Pressable
+          onPress={() => setShowSort(true)}
+          style={{
+            width: 44,
+            height: 44,
+            borderRadius: 12,
+            backgroundColor: activeSort ? 'rgba(168,85,247,0.15)' : theme.card,
+            borderWidth: 1,
+            borderColor: activeSort ? colors.neonPurple : theme.border,
+            alignItems: 'center',
+            justifyContent: 'center',
+          }}
+          accessibilityLabel={t('home.sort')}
+          accessibilityRole="button"
+        >
+          <MaterialCommunityIcons
+            name="swap-vertical"
+            size={22}
+            color={activeSort ? colors.neonPurple : theme.textSecondary}
+          />
+        </Pressable>
+
+        {/* Filter button */}
+        <Pressable
+          onPress={() => setShowFilter(true)}
+          style={{
+            width: 44,
+            height: 44,
+            borderRadius: 12,
+            backgroundColor: isFilterActive ? 'rgba(168,85,247,0.15)' : theme.card,
+            borderWidth: 1,
+            borderColor: isFilterActive ? colors.neonPurple : theme.border,
+            alignItems: 'center',
+            justifyContent: 'center',
+          }}
+          accessibilityLabel={t('home.filter')}
+          accessibilityRole="button"
+        >
+          <MaterialCommunityIcons
+            name="tune-variant"
+            size={22}
+            color={isFilterActive ? colors.neonPurple : theme.textSecondary}
+          />
+        </Pressable>
       </View>
 
       {/* Loading */}
@@ -365,11 +481,11 @@ export default function MultiCategoryResultsScreen() {
               <MaterialCommunityIcons
                 name="store-search-outline"
                 size={52}
-                color={colors.textSlate500}
+                color={theme.textMuted}
               />
               <AppText
                 style={{
-                  color: colors.textSlate400,
+                  color: theme.textSecondary,
                   fontSize: 16,
                   fontWeight: '600',
                   marginTop: 16,
@@ -382,6 +498,29 @@ export default function MultiCategoryResultsScreen() {
           }
         />
       )}
+
+      {/* Bottom Sheets */}
+      <FilterBySheet
+        visible={showFilter}
+        onClose={() => setShowFilter(false)}
+        onApply={(filters) => {
+          setActiveFilters(filters);
+          setShowFilter(false);
+        }}
+        initialFilters={activeFilters}
+        showCategories={availableCategories.length > 1}
+        availableCategories={availableCategories}
+      />
+
+      <SortBySheet
+        visible={showSort}
+        onClose={() => setShowSort(false)}
+        onApply={(option) => {
+          setActiveSort(option);
+          setShowSort(false);
+        }}
+        initialValue={activeSort}
+      />
     </ScreenLayout>
   );
 }

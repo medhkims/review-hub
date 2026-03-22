@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { View, FlatList, Pressable, Image, ActivityIndicator, Modal, ScrollView, Alert } from 'react-native';
+import { View, FlatList, Pressable, Image, ActivityIndicator, Modal, ScrollView, Alert, TextInput } from 'react-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useTranslation } from 'react-i18next';
 import { ScreenLayout } from '@/presentation/shared/layouts/ScreenLayout';
@@ -7,10 +7,12 @@ import { AppText } from '@/presentation/shared/components/ui/AppText';
 import { BusinessDetailEntity } from '@/domain/business/entities/businessDetailEntity';
 import { UserReviewEntity } from '@/domain/reviews/entities/userReviewEntity';
 import { ProfileEntity } from '@/domain/profile/entities/profileEntity';
+import { VerificationEntity, VerificationStatus } from '@/domain/verification/entities/verificationEntity';
 import { colors } from '@/core/theme/colors';
 import { container } from '@/core/di/container';
 import { getCategoryDefaultCover } from '@/core/utils/categoryDefaultImages';
 import { useCategoryDefaultStore } from '@/presentation/shared/store/categoryDefaultStore';
+import { useAuthStore } from '@/presentation/auth/store/authStore';
 import { AdminMenuButton } from '../components/AdminMenuButton';
 
 type VerifyTab = 'company' | 'reviews' | 'moderator' | 'user';
@@ -33,6 +35,7 @@ const TABS: TabConfig[] = [
 export function PendingBusinessesScreen() {
   const { t } = useTranslation();
   const categoryDefaults = useCategoryDefaultStore((s) => s.defaults);
+  const { user: currentUser } = useAuthStore();
   const [activeTab, setActiveTab] = useState<VerifyTab>('company');
   const [statusFilter, setStatusFilter] = useState<StatusFilter>('pending');
   const [businesses, setBusinesses] = useState<BusinessDetailEntity[]>([]);
@@ -73,6 +76,24 @@ export function PendingBusinessesScreen() {
   const [categoryFilter, setCategoryFilter] = useState<string[]>([]);
   const [showSortMenu, setShowSortMenu] = useState(false);
   const [showCategoryMenu, setShowCategoryMenu] = useState(false);
+
+  // User verification tab state
+  const [userVerifications, setUserVerifications] = useState<VerificationEntity[]>([]);
+  const [pendingUserCount, setPendingUserCount] = useState(0);
+  const [userVerificationsLoading, setUserVerificationsLoading] = useState(false);
+  const [userVerificationsError, setUserVerificationsError] = useState<string | null>(null);
+  const [userActionId, setUserActionId] = useState<string | null>(null);
+  const [userRejectTarget, setUserRejectTarget] = useState<string | null>(null);
+  const [userRejectReason, setUserRejectReason] = useState('');
+  const [userIdCardVisible, setUserIdCardVisible] = useState<string | null>(null);
+
+  // Per-tab pending counts for badges
+  const tabBadges = useMemo<Record<VerifyTab, number>>(() => ({
+    company: businesses.length,
+    reviews: pendingReviews.length,
+    moderator: 0,
+    user: pendingUserCount,
+  }), [businesses.length, pendingReviews.length]);
 
   const currentRawData = useMemo(() => {
     if (statusFilter === 'pending') return businesses;
@@ -187,6 +208,53 @@ export function PendingBusinessesScreen() {
     setReviewsLoading(false);
   }, []);
 
+  const loadUserVerifications = useCallback(async (filter: StatusFilter) => {
+    if (filter === 'suspended') { setUserVerifications([]); return; }
+    const status: VerificationStatus = filter === 'declined' ? 'rejected' : filter as VerificationStatus;
+    setUserVerificationsLoading(true);
+    setUserVerificationsError(null);
+    const result = await container.getVerificationsByStatusUseCase.execute(status);
+    setUserVerificationsLoading(false);
+    result.fold(
+      (failure) => { setUserVerifications([]); setUserVerificationsError(failure.message); },
+      (items) => {
+        setUserVerifications(items);
+        if (status === 'pending') setPendingUserCount(items.length);
+      },
+    );
+  }, []);
+
+  const handleApproveUser = useCallback(async (id: string) => {
+    if (!currentUser) return;
+    setUserActionId(id);
+    const result = await container.updateVerificationStatusUseCase.execute(id, 'approved', currentUser.id);
+    setUserActionId(null);
+    result.fold(
+      () => {},
+      () => {
+        setUserVerifications((prev) => prev.filter((v) => v.id !== id));
+        setPendingUserCount((c) => Math.max(0, c - 1));
+      },
+    );
+  }, [currentUser]);
+
+  const handleRejectUser = useCallback(async () => {
+    if (!userRejectTarget || !currentUser) return;
+    const id = userRejectTarget;
+    setUserActionId(id);
+    const result = await container.updateVerificationStatusUseCase.execute(id, 'rejected', currentUser.id, userRejectReason.trim() || undefined);
+    setUserActionId(null);
+    setUserRejectTarget(null);
+    setUserRejectReason('');
+    result.fold(
+      () => {},
+      () => {
+        setUserVerifications((prev) => prev.filter((v) => v.id !== id));
+        setPendingUserCount((c) => Math.max(0, c - 1));
+      },
+    );
+  }, [userRejectTarget, userRejectReason, currentUser]);
+
   useEffect(() => {
     setCategoryFilter([]);
     if (statusFilter === 'pending') loadPending();
@@ -195,13 +263,20 @@ export function PendingBusinessesScreen() {
     else loadSuspended();
   }, [statusFilter, loadPending, loadApproved, loadRejected, loadSuspended]);
 
+  // Eager-load pending reviews and user verifications on mount for tab badges
+  useEffect(() => { loadPendingReviews(); }, [loadPendingReviews]);
+  useEffect(() => { loadUserVerifications('pending'); }, [loadUserVerifications]);
+
   useEffect(() => {
     if (activeTab === 'reviews') {
       if (statusFilter === 'pending') loadPendingReviews();
       else if (statusFilter === 'approved') loadApprovedReviews();
       else loadRejectedReviews();
     }
-  }, [activeTab, statusFilter, loadPendingReviews, loadApprovedReviews, loadRejectedReviews]);
+    if (activeTab === 'user') {
+      loadUserVerifications(statusFilter);
+    }
+  }, [activeTab, statusFilter, loadPendingReviews, loadApprovedReviews, loadRejectedReviews, loadUserVerifications]);
 
   useEffect(() => {
     if (!selectedReview) { setReviewAuthor(null); fetchedAuthorId.current = null; return; }
@@ -838,6 +913,149 @@ export function PendingBusinessesScreen() {
       );
     }
 
+    if (activeTab === 'user') {
+      if (statusFilter === 'suspended') {
+        return (
+          <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center', gap: 12 }}>
+            <MaterialCommunityIcons name="shield-check" size={48} color={colors.textSlate500} />
+            <AppText style={{ fontSize: 16, color: colors.textSlate400, textAlign: 'center' }}>
+              N/A for user verifications
+            </AppText>
+          </View>
+        );
+      }
+      if (userVerificationsLoading) {
+        return (
+          <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
+            <ActivityIndicator size="large" color={colors.neonPurple} />
+          </View>
+        );
+      }
+      if (userVerificationsError) {
+        return (
+          <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center', gap: 12, paddingHorizontal: 32 }}>
+            <MaterialCommunityIcons name="alert-circle-outline" size={48} color="#EF4444" />
+            <AppText style={{ fontSize: 13, color: colors.textSlate400, textAlign: 'center' }}>{userVerificationsError}</AppText>
+            <Pressable
+              onPress={() => loadUserVerifications(statusFilter)}
+              accessibilityRole="button"
+              accessibilityLabel="Retry"
+              style={({ pressed }) => ({ paddingHorizontal: 20, paddingVertical: 10, borderRadius: 10, backgroundColor: colors.neonPurple, opacity: pressed ? 0.7 : 1 })}
+            >
+              <AppText style={{ fontSize: 13, fontWeight: '700', color: colors.white }}>Retry</AppText>
+            </Pressable>
+          </View>
+        );
+      }
+      if (userVerifications.length === 0) {
+        const emptyLabel = statusFilter === 'pending' ? 'No pending verification requests'
+          : statusFilter === 'approved' ? 'No approved verifications' : 'No rejected verifications';
+        return (
+          <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center', gap: 12 }}>
+            <MaterialCommunityIcons name="shield-check" size={48} color={colors.textSlate500} />
+            <AppText style={{ fontSize: 16, color: colors.textSlate400, textAlign: 'center' }}>{emptyLabel}</AppText>
+          </View>
+        );
+      }
+      return (
+        <FlatList
+          data={userVerifications}
+          keyExtractor={(item) => item.id}
+          contentContainerStyle={{ paddingVertical: 8, paddingHorizontal: 16, gap: 12 }}
+          showsVerticalScrollIndicator={false}
+          renderItem={({ item }) => (
+            <View style={{ backgroundColor: colors.cardDark, borderRadius: 14, borderWidth: 1, borderColor: colors.borderDark, overflow: 'hidden' }}>
+              {/* User row */}
+              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10, padding: 14, paddingBottom: 10 }}>
+                <View style={{ width: 40, height: 40, borderRadius: 20, backgroundColor: 'rgba(168,85,247,0.15)', alignItems: 'center', justifyContent: 'center' }}>
+                  <MaterialCommunityIcons name="account" size={20} color={colors.neonPurple} />
+                </View>
+                <View style={{ flex: 1 }}>
+                  <AppText style={{ fontSize: 14, fontWeight: '700', color: colors.white }}>{item.fullName}</AppText>
+                  <AppText style={{ fontSize: 12, color: colors.textSlate400 }}>{item.userEmail}</AppText>
+                </View>
+                <View style={{
+                  paddingHorizontal: 9, paddingVertical: 3, borderRadius: 9999,
+                  backgroundColor: item.status === 'pending' ? 'rgba(251,191,36,0.15)' : item.status === 'approved' ? 'rgba(34,197,94,0.15)' : 'rgba(239,68,68,0.1)',
+                  borderWidth: 1,
+                  borderColor: item.status === 'pending' ? 'rgba(251,191,36,0.3)' : item.status === 'approved' ? 'rgba(34,197,94,0.3)' : 'rgba(239,68,68,0.3)',
+                }}>
+                  <AppText style={{ fontSize: 11, fontWeight: '600', color: item.status === 'pending' ? '#FBB024' : item.status === 'approved' ? colors.success : '#EF4444' }}>
+                    {item.status.charAt(0).toUpperCase() + item.status.slice(1)}
+                  </AppText>
+                </View>
+              </View>
+              {/* Details */}
+              <View style={{ paddingHorizontal: 14, gap: 4, marginBottom: 10 }}>
+                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+                  <MaterialCommunityIcons name="phone" size={13} color={colors.textSlate500} />
+                  <AppText style={{ fontSize: 13, color: colors.textSlate300 }}>{item.phoneNumber}</AppText>
+                </View>
+                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+                  <MaterialCommunityIcons name="calendar" size={13} color={colors.textSlate500} />
+                  <AppText style={{ fontSize: 13, color: colors.textSlate300 }}>
+                    {item.submittedAt.toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' })}
+                  </AppText>
+                </View>
+                {item.reviewedAt ? (
+                  <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+                    <MaterialCommunityIcons name="check-circle-outline" size={13} color={colors.textSlate500} />
+                    <AppText style={{ fontSize: 13, color: colors.textSlate300 }}>
+                      Reviewed: {item.reviewedAt.toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' })}
+                    </AppText>
+                  </View>
+                ) : null}
+                {item.rejectionReason ? (
+                  <View style={{ backgroundColor: 'rgba(239,68,68,0.08)', borderRadius: 8, padding: 9, borderWidth: 1, borderColor: 'rgba(239,68,68,0.2)', marginTop: 4 }}>
+                    <AppText style={{ fontSize: 11, color: '#EF4444', fontWeight: '600', marginBottom: 2 }}>Rejection reason</AppText>
+                    <AppText style={{ fontSize: 12, color: colors.textSlate300 }}>{item.rejectionReason}</AppText>
+                  </View>
+                ) : null}
+              </View>
+              {/* ID card preview */}
+              <Pressable
+                onPress={() => setUserIdCardVisible(item.id)}
+                accessibilityRole="button"
+                accessibilityLabel="View ID card"
+                style={{ marginHorizontal: 14, marginBottom: item.status === 'pending' ? 10 : 14, borderRadius: 10, overflow: 'hidden', height: 110, borderWidth: 1, borderColor: colors.borderDark }}
+              >
+                <Image source={{ uri: item.idCardUrl }} style={{ width: '100%', height: '100%' }} resizeMode="cover" accessibilityLabel="ID card" />
+                <View style={{ position: 'absolute', bottom: 0, left: 0, right: 0, backgroundColor: 'rgba(0,0,0,0.5)', paddingVertical: 5, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 5 }}>
+                  <MaterialCommunityIcons name="eye" size={13} color={colors.white} />
+                  <AppText style={{ fontSize: 12, color: colors.white }}>View ID Card</AppText>
+                </View>
+              </Pressable>
+              {/* Actions — pending only */}
+              {item.status === 'pending' ? (
+                <View style={{ flexDirection: 'row', gap: 10, paddingHorizontal: 14, paddingBottom: 14 }}>
+                  <Pressable
+                    onPress={() => setUserRejectTarget(item.id)}
+                    disabled={userActionId === item.id}
+                    accessibilityRole="button"
+                    accessibilityLabel="Reject"
+                    style={{ flex: 1, paddingVertical: 9, borderRadius: 10, borderWidth: 1, borderColor: 'rgba(239,68,68,0.4)', alignItems: 'center' }}
+                  >
+                    <AppText style={{ fontSize: 13, fontWeight: '600', color: '#EF4444' }}>Reject</AppText>
+                  </Pressable>
+                  <Pressable
+                    onPress={() => handleApproveUser(item.id)}
+                    disabled={userActionId === item.id}
+                    accessibilityRole="button"
+                    accessibilityLabel="Approve"
+                    style={{ flex: 1, paddingVertical: 9, borderRadius: 10, backgroundColor: 'rgba(34,197,94,0.15)', borderWidth: 1, borderColor: 'rgba(34,197,94,0.3)', alignItems: 'center', justifyContent: 'center' }}
+                  >
+                    {userActionId === item.id
+                      ? <ActivityIndicator size="small" color={colors.success} />
+                      : <AppText style={{ fontSize: 13, fontWeight: '600', color: colors.success }}>Approve</AppText>}
+                  </Pressable>
+                </View>
+              ) : null}
+            </View>
+          )}
+        />
+      );
+    }
+
     return (
       <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center', gap: 12 }}>
         <MaterialCommunityIcons name="tools" size={48} color={colors.textSlate600} />
@@ -897,6 +1115,7 @@ export function PendingBusinessesScreen() {
       >
         {TABS.map((tab) => {
           const active = activeTab === tab.key;
+          const count = tabBadges[tab.key];
           return (
             <Pressable
               key={tab.key}
@@ -928,6 +1147,28 @@ export function PendingBusinessesScreen() {
               }}>
                 {tab.label}
               </AppText>
+              {count > 0 && (
+                <View
+                  style={{
+                    minWidth: 18,
+                    height: 18,
+                    borderRadius: 9,
+                    backgroundColor: active ? '#FFFFFF' : '#EF4444',
+                    justifyContent: 'center',
+                    alignItems: 'center',
+                    paddingHorizontal: 4,
+                  }}
+                >
+                  <AppText style={{
+                    fontSize: 10,
+                    fontWeight: '700',
+                    color: active ? '#EF4444' : '#FFFFFF',
+                    lineHeight: 13,
+                  }}>
+                    {count > 99 ? '99+' : String(count)}
+                  </AppText>
+                </View>
+              )}
             </Pressable>
           );
         })}
@@ -2527,6 +2768,70 @@ export function PendingBusinessesScreen() {
           </View>
         </Pressable>
       </Modal>
+
+      {/* User verification — Reject Modal */}
+      <Modal visible={userRejectTarget !== null} transparent animationType="fade" onRequestClose={() => { setUserRejectTarget(null); setUserRejectReason(''); }}>
+        <View style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.7)', justifyContent: 'center', padding: 24 }}>
+          <View style={{ backgroundColor: colors.cardDark, borderRadius: 20, padding: 24, borderWidth: 1, borderColor: colors.borderDark }}>
+            <AppText style={{ fontSize: 17, fontWeight: '700', color: colors.white, marginBottom: 6 }}>Reject Verification</AppText>
+            <AppText style={{ fontSize: 14, color: colors.textSlate400, marginBottom: 14 }}>
+              Please provide a reason for rejecting this verification request.
+            </AppText>
+            <TextInput
+              value={userRejectReason}
+              onChangeText={setUserRejectReason}
+              placeholder="Reason for rejection (optional)"
+              placeholderTextColor={colors.textSlate500}
+              multiline
+              numberOfLines={3}
+              accessibilityLabel="Rejection reason"
+              style={{ backgroundColor: colors.midnight, borderWidth: 1, borderColor: colors.borderDark, borderRadius: 10, padding: 12, color: colors.white, fontSize: 14, marginBottom: 20, minHeight: 80, textAlignVertical: 'top' }}
+            />
+            <View style={{ flexDirection: 'row', gap: 12 }}>
+              <Pressable
+                onPress={() => { setUserRejectTarget(null); setUserRejectReason(''); }}
+                accessibilityRole="button"
+                accessibilityLabel="Cancel"
+                style={{ flex: 1, paddingVertical: 12, borderRadius: 10, borderWidth: 1, borderColor: colors.borderDark, alignItems: 'center' }}
+              >
+                <AppText style={{ fontSize: 15, fontWeight: '600', color: colors.textSlate400 }}>Cancel</AppText>
+              </Pressable>
+              <Pressable
+                onPress={handleRejectUser}
+                disabled={userActionId === userRejectTarget}
+                accessibilityRole="button"
+                accessibilityLabel="Reject"
+                style={{ flex: 1, paddingVertical: 12, borderRadius: 10, backgroundColor: '#EF4444', alignItems: 'center', justifyContent: 'center' }}
+              >
+                {userActionId === userRejectTarget
+                  ? <ActivityIndicator size="small" color={colors.white} />
+                  : <AppText style={{ fontSize: 15, fontWeight: '600', color: colors.white }}>Reject</AppText>}
+              </Pressable>
+            </View>
+          </View>
+        </View>
+      </Modal>
+
+      {/* User verification — Full-screen ID card viewer */}
+      {userIdCardVisible !== null && (() => {
+        const item = userVerifications.find((v) => v.id === userIdCardVisible);
+        if (!item) return null;
+        return (
+          <Modal visible transparent animationType="fade" onRequestClose={() => setUserIdCardVisible(null)}>
+            <View style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.92)', justifyContent: 'center', alignItems: 'center' }}>
+              <Pressable
+                onPress={() => setUserIdCardVisible(null)}
+                accessibilityRole="button"
+                accessibilityLabel="Close"
+                style={{ position: 'absolute', top: 50, right: 20, zIndex: 10, padding: 8 }}
+              >
+                <MaterialCommunityIcons name="close" size={28} color={colors.white} />
+              </Pressable>
+              <Image source={{ uri: item.idCardUrl }} style={{ width: '90%', height: '60%' }} resizeMode="contain" accessibilityLabel="ID card" />
+            </View>
+          </Modal>
+        );
+      })()}
     </ScreenLayout>
   );
 }

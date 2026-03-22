@@ -4,6 +4,7 @@ import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useTranslation } from 'react-i18next';
 import { AppText } from '@/presentation/shared/components/ui/AppText';
 import { colors } from '@/core/theme/colors';
+import { useTheme } from '@/core/theme/useTheme';
 import { getCategoryDefaultCover, getCategoryDefaultLogo } from '@/core/utils/categoryDefaultImages';
 import { ImageSourcePropType } from 'react-native';
 import { useCategoryDefaultStore } from '@/presentation/shared/store/categoryDefaultStore';
@@ -59,6 +60,7 @@ export const BusinessCoverSection: React.FC<BusinessCoverSectionProps> = ({
   onReportPress,
 }) => {
   const { t } = useTranslation();
+  const theme = useTheme();
   const [coverError, setCoverError] = useState(false);
   const [logoError, setLogoError] = useState(false);
   const remoteDefaults = useCategoryDefaultStore((s) => s.defaults[categoryId]);
@@ -82,8 +84,8 @@ export const BusinessCoverSection: React.FC<BusinessCoverSectionProps> = ({
     <View style={{ alignItems: 'center' }}>
       {/* Cover Photo */}
       <View style={Platform.OS === 'web'
-        ? { width: '100%', aspectRatio: 16 / 9, maxHeight: 320, overflow: 'hidden', backgroundColor: colors.cardDark }
-        : { width: '100%', height: 256, overflow: 'hidden', backgroundColor: colors.cardDark }}>
+        ? { width: '100%', aspectRatio: 16 / 9, maxHeight: 320, overflow: 'hidden', backgroundColor: theme.card }
+        : { width: '100%', height: 256, overflow: 'hidden', backgroundColor: theme.card }}>
         {coverSource !== null && !coverError ? (
           <Image
             source={coverSource}
@@ -93,7 +95,7 @@ export const BusinessCoverSection: React.FC<BusinessCoverSectionProps> = ({
             onError={() => setCoverError(true)}
           />
         ) : (
-          <View style={{ width: '100%', height: '100%', backgroundColor: colors.cardDark }} />
+          <View style={{ width: '100%', height: '100%', backgroundColor: theme.card }} />
         )}
 
         {/* Back Button */}
@@ -115,7 +117,7 @@ export const BusinessCoverSection: React.FC<BusinessCoverSectionProps> = ({
             borderColor: 'rgba(255, 255, 255, 0.1)',
           }}
         >
-          <MaterialCommunityIcons name="chevron-left" size={24} color={colors.white} />
+          <MaterialCommunityIcons name="chevron-left" size={24} color="#FFFFFF" />
         </Pressable>
 
         {/* Top-right action buttons: Share + Report */}
@@ -144,7 +146,7 @@ export const BusinessCoverSection: React.FC<BusinessCoverSectionProps> = ({
                 borderColor: 'rgba(255, 255, 255, 0.1)',
               }}
             >
-              <MaterialCommunityIcons name="share-variant" size={20} color={colors.white} />
+              <MaterialCommunityIcons name="share-variant" size={20} color="#FFFFFF" />
             </Pressable>
           )}
           {onReportPress && (
@@ -163,7 +165,7 @@ export const BusinessCoverSection: React.FC<BusinessCoverSectionProps> = ({
                 borderColor: 'rgba(255, 255, 255, 0.1)',
               }}
             >
-              <MaterialCommunityIcons name="flag-outline" size={20} color={colors.white} />
+              <MaterialCommunityIcons name="flag-outline" size={20} color="#FFFFFF" />
             </Pressable>
           )}
         </View>
@@ -176,7 +178,7 @@ export const BusinessCoverSection: React.FC<BusinessCoverSectionProps> = ({
           width: 96,
           height: 96,
           borderRadius: 48,
-          backgroundColor: colors.midnight,
+          backgroundColor: theme.background,
           padding: 4,
           shadowColor: colors.neonPurple,
           shadowOffset: { width: 0, height: 0 },
@@ -191,7 +193,7 @@ export const BusinessCoverSection: React.FC<BusinessCoverSectionProps> = ({
             height: '100%',
             borderRadius: 44,
             overflow: 'hidden',
-            backgroundColor: colors.midnight,
+            backgroundColor: theme.background,
             borderWidth: 2,
             borderColor: colors.neonPurple,
             alignItems: 'center',
@@ -218,7 +220,7 @@ export const BusinessCoverSection: React.FC<BusinessCoverSectionProps> = ({
           marginTop: 16,
           fontSize: 24,
           fontWeight: '700',
-          color: colors.white,
+          color: theme.text,
           textAlign: 'center',
           letterSpacing: -0.3,
         }}
@@ -228,7 +230,7 @@ export const BusinessCoverSection: React.FC<BusinessCoverSectionProps> = ({
 
       {/* Category & Open Status */}
       <View style={{ marginTop: 8, flexDirection: 'row', alignItems: 'center', gap: 8 }}>
-        <AppText style={{ fontSize: 14, fontWeight: '300', color: colors.textSlate400 }}>
+        <AppText style={{ fontSize: 14, fontWeight: '300', color: theme.textSecondary }}>
           {categoryName}
         </AppText>
         {openStatus !== null && (
@@ -249,10 +251,10 @@ export const BusinessCoverSection: React.FC<BusinessCoverSectionProps> = ({
         style={{ marginTop: 8, flexDirection: 'row', alignItems: 'center', gap: 6 }}
       >
         <StarRating rating={rating} />
-        <AppText style={{ fontSize: 14, fontWeight: '700', color: colors.white }}>
+        <AppText style={{ fontSize: 14, fontWeight: '700', color: theme.text }}>
           {rating.toFixed(1)}
         </AppText>
-        <AppText style={{ fontSize: 12, color: colors.textSlate400 }}>
+        <AppText style={{ fontSize: 12, color: theme.textSecondary }}>
           ({reviewCount} {t('businessDetail.reviews')})
         </AppText>
       </Pressable>

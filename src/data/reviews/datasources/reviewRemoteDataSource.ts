@@ -1,4 +1,4 @@
-import { firestore } from '@/core/firebase/firebaseConfig';
+import { firestore, auth } from '@/core/firebase/firebaseConfig';
 import {
   collection,
   doc,
@@ -122,11 +122,24 @@ export class ReviewRemoteDataSourceImpl implements ReviewRemoteDataSource {
       const snapshot = await getDocs(q);
       const models = snapshot.docs.map((d) => ({ id: d.id, ...d.data() } as UserReviewModel));
       // Sort newest first in memory — avoids requiring a composite Firestore index
-      return models.sort((a, b) => {
+      models.sort((a, b) => {
         const aMs = a.created_at?.seconds ?? 0;
         const bMs = b.created_at?.seconds ?? 0;
         return bMs - aMs;
       });
+
+      // Enrich with like status for the current user (doc ID is deterministic: `${uid}_${reviewId}`)
+      const currentUid = auth.currentUser?.uid;
+      if (currentUid && models.length > 0) {
+        const likeChecks = await Promise.all(
+          models.map((m) => getDoc(doc(firestore, 'review_likes', `${currentUid}_${m.id}`))),
+        );
+        likeChecks.forEach((snap, i) => {
+          models[i].is_liked_by_current_user = snap.exists();
+        });
+      }
+
+      return models;
     } catch (error: unknown) {
       const message = error instanceof Error ? error.message : 'Failed to fetch reviews';
       throw new ServerException(message);

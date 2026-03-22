@@ -4,6 +4,7 @@ import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { AppText } from '@/presentation/shared/components/ui/AppText';
 import { colors } from '@/core/theme/colors';
 import { CategoryEntity } from '@/domain/business/entities/categoryEntity';
+import { useTheme } from '@/core/theme/useTheme';
 
 const ICON_COLORS: Record<string, { icon: string; bg: string }> = {
   'silverware-fork-knife': { icon: '#EC4899', bg: 'rgba(236,72,153,0.15)' },   // restaurant — pink
@@ -30,6 +31,7 @@ interface CategoryCardProps {
 }
 
 const CategoryCardComponent: React.FC<CategoryCardProps> = ({ category, onPress, isSelected = false }) => {
+  const theme = useTheme();
   const colorSet = ICON_COLORS[category.icon] || DEFAULT_COLOR;
 
   return (
@@ -39,7 +41,7 @@ const CategoryCardComponent: React.FC<CategoryCardProps> = ({ category, onPress,
         flex: 1,
         alignItems: 'center',
         justifyContent: 'center',
-        backgroundColor: colors.cardDark,
+        backgroundColor: theme.card,
         paddingVertical: 24,
         paddingHorizontal: 16,
         borderRadius: 16,
@@ -66,7 +68,7 @@ const CategoryCardComponent: React.FC<CategoryCardProps> = ({ category, onPress,
             justifyContent: 'center',
           }}
         >
-          <MaterialCommunityIcons name="check" size={14} color={colors.white} />
+          <MaterialCommunityIcons name="check" size={14} color="#FFFFFF" />
         </View>
       )}
       <View
@@ -99,7 +101,7 @@ const CategoryCardComponent: React.FC<CategoryCardProps> = ({ category, onPress,
         style={{
           fontSize: 15,
           fontWeight: '600',
-          color: colors.white,
+          color: theme.text,
           textAlign: 'center',
         }}
       >

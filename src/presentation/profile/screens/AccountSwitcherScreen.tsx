@@ -10,6 +10,7 @@ import { AppButton } from '@/presentation/shared/components/ui/AppButton';
 import { Card } from '@/presentation/shared/components/ui/Card';
 import { SectionHeader } from '@/presentation/shared/components/ui/SectionHeader';
 import { colors } from '@/core/theme/colors';
+import { useTheme } from '@/core/theme/useTheme';
 import { useSavedAccountsStore, SavedAccount } from '@/presentation/auth/store/savedAccountsStore';
 import { useAuthStore } from '@/presentation/auth/store/authStore';
 import { useRoleStore } from '@/presentation/auth/store/roleStore';
@@ -37,7 +38,9 @@ const ROW_STYLE = {
   gap: 14,
 };
 
-const AccountRowContent: React.FC<AccountRowProps> = ({ item, isActive, isEditing, onRemove }) => (
+const AccountRowContent: React.FC<AccountRowProps> = ({ item, isActive, isEditing, onRemove }) => {
+  const theme = useTheme();
+  return (
   <>
     {isEditing && !isActive ? (
       <Pressable
@@ -54,13 +57,13 @@ const AccountRowContent: React.FC<AccountRowProps> = ({ item, isActive, isEditin
           justifyContent: 'center',
         }}
       >
-        <MaterialCommunityIcons name="minus" size={16} color={colors.textWhite} />
+        <MaterialCommunityIcons name="minus" size={16} color={colors.white} />
       </Pressable>
     ) : (
       <MaterialCommunityIcons
         name={item.type === 'user' ? 'account' : 'domain'}
         size={20}
-        color={colors.textSlate500}
+        color={theme.textMuted}
       />
     )}
     <View
@@ -68,7 +71,7 @@ const AccountRowContent: React.FC<AccountRowProps> = ({ item, isActive, isEditin
         width: 44,
         height: 44,
         borderRadius: 22,
-        backgroundColor: colors.borderDark,
+        backgroundColor: theme.border,
         alignItems: 'center',
         justifyContent: 'center',
         overflow: 'hidden',
@@ -81,16 +84,16 @@ const AccountRowContent: React.FC<AccountRowProps> = ({ item, isActive, isEditin
           accessibilityLabel={item.displayName}
         />
       ) : (
-        <AppText style={{ fontSize: 14, fontWeight: '700', color: colors.textWhite }}>
+        <AppText style={{ fontSize: 14, fontWeight: '700', color: theme.text }}>
           {getInitials(item.displayName)}
         </AppText>
       )}
     </View>
     <View style={{ flex: 1 }}>
-      <AppText style={{ fontSize: 15, fontWeight: '600', color: colors.textWhite }}>
+      <AppText style={{ fontSize: 15, fontWeight: '600', color: theme.text }}>
         {item.displayName}
       </AppText>
-      <AppText style={{ fontSize: 13, color: colors.textSlate400, marginTop: 2 }}>
+      <AppText style={{ fontSize: 13, color: theme.textMuted, marginTop: 2 }}>
         {item.email}
       </AppText>
     </View>
@@ -106,17 +109,18 @@ const AccountRowContent: React.FC<AccountRowProps> = ({ item, isActive, isEditin
             justifyContent: 'center',
           }}
         >
-          <MaterialCommunityIcons name="check" size={14} color={colors.textWhite} />
+          <MaterialCommunityIcons name="check" size={14} color={colors.white} />
         </View>
       ) : (
-        <MaterialCommunityIcons name="chevron-right" size={22} color={colors.textSlate500} />
+        <MaterialCommunityIcons name="chevron-right" size={22} color={theme.textMuted} />
       )
     )}
     {isEditing && isActive && (
-      <AppText style={{ fontSize: 12, color: colors.textSlate500 }}>active</AppText>
+      <AppText style={{ fontSize: 12, color: theme.textMuted }}>active</AppText>
     )}
   </>
-);
+  );
+};
 
 const AccountRow: React.FC<AccountRowProps> = (props) => {
   if (props.isEditing) {
@@ -140,6 +144,7 @@ const AccountRow: React.FC<AccountRowProps> = (props) => {
 
 export default function AccountSwitcherScreen() {
   const { t } = useTranslation();
+  const theme = useTheme();
   const { accounts, isLoaded, load, save, remove } = useSavedAccountsStore();
   const currentUser = useAuthStore((s) => s.user);
   const role = useRoleStore((s) => s.role);
@@ -220,7 +225,7 @@ export default function AccountSwitcherScreen() {
                 <View
                   style={{
                     height: 1,
-                    backgroundColor: `${colors.borderDark}30`,
+                    backgroundColor: theme.border,
                     marginHorizontal: 16,
                   }}
                 />
@@ -257,10 +262,10 @@ export default function AccountSwitcherScreen() {
           >
             <MaterialCommunityIcons name="account-switch" size={36} color={colors.neonPurple} />
           </View>
-          <AppText style={{ fontSize: 24, fontWeight: '700', color: colors.textWhite, marginBottom: 8 }}>
+          <AppText style={{ fontSize: 24, fontWeight: '700', color: theme.text, marginBottom: 8 }}>
             {t('accountSwitcher.title')}
           </AppText>
-          <AppText style={{ fontSize: 14, color: colors.textSlate400 }}>
+          <AppText style={{ fontSize: 14, color: theme.textMuted }}>
             {t('accountSwitcher.subtitle')}
           </AppText>
         </View>
@@ -268,7 +273,7 @@ export default function AccountSwitcherScreen() {
         {/* Accounts */}
         {isLoaded && accounts.length === 0 ? (
           <View style={{ paddingHorizontal: 20, alignItems: 'center', paddingVertical: 16 }}>
-            <AppText style={{ color: colors.textSlate500, fontSize: 14 }}>
+            <AppText style={{ color: theme.textMuted, fontSize: 14 }}>
               {t('accountSwitcher.noSavedAccounts')}
             </AppText>
           </View>
@@ -304,7 +309,7 @@ export default function AccountSwitcherScreen() {
                   paddingHorizontal: 14,
                 }}
               >
-                <AppText style={{ fontSize: 12, color: colors.textSlate400, textAlign: 'center' }}>
+                <AppText style={{ fontSize: 12, color: theme.textMuted, textAlign: 'center' }}>
                   {t('accountSwitcher.removeAccountNote')}
                 </AppText>
               </View>
@@ -331,12 +336,12 @@ export default function AccountSwitcherScreen() {
               paddingVertical: 16,
               borderRadius: 16,
               borderWidth: 1.5,
-              borderColor: colors.borderDark,
+              borderColor: theme.border,
               borderStyle: 'dashed',
             }}
           >
-            <MaterialCommunityIcons name="login" size={22} color={colors.textSlate400} />
-            <AppText style={{ fontSize: 15, fontWeight: '500', color: colors.textSlate400 }}>
+            <MaterialCommunityIcons name="login" size={22} color={theme.textMuted} />
+            <AppText style={{ fontSize: 15, fontWeight: '500', color: theme.textMuted }}>
               {t('accountSwitcher.signInOtherAccount')}
             </AppText>
           </Pressable>
@@ -386,10 +391,10 @@ export default function AccountSwitcherScreen() {
             accessibilityRole="none"
             style={{
               width: '85%',
-              backgroundColor: colors.cardDark,
+              backgroundColor: theme.card,
               borderRadius: 20,
               borderWidth: 1,
-              borderColor: colors.borderDark,
+              borderColor: theme.border,
               padding: 24,
             }}
           >
@@ -400,7 +405,7 @@ export default function AccountSwitcherScreen() {
                   width: 64,
                   height: 64,
                   borderRadius: 32,
-                  backgroundColor: colors.borderDark,
+                  backgroundColor: theme.border,
                   alignItems: 'center',
                   justifyContent: 'center',
                   marginBottom: 12,
@@ -414,15 +419,15 @@ export default function AccountSwitcherScreen() {
                     accessibilityLabel={selectedAccount.displayName}
                   />
                 ) : (
-                  <AppText style={{ fontSize: 22, fontWeight: '700', color: colors.textWhite }}>
+                  <AppText style={{ fontSize: 22, fontWeight: '700', color: theme.text }}>
                     {selectedAccount ? getInitials(selectedAccount.displayName) : ''}
                   </AppText>
                 )}
               </View>
-              <AppText style={{ fontSize: 17, fontWeight: '700', color: colors.textWhite, marginBottom: 4 }}>
+              <AppText style={{ fontSize: 17, fontWeight: '700', color: theme.text, marginBottom: 4 }}>
                 {t('accountSwitcher.passwordModalTitle')}
               </AppText>
-              <AppText style={{ fontSize: 13, color: colors.textSlate400, textAlign: 'center' }}>
+              <AppText style={{ fontSize: 13, color: theme.textMuted, textAlign: 'center' }}>
                 {t('accountSwitcher.passwordModalSubtitle')} {selectedAccount?.displayName}
               </AppText>
             </View>
@@ -487,10 +492,10 @@ export default function AccountSwitcherScreen() {
             accessibilityRole="none"
             style={{
               width: '80%',
-              backgroundColor: colors.cardDark,
+              backgroundColor: theme.card,
               borderRadius: 20,
               borderWidth: 1,
-              borderColor: colors.borderDark,
+              borderColor: theme.border,
               padding: 24,
               alignItems: 'center',
             }}
@@ -508,10 +513,10 @@ export default function AccountSwitcherScreen() {
             >
               <MaterialCommunityIcons name="account-remove-outline" size={28} color="#EF4444" />
             </View>
-            <AppText style={{ fontSize: 17, fontWeight: '700', color: colors.textWhite, marginBottom: 8, textAlign: 'center' }}>
+            <AppText style={{ fontSize: 17, fontWeight: '700', color: theme.text, marginBottom: 8, textAlign: 'center' }}>
               {t('accountSwitcher.removeConfirmTitle')}
             </AppText>
-            <AppText style={{ fontSize: 13, color: colors.textSlate400, textAlign: 'center', marginBottom: 24, lineHeight: 20 }}>
+            <AppText style={{ fontSize: 13, color: theme.textMuted, textAlign: 'center', marginBottom: 24, lineHeight: 20 }}>
               {t('accountSwitcher.removeConfirmMessage')}
             </AppText>
             <View style={{ flexDirection: 'row', gap: 12, width: '100%' }}>
@@ -524,11 +529,11 @@ export default function AccountSwitcherScreen() {
                   paddingVertical: 12,
                   borderRadius: 12,
                   borderWidth: 1,
-                  borderColor: colors.borderDark,
+                  borderColor: theme.border,
                   alignItems: 'center',
                 }}
               >
-                <AppText style={{ fontSize: 15, fontWeight: '600', color: colors.textSlate300 }}>
+                <AppText style={{ fontSize: 15, fontWeight: '600', color: theme.textSecondary }}>
                   {t('accountSwitcher.removeConfirmNo')}
                 </AppText>
               </Pressable>
@@ -547,7 +552,7 @@ export default function AccountSwitcherScreen() {
                   alignItems: 'center',
                 }}
               >
-                <AppText style={{ fontSize: 15, fontWeight: '700', color: colors.textWhite }}>
+                <AppText style={{ fontSize: 15, fontWeight: '700', color: colors.white }}>
                   {t('accountSwitcher.removeConfirmYes')}
                 </AppText>
               </Pressable>

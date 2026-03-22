@@ -11,6 +11,7 @@ import {
   signInWithCredential,
   signInWithPopup,
   onAuthStateChanged,
+  sendEmailVerification,
 } from 'firebase/auth';
 import { User as FirebaseUser } from 'firebase/auth';
 import { GoogleSignin, isSuccessResponse, isErrorWithCode, statusCodes } from '@react-native-google-signin/google-signin';
@@ -28,6 +29,10 @@ export interface AuthRemoteDataSource {
   signOut(): Promise<void>;
   getCurrentUser(): Promise<UserModel | null>;
   changePassword(currentPassword: string, newPassword: string): Promise<void>;
+  verifyCurrentPassword(currentPassword: string): Promise<void>;
+  sendPasswordChangeEmailVerification(): Promise<void>;
+  sendEmailOtp(email: string): Promise<void>;
+  verifyEmailOtp(email: string, code: string): Promise<void>;
   signInWithGoogle(loginHint?: string): Promise<UserModel>;
   sendPhoneOtp(phone: string): Promise<void>;
   verifyPhoneOtp(businessId: string, code: string): Promise<void>;
@@ -186,6 +191,76 @@ export class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
     }
   }
 
+  async verifyCurrentPassword(currentPassword: string): Promise<void> {
+    try {
+      const user = auth.currentUser;
+      if (!user || !user.email) {
+        throw new AuthException('No authenticated user found');
+      }
+      const credential = EmailAuthProvider.credential(user.email, currentPassword);
+      await reauthenticateWithCredential(user, credential);
+    } catch (error: unknown) {
+      if (error instanceof AuthException) throw error;
+      const firebaseError = error as { message?: string; code?: string };
+      throw new AuthException(friendlyAuthError(firebaseError.code), firebaseError.code);
+    }
+  }
+
+  async sendPasswordChangeEmailVerification(): Promise<void> {
+    try {
+      const user = auth.currentUser;
+      if (!user) {
+        throw new AuthException('No authenticated user found');
+      }
+      await sendEmailVerification(user);
+    } catch (error: unknown) {
+      if (error instanceof AuthException) throw error;
+      const firebaseError = error as { message?: string; code?: string };
+      throw new AuthException(friendlyAuthError(firebaseError.code), firebaseError.code);
+    }
+  }
+
+  async sendEmailOtp(email: string): Promise<void> {
+    try {
+      const fn = httpsCallable<{ email: string }, { success: boolean }>(functions, 'sendEmailOtp');
+      await fn({ email });
+    } catch (error: unknown) {
+      const err = error as { code?: string; message?: string };
+      if (
+        err.code === 'functions/not-found' ||
+        err.code === 'functions/unimplemented' ||
+        err.code === 'functions/internal'
+      ) {
+        throw new ServerException('Email verification service is not yet available. Please try again later or use phone verification.');
+      }
+      throw new ServerException('Failed to send email code. Please try again.');
+    }
+  }
+
+  async verifyEmailOtp(email: string, code: string): Promise<void> {
+    try {
+      const fn = httpsCallable<{ email: string; code: string }, { verified: boolean }>(functions, 'verifyEmailOtp');
+      const result = await fn({ email, code });
+      if (!result.data.verified) {
+        throw new ServerException('Invalid or expired code. Please try again.');
+      }
+    } catch (error: unknown) {
+      if (error instanceof ServerException) throw error;
+      const err = error as { code?: string; message?: string };
+      if (
+        err.code === 'functions/not-found' ||
+        err.code === 'functions/unimplemented' ||
+        err.code === 'functions/internal'
+      ) {
+        throw new ServerException('Email verification service is not yet available. Please try again later.');
+      }
+      if (err.code === 'functions/invalid-argument') {
+        throw new ServerException('Invalid or expired code. Please try again.');
+      }
+      throw new ServerException('Verification failed. Please try again.');
+    }
+  }
+
   async signInWithGoogle(loginHint?: string): Promise<UserModel> {
     if (Platform.OS === 'web') {
       return this._signInWithGoogleWeb(loginHint);
@@ -310,10 +385,14 @@ export class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
       await sendOtp({ phone });
     } catch (error: unknown) {
       const err = error as { code?: string; message?: string };
-      if (err.code === 'functions/not-found' || err.code === 'functions/unimplemented') {
-        throw new ServerException('SMS service is not yet configured. Please contact support.');
+      if (
+        err.code === 'functions/not-found' ||
+        err.code === 'functions/unimplemented' ||
+        err.code === 'functions/internal'
+      ) {
+        throw new ServerException('SMS verification service is not yet available. Please try again later or use email verification.');
       }
-      throw new ServerException(err.message ?? 'Failed to send verification code. Please try again.');
+      throw new ServerException('Failed to send verification code. Please try again.');
     }
   }
 
@@ -327,13 +406,17 @@ export class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
     } catch (error: unknown) {
       if (error instanceof ServerException) throw error;
       const err = error as { code?: string; message?: string };
-      if (err.code === 'functions/not-found' || err.code === 'functions/unimplemented') {
-        throw new ServerException('SMS service is not yet configured. Please contact support.');
+      if (
+        err.code === 'functions/not-found' ||
+        err.code === 'functions/unimplemented' ||
+        err.code === 'functions/internal'
+      ) {
+        throw new ServerException('SMS verification service is not yet available. Please try again later.');
       }
       if (err.code === 'functions/invalid-argument') {
         throw new ServerException('Invalid or expired code. Please try again.');
       }
-      throw new ServerException(err.message ?? 'Verification failed. Please try again.');
+      throw new ServerException('Verification failed. Please try again.');
     }
   }
 }

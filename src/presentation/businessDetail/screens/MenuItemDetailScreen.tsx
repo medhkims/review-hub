@@ -6,6 +6,7 @@ import { router } from 'expo-router';
 import { ScreenLayout } from '@/presentation/shared/layouts/ScreenLayout';
 import { AppText } from '@/presentation/shared/components/ui/AppText';
 import { colors } from '@/core/theme/colors';
+import { useTheme } from '@/core/theme/useTheme';
 
 // Mock data matching design screenshot
 const MOCK_ITEM = {
@@ -23,17 +24,19 @@ const MOCK_ITEM = {
   ],
 };
 
-const IngredientChip: React.FC<{ name: string; icon: string }> = ({ name, icon }) => (
+const IngredientChip: React.FC<{ name: string; icon: string }> = ({ name, icon }) => {
+  const theme = useTheme();
+  return (
   <View
     style={{
-      backgroundColor: colors.cardDark,
+      backgroundColor: theme.card,
       borderRadius: 16,
       paddingHorizontal: 20,
       paddingVertical: 12,
       alignItems: 'center',
       justifyContent: 'center',
       borderWidth: 1,
-      borderColor: `${colors.borderDark}50`,
+      borderColor: theme.border,
       minWidth: 90,
     }}
   >
@@ -43,12 +46,14 @@ const IngredientChip: React.FC<{ name: string; icon: string }> = ({ name, icon }
       color={colors.neonPurple}
       style={{ marginBottom: 6 }}
     />
-    <AppText style={{ fontSize: 12, color: colors.textSlate400, fontWeight: '500' }}>{name}</AppText>
+    <AppText style={{ fontSize: 12, color: theme.textSecondary, fontWeight: '500' }}>{name}</AppText>
   </View>
-);
+  );
+};
 
 export default function MenuItemDetailScreen() {
   const { t } = useTranslation();
+  const theme = useTheme();
 
   return (
     <ScreenLayout>
@@ -78,7 +83,7 @@ export default function MenuItemDetailScreen() {
               justifyContent: 'center',
             }}
           >
-            <MaterialCommunityIcons name="chevron-left" size={26} color={colors.textWhite} />
+            <MaterialCommunityIcons name="chevron-left" size={26} color={theme.text} />
           </Pressable>
         </View>
 
@@ -86,7 +91,7 @@ export default function MenuItemDetailScreen() {
         <View style={{ paddingHorizontal: 24, paddingTop: 24 }}>
           {/* Name & Price row */}
           <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 8 }}>
-            <AppText style={{ fontSize: 28, fontWeight: '700', color: colors.textWhite, flex: 1 }}>
+            <AppText style={{ fontSize: 28, fontWeight: '700', color: theme.text, flex: 1 }}>
               {MOCK_ITEM.name}
             </AppText>
             <AppText style={{ fontSize: 22, fontWeight: '700', color: colors.neonPurple, marginLeft: 12 }}>
@@ -95,23 +100,23 @@ export default function MenuItemDetailScreen() {
           </View>
 
           {/* Business & category */}
-          <AppText style={{ fontSize: 13, fontWeight: '600', color: colors.textSlate400, letterSpacing: 1, marginBottom: 20 }}>
+          <AppText style={{ fontSize: 13, fontWeight: '600', color: theme.textSecondary, letterSpacing: 1, marginBottom: 20 }}>
             {MOCK_ITEM.businessName} · {MOCK_ITEM.category}
           </AppText>
 
           {/* Description */}
-          <AppText style={{ fontSize: 15, color: colors.textSlate400, lineHeight: 24, marginBottom: 32 }}>
+          <AppText style={{ fontSize: 15, color: theme.textSecondary, lineHeight: 24, marginBottom: 32 }}>
             {MOCK_ITEM.description}
           </AppText>
 
           {/* Ingredients section */}
           <View
             style={{
-              backgroundColor: colors.cardDark,
+              backgroundColor: theme.card,
               borderRadius: 20,
               padding: 20,
               borderWidth: 1,
-              borderColor: `${colors.borderDark}30`,
+              borderColor: theme.border,
             }}
           >
             <AppText

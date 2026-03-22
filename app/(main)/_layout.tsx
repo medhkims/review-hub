@@ -6,6 +6,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { StackActions } from '@react-navigation/native';
 import { colors } from '@/core/theme';
+import { useTheme } from '@/core/theme/useTheme';
 import { useRoleNavigation } from '@/presentation/shared/hooks/useRoleNavigation';
 import { useRoleStore } from '@/presentation/auth/store/roleStore';
 import { AdminDrawer } from '@/presentation/admin/components/AdminDrawer';
@@ -31,6 +32,7 @@ export default function MainLayout() {
   const { role } = useRoleStore();
   const { unreadCount, setNotifications } = useNotificationStore();
   const { bottom } = useSafeAreaInsets();
+  const theme = useTheme();
 
   // Once the role is loaded, auth is guaranteed ready — fetch notifications for the badge
   useEffect(() => {
@@ -49,7 +51,7 @@ export default function MainLayout() {
           flex: 1,
           justifyContent: 'center',
           alignItems: 'center',
-          backgroundColor: colors.midnight,
+          backgroundColor: theme.background,
         }}
       >
         <ActivityIndicator size="large" color={colors.neonPurple} />
@@ -65,12 +67,12 @@ export default function MainLayout() {
       screenOptions={{
         headerShown: false,
         tabBarActiveTintColor: colors.neonPurple,
-        tabBarInactiveTintColor: colors.textSlate500,
+        tabBarInactiveTintColor: theme.textMuted,
         tabBarStyle: isAdmin
           ? { display: 'none' }
           : {
-              backgroundColor: colors.midnight,
-              borderTopColor: colors.textSlate800,
+              backgroundColor: theme.card,
+              borderTopColor: theme.border,
               borderTopWidth: 1,
               paddingBottom: Platform.OS === 'ios' ? 24 : 8 + bottom,
               paddingTop: 8,
@@ -117,7 +119,7 @@ export default function MainLayout() {
                             justifyContent: 'center',
                             paddingHorizontal: 3,
                             borderWidth: 1.5,
-                            borderColor: colors.midnight,
+                            borderColor: theme.card,
                           }}
                         >
                           {unreadCount <= 99 && (

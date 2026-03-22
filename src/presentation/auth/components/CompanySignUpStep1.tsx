@@ -7,6 +7,7 @@ import { AppText } from '@/presentation/shared/components/ui/AppText';
 import { AppButton } from '@/presentation/shared/components/ui/AppButton';
 import { SubcategoryPickerModal } from '@/presentation/shared/components/ui/SubcategoryPickerModal';
 import { colors } from '@/core/theme/colors';
+import { useTheme } from '@/core/theme/useTheme';
 import { CATEGORIES_DATA } from '@/core/constants/categoriesData';
 
 interface CompanySignUpStep1Props {
@@ -56,6 +57,7 @@ const IconInputField: React.FC<IconInputFieldProps> = ({
   textContentType,
   rightIcon,
 }) => {
+  const theme = useTheme();
   const [visible, setVisible] = useState(false);
   const isPassword = secureTextEntry !== undefined;
 
@@ -63,7 +65,7 @@ const IconInputField: React.FC<IconInputFieldProps> = ({
     <View>
       <AppText
         style={{
-          color: colors.textSlate200,
+          color: theme.text,
           fontSize: 14,
           fontWeight: '500',
           marginBottom: 6,
@@ -76,9 +78,9 @@ const IconInputField: React.FC<IconInputFieldProps> = ({
         style={{
           flexDirection: 'row',
           alignItems: 'center',
-          backgroundColor: colors.cardDark,
+          backgroundColor: theme.card,
           borderWidth: 1,
-          borderColor: colors.borderDark,
+          borderColor: theme.border,
           borderRadius: 16,
           paddingHorizontal: 16,
           height: 52,
@@ -87,7 +89,7 @@ const IconInputField: React.FC<IconInputFieldProps> = ({
         <MaterialCommunityIcons
           name={icon}
           size={20}
-          color={colors.textSlate400}
+          color={theme.textSecondary}
           style={{ marginRight: 12 }}
         />
         <TextInput
@@ -99,11 +101,11 @@ const IconInputField: React.FC<IconInputFieldProps> = ({
           autoCapitalize={autoCapitalize}
           autoComplete={autoComplete}
           textContentType={textContentType}
-          placeholderTextColor={colors.textSlate500}
+          placeholderTextColor={theme.textMuted}
           accessibilityLabel={label}
           style={{
             flex: 1,
-            color: colors.textWhite,
+            color: theme.text,
             fontSize: 16,
             paddingVertical: 0,
           }}
@@ -118,12 +120,12 @@ const IconInputField: React.FC<IconInputFieldProps> = ({
             <MaterialCommunityIcons
               name={visible ? 'eye-off-outline' : 'eye-outline'}
               size={20}
-              color={colors.textSlate500}
+              color={theme.textMuted}
             />
           </Pressable>
         )}
         {rightIcon && !isPassword && (
-          <MaterialCommunityIcons name={rightIcon} size={20} color={colors.textSlate500} />
+          <MaterialCommunityIcons name={rightIcon} size={20} color={theme.textMuted} />
         )}
       </View>
     </View>
@@ -151,6 +153,7 @@ const SearchableSelectField: React.FC<SearchableSelectFieldProps> = ({
   icon,
   disabled = false,
 }) => {
+  const theme = useTheme();
   const inputRef = useRef<TextInput>(null);
   const [isOpen, setIsOpen] = useState(false);
   const [searchText, setSearchText] = useState('');
@@ -197,7 +200,7 @@ const SearchableSelectField: React.FC<SearchableSelectFieldProps> = ({
     <View style={{ opacity: disabled ? 0.6 : 1 }}>
       <AppText
         style={{
-          color: colors.textSlate200,
+          color: theme.text,
           fontSize: 14,
           fontWeight: '500',
           marginBottom: 6,
@@ -210,9 +213,9 @@ const SearchableSelectField: React.FC<SearchableSelectFieldProps> = ({
         style={{
           flexDirection: 'row',
           alignItems: 'center',
-          backgroundColor: colors.cardDark,
+          backgroundColor: theme.card,
           borderWidth: 1,
-          borderColor: isOpen ? colors.neonPurple : colors.borderDark,
+          borderColor: isOpen ? colors.neonPurple : theme.border,
           borderRadius: 16,
           paddingHorizontal: 16,
           height: 52,
@@ -221,7 +224,7 @@ const SearchableSelectField: React.FC<SearchableSelectFieldProps> = ({
         <MaterialCommunityIcons
           name={icon}
           size={20}
-          color={colors.textSlate400}
+          color={theme.textSecondary}
           style={{ marginRight: 12 }}
         />
         <TextInput
@@ -231,12 +234,12 @@ const SearchableSelectField: React.FC<SearchableSelectFieldProps> = ({
           onFocus={handleFocus}
           onBlur={handleBlur}
           placeholder={placeholder}
-          placeholderTextColor={colors.textSlate500}
+          placeholderTextColor={theme.textMuted}
           editable={!disabled}
           accessibilityLabel={label}
           style={{
             flex: 1,
-            color: colors.textWhite,
+            color: theme.text,
             fontSize: 16,
             paddingVertical: 0,
           }}
@@ -248,22 +251,22 @@ const SearchableSelectField: React.FC<SearchableSelectFieldProps> = ({
             accessibilityRole="button"
             accessibilityLabel="Clear"
           >
-            <MaterialCommunityIcons name="close-circle" size={18} color={colors.textSlate500} />
+            <MaterialCommunityIcons name="close-circle" size={18} color={theme.textMuted} />
           </Pressable>
         ) : (
           <MaterialCommunityIcons
             name={isOpen ? 'chevron-up' : 'chevron-down'}
             size={20}
-            color={colors.textSlate500}
+            color={theme.textMuted}
           />
         )}
       </View>
       {isOpen && (
         <View
           style={{
-            backgroundColor: colors.cardDark,
+            backgroundColor: theme.card,
             borderWidth: 1,
-            borderColor: colors.borderDark,
+            borderColor: theme.border,
             borderRadius: 12,
             marginTop: 4,
             overflow: 'hidden',
@@ -284,13 +287,13 @@ const SearchableSelectField: React.FC<SearchableSelectFieldProps> = ({
                   backgroundColor:
                     value === option.value ? 'rgba(168, 85, 247, 0.1)' : 'transparent',
                   borderBottomWidth: index < filteredOptions.length - 1 ? 1 : 0,
-                  borderBottomColor: colors.borderDark,
+                  borderBottomColor: theme.border,
                 }}
               >
                 <AppText
                   style={{
                     fontSize: 15,
-                    color: value === option.value ? colors.neonPurple : colors.textSlate200,
+                    color: value === option.value ? colors.neonPurple : theme.text,
                     fontWeight: value === option.value ? '600' : '400',
                   }}
                 >
@@ -313,32 +316,38 @@ interface SectionHeaderProps {
   title: string;
 }
 
-const SectionHeader: React.FC<SectionHeaderProps> = ({ title }) => (
-  <AppText
-    style={{
-      fontSize: 12,
-      fontWeight: '600',
-      color: colors.textSlate400,
-      textTransform: 'uppercase',
-      letterSpacing: 1,
-      marginBottom: 16,
-      marginLeft: 4,
-    }}
-  >
-    {title}
-  </AppText>
-);
+const SectionHeader: React.FC<SectionHeaderProps> = ({ title }) => {
+  const theme = useTheme();
+  return (
+    <AppText
+      style={{
+        fontSize: 12,
+        fontWeight: '600',
+        color: theme.textSecondary,
+        textTransform: 'uppercase',
+        letterSpacing: 1,
+        marginBottom: 16,
+        marginLeft: 4,
+      }}
+    >
+      {title}
+    </AppText>
+  );
+};
 
-const Divider: React.FC = () => (
-  <View
-    style={{
-      height: 1,
-      backgroundColor: colors.borderDark,
-      marginVertical: 4,
-      opacity: 0.5,
-    }}
-  />
-);
+const Divider: React.FC = () => {
+  const theme = useTheme();
+  return (
+    <View
+      style={{
+        height: 1,
+        backgroundColor: theme.border,
+        marginVertical: 4,
+        opacity: 0.5,
+      }}
+    />
+  );
+};
 
 // --- Constants derived from canonical category data ---
 
@@ -363,6 +372,7 @@ export const CompanySignUpStep1: React.FC<CompanySignUpStep1Props> = ({
 }) => {
   const router = useRouter();
   const { t } = useTranslation();
+  const theme = useTheme();
   const { businessName, category, subCategories, email, phone, password, confirmPassword } = formData;
   const [subcategoryPickerVisible, setSubcategoryPickerVisible] = useState(false);
   const [formError, setFormError] = useState<string | null>(null);
@@ -442,22 +452,22 @@ export const CompanySignUpStep1: React.FC<CompanySignUpStep1Props> = ({
             width: 40,
             height: 40,
             borderRadius: 20,
-            backgroundColor: 'rgba(30, 41, 59, 0.5)',
+            backgroundColor: theme.isDark ? 'rgba(30, 41, 59, 0.5)' : 'rgba(148,163,184,0.2)',
             alignItems: 'center',
             justifyContent: 'center',
           }}
         >
-          <MaterialCommunityIcons name="arrow-left" size={22} color={colors.textWhite} />
+          <MaterialCommunityIcons name="arrow-left" size={22} color={theme.text} />
         </Pressable>
 
         <View
           style={{
-            backgroundColor: colors.cardDark,
+            backgroundColor: theme.card,
             paddingHorizontal: 12,
             paddingVertical: 4,
             borderRadius: 9999,
             borderWidth: 1,
-            borderColor: colors.borderDark,
+            borderColor: theme.border,
           }}
         >
           <AppText style={{ fontSize: 12, fontWeight: '600', color: colors.neonPurple }}>
@@ -470,11 +480,11 @@ export const CompanySignUpStep1: React.FC<CompanySignUpStep1Props> = ({
 
       {/* Title & subtitle */}
       <AppText
-        style={{ fontSize: 28, fontWeight: '700', color: colors.textWhite, marginBottom: 8 }}
+        style={{ fontSize: 28, fontWeight: '700', color: theme.text, marginBottom: 8 }}
       >
         {t('auth.companySignUp.step1Title')}
       </AppText>
-      <AppText style={{ fontSize: 14, color: colors.textSlate400, marginBottom: 20 }}>
+      <AppText style={{ fontSize: 14, color: theme.textSecondary, marginBottom: 20 }}>
         {t('auth.companySignUp.step1Subtitle')}
       </AppText>
 
@@ -493,8 +503,8 @@ export const CompanySignUpStep1: React.FC<CompanySignUpStep1Props> = ({
             elevation: 3,
           }}
         />
-        <View style={{ flex: 1, height: 6, borderRadius: 3, backgroundColor: colors.borderDark }} />
-        <View style={{ flex: 1, height: 6, borderRadius: 3, backgroundColor: colors.borderDark }} />
+        <View style={{ flex: 1, height: 6, borderRadius: 3, backgroundColor: theme.border }} />
+        <View style={{ flex: 1, height: 6, borderRadius: 3, backgroundColor: theme.border }} />
       </View>
 
       {/* Error */}
@@ -543,7 +553,7 @@ export const CompanySignUpStep1: React.FC<CompanySignUpStep1Props> = ({
             <View>
               <AppText
                 style={{
-                  color: colors.textSlate200,
+                  color: theme.text,
                   fontSize: 14,
                   fontWeight: '500',
                   marginBottom: 6,
@@ -559,9 +569,9 @@ export const CompanySignUpStep1: React.FC<CompanySignUpStep1Props> = ({
                 style={{
                   flexDirection: 'row',
                   alignItems: 'center',
-                  backgroundColor: colors.cardDark,
+                  backgroundColor: theme.card,
                   borderWidth: 1,
-                  borderColor: subcategoryError ? '#EF4444' : colors.borderDark,
+                  borderColor: subcategoryError ? '#EF4444' : theme.border,
                   borderRadius: 16,
                   paddingHorizontal: 16,
                   height: 52,
@@ -570,14 +580,14 @@ export const CompanySignUpStep1: React.FC<CompanySignUpStep1Props> = ({
                 <MaterialCommunityIcons
                   name="subdirectory-arrow-right"
                   size={20}
-                  color={colors.textSlate400}
+                  color={theme.textSecondary}
                   style={{ marginRight: 12 }}
                 />
                 <AppText
                   style={{
                     flex: 1,
                     fontSize: 16,
-                    color: subCategories.length > 0 ? colors.textWhite : colors.textSlate500,
+                    color: subCategories.length > 0 ? theme.text : theme.textMuted,
                   }}
                 >
                   {subCategories.length === 0
@@ -586,7 +596,7 @@ export const CompanySignUpStep1: React.FC<CompanySignUpStep1Props> = ({
                     ? availableSubCategories.find((o) => o.value === subCategories[0])?.label ?? ''
                     : `${subCategories.length} sub-categories selected`}
                 </AppText>
-                <MaterialCommunityIcons name="chevron-down" size={20} color={colors.textSlate500} />
+                <MaterialCommunityIcons name="chevron-down" size={20} color={theme.textMuted} />
               </Pressable>
               {subcategoryError && (
                 <AppText
@@ -627,7 +637,7 @@ export const CompanySignUpStep1: React.FC<CompanySignUpStep1Props> = ({
           <View>
             <AppText
               style={{
-                color: colors.textSlate200,
+                color: theme.text,
                 fontSize: 14,
                 fontWeight: '500',
                 marginBottom: 6,
@@ -640,9 +650,9 @@ export const CompanySignUpStep1: React.FC<CompanySignUpStep1Props> = ({
               style={{
                 flexDirection: 'row',
                 alignItems: 'center',
-                backgroundColor: colors.cardDark,
+                backgroundColor: theme.card,
                 borderWidth: 1,
-                borderColor: colors.borderDark,
+                borderColor: theme.border,
                 borderRadius: 16,
                 height: 52,
               }}
@@ -657,14 +667,14 @@ export const CompanySignUpStep1: React.FC<CompanySignUpStep1Props> = ({
                 <MaterialCommunityIcons
                   name="phone-outline"
                   size={20}
-                  color={colors.textSlate400}
+                  color={theme.textSecondary}
                   style={{ marginRight: 12 }}
                 />
                 <AppText
                   style={{
                     fontSize: 15,
                     fontWeight: '500',
-                    color: colors.textSlate400,
+                    color: theme.textSecondary,
                     marginRight: 8,
                   }}
                 >
@@ -674,7 +684,7 @@ export const CompanySignUpStep1: React.FC<CompanySignUpStep1Props> = ({
                   style={{
                     width: 1,
                     height: 24,
-                    backgroundColor: colors.borderDark,
+                    backgroundColor: theme.border,
                     marginRight: 8,
                   }}
                 />
@@ -684,11 +694,11 @@ export const CompanySignUpStep1: React.FC<CompanySignUpStep1Props> = ({
                 value={phone}
                 onChangeText={(val) => onFormChange({ phone: val })}
                 keyboardType="phone-pad"
-                placeholderTextColor={colors.textSlate500}
+                placeholderTextColor={theme.textMuted}
                 accessibilityLabel="Phone Number"
                 style={{
                   flex: 1,
-                  color: colors.textWhite,
+                  color: theme.text,
                   fontSize: 16,
                   paddingRight: 16,
                   paddingVertical: 0,
@@ -737,9 +747,9 @@ export const CompanySignUpStep1: React.FC<CompanySignUpStep1Props> = ({
           bottom: 0,
           left: -24,
           right: -24,
-          backgroundColor: 'rgba(15, 23, 42, 0.8)',
+          backgroundColor: theme.isDark ? 'rgba(15, 23, 42, 0.8)' : 'rgba(241,245,249,0.95)',
           borderTopWidth: 1,
-          borderTopColor: 'rgba(51, 65, 85, 0.5)',
+          borderTopColor: theme.border,
           paddingHorizontal: 24,
           paddingTop: 20,
           paddingBottom: Platform.OS === 'ios' ? 36 : 24,
@@ -768,7 +778,7 @@ export const CompanySignUpStep1: React.FC<CompanySignUpStep1Props> = ({
 
         <View style={{ marginTop: 16, alignItems: 'center' }}>
           <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-            <AppText style={{ fontSize: 14, color: colors.textSlate400 }}>
+            <AppText style={{ fontSize: 14, color: theme.textSecondary }}>
               {t('auth.companySignUp.hasAccount')}{' '}
             </AppText>
             <Pressable

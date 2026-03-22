@@ -2,6 +2,7 @@ import React, { useEffect } from 'react';
 import { Platform, LogBox } from 'react-native';
 import { useCategoryDefaultStore } from '@/presentation/shared/store/categoryDefaultStore';
 import { Stack } from 'expo-router';
+import { useTheme } from '@/core/theme/useTheme';
 
 LogBox.ignoreLogs(['Unknown event handler property']);
 import { SafeAreaProvider } from 'react-native-safe-area-context';
@@ -29,12 +30,13 @@ if (Platform.OS !== 'web') {
 
 export default function RootLayout() {
   const loadCategoryDefaults = useCategoryDefaultStore((s) => s.load);
+  const theme = useTheme();
   useEffect(() => { loadCategoryDefaults(); }, [loadCategoryDefaults]);
 
   return (
     <SafeAreaProvider>
       <ErrorBoundary>
-        <StatusBar style="light" />
+        <StatusBar style={theme.statusBar} />
         <Stack screenOptions={{ headerShown: false }}>
           <Stack.Screen name="(auth)" />
           <Stack.Screen name="(main)" />

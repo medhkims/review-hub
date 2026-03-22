@@ -9,6 +9,10 @@ export interface AuthRepository {
   signOut(): Promise<Either<Failure, void>>;
   getCurrentUser(): Promise<Either<Failure, UserEntity | null>>;
   changePassword(currentPassword: string, newPassword: string): Promise<Either<Failure, void>>;
+  verifyCurrentPassword(currentPassword: string): Promise<Either<Failure, void>>;
+  sendPasswordChangeEmailVerification(): Promise<Either<Failure, void>>;
+  sendEmailOtp(email: string): Promise<Either<Failure, void>>;
+  verifyEmailOtp(email: string, code: string): Promise<Either<Failure, void>>;
   signInWithGoogle(loginHint?: string): Promise<Either<Failure, UserEntity>>;
   sendPhoneOtp(phone: string): Promise<Either<Failure, void>>;
   verifyPhoneOtp(businessId: string, code: string): Promise<Either<Failure, void>>;

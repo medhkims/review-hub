@@ -7,6 +7,7 @@ import { ScreenLayout } from '@/presentation/shared/layouts/ScreenLayout';
 import { AppText } from '@/presentation/shared/components/ui/AppText';
 import { SectionHeader } from '@/presentation/shared/components/ui/SectionHeader';
 import { colors } from '@/core/theme/colors';
+import { useTheme } from '@/core/theme/useTheme';
 
 interface LocationItem {
   id: string;
@@ -23,49 +24,53 @@ const LocationRow: React.FC<{
   item: LocationItem;
   onPress: (name: string) => void;
   onRemove: (id: string) => void;
-}> = ({ item, onPress, onRemove }) => (
-  <View
-    style={{
-      flexDirection: 'row',
-      alignItems: 'center',
-      paddingVertical: 16,
-      borderBottomWidth: 1,
-      borderBottomColor: `${colors.borderDark}50`,
-    }}
-  >
-    <Pressable
-      onPress={() => onPress(item.name)}
-      style={{ flex: 1, flexDirection: 'row', alignItems: 'center', gap: 16 }}
-      accessibilityLabel={`Select ${item.name}`}
-      accessibilityRole="button"
+}> = ({ item, onPress, onRemove }) => {
+  const theme = useTheme();
+  return (
+    <View
+      style={{
+        flexDirection: 'row',
+        alignItems: 'center',
+        paddingVertical: 16,
+        borderBottomWidth: 1,
+        borderBottomColor: theme.border,
+      }}
     >
-      <View
-        style={{
-          width: 44,
-          height: 44,
-          borderRadius: 22,
-          backgroundColor: `${colors.borderDark}80`,
-          alignItems: 'center',
-          justifyContent: 'center',
-        }}
+      <Pressable
+        onPress={() => onPress(item.name)}
+        style={{ flex: 1, flexDirection: 'row', alignItems: 'center', gap: 16 }}
+        accessibilityLabel={`Select ${item.name}`}
+        accessibilityRole="button"
       >
-        <MaterialCommunityIcons name="clock-outline" size={22} color={colors.textSlate500} />
-      </View>
-      <AppText style={{ fontSize: 16, color: colors.textWhite, fontWeight: '500' }}>{item.name}</AppText>
-    </Pressable>
-    <Pressable
-      onPress={() => onRemove(item.id)}
-      accessibilityLabel={`Remove ${item.name}`}
-      accessibilityRole="button"
-      style={{ padding: 8 }}
-    >
-      <MaterialCommunityIcons name="close" size={20} color={colors.textSlate500} />
-    </Pressable>
-  </View>
-);
+        <View
+          style={{
+            width: 44,
+            height: 44,
+            borderRadius: 22,
+            backgroundColor: theme.card,
+            alignItems: 'center',
+            justifyContent: 'center',
+          }}
+        >
+          <MaterialCommunityIcons name="clock-outline" size={22} color={theme.textMuted} />
+        </View>
+        <AppText style={{ fontSize: 16, color: theme.text, fontWeight: '500' }}>{item.name}</AppText>
+      </Pressable>
+      <Pressable
+        onPress={() => onRemove(item.id)}
+        accessibilityLabel={`Remove ${item.name}`}
+        accessibilityRole="button"
+        style={{ padding: 8 }}
+      >
+        <MaterialCommunityIcons name="close" size={20} color={theme.textMuted} />
+      </Pressable>
+    </View>
+  );
+};
 
 export default function LocationSearchScreen() {
   const { t } = useTranslation();
+  const theme = useTheme();
   const [query, setQuery] = useState('');
   const [recentSearches, setRecentSearches] = useState(RECENT_SEARCHES);
 
@@ -97,14 +102,14 @@ export default function LocationSearchScreen() {
           accessibilityRole="button"
           style={{ padding: 4 }}
         >
-          <MaterialCommunityIcons name="chevron-left" size={28} color={colors.textWhite} />
+          <MaterialCommunityIcons name="chevron-left" size={28} color={theme.text} />
         </Pressable>
         <View
           style={{
             flex: 1,
             flexDirection: 'row',
             alignItems: 'center',
-            backgroundColor: colors.cardDark,
+            backgroundColor: theme.card,
             borderRadius: 12,
             paddingHorizontal: 16,
             height: 48,
@@ -121,8 +126,8 @@ export default function LocationSearchScreen() {
             value={query}
             onChangeText={setQuery}
             placeholder="Search location..."
-            placeholderTextColor={colors.textSlate500}
-            style={{ flex: 1, color: colors.textWhite, fontSize: 15, marginLeft: 10, paddingVertical: 0 }}
+            placeholderTextColor={theme.textMuted}
+            style={{ flex: 1, color: theme.text, fontSize: 15, marginLeft: 10, paddingVertical: 0 }}
             accessibilityLabel="Search location"
             autoFocus
           />
@@ -155,8 +160,8 @@ export default function LocationSearchScreen() {
           <MaterialCommunityIcons name="crosshairs-gps" size={22} color={colors.primary} />
         </View>
         <View>
-          <AppText style={{ fontSize: 16, fontWeight: '600', color: colors.textWhite }}>Current Location</AppText>
-          <AppText style={{ fontSize: 13, color: colors.textSlate400, marginTop: 2 }}>Using GPS</AppText>
+          <AppText style={{ fontSize: 16, fontWeight: '600', color: theme.text }}>Current Location</AppText>
+          <AppText style={{ fontSize: 13, color: theme.textSecondary, marginTop: 2 }}>Using GPS</AppText>
         </View>
       </Pressable>
 
@@ -164,7 +169,7 @@ export default function LocationSearchScreen() {
       {recentSearches.length > 0 && (
         <View style={{ paddingHorizontal: 24, marginTop: 8 }}>
           <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
-            <AppText style={{ fontSize: 18, fontWeight: '700', color: colors.textWhite }}>Recent Searches</AppText>
+            <AppText style={{ fontSize: 18, fontWeight: '700', color: theme.text }}>Recent Searches</AppText>
             <Pressable onPress={handleClearAll} accessibilityLabel="Clear all recent searches" accessibilityRole="button">
               <AppText style={{ fontSize: 14, fontWeight: '600', color: colors.neonPurple }}>Clear All</AppText>
             </Pressable>

@@ -2,6 +2,7 @@ import React, { useEffect, useRef } from 'react';
 import { View, Image, Animated, Pressable } from 'react-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { AppText } from './AppText';
+import { useTheme } from '@/core/theme/useTheme';
 
 interface AvatarProps {
   imageUrl?: string | null;
@@ -25,6 +26,7 @@ export const Avatar: React.FC<AvatarProps> = ({
   onEditPress,
   initials,
 }) => {
+  const theme = useTheme();
   const glowAnim = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
@@ -94,17 +96,17 @@ export const Avatar: React.FC<AvatarProps> = ({
               width: container,
               height: container,
               borderRadius: container / 2,
-              backgroundColor: '#334155',
+              backgroundColor: theme.card,
               alignItems: 'center',
               justifyContent: 'center',
             }}
           >
             {initials ? (
-              <AppText style={{ fontSize: container * 0.28, fontWeight: '700', color: '#FFFFFF' }}>
+              <AppText style={{ fontSize: container * 0.28, fontWeight: '700', color: theme.text }}>
                 {initials}
               </AppText>
             ) : (
-              <MaterialCommunityIcons name="account" size={container * 0.6} color="#94A3B8" />
+              <MaterialCommunityIcons name="account" size={container * 0.6} color={theme.textSecondary} />
             )}
           </View>
         )}
@@ -122,7 +124,7 @@ export const Avatar: React.FC<AvatarProps> = ({
             borderRadius: 9999,
             padding: 6,
             borderWidth: 3,
-            borderColor: '#0F172A',
+            borderColor: theme.background,
             shadowColor: '#000',
             shadowOffset: { width: 0, height: 2 },
             shadowOpacity: 0.3,

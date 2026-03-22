@@ -13,6 +13,7 @@ import { colors } from '@/core/theme/colors';
 import { AppText } from '@/presentation/shared/components/ui/AppText';
 import { useAdminDrawerStore } from '../store/adminDrawerStore';
 import { useAuth } from '@/presentation/auth/hooks/useAuth';
+import { useAdminBadges } from '../hooks/useAdminBadges';
 
 const DRAWER_WIDTH = 280;
 
@@ -47,8 +48,8 @@ const MENU_ITEMS: MenuItem[] = [
     key: 'verification',
     label: 'Verification',
     icon: 'shield-check-outline',
-    route: '/(main)/(settings)/pending-businesses',
-    pathMatch: '/pending-businesses',
+    route: '/(main)/(settings)/admin-verifications',
+    pathMatch: '/admin-verifications',
   },
   {
     key: 'categories',
@@ -89,8 +90,8 @@ const MENU_ITEMS: MenuItem[] = [
     key: 'help',
     label: 'Help Center',
     icon: 'help-circle-outline',
-    route: '/(main)/(settings)',
-    pathMatch: '/settings',
+    route: '/(main)/(settings)/help-center',
+    pathMatch: '/help-center',
   },
   {
     key: 'info',
@@ -104,6 +105,13 @@ const MENU_ITEMS: MenuItem[] = [
 export const AdminDrawer: React.FC = () => {
   const { isOpen, close, activeKey, setActiveKey } = useAdminDrawerStore();
   const { signOut } = useAuth();
+  const badges = useAdminBadges();
+
+  const badgeCount: Record<string, number> = {
+    tickets: badges.tickets,
+    verification: badges.verification,
+    chat: badges.chat,
+  };
   const { top } = useSafeAreaInsets();
   const pathname = usePathname();
   const translateX = useRef(new Animated.Value(-DRAWER_WIDTH)).current;
@@ -233,6 +241,7 @@ export const AdminDrawer: React.FC = () => {
               } else {
                 active = pathname.endsWith(item.pathMatch);
               }
+              const count = badgeCount[item.key] ?? 0;
               return (
                 <Pressable
                   key={item.key}
@@ -283,6 +292,26 @@ export const AdminDrawer: React.FC = () => {
                       size={20}
                       color={active ? colors.neonPurple : colors.textSlate400}
                     />
+                    {count > 0 && (
+                      <View
+                        style={{
+                          position: 'absolute',
+                          top: 0,
+                          right: 0,
+                          minWidth: 16,
+                          height: 16,
+                          borderRadius: 8,
+                          backgroundColor: '#EF4444',
+                          justifyContent: 'center',
+                          alignItems: 'center',
+                          paddingHorizontal: 3,
+                        }}
+                      >
+                        <AppText style={{ fontSize: 9, color: '#FFFFFF', fontWeight: '700', lineHeight: 12 }}>
+                          {count > 99 ? '99+' : String(count)}
+                        </AppText>
+                      </View>
+                    )}
                   </View>
                   <AppText style={{
                     fontSize: 14,
@@ -291,7 +320,7 @@ export const AdminDrawer: React.FC = () => {
                   }}>
                     {item.label}
                   </AppText>
-                  {active && (
+                  {active && !count ? (
                     <View style={{ flex: 1, alignItems: 'flex-end' }}>
                       <View style={{
                         width: 6,
@@ -300,7 +329,25 @@ export const AdminDrawer: React.FC = () => {
                         backgroundColor: colors.neonPurple,
                       }} />
                     </View>
-                  )}
+                  ) : count > 0 ? (
+                    <View style={{ flex: 1, alignItems: 'flex-end' }}>
+                      <View
+                        style={{
+                          minWidth: 20,
+                          height: 20,
+                          borderRadius: 10,
+                          backgroundColor: '#EF4444',
+                          justifyContent: 'center',
+                          alignItems: 'center',
+                          paddingHorizontal: 4,
+                        }}
+                      >
+                        <AppText style={{ fontSize: 10, color: '#FFFFFF', fontWeight: '700', lineHeight: 14 }}>
+                          {count > 99 ? '99+' : String(count)}
+                        </AppText>
+                      </View>
+                    </View>
+                  ) : null}
                 </Pressable>
               );
             })}

@@ -4,6 +4,7 @@ import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { AppText } from '@/presentation/shared/components/ui/AppText';
 import { Card } from '@/presentation/shared/components/ui/Card';
 import { colors } from '@/core/theme/colors';
+import { useTheme } from '@/core/theme/useTheme';
 import { PostEntity } from '@/domain/feed/entities/postEntity';
 
 interface PostCardProps {
@@ -26,6 +27,7 @@ const formatTimeAgo = (date: Date): string => {
 };
 
 export const PostCard = React.memo(({ post, onLike }: PostCardProps) => {
+  const theme = useTheme();
   const initials = post.authorName
     .split(' ')
     .map((word) => word[0])
@@ -46,7 +48,7 @@ export const PostCard = React.memo(({ post, onLike }: PostCardProps) => {
               height: 40,
               borderRadius: 20,
               marginRight: 10,
-              backgroundColor: colors.cardDark,
+              backgroundColor: theme.card,
             }}
             accessibilityLabel={`${post.authorName} avatar`}
           />
@@ -77,12 +79,12 @@ export const PostCard = React.memo(({ post, onLike }: PostCardProps) => {
         {/* Name + Timestamp */}
         <View style={{ flex: 1, minWidth: 0 }}>
           <AppText
-            style={{ fontSize: 14, fontWeight: '700', color: colors.textWhite }}
+            style={{ fontSize: 14, fontWeight: '700', color: theme.text }}
             numberOfLines={1}
           >
             {post.authorName}
           </AppText>
-          <AppText style={{ fontSize: 12, color: colors.textSlate400, marginTop: 2 }}>
+          <AppText style={{ fontSize: 12, color: theme.textSecondary, marginTop: 2 }}>
             {formatTimeAgo(post.createdAt)}
           </AppText>
         </View>
@@ -92,7 +94,7 @@ export const PostCard = React.memo(({ post, onLike }: PostCardProps) => {
       <AppText
         style={{
           fontSize: 14,
-          color: colors.textSlate200,
+          color: theme.text,
           lineHeight: 20,
           marginBottom: post.imageUrl ? 12 : 0,
         }}
@@ -108,7 +110,7 @@ export const PostCard = React.memo(({ post, onLike }: PostCardProps) => {
             width: '100%',
             height: 200,
             borderRadius: 12,
-            backgroundColor: colors.cardDark,
+            backgroundColor: theme.card,
             marginBottom: 12,
           }}
           resizeMode="cover"
@@ -123,7 +125,7 @@ export const PostCard = React.memo(({ post, onLike }: PostCardProps) => {
           alignItems: 'center',
           paddingTop: 12,
           borderTopWidth: 1,
-          borderTopColor: colors.borderDark,
+          borderTopColor: theme.border,
           gap: 20,
         }}
       >
@@ -138,12 +140,12 @@ export const PostCard = React.memo(({ post, onLike }: PostCardProps) => {
           <MaterialCommunityIcons
             name={post.isLiked ? 'heart' : 'heart-outline'}
             size={20}
-            color={post.isLiked ? colors.red : colors.textSlate400}
+            color={post.isLiked ? colors.red : theme.textSecondary}
           />
           <AppText
             style={{
               fontSize: 13,
-              color: post.isLiked ? colors.red : colors.textSlate400,
+              color: post.isLiked ? colors.red : theme.textSecondary,
               fontWeight: '600',
             }}
           >
@@ -156,9 +158,9 @@ export const PostCard = React.memo(({ post, onLike }: PostCardProps) => {
           <MaterialCommunityIcons
             name="comment-outline"
             size={20}
-            color={colors.textSlate400}
+            color={theme.textSecondary}
           />
-          <AppText style={{ fontSize: 13, color: colors.textSlate400, fontWeight: '600' }}>
+          <AppText style={{ fontSize: 13, color: theme.textSecondary, fontWeight: '600' }}>
             {post.commentsCount}
           </AppText>
         </View>
