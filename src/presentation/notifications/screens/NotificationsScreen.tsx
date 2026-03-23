@@ -101,6 +101,51 @@ const NOTIFICATION_TYPE_CONFIG: Record<NotificationType, NotificationTypeConfig>
     color: '#EF4444',
     bgColor: 'rgba(239, 68, 68, 0.1)',
   },
+  review_comment: {
+    icon: 'comment-text',
+    color: colors.neonPurple,
+    bgColor: 'rgba(168, 85, 247, 0.1)',
+  },
+  comment_reply: {
+    icon: 'reply',
+    color: colors.blue,
+    bgColor: 'rgba(59, 130, 246, 0.1)',
+  },
+  comment_like: {
+    icon: 'thumb-up',
+    color: colors.success,
+    bgColor: 'rgba(34, 197, 94, 0.1)',
+  },
+  reply_like: {
+    icon: 'thumb-up',
+    color: colors.success,
+    bgColor: 'rgba(34, 197, 94, 0.1)',
+  },
+  comment_dislike: {
+    icon: 'thumb-down',
+    color: '#EF4444',
+    bgColor: 'rgba(239, 68, 68, 0.1)',
+  },
+  reply_dislike: {
+    icon: 'thumb-down',
+    color: '#EF4444',
+    bgColor: 'rgba(239, 68, 68, 0.1)',
+  },
+  review_like: {
+    icon: 'thumb-up',
+    color: colors.success,
+    bgColor: 'rgba(34, 197, 94, 0.1)',
+  },
+  review_dislike: {
+    icon: 'thumb-down',
+    color: '#EF4444',
+    bgColor: 'rgba(239, 68, 68, 0.1)',
+  },
+  support_reply: {
+    icon: 'lifebuoy',
+    color: colors.blue,
+    bgColor: 'rgba(59, 130, 246, 0.1)',
+  },
 };
 
 // -- Pulse Dot ----------------------------------------------------------------

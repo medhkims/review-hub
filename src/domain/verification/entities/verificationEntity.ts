@@ -1,4 +1,4 @@
-export type VerificationStatus = 'pending' | 'approved' | 'rejected';
+export type VerificationStatus = 'pending' | 'approved' | 'rejected' | 'suspended';
 
 export interface VerificationEntity {
   id: string;

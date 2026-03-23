@@ -16,4 +16,5 @@ export interface AuthRepository {
   signInWithGoogle(loginHint?: string): Promise<Either<Failure, UserEntity>>;
   sendPhoneOtp(phone: string): Promise<Either<Failure, void>>;
   verifyPhoneOtp(businessId: string, code: string): Promise<Either<Failure, void>>;
+  sendPasswordResetEmail(email: string): Promise<Either<Failure, void>>;
 }

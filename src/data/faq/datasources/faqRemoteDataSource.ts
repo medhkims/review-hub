@@ -17,8 +17,8 @@ import { ServerException } from '@/core/error/exceptions';
 export interface FaqRemoteDataSource {
   getFaqs(): Promise<FaqModel[]>;
   getAllFaqs(): Promise<FaqModel[]>;
-  createFaq(question: string, answer: string, order: number): Promise<FaqModel>;
-  updateFaq(id: string, question: string, answer: string, order: number): Promise<FaqModel>;
+  createFaq(question: string, answer: string, order: number, audience: string[]): Promise<FaqModel>;
+  updateFaq(id: string, question: string, answer: string, order: number, audience: string[]): Promise<FaqModel>;
   deleteFaq(id: string): Promise<void>;
 }
 
@@ -49,13 +49,14 @@ export class FaqRemoteDataSourceImpl implements FaqRemoteDataSource {
     }
   }
 
-  async createFaq(question: string, answer: string, order: number): Promise<FaqModel> {
+  async createFaq(question: string, answer: string, order: number, audience: string[]): Promise<FaqModel> {
     try {
       const now = serverTimestamp();
       const payload = {
         question,
         answer,
         order,
+        audience,
         is_active: true,
         created_at: now,
         updated_at: now,
@@ -67,6 +68,7 @@ export class FaqRemoteDataSourceImpl implements FaqRemoteDataSource {
         question,
         answer,
         order,
+        audience,
         is_active: true,
         created_at: clientNow,
         updated_at: clientNow,
@@ -77,17 +79,18 @@ export class FaqRemoteDataSourceImpl implements FaqRemoteDataSource {
     }
   }
 
-  async updateFaq(id: string, question: string, answer: string, order: number): Promise<FaqModel> {
+  async updateFaq(id: string, question: string, answer: string, order: number, audience: string[]): Promise<FaqModel> {
     try {
       const ref = doc(firestore, this.COLLECTION, id);
       const now = serverTimestamp();
-      await updateDoc(ref, { question, answer, order, updated_at: now });
+      await updateDoc(ref, { question, answer, order, audience, updated_at: now });
       const clientNow = Timestamp.now();
       return {
         id,
         question,
         answer,
         order,
+        audience,
         is_active: true,
         created_at: clientNow,
         updated_at: clientNow,

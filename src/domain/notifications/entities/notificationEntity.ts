@@ -9,7 +9,16 @@ export type NotificationType =
   | 'review_approved'
   | 'review_rejected'
   | 'verification_approved'
-  | 'verification_rejected';
+  | 'verification_rejected'
+  | 'review_comment'
+  | 'comment_reply'
+  | 'comment_like'
+  | 'reply_like'
+  | 'comment_dislike'
+  | 'reply_dislike'
+  | 'review_like'
+  | 'review_dislike'
+  | 'support_reply';
 
 export interface NotificationEntity {
   id: string;

@@ -209,4 +209,19 @@ export class AuthRepositoryImpl implements AuthRepository {
       return left(new NetworkFailure('Verification failed'));
     }
   }
+
+  async sendPasswordResetEmail(email: string): Promise<Either<Failure, void>> {
+    try {
+      await this.remoteDataSource.sendPasswordResetEmail(email);
+      return right(undefined);
+    } catch (error) {
+      if (error instanceof AuthException) {
+        return left(new AuthFailure(error.message));
+      }
+      if (error instanceof ServerException) {
+        return left(new ServerFailure(error.message));
+      }
+      return left(new NetworkFailure('Failed to send reset email'));
+    }
+  }
 }

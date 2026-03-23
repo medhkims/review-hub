@@ -4,6 +4,7 @@ import {
   FlatList,
   Pressable,
   Image,
+  ScrollView,
   TextInput,
   KeyboardAvoidingView,
   Platform,
@@ -29,22 +30,33 @@ export interface SerializedReview {
   authorAvatarUrl: string | null;
   rating: number;
   text: string;
+  photoUrls?: string[];
   createdAtMs: number;
   likeCount: number;
   viewCount: number;
   commentCount: number;
   isLikedByCurrentUser: boolean;
+  dislikeCount: number;
+  isDislikedByCurrentUser: boolean;
+  businessId?: string;
+  businessLogoUrl?: string | null;
 }
 
 interface ReviewDetailScreenProps {
   reviewId: string;
   businessName: string;
+  businessId?: string;
   initialReview: SerializedReview | null;
   backHref?: string;
 }
 
 interface LikeState {
   liked: boolean;
+  count: number;
+}
+
+interface DislikeState {
+  disliked: boolean;
   count: number;
 }
 
@@ -92,13 +104,15 @@ interface ReplyItemProps {
   reply: ReplyEntity;
   parentAuthorName: string;
   likeState: LikeState;
+  dislikeState: DislikeState;
   onLike: (replyId: string, isLiked: boolean) => void;
+  onDislike: (replyId: string, isDisliked: boolean) => void;
   onReplyToReply: (reply: ReplyEntity, commentId: string) => void;
   commentId: string;
 }
 
 const ReplyItem = React.memo<ReplyItemProps>(
-  ({ reply, parentAuthorName, likeState, onLike, onReplyToReply, commentId }) => {
+  ({ reply, parentAuthorName, likeState, dislikeState, onLike, onDislike, onReplyToReply, commentId }) => {
     const { t } = useTranslation();
     const theme = useTheme();
     const replyingTo = reply.replyingToName ?? parentAuthorName;
@@ -130,7 +144,7 @@ const ReplyItem = React.memo<ReplyItemProps>(
             </View>
             <AppText style={{ fontSize: 12, color: theme.textSecondary, lineHeight: 18 }}>{reply.text}</AppText>
 
-            {/* Like + Reply row */}
+            {/* Like + Dislike + Reply row */}
             <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12, marginTop: 8 }}>
               <Pressable
                 onPress={() => onLike(reply.id, likeState.liked)}
@@ -139,13 +153,30 @@ const ReplyItem = React.memo<ReplyItemProps>(
                 style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}
               >
                 <MaterialCommunityIcons
-                  name={likeState.liked ? 'heart' : 'heart-outline'}
+                  name={likeState.liked ? 'thumb-up' : 'thumb-up-outline'}
                   size={13}
-                  color={likeState.liked ? '#ef4444' : theme.textMuted}
+                  color={likeState.liked ? '#3b82f6' : theme.textMuted}
                 />
                 {likeState.count > 0 && (
-                  <AppText style={{ fontSize: 11, color: likeState.liked ? '#ef4444' : theme.textMuted }}>
+                  <AppText style={{ fontSize: 11, color: likeState.liked ? '#3b82f6' : theme.textMuted }}>
                     {likeState.count}
+                  </AppText>
+                )}
+              </Pressable>
+              <Pressable
+                onPress={() => onDislike(reply.id, dislikeState.disliked)}
+                accessibilityLabel={dislikeState.disliked ? t('review.undislikeReply') : t('review.dislikeReply')}
+                accessibilityRole="button"
+                style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}
+              >
+                <MaterialCommunityIcons
+                  name={dislikeState.disliked ? 'thumb-down' : 'thumb-down-outline'}
+                  size={13}
+                  color={dislikeState.disliked ? '#ef4444' : theme.textMuted}
+                />
+                {dislikeState.count > 0 && (
+                  <AppText style={{ fontSize: 11, color: dislikeState.disliked ? '#ef4444' : theme.textMuted }}>
+                    {dislikeState.count}
                   </AppText>
                 )}
               </Pressable>
@@ -171,9 +202,13 @@ interface CommentItemProps {
   comment: CommentEntity;
   onReply: (comment: CommentEntity) => void;
   commentLikeState: LikeState;
+  commentDislikeState: DislikeState;
   replyLikeStates: Record<string, LikeState>;
+  replyDislikeStates: Record<string, DislikeState>;
   onLikeComment: (commentId: string, isLiked: boolean) => void;
+  onDislikeComment: (commentId: string, isDisliked: boolean) => void;
   onLikeReply: (replyId: string, isLiked: boolean) => void;
+  onDislikeReply: (replyId: string, isDisliked: boolean) => void;
   onReplyToReply: (reply: ReplyEntity, commentId: string) => void;
   forceExpanded?: boolean;
 }
@@ -182,9 +217,13 @@ const CommentItem = React.memo<CommentItemProps>(({
   comment,
   onReply,
   commentLikeState,
+  commentDislikeState,
   replyLikeStates,
+  replyDislikeStates,
   onLikeComment,
+  onDislikeComment,
   onLikeReply,
+  onDislikeReply,
   onReplyToReply,
   forceExpanded = false,
 }) => {
@@ -223,7 +262,7 @@ const CommentItem = React.memo<CommentItemProps>(({
           </View>
           <AppText style={{ fontSize: 13, color: theme.textSecondary, lineHeight: 20 }}>{comment.text}</AppText>
 
-          {/* Like + Reply row */}
+          {/* Like + Dislike + Reply row */}
           <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12, marginTop: 10 }}>
             <Pressable
               onPress={() => onLikeComment(comment.id, commentLikeState.liked)}
@@ -232,13 +271,30 @@ const CommentItem = React.memo<CommentItemProps>(({
               style={{ flexDirection: 'row', alignItems: 'center', gap: 5 }}
             >
               <MaterialCommunityIcons
-                name={commentLikeState.liked ? 'heart' : 'heart-outline'}
+                name={commentLikeState.liked ? 'thumb-up' : 'thumb-up-outline'}
                 size={14}
-                color={commentLikeState.liked ? '#ef4444' : theme.textMuted}
+                color={commentLikeState.liked ? '#3b82f6' : theme.textMuted}
               />
               {commentLikeState.count > 0 && (
-                <AppText style={{ fontSize: 12, color: commentLikeState.liked ? '#ef4444' : theme.textMuted }}>
+                <AppText style={{ fontSize: 12, color: commentLikeState.liked ? '#3b82f6' : theme.textMuted }}>
                   {commentLikeState.count}
+                </AppText>
+              )}
+            </Pressable>
+            <Pressable
+              onPress={() => onDislikeComment(comment.id, commentDislikeState.disliked)}
+              accessibilityLabel={commentDislikeState.disliked ? t('review.undislikeComment') : t('review.dislikeComment')}
+              accessibilityRole="button"
+              style={{ flexDirection: 'row', alignItems: 'center', gap: 5 }}
+            >
+              <MaterialCommunityIcons
+                name={commentDislikeState.disliked ? 'thumb-down' : 'thumb-down-outline'}
+                size={14}
+                color={commentDislikeState.disliked ? '#ef4444' : theme.textMuted}
+              />
+              {commentDislikeState.count > 0 && (
+                <AppText style={{ fontSize: 12, color: commentDislikeState.disliked ? '#ef4444' : theme.textMuted }}>
+                  {commentDislikeState.count}
                 </AppText>
               )}
             </Pressable>
@@ -296,7 +352,9 @@ const CommentItem = React.memo<CommentItemProps>(({
               reply={reply}
               parentAuthorName={comment.authorName}
               likeState={replyLikeStates[reply.id] ?? { liked: reply.isLikedByCurrentUser, count: reply.likeCount }}
+              dislikeState={replyDislikeStates[reply.id] ?? { disliked: reply.isDislikedByCurrentUser, count: reply.dislikeCount }}
               onLike={onLikeReply}
+              onDislike={onDislikeReply}
               onReplyToReply={onReplyToReply}
               commentId={comment.id}
             />
@@ -327,15 +385,18 @@ const CommentItem = React.memo<CommentItemProps>(({
 interface ReplyTarget {
   commentId: string;
   authorName: string;
+  authorId: string;
 }
 
-export default function ReviewDetailScreen({ reviewId, businessName, initialReview, backHref }: ReviewDetailScreenProps) {
+export default function ReviewDetailScreen({ reviewId, businessName, businessId: businessIdProp, initialReview, backHref }: ReviewDetailScreenProps) {
   const { t } = useTranslation();
   const theme = useTheme();
   const [comments, setComments] = useState<CommentEntity[]>([]);
   const [isCommentsLoading, setIsCommentsLoading] = useState(true);
   const [isLiked, setIsLiked] = useState(initialReview?.isLikedByCurrentUser ?? false);
   const [likeCount, setLikeCount] = useState(initialReview?.likeCount ?? 0);
+  const [isDisliked, setIsDisliked] = useState(initialReview?.isDislikedByCurrentUser ?? false);
+  const [dislikeCount, setDislikeCount] = useState(initialReview?.dislikeCount ?? 0);
   const [commentText, setCommentText] = useState('');
   const [replyTarget, setReplyTarget] = useState<ReplyTarget | null>(null);
   const [isSending, setIsSending] = useState(false);
@@ -344,8 +405,14 @@ export default function ReviewDetailScreen({ reviewId, businessName, initialRevi
   const canComment = !isOwnReview || replyTarget !== null;
   const inputRef = useRef<TextInput>(null);
 
+  const [photoUrls, setPhotoUrls] = useState<string[]>(initialReview?.photoUrls ?? []);
+  const [businessLogoUrl, setBusinessLogoUrl] = useState<string | null>(initialReview?.businessLogoUrl ?? null);
+  const resolvedBusinessId = businessIdProp || initialReview?.businessId || '';
+
   const [commentLikes, setCommentLikes] = useState<Record<string, LikeState>>({});
   const [replyLikes, setReplyLikes] = useState<Record<string, LikeState>>({});
+  const [commentDislikes, setCommentDislikes] = useState<Record<string, DislikeState>>({});
+  const [replyDislikes, setReplyDislikes] = useState<Record<string, DislikeState>>({});
   const [expandedCommentIds, setExpandedCommentIds] = useState<Set<string>>(new Set());
 
   const reviewDate = initialReview ? new Date(initialReview.createdAtMs) : null;
@@ -359,14 +426,20 @@ export default function ReviewDetailScreen({ reviewId, businessName, initialRevi
         setComments(data);
         const cLikes: Record<string, LikeState> = {};
         const rLikes: Record<string, LikeState> = {};
+        const cDislikes: Record<string, DislikeState> = {};
+        const rDislikes: Record<string, DislikeState> = {};
         data.forEach((c) => {
           cLikes[c.id] = { liked: c.isLikedByCurrentUser, count: c.likeCount };
+          cDislikes[c.id] = { disliked: c.isDislikedByCurrentUser, count: c.dislikeCount };
           c.replies.forEach((r) => {
             rLikes[r.id] = { liked: r.isLikedByCurrentUser, count: r.likeCount };
+            rDislikes[r.id] = { disliked: r.isDislikedByCurrentUser, count: r.dislikeCount };
           });
         });
         setCommentLikes(cLikes);
         setReplyLikes(rLikes);
+        setCommentDislikes(cDislikes);
+        setReplyDislikes(rDislikes);
       },
     );
     setIsCommentsLoading(false);
@@ -382,7 +455,35 @@ export default function ReviewDetailScreen({ reviewId, businessName, initialRevi
     if (currentUid && initialReview?.authorId && currentUid !== initialReview.authorId) {
       container.incrementReviewViewUseCase.execute(reviewId).catch(() => {});
     }
-  }, [loadComments, reviewId, initialReview?.authorId]);
+    container.getReviewPhotoUrlsUseCase.execute(reviewId).then((result) => {
+      result.fold(
+        () => {},
+        (urls) => { if (urls.length > 0) setPhotoUrls(urls); },
+      );
+    });
+    if (resolvedBusinessId && !initialReview?.businessLogoUrl) {
+      container.getBusinessDetailUseCase.execute(resolvedBusinessId).then((result) => {
+        result.fold(
+          () => {},
+          async (business) => {
+            const logo = business.logoUrl ?? business.coverImageUrl;
+            if (logo) {
+              setBusinessLogoUrl(logo);
+            } else if (business.categoryId) {
+              const catResult = await container.getCategoriesUseCase.execute();
+              catResult.fold(
+                () => {},
+                (categories) => {
+                  const cat = categories.find((c) => c.id === business.categoryId);
+                  if (cat?.logoUrl) setBusinessLogoUrl(cat.logoUrl);
+                },
+              );
+            }
+          },
+        );
+      });
+    }
+  }, [loadComments, reviewId, initialReview?.authorId, resolvedBusinessId, initialReview?.businessLogoUrl]);
 
   const handleLike = useCallback(async () => {
     if (isLiked) {
@@ -392,9 +493,41 @@ export default function ReviewDetailScreen({ reviewId, businessName, initialRevi
     } else {
       setIsLiked(true);
       setLikeCount((c) => c + 1);
-      await container.likeReviewUseCase.execute(reviewId);
+      if (isDisliked) {
+        setIsDisliked(false);
+        setDislikeCount((c) => Math.max(0, c - 1));
+        await container.undislikeReviewUseCase.execute(reviewId);
+      }
+      await container.likeReviewUseCase.execute(reviewId, {
+        reviewAuthorId: initialReview?.authorId ?? '',
+        actorId: auth.currentUser?.uid ?? '',
+        actorName: auth.currentUser?.displayName ?? 'Someone',
+        businessName,
+      });
     }
-  }, [isLiked, reviewId]);
+  }, [isLiked, isDisliked, reviewId, initialReview?.authorId, businessName]);
+
+  const handleDislike = useCallback(async () => {
+    if (isDisliked) {
+      setIsDisliked(false);
+      setDislikeCount((c) => Math.max(0, c - 1));
+      await container.undislikeReviewUseCase.execute(reviewId);
+    } else {
+      setIsDisliked(true);
+      setDislikeCount((c) => c + 1);
+      if (isLiked) {
+        setIsLiked(false);
+        setLikeCount((c) => Math.max(0, c - 1));
+        await container.unlikeReviewUseCase.execute(reviewId);
+      }
+      await container.dislikeReviewUseCase.execute(reviewId, {
+        reviewAuthorId: initialReview?.authorId ?? '',
+        actorId: auth.currentUser?.uid ?? '',
+        actorName: auth.currentUser?.displayName ?? 'Someone',
+        businessName,
+      });
+    }
+  }, [isDisliked, isLiked, reviewId, initialReview?.authorId, businessName]);
 
   const handleLikeComment = useCallback(async (commentId: string, isCommentLiked: boolean) => {
     setCommentLikes((prev) => ({
@@ -407,9 +540,54 @@ export default function ReviewDetailScreen({ reviewId, businessName, initialRevi
     if (isCommentLiked) {
       await container.unlikeCommentUseCase.execute(commentId);
     } else {
-      await container.likeCommentUseCase.execute(commentId);
+      setCommentDislikes((prev) => {
+        const cur = prev[commentId];
+        if (cur?.disliked) {
+          container.undislikeCommentUseCase.execute(commentId).catch(() => {});
+          return { ...prev, [commentId]: { disliked: false, count: Math.max(0, cur.count - 1) } };
+        }
+        return prev;
+      });
+      const targetAuthorId = comments.find((c) => c.id === commentId)?.authorId ?? '';
+      const actorId = auth.currentUser?.uid ?? '';
+      await container.likeCommentUseCase.execute(commentId, {
+        commentAuthorId: targetAuthorId,
+        actorId,
+        actorName: auth.currentUser?.displayName ?? 'Someone',
+        reviewId,
+      });
     }
-  }, []);
+  }, [comments, reviewId]);
+
+  const handleDislikeComment = useCallback(async (commentId: string, isCommentDisliked: boolean) => {
+    setCommentDislikes((prev) => ({
+      ...prev,
+      [commentId]: {
+        disliked: !isCommentDisliked,
+        count: Math.max(0, (prev[commentId]?.count ?? 0) + (isCommentDisliked ? -1 : 1)),
+      },
+    }));
+    if (isCommentDisliked) {
+      await container.undislikeCommentUseCase.execute(commentId);
+    } else {
+      setCommentLikes((prev) => {
+        const cur = prev[commentId];
+        if (cur?.liked) {
+          container.unlikeCommentUseCase.execute(commentId).catch(() => {});
+          return { ...prev, [commentId]: { liked: false, count: Math.max(0, cur.count - 1) } };
+        }
+        return prev;
+      });
+      const targetAuthorId = comments.find((c) => c.id === commentId)?.authorId ?? '';
+      const actorId = auth.currentUser?.uid ?? '';
+      await container.dislikeCommentUseCase.execute(commentId, {
+        commentAuthorId: targetAuthorId,
+        actorId,
+        actorName: auth.currentUser?.displayName ?? 'Someone',
+        reviewId,
+      });
+    }
+  }, [comments, reviewId]);
 
   const handleLikeReply = useCallback(async (replyId: string, isReplyLiked: boolean) => {
     setReplyLikes((prev) => ({
@@ -422,17 +600,70 @@ export default function ReviewDetailScreen({ reviewId, businessName, initialRevi
     if (isReplyLiked) {
       await container.unlikeReplyUseCase.execute(replyId);
     } else {
-      await container.likeReplyUseCase.execute(replyId);
+      setReplyDislikes((prev) => {
+        const cur = prev[replyId];
+        if (cur?.disliked) {
+          container.undislikeReplyUseCase.execute(replyId).catch(() => {});
+          return { ...prev, [replyId]: { disliked: false, count: Math.max(0, cur.count - 1) } };
+        }
+        return prev;
+      });
+      let targetAuthorId = '';
+      for (const c of comments) {
+        const r = c.replies.find((rep) => rep.id === replyId);
+        if (r) { targetAuthorId = r.authorId; break; }
+      }
+      const actorId = auth.currentUser?.uid ?? '';
+      await container.likeReplyUseCase.execute(replyId, {
+        replyAuthorId: targetAuthorId,
+        actorId,
+        actorName: auth.currentUser?.displayName ?? 'Someone',
+        reviewId,
+      });
     }
-  }, []);
+  }, [comments, reviewId]);
+
+  const handleDislikeReply = useCallback(async (replyId: string, isReplyDisliked: boolean) => {
+    setReplyDislikes((prev) => ({
+      ...prev,
+      [replyId]: {
+        disliked: !isReplyDisliked,
+        count: Math.max(0, (prev[replyId]?.count ?? 0) + (isReplyDisliked ? -1 : 1)),
+      },
+    }));
+    if (isReplyDisliked) {
+      await container.undislikeReplyUseCase.execute(replyId);
+    } else {
+      setReplyLikes((prev) => {
+        const cur = prev[replyId];
+        if (cur?.liked) {
+          container.unlikeReplyUseCase.execute(replyId).catch(() => {});
+          return { ...prev, [replyId]: { liked: false, count: Math.max(0, cur.count - 1) } };
+        }
+        return prev;
+      });
+      let targetAuthorId = '';
+      for (const c of comments) {
+        const r = c.replies.find((rep) => rep.id === replyId);
+        if (r) { targetAuthorId = r.authorId; break; }
+      }
+      const actorId = auth.currentUser?.uid ?? '';
+      await container.dislikeReplyUseCase.execute(replyId, {
+        replyAuthorId: targetAuthorId,
+        actorId,
+        actorName: auth.currentUser?.displayName ?? 'Someone',
+        reviewId,
+      });
+    }
+  }, [comments, reviewId]);
 
   const handleReply = useCallback((comment: CommentEntity) => {
-    setReplyTarget({ commentId: comment.id, authorName: comment.authorName });
+    setReplyTarget({ commentId: comment.id, authorName: comment.authorName, authorId: comment.authorId });
     inputRef.current?.focus();
   }, []);
 
   const handleReplyToReply = useCallback((reply: ReplyEntity, commentId: string) => {
-    setReplyTarget({ commentId, authorName: reply.authorName });
+    setReplyTarget({ commentId, authorName: reply.authorName, authorId: reply.authorId });
     inputRef.current?.focus();
   }, []);
 
@@ -467,6 +698,8 @@ export default function ReviewDetailScreen({ reviewId, businessName, initialRevi
         createdAt: new Date(),
         likeCount: 0,
         isLikedByCurrentUser: false,
+        dislikeCount: 0,
+        isDislikedByCurrentUser: false,
         replyingToName,
       };
       setComments((prev) =>
@@ -477,10 +710,16 @@ export default function ReviewDetailScreen({ reviewId, businessName, initialRevi
         ),
       );
       setReplyLikes((prev) => ({ ...prev, [tempReplyId]: { liked: false, count: 0 } }));
+      setReplyDislikes((prev) => ({ ...prev, [tempReplyId]: { disliked: false, count: 0 } }));
       setExpandedCommentIds((prev) => new Set([...prev, commentId]));
       setReplyTarget(null);
 
-      const result = await container.addCommentReplyUseCase.execute(commentId, reviewId, text, replyingToName);
+      const result = await container.addCommentReplyUseCase.execute(commentId, reviewId, text, replyingToName, {
+        commentAuthorId: replyTarget.authorId,
+        actorId: currentUserId,
+        actorName: currentUserName,
+        businessName,
+      });
       result.fold(
         (failure) => {
           setComments((prev) =>
@@ -491,6 +730,7 @@ export default function ReviewDetailScreen({ reviewId, businessName, initialRevi
             ),
           );
           setReplyLikes((prev) => { const next = { ...prev }; delete next[tempReplyId]; return next; });
+          setReplyDislikes((prev) => { const next = { ...prev }; delete next[tempReplyId]; return next; });
           setCommentText(text);
           setSendError(failure.message);
         },
@@ -506,6 +746,12 @@ export default function ReviewDetailScreen({ reviewId, businessName, initialRevi
             const next = { ...prev };
             delete next[tempReplyId];
             next[reply.id] = { liked: false, count: 0 };
+            return next;
+          });
+          setReplyDislikes((prev) => {
+            const next = { ...prev };
+            delete next[tempReplyId];
+            next[reply.id] = { disliked: false, count: 0 };
             return next;
           });
         },
@@ -524,15 +770,24 @@ export default function ReviewDetailScreen({ reviewId, businessName, initialRevi
         replies: [],
         likeCount: 0,
         isLikedByCurrentUser: false,
+        dislikeCount: 0,
+        isDislikedByCurrentUser: false,
       };
       setComments((prev) => [...prev, tempComment]);
       setCommentLikes((prev) => ({ ...prev, [tempCommentId]: { liked: false, count: 0 } }));
+      setCommentDislikes((prev) => ({ ...prev, [tempCommentId]: { disliked: false, count: 0 } }));
 
-      const result = await container.addReviewCommentUseCase.execute(reviewId, text);
+      const result = await container.addReviewCommentUseCase.execute(reviewId, text, {
+        reviewAuthorId: initialReview?.authorId ?? '',
+        actorId: currentUserId,
+        actorName: currentUserName,
+        businessName,
+      });
       result.fold(
         (failure) => {
           setComments((prev) => prev.filter((c) => c.id !== tempCommentId));
           setCommentLikes((prev) => { const next = { ...prev }; delete next[tempCommentId]; return next; });
+          setCommentDislikes((prev) => { const next = { ...prev }; delete next[tempCommentId]; return next; });
           setCommentText(text);
           setSendError(failure.message);
         },
@@ -542,6 +797,12 @@ export default function ReviewDetailScreen({ reviewId, businessName, initialRevi
             const next = { ...prev };
             delete next[tempCommentId];
             next[comment.id] = { liked: false, count: 0 };
+            return next;
+          });
+          setCommentDislikes((prev) => {
+            const next = { ...prev };
+            delete next[tempCommentId];
+            next[comment.id] = { disliked: false, count: 0 };
             return next;
           });
         },
@@ -563,7 +824,7 @@ export default function ReviewDetailScreen({ reviewId, businessName, initialRevi
             borderColor: 'rgba(255,255,255,0.07)',
           }}
         >
-          <View style={{ flexDirection: 'row', gap: 12, marginBottom: 12 }}>
+          <View style={{ flexDirection: 'row', gap: 12, marginBottom: 12, alignItems: 'flex-start' }}>
             <Avatar name={initialReview.authorName} avatarUrl={initialReview.authorAvatarUrl} size={44} />
             <View style={{ flex: 1 }}>
               <AppText style={{ fontSize: 15, fontWeight: '700', color: theme.text }}>{initialReview.authorName}</AppText>
@@ -575,6 +836,25 @@ export default function ReviewDetailScreen({ reviewId, businessName, initialRevi
             <AppText style={{ fontSize: 14, color: theme.textSecondary, lineHeight: 22 }}>{initialReview.text}</AppText>
           ) : null}
 
+          {photoUrls.length > 0 && (
+            <ScrollView
+              horizontal
+              showsHorizontalScrollIndicator={false}
+              style={{ marginTop: 12 }}
+              contentContainerStyle={{ gap: 8 }}
+            >
+              {photoUrls.map((uri, index) => (
+                <Image
+                  key={index}
+                  source={{ uri }}
+                  style={{ width: 120, height: 120, borderRadius: 10 }}
+                  resizeMode="cover"
+                  accessibilityLabel={`Review photo ${index + 1}`}
+                />
+              ))}
+            </ScrollView>
+          )}
+
           <View style={{ flexDirection: 'row', gap: 20, marginTop: 14, paddingTop: 12, borderTopWidth: 1, borderTopColor: 'rgba(255,255,255,0.06)' }}>
             <Pressable
               onPress={handleLike}
@@ -583,11 +863,24 @@ export default function ReviewDetailScreen({ reviewId, businessName, initialRevi
               style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}
             >
               <MaterialCommunityIcons
-                name={isLiked ? 'heart' : 'heart-outline'}
+                name={isLiked ? 'thumb-up' : 'thumb-up-outline'}
                 size={20}
-                color={isLiked ? '#ef4444' : theme.textMuted}
+                color={isLiked ? '#3b82f6' : theme.textMuted}
               />
-              <AppText style={{ fontSize: 14, color: isLiked ? '#ef4444' : theme.textMuted }}>{likeCount}</AppText>
+              <AppText style={{ fontSize: 14, color: isLiked ? '#3b82f6' : theme.textMuted }}>{likeCount}</AppText>
+            </Pressable>
+            <Pressable
+              onPress={handleDislike}
+              accessibilityLabel={isDisliked ? t('review.undislike') : t('review.dislike')}
+              accessibilityRole="button"
+              style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}
+            >
+              <MaterialCommunityIcons
+                name={isDisliked ? 'thumb-down' : 'thumb-down-outline'}
+                size={20}
+                color={isDisliked ? '#ef4444' : theme.textMuted}
+              />
+              <AppText style={{ fontSize: 14, color: isDisliked ? '#ef4444' : theme.textMuted }}>{dislikeCount}</AppText>
             </Pressable>
             <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
               <MaterialCommunityIcons name="eye-outline" size={20} color={theme.textMuted} />
@@ -655,6 +948,37 @@ export default function ReviewDetailScreen({ reviewId, businessName, initialRevi
         >
           <MaterialCommunityIcons name="chevron-left" size={24} color={theme.text} />
         </Pressable>
+        {resolvedBusinessId ? (
+          <Pressable
+            onPress={() => router.push(`/(main)/(feed)/business/${resolvedBusinessId}` as Parameters<typeof router.push>[0])}
+            accessibilityLabel={`View ${businessName} profile`}
+            accessibilityRole="button"
+            style={{
+              width: 44,
+              height: 44,
+              borderRadius: 22,
+              overflow: 'hidden',
+              borderWidth: 2,
+              borderColor: 'rgba(139, 92, 246, 0.5)',
+              flexShrink: 0,
+            }}
+          >
+            {businessLogoUrl ? (
+              <Image
+                source={{ uri: businessLogoUrl }}
+                style={{ width: '100%', height: '100%' }}
+                resizeMode="cover"
+                accessibilityLabel={`${businessName} logo`}
+              />
+            ) : (
+              <View style={{ flex: 1, backgroundColor: 'rgba(139, 92, 246, 0.2)', alignItems: 'center', justifyContent: 'center' }}>
+                <AppText style={{ fontSize: 18, fontWeight: '700', color: colors.neonPurple }}>
+                  {businessName.charAt(0).toUpperCase()}
+                </AppText>
+              </View>
+            )}
+          </Pressable>
+        ) : null}
         <View style={{ flex: 1 }}>
           <AppText style={{ fontSize: 17, fontWeight: '700', color: theme.text }}>{t('review.reviewDetail')}</AppText>
           <AppText style={{ fontSize: 12, color: theme.textSecondary }}>{businessName}</AppText>
@@ -669,9 +993,13 @@ export default function ReviewDetailScreen({ reviewId, businessName, initialRevi
             comment={item}
             onReply={handleReply}
             commentLikeState={commentLikes[item.id] ?? { liked: item.isLikedByCurrentUser, count: item.likeCount }}
+            commentDislikeState={commentDislikes[item.id] ?? { disliked: item.isDislikedByCurrentUser, count: item.dislikeCount }}
             replyLikeStates={replyLikes}
+            replyDislikeStates={replyDislikes}
             onLikeComment={handleLikeComment}
+            onDislikeComment={handleDislikeComment}
             onLikeReply={handleLikeReply}
+            onDislikeReply={handleDislikeReply}
             onReplyToReply={handleReplyToReply}
             forceExpanded={expandedCommentIds.has(item.id)}
           />

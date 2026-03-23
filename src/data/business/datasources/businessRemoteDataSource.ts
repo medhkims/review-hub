@@ -88,6 +88,13 @@ export interface BusinessRemoteDataSource {
   unlikeComment(commentId: string, userId: string): Promise<void>;
   likeReply(replyId: string, userId: string): Promise<void>;
   unlikeReply(replyId: string, userId: string): Promise<void>;
+  dislikeReview(reviewId: string, userId: string): Promise<void>;
+  undislikeReview(reviewId: string, userId: string): Promise<void>;
+  dislikeComment(commentId: string, userId: string): Promise<void>;
+  undislikeComment(commentId: string, userId: string): Promise<void>;
+  dislikeReply(replyId: string, userId: string): Promise<void>;
+  undislikeReply(replyId: string, userId: string): Promise<void>;
+  getRecentReviews(count: number): Promise<(ReviewModel & { business_id: string; business_name: string })[]>;
 }
 
 export class BusinessRemoteDataSourceImpl implements BusinessRemoteDataSource {
@@ -365,15 +372,20 @@ export class BusinessRemoteDataSourceImpl implements BusinessRemoteDataSource {
         })
       );
 
-      // Check which reviews the current user has liked
+      // Check which reviews the current user has liked/disliked
       const currentUserId = auth.currentUser?.uid ?? null;
       const likedSet = new Set<string>();
+      const dislikedSet = new Set<string>();
       if (currentUserId && rawReviews.length > 0) {
         await Promise.all(
           rawReviews.map(async (r) => {
             try {
-              const likeDoc = await getDoc(doc(firestore, 'review_likes', `${currentUserId}_${r.id}`));
+              const [likeDoc, dislikeDoc] = await Promise.all([
+                getDoc(doc(firestore, 'review_likes', `${currentUserId}_${r.id}`)),
+                getDoc(doc(firestore, 'review_dislikes', `${currentUserId}_${r.id}`)),
+              ]);
               if (likeDoc.exists()) likedSet.add(r.id);
+              if (dislikeDoc.exists()) dislikedSet.add(r.id);
             } catch {
               // Non-critical
             }
@@ -386,9 +398,60 @@ export class BusinessRemoteDataSourceImpl implements BusinessRemoteDataSource {
         author_name: profileMap[r.user_id]?.display_name ?? `User ${r.user_id.slice(0, 6)}`,
         author_avatar_url: profileMap[r.user_id]?.avatar_url ?? null,
         is_liked_by_current_user: likedSet.has(r.id),
+        is_disliked_by_current_user: dislikedSet.has(r.id),
       }));
     } catch (error: unknown) {
       const message = error instanceof Error ? error.message : 'Failed to fetch reviews';
+      throw new ServerException(message);
+    }
+  }
+
+  async getRecentReviews(count: number): Promise<(ReviewModel & { business_id: string; business_name: string })[]> {
+    try {
+      const q = query(
+        collection(firestore, this.REVIEWS),
+        where('status', '==', 'posted'),
+        orderBy('created_at', 'desc'),
+        limit(count),
+      );
+      const snapshot = await getDocs(q);
+      const rawReviews = snapshot.docs.map((d) => ({
+        id: d.id,
+        ...d.data(),
+      })) as (ReviewModel & { business_id: string })[];
+
+      // Batch-fetch author profiles
+      const uniqueUserIds = [...new Set(rawReviews.map((r) => r.user_id))];
+      const profileMap: Record<string, { display_name?: string; avatar_url?: string }> = {};
+      await Promise.all(
+        uniqueUserIds.map(async (uid) => {
+          try {
+            const profileSnap = await getDoc(doc(firestore, 'profiles', uid));
+            if (profileSnap.exists()) profileMap[uid] = profileSnap.data() as { display_name?: string; avatar_url?: string };
+          } catch { /* non-critical */ }
+        })
+      );
+
+      // Batch-fetch business names
+      const uniqueBusinessIds = [...new Set(rawReviews.map((r) => r.business_id).filter(Boolean))];
+      const businessNameMap: Record<string, string> = {};
+      await Promise.all(
+        uniqueBusinessIds.map(async (bid) => {
+          try {
+            const bizSnap = await getDoc(doc(firestore, this.BUSINESSES, bid));
+            if (bizSnap.exists()) businessNameMap[bid] = (bizSnap.data() as { name?: string }).name ?? '';
+          } catch { /* non-critical */ }
+        })
+      );
+
+      return rawReviews.map((r) => ({
+        ...r,
+        author_name: profileMap[r.user_id]?.display_name ?? `User ${r.user_id.slice(0, 6)}`,
+        author_avatar_url: profileMap[r.user_id]?.avatar_url ?? null,
+        business_name: businessNameMap[r.business_id] ?? '',
+      }));
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : 'Failed to fetch recent reviews';
       throw new ServerException(message);
     }
   }
@@ -470,22 +533,32 @@ export class BusinessRemoteDataSourceImpl implements BusinessRemoteDataSource {
         })
       );
 
-      // Batch-fetch comment and reply like status for current user
+      // Batch-fetch comment and reply like/dislike status for current user
       const currentUserId = auth.currentUser?.uid ?? '';
       const commentLikedSet = new Set<string>();
       const replyLikedSet = new Set<string>();
+      const commentDislikedSet = new Set<string>();
+      const replyDislikedSet = new Set<string>();
       if (currentUserId) {
         await Promise.all([
           ...rawComments.map(async (c) => {
             try {
-              const snap = await getDoc(doc(firestore, 'comment_likes', `${currentUserId}_${c.id}`));
-              if (snap.exists()) commentLikedSet.add(c.id);
+              const [likeSnap, dislikeSnap] = await Promise.all([
+                getDoc(doc(firestore, 'comment_likes', `${currentUserId}_${c.id}`)),
+                getDoc(doc(firestore, 'comment_dislikes', `${currentUserId}_${c.id}`)),
+              ]);
+              if (likeSnap.exists()) commentLikedSet.add(c.id);
+              if (dislikeSnap.exists()) commentDislikedSet.add(c.id);
             } catch { /* non-critical */ }
           }),
           ...Object.values(repliesMap).flat().map(async (r) => {
             try {
-              const snap = await getDoc(doc(firestore, 'reply_likes', `${currentUserId}_${r.id}`));
-              if (snap.exists()) replyLikedSet.add(r.id);
+              const [likeSnap, dislikeSnap] = await Promise.all([
+                getDoc(doc(firestore, 'reply_likes', `${currentUserId}_${r.id}`)),
+                getDoc(doc(firestore, 'reply_dislikes', `${currentUserId}_${r.id}`)),
+              ]);
+              if (likeSnap.exists()) replyLikedSet.add(r.id);
+              if (dislikeSnap.exists()) replyDislikedSet.add(r.id);
             } catch { /* non-critical */ }
           }),
         ]);
@@ -498,12 +571,14 @@ export class BusinessRemoteDataSourceImpl implements BusinessRemoteDataSource {
         reply_count: repliesMap[c.id]?.length ?? 0,
         like_count: (c as CommentModel & { like_count?: number }).like_count ?? 0,
         is_liked_by_current_user: commentLikedSet.has(c.id),
+        is_disliked_by_current_user: commentDislikedSet.has(c.id),
         _replies: (repliesMap[c.id] ?? []).map((r) => ({
           ...r,
           author_name: profileMap[r.user_id]?.display_name ?? `User ${r.user_id.slice(0, 6)}`,
           author_avatar_url: profileMap[r.user_id]?.avatar_url ?? null,
           like_count: (r as import('../models/commentModel').ReplyModel & { like_count?: number }).like_count ?? 0,
           is_liked_by_current_user: replyLikedSet.has(r.id),
+          is_disliked_by_current_user: replyDislikedSet.has(r.id),
         })),
       }));
     } catch (error: unknown) {
@@ -630,6 +705,84 @@ export class BusinessRemoteDataSourceImpl implements BusinessRemoteDataSource {
       updateDoc(doc(firestore, 'review_replies', replyId), { like_count: increment(-1) }).catch(() => {});
     } catch (error: unknown) {
       const message = error instanceof Error ? error.message : 'Failed to unlike reply';
+      throw new ServerException(message);
+    }
+  }
+
+  async dislikeReview(reviewId: string, userId: string): Promise<void> {
+    try {
+      const dislikeId = `${userId}_${reviewId}`;
+      await setDoc(doc(firestore, 'review_dislikes', dislikeId), {
+        review_id: reviewId,
+        user_id: userId,
+        created_at: serverTimestamp(),
+      });
+      updateDoc(doc(firestore, this.REVIEWS, reviewId), { dislike_count: increment(1) }).catch(() => {});
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : 'Failed to dislike review';
+      throw new ServerException(message);
+    }
+  }
+
+  async undislikeReview(reviewId: string, userId: string): Promise<void> {
+    try {
+      const dislikeId = `${userId}_${reviewId}`;
+      await deleteDoc(doc(firestore, 'review_dislikes', dislikeId));
+      updateDoc(doc(firestore, this.REVIEWS, reviewId), { dislike_count: increment(-1) }).catch(() => {});
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : 'Failed to undislike review';
+      throw new ServerException(message);
+    }
+  }
+
+  async dislikeComment(commentId: string, userId: string): Promise<void> {
+    try {
+      const dislikeId = `${userId}_${commentId}`;
+      await setDoc(doc(firestore, 'comment_dislikes', dislikeId), {
+        comment_id: commentId,
+        user_id: userId,
+        created_at: serverTimestamp(),
+      });
+      updateDoc(doc(firestore, 'review_comments', commentId), { dislike_count: increment(1) }).catch(() => {});
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : 'Failed to dislike comment';
+      throw new ServerException(message);
+    }
+  }
+
+  async undislikeComment(commentId: string, userId: string): Promise<void> {
+    try {
+      const dislikeId = `${userId}_${commentId}`;
+      await deleteDoc(doc(firestore, 'comment_dislikes', dislikeId));
+      updateDoc(doc(firestore, 'review_comments', commentId), { dislike_count: increment(-1) }).catch(() => {});
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : 'Failed to undislike comment';
+      throw new ServerException(message);
+    }
+  }
+
+  async dislikeReply(replyId: string, userId: string): Promise<void> {
+    try {
+      const dislikeId = `${userId}_${replyId}`;
+      await setDoc(doc(firestore, 'reply_dislikes', dislikeId), {
+        reply_id: replyId,
+        user_id: userId,
+        created_at: serverTimestamp(),
+      });
+      updateDoc(doc(firestore, 'review_replies', replyId), { dislike_count: increment(1) }).catch(() => {});
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : 'Failed to dislike reply';
+      throw new ServerException(message);
+    }
+  }
+
+  async undislikeReply(replyId: string, userId: string): Promise<void> {
+    try {
+      const dislikeId = `${userId}_${replyId}`;
+      await deleteDoc(doc(firestore, 'reply_dislikes', dislikeId));
+      updateDoc(doc(firestore, 'review_replies', replyId), { dislike_count: increment(-1) }).catch(() => {});
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : 'Failed to undislike reply';
       throw new ServerException(message);
     }
   }

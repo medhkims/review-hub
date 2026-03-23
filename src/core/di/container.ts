@@ -17,6 +17,7 @@ import { SendPasswordChangeEmailVerificationUseCase } from '@/domain/auth/usecas
 import { SendEmailOtpUseCase } from '@/domain/auth/usecases/sendEmailOtpUseCase';
 import { VerifyEmailOtpUseCase } from '@/domain/auth/usecases/verifyEmailOtpUseCase';
 import { VerifyCurrentPasswordUseCase } from '@/domain/auth/usecases/verifyCurrentPasswordUseCase';
+import { SendPasswordResetEmailUseCase } from '@/domain/auth/usecases/sendPasswordResetEmailUseCase';
 
 // ---- Settings ----
 import { SettingsLocalDataSourceImpl } from '@/data/settings/datasources/settingsLocalDataSource';
@@ -109,6 +110,12 @@ import { LikeCommentUseCase } from '@/domain/business/usecases/likeCommentUseCas
 import { UnlikeCommentUseCase } from '@/domain/business/usecases/unlikeCommentUseCase';
 import { LikeReplyUseCase } from '@/domain/business/usecases/likeReplyUseCase';
 import { UnlikeReplyUseCase } from '@/domain/business/usecases/unlikeReplyUseCase';
+import { DislikeReviewUseCase } from '@/domain/business/usecases/dislikeReviewUseCase';
+import { UndislikeReviewUseCase } from '@/domain/business/usecases/undislikeReviewUseCase';
+import { DislikeCommentUseCase } from '@/domain/business/usecases/dislikeCommentUseCase';
+import { UndislikeCommentUseCase } from '@/domain/business/usecases/undislikeCommentUseCase';
+import { DislikeReplyUseCase } from '@/domain/business/usecases/dislikeReplyUseCase';
+import { UndislikeReplyUseCase } from '@/domain/business/usecases/undislikeReplyUseCase';
 
 // ---- Ticket ----
 import { TicketRemoteDataSourceImpl } from '@/data/ticket/datasources/ticketRemoteDataSource';
@@ -122,6 +129,7 @@ import { SupportTicketRepositoryImpl } from '@/data/support/repositories/support
 import { SubmitSupportTicketUseCase } from '@/domain/support/usecases/submitSupportTicketUseCase';
 import { GetUserSupportTicketsUseCase } from '@/domain/support/usecases/getUserSupportTicketsUseCase';
 import { GetAllSupportTicketsUseCase } from '@/domain/support/usecases/getAllSupportTicketsUseCase';
+import { ReplyToSupportTicketUseCase } from '@/domain/support/usecases/replyToSupportTicketUseCase';
 
 // ---- Feed ----
 import { FeedRemoteDataSourceImpl } from '@/data/feed/datasources/feedRemoteDataSource';
@@ -142,6 +150,7 @@ import { GetApprovedReviewsUseCase } from '@/domain/reviews/usecases/getApproved
 import { GetRejectedReviewsUseCase } from '@/domain/reviews/usecases/getRejectedReviewsUseCase';
 import { ApproveReviewUseCase } from '@/domain/reviews/usecases/approveReviewUseCase';
 import { RejectReviewUseCase } from '@/domain/reviews/usecases/rejectReviewUseCase';
+import { GetReviewPhotoUrlsUseCase } from '@/domain/reviews/usecases/getReviewPhotoUrlsUseCase';
 
 // ---- Chat ----
 import { ChatRemoteDataSourceImpl } from '@/data/chat/datasources/chatRemoteDataSource';
@@ -177,6 +186,7 @@ import { SendVerificationOtpUseCase } from '@/domain/verification/usecases/sendV
 import { VerifyVerificationOtpUseCase } from '@/domain/verification/usecases/verifyVerificationOtpUseCase';
 import { GetVerificationsByStatusUseCase } from '@/domain/verification/usecases/getVerificationsByStatusUseCase';
 import { ValidateIdCardUseCase } from '@/domain/verification/usecases/validateIdCardUseCase';
+import { ExtractAndSaveCinUseCase } from '@/domain/verification/usecases/extractAndSaveCinUseCase';
 
 // ---- FAQ ----
 import { FaqRemoteDataSourceImpl } from '@/data/faq/datasources/faqRemoteDataSource';
@@ -225,6 +235,7 @@ const sendPasswordChangeEmailVerificationUseCase = new SendPasswordChangeEmailVe
 const sendEmailOtpUseCase = new SendEmailOtpUseCase(authRepository);
 const verifyEmailOtpUseCase = new VerifyEmailOtpUseCase(authRepository);
 const verifyCurrentPasswordUseCase = new VerifyCurrentPasswordUseCase(authRepository);
+const sendPasswordResetEmailUseCase = new SendPasswordResetEmailUseCase(authRepository);
 
 // ---- Settings ----
 const settingsLocalDataSource = new SettingsLocalDataSourceImpl();
@@ -314,16 +325,22 @@ const getSuspendedBusinessesUseCase = new GetSuspendedBusinessesUseCase(business
 const incrementSearchCountUseCase = new IncrementSearchCountUseCase(businessRepository);
 const incrementGlobalSearchCountUseCase = new IncrementGlobalSearchCountUseCase(businessRepository);
 const reportBusinessUseCase = new ReportBusinessUseCase(businessRepository);
-const likeReviewUseCase = new LikeReviewUseCase(businessRepository);
+const likeReviewUseCase = new LikeReviewUseCase(businessRepository, notificationRepository);
 const unlikeReviewUseCase = new UnlikeReviewUseCase(businessRepository);
 const incrementReviewViewUseCase = new IncrementReviewViewUseCase(businessRepository);
 const getReviewCommentsUseCase = new GetReviewCommentsUseCase(businessRepository);
-const addReviewCommentUseCase = new AddReviewCommentUseCase(businessRepository);
-const addCommentReplyUseCase = new AddCommentReplyUseCase(businessRepository);
-const likeCommentUseCase = new LikeCommentUseCase(businessRepository);
+const addReviewCommentUseCase = new AddReviewCommentUseCase(businessRepository, notificationRepository);
+const addCommentReplyUseCase = new AddCommentReplyUseCase(businessRepository, notificationRepository);
+const likeCommentUseCase = new LikeCommentUseCase(businessRepository, notificationRepository);
 const unlikeCommentUseCase = new UnlikeCommentUseCase(businessRepository);
-const likeReplyUseCase = new LikeReplyUseCase(businessRepository);
+const likeReplyUseCase = new LikeReplyUseCase(businessRepository, notificationRepository);
 const unlikeReplyUseCase = new UnlikeReplyUseCase(businessRepository);
+const dislikeReviewUseCase = new DislikeReviewUseCase(businessRepository, notificationRepository);
+const undislikeReviewUseCase = new UndislikeReviewUseCase(businessRepository);
+const dislikeCommentUseCase = new DislikeCommentUseCase(businessRepository, notificationRepository);
+const undislikeCommentUseCase = new UndislikeCommentUseCase(businessRepository);
+const dislikeReplyUseCase = new DislikeReplyUseCase(businessRepository, notificationRepository);
+const undislikeReplyUseCase = new UndislikeReplyUseCase(businessRepository);
 
 // ---- Ticket ----
 const ticketRemoteDataSource = new TicketRemoteDataSourceImpl();
@@ -337,6 +354,7 @@ const supportTicketRepository = new SupportTicketRepositoryImpl(supportTicketRem
 const submitSupportTicketUseCase = new SubmitSupportTicketUseCase(supportTicketRepository);
 const getUserSupportTicketsUseCase = new GetUserSupportTicketsUseCase(supportTicketRepository);
 const getAllSupportTicketsUseCase = new GetAllSupportTicketsUseCase(supportTicketRepository);
+const replyToSupportTicketUseCase = new ReplyToSupportTicketUseCase(supportTicketRepository, notificationRepository);
 
 // ---- Feed ----
 const feedRemoteDataSource = new FeedRemoteDataSourceImpl();
@@ -359,6 +377,7 @@ const getApprovedReviewsUseCase = new GetApprovedReviewsUseCase(reviewRepository
 const getRejectedReviewsUseCase = new GetRejectedReviewsUseCase(reviewRepository);
 const approveReviewUseCase = new ApproveReviewUseCase(reviewRepository, notificationRepository);
 const rejectReviewUseCase = new RejectReviewUseCase(reviewRepository, notificationRepository);
+const getReviewPhotoUrlsUseCase = new GetReviewPhotoUrlsUseCase(reviewRepository);
 
 // ---- Chat ----
 const chatRemoteDataSource = new ChatRemoteDataSourceImpl();
@@ -396,6 +415,7 @@ const sendVerificationOtpUseCase = new SendVerificationOtpUseCase(verificationRe
 const verifyVerificationOtpUseCase = new VerifyVerificationOtpUseCase(verificationRepository);
 const getVerificationsByStatusUseCase = new GetVerificationsByStatusUseCase(verificationRepository);
 const validateIdCardUseCase = new ValidateIdCardUseCase(verificationRepository);
+const extractAndSaveCinUseCase = new ExtractAndSaveCinUseCase(verificationRepository);
 
 // ---- Admin ----
 const adminRemoteDataSource = new AdminRemoteDataSourceImpl();
@@ -438,6 +458,7 @@ export const container = {
   sendEmailOtpUseCase,
   verifyEmailOtpUseCase,
   verifyCurrentPasswordUseCase,
+  sendPasswordResetEmailUseCase,
   // Settings use cases
   getSettingsUseCase,
   updateSettingsUseCase,
@@ -506,12 +527,19 @@ export const container = {
   unlikeCommentUseCase,
   likeReplyUseCase,
   unlikeReplyUseCase,
+  dislikeReviewUseCase,
+  undislikeReviewUseCase,
+  dislikeCommentUseCase,
+  undislikeCommentUseCase,
+  dislikeReplyUseCase,
+  undislikeReplyUseCase,
   getTicketsUseCase,
   updateTicketStatusUseCase,
   // Support Ticket use cases
   submitSupportTicketUseCase,
   getUserSupportTicketsUseCase,
   getAllSupportTicketsUseCase,
+  replyToSupportTicketUseCase,
   // Feed use cases
   getPostsUseCase,
   createPostUseCase,
@@ -525,6 +553,7 @@ export const container = {
   getRejectedReviewsUseCase,
   approveReviewUseCase,
   rejectReviewUseCase,
+  getReviewPhotoUrlsUseCase,
   // Chat use cases
   getConversationsUseCase,
   getMessagesUseCase,
@@ -556,6 +585,7 @@ export const container = {
   verifyVerificationOtpUseCase,
   getVerificationsByStatusUseCase,
   validateIdCardUseCase,
+  extractAndSaveCinUseCase,
   // FAQ use cases
   getFaqsUseCase,
   getAdminFaqsUseCase,

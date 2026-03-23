@@ -3,9 +3,10 @@ import { VerificationEntity, VerificationStatus } from '@/domain/verification/en
 
 function deriveStatus(s: string): VerificationStatus {
   switch (s) {
-    case 'approved': return 'approved';
-    case 'rejected': return 'rejected';
-    default:         return 'pending';
+    case 'approved':  return 'approved';
+    case 'rejected':  return 'rejected';
+    case 'suspended': return 'suspended';
+    default:          return 'pending';
   }
 }
 

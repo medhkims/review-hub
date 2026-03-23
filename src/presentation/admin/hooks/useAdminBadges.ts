@@ -4,12 +4,13 @@ import { useAdminBadgeStore } from '../store/adminBadgeStore';
 
 export interface AdminBadgeCounts {
   tickets: number;
+  supportTickets: number;
   verification: number;
   chat: number;
 }
 
 export const useAdminBadges = (): AdminBadgeCounts => {
-  const { tickets, verification, chat, setBadges } = useAdminBadgeStore();
+  const { tickets, supportTickets, verification, chat, setBadges } = useAdminBadgeStore();
 
   useEffect(() => {
     let cancelled = false;
@@ -17,12 +18,14 @@ export const useAdminBadges = (): AdminBadgeCounts => {
     const load = async () => {
       const [
         ticketsResult,
+        supportTicketsResult,
         pendingBusinessesResult,
         pendingReviewsResult,
         pendingVerificationsResult,
         conversationsResult,
       ] = await Promise.all([
         container.getTicketsUseCase.execute(),
+        container.getAllSupportTicketsUseCase.execute(),
         container.getPendingBusinessesUseCase.execute(),
         container.getPendingReviewsUseCase.execute(),
         container.getPendingVerificationsUseCase.execute(),
@@ -35,6 +38,12 @@ export const useAdminBadges = (): AdminBadgeCounts => {
       ticketsResult.fold(
         () => {},
         (data) => { newTickets = data.filter((t) => t.status === 'OPEN').length; },
+      );
+
+      let newSupportTickets = 0;
+      supportTicketsResult.fold(
+        () => {},
+        (data) => { newSupportTickets = data.filter((t) => t.status === 'OPEN').length; },
       );
 
       let newVerification = 0;
@@ -57,7 +66,7 @@ export const useAdminBadges = (): AdminBadgeCounts => {
         (data) => { newChat = data.filter((c) => c.unreadCount > 0).length; },
       );
 
-      setBadges({ tickets: newTickets, verification: newVerification, chat: newChat });
+      setBadges({ tickets: newTickets, supportTickets: newSupportTickets, verification: newVerification, chat: newChat });
     };
 
     load();
@@ -70,5 +79,5 @@ export const useAdminBadges = (): AdminBadgeCounts => {
     };
   }, [setBadges]);
 
-  return { tickets, verification, chat };
+  return { tickets, supportTickets, verification, chat };
 };

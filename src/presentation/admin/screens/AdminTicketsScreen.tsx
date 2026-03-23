@@ -1,5 +1,5 @@
 import React, { useState, useCallback } from 'react';
-import { View, ScrollView, Pressable, Modal, ActivityIndicator } from 'react-native';
+import { View, ScrollView, Pressable, Modal, ActivityIndicator, TextInput } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { ScreenLayout } from '@/presentation/shared/layouts/ScreenLayout';
@@ -8,6 +8,7 @@ import { colors } from '@/core/theme/colors';
 import { AdminMenuButton } from '../components/AdminMenuButton';
 import { useTickets } from '../hooks/useTickets';
 import { useAdminSupportTickets } from '../hooks/useAdminSupportTickets';
+import { useAdminBadgeStore } from '../store/adminBadgeStore';
 import { TicketEntity, TicketStatus, TicketPriority } from '@/domain/ticket/entities/ticketEntity';
 import { SupportTicketEntity, SupportTicketStatus } from '@/domain/support/entities/supportTicketEntity';
 
@@ -354,11 +355,36 @@ const SupportTicketCard: React.FC<SupportTicketCardProps> = ({ item, onPress }) 
   );
 };
 
-interface SupportDetailModalProps { ticket: SupportTicketEntity | null; onClose: () => void }
-const SupportDetailModal: React.FC<SupportDetailModalProps> = ({ ticket, onClose }) => {
+const SUPPORT_STATUS_ACTIONS: SupportTicketStatus[] = ['OPEN', 'IN_PROGRESS', 'RESOLVED', 'CLOSED'];
+
+interface SupportDetailModalProps {
+  ticket: SupportTicketEntity | null;
+  onClose: () => void;
+  onReply: (ticketId: string, adminReply: string, status: string) => Promise<boolean>;
+  isReplying: boolean;
+}
+const SupportDetailModal: React.FC<SupportDetailModalProps> = ({ ticket, onClose, onReply, isReplying }) => {
+  const [replyText, setReplyText] = useState('');
+  const [selectedStatus, setSelectedStatus] = useState<SupportTicketStatus | null>(null);
+
+  const handleOpen = useCallback(() => {
+    setReplyText(ticket?.adminReply ?? '');
+    setSelectedStatus(ticket?.status ?? null);
+  }, [ticket]);
+
+  React.useEffect(() => {
+    if (ticket) handleOpen();
+  }, [ticket, handleOpen]);
+
   if (!ticket) return null;
-  const status = SUPPORT_STATUS_CONFIG[ticket.status];
+  const currentStatus = selectedStatus ?? ticket.status;
   const ticketNumber = `SUP-${ticket.id.slice(-6).toUpperCase()}`;
+
+  const handleSubmit = async () => {
+    const ok = await onReply(ticket.id, replyText.trim(), currentStatus);
+    if (ok) onClose();
+  };
+
   return (
     <Modal visible transparent animationType="slide" onRequestClose={onClose} statusBarTranslucent>
       <View style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.7)', justifyContent: 'flex-end' }}>
@@ -370,7 +396,7 @@ const SupportDetailModal: React.FC<SupportDetailModalProps> = ({ ticket, onClose
           paddingBottom: 40,
           borderWidth: 1,
           borderColor: 'rgba(255,255,255,0.08)',
-          maxHeight: '85%',
+          maxHeight: '92%',
         }}>
           <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
             <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
@@ -381,6 +407,7 @@ const SupportDetailModal: React.FC<SupportDetailModalProps> = ({ ticket, onClose
               <MaterialCommunityIcons name="close" size={22} color={colors.textSlate400} />
             </Pressable>
           </View>
+
           <ScrollView showsVerticalScrollIndicator={false}>
             <View style={{ gap: 14 }}>
               <InfoRow icon="text-subject" label="Subject" value={ticket.subject} />
@@ -391,23 +418,85 @@ const SupportDetailModal: React.FC<SupportDetailModalProps> = ({ ticket, onClose
                 <AppText style={{ fontSize: 11, color: colors.textSlate400, marginBottom: 4 }}>Message</AppText>
                 <AppText style={{ fontSize: 13, color: colors.white }}>{ticket.message}</AppText>
               </View>
-              <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                <View style={{ paddingHorizontal: 10, paddingVertical: 3, borderRadius: 20, backgroundColor: status.bg }}>
-                  <AppText style={{ fontSize: 12, color: status.color, fontWeight: '700' }}>{status.label}</AppText>
+
+              {/* Status update */}
+              <View>
+                <AppText style={{ fontSize: 13, color: colors.textSlate400, marginBottom: 8 }}>Update status:</AppText>
+                <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>
+                  {SUPPORT_STATUS_ACTIONS.map((s) => {
+                    const cfg = SUPPORT_STATUS_CONFIG[s];
+                    const active = currentStatus === s;
+                    return (
+                      <Pressable
+                        key={s}
+                        onPress={() => setSelectedStatus(s)}
+                        accessibilityRole="button"
+                        accessibilityLabel={cfg.label}
+                        style={{
+                          paddingHorizontal: 14,
+                          paddingVertical: 7,
+                          borderRadius: 20,
+                          backgroundColor: active ? cfg.bg : 'transparent',
+                          borderWidth: 1.5,
+                          borderColor: active ? cfg.color : 'rgba(255,255,255,0.15)',
+                        }}
+                      >
+                        <AppText style={{ fontSize: 12, fontWeight: '600', color: active ? cfg.color : colors.textSlate400 }}>
+                          {cfg.label}
+                        </AppText>
+                      </Pressable>
+                    );
+                  })}
                 </View>
               </View>
-              {ticket.adminReply ? (
-                <View style={{
-                  backgroundColor: `${colors.neonPurple}15`,
-                  borderRadius: 10,
-                  padding: 14,
-                  borderLeftWidth: 3,
-                  borderLeftColor: colors.neonPurple,
-                }}>
-                  <AppText style={{ fontSize: 11, color: colors.neonPurple, fontWeight: '700', marginBottom: 4 }}>Admin Reply</AppText>
-                  <AppText style={{ fontSize: 13, color: colors.white }}>{ticket.adminReply}</AppText>
-                </View>
-              ) : null}
+
+              {/* Admin reply */}
+              <View>
+                <AppText style={{ fontSize: 13, color: colors.textSlate400, marginBottom: 8 }}>Reply to user:</AppText>
+                <TextInput
+                  value={replyText}
+                  onChangeText={setReplyText}
+                  placeholder="Write a reply..."
+                  placeholderTextColor={colors.textSlate400}
+                  multiline
+                  numberOfLines={4}
+                  textAlignVertical="top"
+                  accessibilityLabel="Reply to user"
+                  style={{
+                    backgroundColor: 'rgba(255,255,255,0.05)',
+                    borderRadius: 12,
+                    borderWidth: 1,
+                    borderColor: 'rgba(255,255,255,0.12)',
+                    padding: 12,
+                    fontSize: 14,
+                    color: colors.white,
+                    minHeight: 100,
+                  }}
+                />
+              </View>
+
+              {/* Submit */}
+              <Pressable
+                onPress={handleSubmit}
+                disabled={isReplying}
+                accessibilityRole="button"
+                accessibilityLabel="Save reply"
+                style={{
+                  backgroundColor: isReplying ? `${colors.neonPurple}40` : colors.neonPurple,
+                  borderRadius: 12,
+                  paddingVertical: 13,
+                  alignItems: 'center',
+                  marginTop: 4,
+                }}
+              >
+                {isReplying ? (
+                  <ActivityIndicator color={colors.white} size="small" />
+                ) : (
+                  <AppText style={{ fontSize: 15, fontWeight: '700', color: colors.white }}>Save & Reply</AppText>
+                )}
+              </Pressable>
+
+              <View style={{ height: 8 }} />
             </View>
           </ScrollView>
         </View>
@@ -420,7 +509,8 @@ const SupportDetailModal: React.FC<SupportDetailModalProps> = ({ ticket, onClose
 export default function AdminTicketsScreen() {
   const { t } = useTranslation();
   const { tickets, isLoading, error, refresh, updateStatus, claimTicket } = useTickets();
-  const { tickets: supportTickets, isLoading: supportLoading, error: supportError, refresh: refreshSupport } = useAdminSupportTickets();
+  const { tickets: supportTickets, isLoading: supportLoading, isReplying, error: supportError, refresh: refreshSupport, replyToTicket } = useAdminSupportTickets();
+  const { tickets: openReportsCount, supportTickets: openSupportCount } = useAdminBadgeStore();
   const [mainTab, setMainTab] = useState<'reports' | 'support'>('reports');
   const [activeFilter, setActiveFilter] = useState<FilterTab>('ALL');
   const [selectedTicket, setSelectedTicket] = useState<TicketEntity | null>(null);
@@ -451,6 +541,8 @@ export default function AdminTicketsScreen() {
       <SupportDetailModal
         ticket={selectedSupportTicket}
         onClose={() => setSelectedSupportTicket(null)}
+        onReply={replyToTicket}
+        isReplying={isReplying}
       />
 
       {/* Header */}
@@ -471,12 +563,15 @@ export default function AdminTicketsScreen() {
 
       {/* Main tab switcher */}
       <View style={{ flexDirection: 'row', paddingHorizontal: 16, gap: 8, marginBottom: 12 }}>
-        {(['reports', 'support'] as const).map((tab) => {
-          const active = mainTab === tab;
+        {([
+          { key: 'reports', label: 'Reports', badge: openReportsCount },
+          { key: 'support', label: 'Support', badge: openSupportCount },
+        ] as const).map(({ key, label, badge }) => {
+          const active = mainTab === key;
           return (
             <Pressable
-              key={tab}
-              onPress={() => setMainTab(tab)}
+              key={key}
+              onPress={() => setMainTab(key)}
               accessibilityRole="tab"
               accessibilityState={{ selected: active }}
               style={{
@@ -486,12 +581,32 @@ export default function AdminTicketsScreen() {
                 backgroundColor: active ? colors.neonPurple : colors.cardDark,
                 borderWidth: 1,
                 borderColor: active ? colors.neonPurple : colors.borderDark,
+                flexDirection: 'row',
                 alignItems: 'center',
+                justifyContent: 'center',
+                gap: 6,
               }}
             >
               <AppText style={{ fontSize: 13, fontWeight: '600', color: active ? colors.white : colors.textSlate400 }}>
-                {tab === 'reports' ? 'Reports' : 'Support'}
+                {label}
               </AppText>
+              {badge > 0 && (
+                <View
+                  style={{
+                    minWidth: 18,
+                    height: 18,
+                    borderRadius: 9,
+                    backgroundColor: active ? '#FFFFFF' : '#EF4444',
+                    justifyContent: 'center',
+                    alignItems: 'center',
+                    paddingHorizontal: 4,
+                  }}
+                >
+                  <AppText style={{ fontSize: 10, fontWeight: '700', color: active ? '#EF4444' : '#FFFFFF', lineHeight: 13 }}>
+                    {badge > 99 ? '99+' : String(badge)}
+                  </AppText>
+                </View>
+              )}
             </Pressable>
           );
         })}

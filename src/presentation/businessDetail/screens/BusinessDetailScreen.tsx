@@ -126,7 +126,7 @@ export default function BusinessDetailScreen({ businessId }: BusinessDetailScree
   const handleViewAllReviews = () => {
     router.push({
       pathname: '/(main)/(feed)/business-reviews' as const,
-      params: { businessId: business.id, businessName: business.name },
+      params: { businessId: business.id, businessName: business.name, ...(business.logoUrl ? { businessLogoUrl: business.logoUrl } : {}) },
     } as never);
   };
 

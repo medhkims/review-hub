@@ -45,4 +45,25 @@ export class SupportTicketRepositoryImpl implements SupportTicketRepository {
       return left(new ServerFailure('Failed to fetch all support tickets'));
     }
   }
+
+  async replyToSupportTicket(
+    ticketId: string,
+    adminReply: string,
+    status: string,
+  ): Promise<Either<Failure, void>> {
+    const DOMAIN_TO_FIRESTORE: Record<string, string> = {
+      OPEN: 'open',
+      IN_PROGRESS: 'in_progress',
+      RESOLVED: 'resolved',
+      CLOSED: 'closed',
+    };
+    const firestoreStatus = DOMAIN_TO_FIRESTORE[status] ?? status.toLowerCase();
+    try {
+      await this.remote.replyToTicket(ticketId, adminReply, firestoreStatus);
+      return right(undefined);
+    } catch (error) {
+      if (error instanceof ServerException) return left(new ServerFailure(error.message));
+      return left(new ServerFailure('Failed to reply to support ticket'));
+    }
+  }
 }

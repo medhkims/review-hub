@@ -1,5 +1,5 @@
 import { FaqRepository } from '@/domain/faq/repositories/faqRepository';
-import { FaqEntity } from '@/domain/faq/entities/faqEntity';
+import { FaqAudience, FaqEntity } from '@/domain/faq/entities/faqEntity';
 import { Either, left, right } from '@/core/types/either';
 import { Failure, ServerFailure } from '@/core/error/failures';
 import { ServerException } from '@/core/error/exceptions';
@@ -29,9 +29,9 @@ export class FaqRepositoryImpl implements FaqRepository {
     }
   }
 
-  async createFaq(question: string, answer: string, order: number): Promise<Either<Failure, FaqEntity>> {
+  async createFaq(question: string, answer: string, order: number, audience: FaqAudience[]): Promise<Either<Failure, FaqEntity>> {
     try {
-      const model = await this.remote.createFaq(question, answer, order);
+      const model = await this.remote.createFaq(question, answer, order, audience);
       return right(FaqMapper.toEntity(model));
     } catch (error) {
       if (error instanceof ServerException) return left(new ServerFailure(error.message));
@@ -39,9 +39,9 @@ export class FaqRepositoryImpl implements FaqRepository {
     }
   }
 
-  async updateFaq(id: string, question: string, answer: string, order: number): Promise<Either<Failure, FaqEntity>> {
+  async updateFaq(id: string, question: string, answer: string, order: number, audience: FaqAudience[]): Promise<Either<Failure, FaqEntity>> {
     try {
-      const model = await this.remote.updateFaq(id, question, answer, order);
+      const model = await this.remote.updateFaq(id, question, answer, order, audience);
       return right(FaqMapper.toEntity(model));
     } catch (error) {
       if (error instanceof ServerException) return left(new ServerFailure(error.message));

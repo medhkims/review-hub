@@ -8,6 +8,7 @@ import { AppText } from '@/presentation/shared/components/ui/AppText';
 import { AppButton } from '@/presentation/shared/components/ui/AppButton';
 import { colors } from '@/core/theme/colors';
 import { useTheme } from '@/core/theme/useTheme';
+import { useAuthStore } from '@/presentation/auth/store/authStore';
 
 interface StarRowProps {
   label: string;
@@ -37,11 +38,14 @@ export default function ReviewSubmitSuccessScreen() {
   const router = useRouter();
   const { t } = useTranslation();
   const theme = useTheme();
+  const { user } = useAuthStore();
 
-  const { businessName, ratings: ratingsParam, reviewText } = useLocalSearchParams<{
+  const { businessName, businessId, ratings: ratingsParam, reviewText, reviewId } = useLocalSearchParams<{
     businessName: string;
+    businessId?: string;
     ratings: string;
     reviewText: string;
+    reviewId: string;
   }>();
 
   const resolvedBusinessName = businessName ?? '';
@@ -56,8 +60,37 @@ export default function ReviewSubmitSuccessScreen() {
 
   const ratingEntries = Object.entries(ratings);
 
+  const overallRating = useMemo(() => {
+    const values = Object.values(ratings);
+    if (values.length === 0) return 0;
+    return Math.round((values.reduce((sum, r) => sum + r, 0) / values.length) * 10) / 10;
+  }, [ratings]);
+
   const handleGoToMyReviews = () => {
-    router.push('/(main)/(reviews)');
+    if (reviewId && user) {
+      const reviewData = JSON.stringify({
+        id: reviewId,
+        authorId: user.id,
+        authorName: user.displayName,
+        authorAvatarUrl: user.avatarUrl ?? null,
+        rating: overallRating,
+        text: reviewText ?? '',
+        createdAtMs: Date.now(),
+        likeCount: 0,
+        viewCount: 0,
+        commentCount: 0,
+        isLikedByCurrentUser: false,
+        dislikeCount: 0,
+        isDislikedByCurrentUser: false,
+        businessId: businessId ?? undefined,
+      });
+      router.push({
+        pathname: '/(main)/(feed)/review-detail',
+        params: { reviewId, businessName: resolvedBusinessName, reviewData, from: 'my-reviews' },
+      });
+    } else {
+      router.push('/(main)/(reviews)');
+    }
   };
 
   const handleBackToHome = () => {

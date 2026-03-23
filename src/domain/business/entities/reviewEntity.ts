@@ -5,9 +5,12 @@ export interface ReviewEntity {
   authorAvatarUrl: string | null;
   rating: number;
   text: string;
+  photoUrls: string[];
   createdAt: Date;
   likeCount: number;
   viewCount: number;
   commentCount: number;
   isLikedByCurrentUser: boolean;
+  dislikeCount: number;
+  isDislikedByCurrentUser: boolean;
 }

@@ -16,7 +16,7 @@ const createReviewUseCase = new CreateReviewUseCase(reviewRepo);
 const reviewImageDataSource = new ReviewImageRemoteDataSourceImpl();
 
 export const useWriteReview = (businessId: string, businessName: string) => {
-  const { isSubmitting, submitSuccess, error, setSubmitting, setSubmitSuccess, setError, reset } =
+  const { isSubmitting, submitSuccess, submittedReviewId, error, setSubmitting, setSubmitSuccess, setError, reset } =
     useReviewStore();
   const { user } = useAuthStore();
   const inFlightRef = useRef(false);
@@ -75,8 +75,8 @@ export const useWriteReview = (businessId: string, businessName: string) => {
           setSubmitting(false);
           inFlightRef.current = false;
         },
-        (_reviewId) => {
-          setSubmitSuccess(true);
+        (reviewId) => {
+          setSubmitSuccess(true, reviewId);
           setSubmitting(false);
           inFlightRef.current = false;
         },
@@ -88,6 +88,7 @@ export const useWriteReview = (businessId: string, businessName: string) => {
   return {
     isSubmitting,
     submitSuccess,
+    submittedReviewId,
     error,
     submitReview,
     reset,

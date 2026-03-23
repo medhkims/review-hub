@@ -140,9 +140,11 @@ const STATUS_STYLES: Record<string, { bg: string; border: string; text: string; 
 interface DetailModalProps {
   item: VerificationEntity | null;
   onClose: () => void;
+  onExtractCin: () => void;
+  isExtractingCin: boolean;
 }
 
-const DetailModal: React.FC<DetailModalProps> = ({ item, onClose }) => {
+const DetailModal: React.FC<DetailModalProps> = ({ item, onClose, onExtractCin, isExtractingCin }) => {
   const { t } = useTranslation();
   const theme = useTheme();
   const [idCardVisible, setIdCardVisible] = useState(false);
@@ -200,9 +202,57 @@ const DetailModal: React.FC<DetailModalProps> = ({ item, onClose }) => {
               <AppText style={{ fontSize: 13, color: theme.textMuted, marginTop: 2 }}>{item.userEmail}</AppText>
             </View>
 
-            {/* Info rows */}
+            {/* CIN row — with Detect button if null */}
+            <View
+              style={{
+                flexDirection: 'row', alignItems: 'center', gap: 12,
+                paddingVertical: 12,
+                borderBottomWidth: 1, borderBottomColor: theme.border,
+              }}
+            >
+              <MaterialCommunityIcons name="card-account-details-outline" size={18} color={colors.neonPurple} />
+              <View style={{ flex: 1 }}>
+                <AppText style={{ fontSize: 11, color: theme.textMuted, marginBottom: 2 }}>
+                  {t('admin.verifications.cinNumber')}
+                </AppText>
+                {item.cinNumber ? (
+                  <AppText style={{ fontSize: 16, fontWeight: '700', color: colors.neonPurple, letterSpacing: 1 }}>
+                    {item.cinNumber}
+                  </AppText>
+                ) : (
+                  <AppText style={{ fontSize: 13, color: theme.textMuted, fontStyle: 'italic' }}>
+                    {t('admin.verifications.cinNotDetected')}
+                  </AppText>
+                )}
+              </View>
+              {!item.cinNumber ? (
+                <Pressable
+                  onPress={onExtractCin}
+                  disabled={isExtractingCin}
+                  accessibilityRole="button"
+                  accessibilityLabel={t('admin.verifications.detectCin')}
+                  style={{
+                    flexDirection: 'row', alignItems: 'center', gap: 6,
+                    paddingHorizontal: 12, paddingVertical: 7,
+                    borderRadius: 9999,
+                    backgroundColor: 'rgba(168,85,247,0.15)',
+                    borderWidth: 1, borderColor: 'rgba(168,85,247,0.3)',
+                  }}
+                >
+                  {isExtractingCin ? (
+                    <ActivityIndicator size="small" color={colors.neonPurple} />
+                  ) : (
+                    <MaterialCommunityIcons name="magnify-scan" size={15} color={colors.neonPurple} />
+                  )}
+                  <AppText style={{ fontSize: 12, fontWeight: '600', color: colors.neonPurple }}>
+                    {t('admin.verifications.detectCin')}
+                  </AppText>
+                </Pressable>
+              ) : null}
+            </View>
+
+            {/* Other info rows */}
             {[
-              { icon: 'card-account-details-outline', label: t('admin.verifications.cinNumber'), value: item.cinNumber ?? t('admin.verifications.cinNotDetected') },
               { icon: 'phone', label: t('admin.verifications.phone'), value: item.phoneNumber },
               { icon: 'calendar-plus', label: t('admin.verifications.submittedAt'), value: formatDate(item.submittedAt) },
               { icon: 'calendar-check', label: t('admin.verifications.reviewedAt'), value: item.reviewedAt ? formatDate(item.reviewedAt) : '—' },
@@ -566,9 +616,10 @@ const TABS: VerificationTab[] = ['pending', 'approved', 'rejected'];
 interface TabBarProps {
   active: VerificationTab;
   onSwitch: (tab: VerificationTab) => void;
+  pendingCount: number;
 }
 
-const TabBar: React.FC<TabBarProps> = ({ active, onSwitch }) => {
+const TabBar: React.FC<TabBarProps> = ({ active, onSwitch, pendingCount }) => {
   const { t } = useTranslation();
   const theme = useTheme();
 
@@ -589,6 +640,7 @@ const TabBar: React.FC<TabBarProps> = ({ active, onSwitch }) => {
       {TABS.map((tab) => {
         const isActive = tab === active;
         const style = STATUS_STYLES[tab];
+        const badge = tab === 'pending' ? pendingCount : 0;
         return (
           <Pressable
             key={tab}
@@ -600,6 +652,9 @@ const TabBar: React.FC<TabBarProps> = ({ active, onSwitch }) => {
               paddingVertical: 8,
               borderRadius: 8,
               alignItems: 'center',
+              flexDirection: 'row',
+              justifyContent: 'center',
+              gap: 6,
               backgroundColor: isActive ? style.bg : 'transparent',
               borderWidth: isActive ? 1 : 0,
               borderColor: isActive ? style.border : 'transparent',
@@ -614,6 +669,23 @@ const TabBar: React.FC<TabBarProps> = ({ active, onSwitch }) => {
             >
               {t(`admin.verifications.${tab}`)}
             </AppText>
+            {badge > 0 && (
+              <View
+                style={{
+                  minWidth: 18,
+                  height: 18,
+                  borderRadius: 9,
+                  backgroundColor: '#EF4444',
+                  justifyContent: 'center',
+                  alignItems: 'center',
+                  paddingHorizontal: 4,
+                }}
+              >
+                <AppText style={{ fontSize: 10, fontWeight: '700', color: '#FFFFFF', lineHeight: 13 }}>
+                  {badge > 99 ? '99+' : String(badge)}
+                </AppText>
+              </View>
+            )}
           </Pressable>
         );
       })}
@@ -626,10 +698,18 @@ const TabBar: React.FC<TabBarProps> = ({ active, onSwitch }) => {
 export default function AdminVerificationsScreen() {
   const { t } = useTranslation();
   const theme = useTheme();
-  const { activeTab, switchTab, verifications, isLoading, isUpdating, error, load, approve, reject } =
+  const { activeTab, switchTab, verifications, isLoading, isUpdating, isExtractingCin, error, load, approve, reject, extractCin } =
     useAdminVerifications();
   const [rejectTarget, setRejectTarget] = useState<VerificationEntity | null>(null);
   const [detailItem, setDetailItem] = useState<VerificationEntity | null>(null);
+  const [pendingCount, setPendingCount] = useState(0);
+
+  // Keep pendingCount in sync whenever we're on the pending tab and data loads
+  React.useEffect(() => {
+    if (activeTab === 'pending' && !isLoading) {
+      setPendingCount(verifications.length);
+    }
+  }, [activeTab, isLoading, verifications.length]);
 
   const handleRejectConfirm = useCallback(
     async (reason: string) => {
@@ -681,7 +761,7 @@ export default function AdminVerificationsScreen() {
       </View>
 
       {/* Tab Bar */}
-      <TabBar active={activeTab} onSwitch={switchTab} />
+      <TabBar active={activeTab} onSwitch={switchTab} pendingCount={pendingCount} />
 
       <ScrollView
         style={{ flex: 1 }}
@@ -743,7 +823,15 @@ export default function AdminVerificationsScreen() {
       />
 
       {detailItem ? (
-        <DetailModal item={detailItem} onClose={() => setDetailItem(null)} />
+        <DetailModal
+          item={detailItem}
+          onClose={() => setDetailItem(null)}
+          onExtractCin={async () => {
+            const cin = await extractCin(detailItem);
+            if (cin) setDetailItem((prev) => (prev ? { ...prev, cinNumber: cin } : null));
+          }}
+          isExtractingCin={isExtractingCin}
+        />
       ) : null}
     </ScreenLayout>
   );

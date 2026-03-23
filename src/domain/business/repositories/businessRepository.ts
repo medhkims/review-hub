@@ -1,6 +1,7 @@
 import { BusinessEntity } from '../entities/businessEntity';
 import { BusinessDetailEntity } from '../entities/businessDetailEntity';
 import { ReviewEntity } from '../entities/reviewEntity';
+import { RecentReviewEntity } from '../entities/recentReviewEntity';
 import { CommentEntity, ReplyEntity } from '../entities/commentEntity';
 import { ActiveCategoryInfoEntity } from '../entities/activeCategoryInfoEntity';
 import { Either } from '@/core/types/either';
@@ -43,6 +44,7 @@ export interface BusinessRepository {
   toggleFavorite(businessId: string, userId: string): Promise<Either<Failure, boolean>>;
   getBusinessDetail(businessId: string, skipTracking?: boolean): Promise<Either<Failure, BusinessDetailEntity>>;
   getBusinessReviews(businessId: string): Promise<Either<Failure, ReviewEntity[]>>;
+  getRecentReviews(count: number): Promise<Either<Failure, RecentReviewEntity[]>>;
   getBusinessByOwnerId(userId: string): Promise<Either<Failure, BusinessDetailEntity | null>>;
   registerBusiness(params: RegisterBusinessParams): Promise<Either<Failure, string>>;
   updateBusiness(businessId: string, data: Record<string, unknown>): Promise<Either<Failure, void>>;
@@ -71,6 +73,12 @@ export interface BusinessRepository {
   unlikeComment(commentId: string): Promise<Either<Failure, void>>;
   likeReply(replyId: string): Promise<Either<Failure, void>>;
   unlikeReply(replyId: string): Promise<Either<Failure, void>>;
+  dislikeReview(reviewId: string): Promise<Either<Failure, void>>;
+  undislikeReview(reviewId: string): Promise<Either<Failure, void>>;
+  dislikeComment(commentId: string): Promise<Either<Failure, void>>;
+  undislikeComment(commentId: string): Promise<Either<Failure, void>>;
+  dislikeReply(replyId: string): Promise<Either<Failure, void>>;
+  undislikeReply(replyId: string): Promise<Either<Failure, void>>;
 }
 
 export interface ReportBusinessParams {

@@ -42,6 +42,7 @@ export interface VerificationRemoteDataSource {
   sendOtp(phoneNumber: string): Promise<void>;
   verifyOtp(phoneNumber: string, code: string): Promise<void>;
   validateIdCard(imageBase64: string): Promise<{ isValid: boolean; cinNumber: string | null }>;
+  extractAndSaveCin(verificationId: string): Promise<string | null>;
 }
 
 export class VerificationRemoteDataSourceImpl implements VerificationRemoteDataSource {
@@ -271,11 +272,24 @@ export class VerificationRemoteDataSourceImpl implements VerificationRemoteDataS
       return { isValid: result.data.isValid, cinNumber: result.data.cinNumber ?? null };
     } catch (error: unknown) {
       const code = (error as { code?: string }).code ?? '';
-      // If the Cloud Function is not yet deployed, skip validation and allow submission
       if (code === 'functions/not-found' || code === 'functions/internal' || code === 'functions/unavailable') {
-        return true;
+        return { isValid: true, cinNumber: null };
       }
       const msg = error instanceof Error ? error.message : 'Failed to validate ID card';
+      throw new ServerException(msg);
+    }
+  }
+
+  async extractAndSaveCin(verificationId: string): Promise<string | null> {
+    try {
+      const fn = httpsCallable<{ verificationId: string }, { cinNumber: string | null }>(
+        functions,
+        'extractAndSaveCin',
+      );
+      const result = await fn({ verificationId });
+      return result.data.cinNumber ?? null;
+    } catch (error: unknown) {
+      const msg = error instanceof Error ? error.message : 'Failed to extract CIN';
       throw new ServerException(msg);
     }
   }

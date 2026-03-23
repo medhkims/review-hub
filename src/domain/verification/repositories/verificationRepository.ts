@@ -27,4 +27,5 @@ export interface VerificationRepository {
   sendOtp(phoneNumber: string): Promise<Either<Failure, void>>;
   verifyOtp(phoneNumber: string, code: string): Promise<Either<Failure, void>>;
   validateIdCard(imageBase64: string): Promise<Either<Failure, { isValid: boolean; cinNumber: string | null }>>;
+  extractAndSaveCin(verificationId: string): Promise<Either<Failure, string | null>>;
 }

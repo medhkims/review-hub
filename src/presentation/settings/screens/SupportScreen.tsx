@@ -196,11 +196,35 @@ export default function SupportScreen() {
   const [message, setMessage] = useState('');
   const [category, setCategory] = useState<SupportTicketCategory>('GENERAL');
   const [selectedTicket, setSelectedTicket] = useState<SupportTicketEntity | null>(null);
+  const [subjectError, setSubjectError] = useState<string | null>(null);
+  const [messageError, setMessageError] = useState<string | null>(null);
+  const [statusFilter, setStatusFilter] = useState<'ALL' | 'OPEN' | 'IN_PROGRESS' | 'DONE'>('ALL');
+
+  const handleSubjectChange = useCallback((text: string) => {
+    setSubject(text);
+    if (subjectError && text.trim().length > 0) setSubjectError(null);
+  }, [subjectError]);
+
+  const handleMessageChange = useCallback((text: string) => {
+    setMessage(text);
+    if (messageError && text.trim().length >= 10) setMessageError(null);
+  }, [messageError]);
 
   const handleSubmit = useCallback(async () => {
-    if (!subject.trim() || !message.trim()) return;
+    let hasError = false;
+    if (!subject.trim()) {
+      setSubjectError(t('support.subjectRequired'));
+      hasError = true;
+    }
+    if (message.trim().length < 10) {
+      setMessageError(t('support.messageMinLength'));
+      hasError = true;
+    }
+    if (hasError) return;
+    setSubjectError(null);
+    setMessageError(null);
     await submitTicket(subject.trim(), message.trim(), category);
-  }, [subject, message, category, submitTicket]);
+  }, [subject, message, category, submitTicket, t]);
 
   // Reset form on success
   React.useEffect(() => {
@@ -208,12 +232,14 @@ export default function SupportScreen() {
       setSubject('');
       setMessage('');
       setCategory('GENERAL');
+      setSubjectError(null);
+      setMessageError(null);
       setActiveTab('history');
       clearSubmitSuccess();
     }
   }, [submitSuccess, clearSubmitSuccess]);
 
-  const isFormValid = subject.trim().length > 0 && message.trim().length >= 10;
+  const isFormValid = true;
 
   return (
     <ScreenLayout>
@@ -337,7 +363,7 @@ export default function SupportScreen() {
               </AppText>
               <TextInput
                 value={subject}
-                onChangeText={setSubject}
+                onChangeText={handleSubjectChange}
                 placeholder={t('support.subjectPlaceholder')}
                 placeholderTextColor={theme.textMuted}
                 maxLength={100}
@@ -346,13 +372,16 @@ export default function SupportScreen() {
                   backgroundColor: theme.card,
                   borderRadius: 12,
                   borderWidth: 1,
-                  borderColor: theme.border,
+                  borderColor: subjectError ? colors.error : theme.border,
                   paddingHorizontal: 14,
                   paddingVertical: 12,
                   fontSize: 14,
                   color: theme.text,
                 }}
               />
+              {subjectError ? (
+                <AppText style={{ fontSize: 11, color: colors.error, marginTop: 4 }}>{subjectError}</AppText>
+              ) : null}
             </View>
 
             {/* Message */}
@@ -362,7 +391,7 @@ export default function SupportScreen() {
               </AppText>
               <TextInput
                 value={message}
-                onChangeText={setMessage}
+                onChangeText={handleMessageChange}
                 placeholder={t('support.messagePlaceholder')}
                 placeholderTextColor={theme.textMuted}
                 multiline
@@ -374,7 +403,7 @@ export default function SupportScreen() {
                   backgroundColor: theme.card,
                   borderRadius: 12,
                   borderWidth: 1,
-                  borderColor: theme.border,
+                  borderColor: messageError ? colors.error : theme.border,
                   paddingHorizontal: 14,
                   paddingVertical: 12,
                   fontSize: 14,
@@ -382,19 +411,24 @@ export default function SupportScreen() {
                   minHeight: 120,
                 }}
               />
-              <AppText style={{ fontSize: 11, color: theme.textSecondary, marginTop: 4, textAlign: 'right' }}>
-                {message.length}/1000
-              </AppText>
+              <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginTop: 4 }}>
+                {messageError ? (
+                  <AppText style={{ fontSize: 11, color: colors.error, flex: 1 }}>{messageError}</AppText>
+                ) : (
+                  <View />
+                )}
+                <AppText style={{ fontSize: 11, color: theme.textSecondary }}>{message.length}/1000</AppText>
+              </View>
             </View>
 
             {/* Submit */}
             <Pressable
               onPress={handleSubmit}
-              disabled={!isFormValid || isSubmitting}
+              disabled={isSubmitting}
               accessibilityRole="button"
               accessibilityLabel={t('support.submit')}
               style={({ pressed }) => ({
-                backgroundColor: isFormValid && !isSubmitting
+                backgroundColor: !isSubmitting
                   ? pressed ? `${colors.neonPurple}CC` : colors.neonPurple
                   : `${colors.neonPurple}40`,
                 borderRadius: 14,
@@ -415,37 +449,90 @@ export default function SupportScreen() {
         ) : (
           /* History tab */
           <View>
-            {isLoading ? (
-              <ActivityIndicator color={colors.neonPurple} style={{ marginTop: 40 }} />
-            ) : error ? (
-              <View style={{ alignItems: 'center', paddingTop: 40 }}>
-                <MaterialCommunityIcons name="alert-circle-outline" size={48} color={colors.error} />
-                <AppText style={{ color: theme.textSecondary, marginTop: 12, fontSize: 14 }}>{error}</AppText>
-                <Pressable onPress={refresh} accessibilityRole="button" style={{ marginTop: 16 }}>
-                  <AppText style={{ color: colors.neonPurple, fontWeight: '600' }}>{t('common.retry')}</AppText>
-                </Pressable>
+            {/* Status filter tabs */}
+            <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ marginBottom: 14 }}>
+              <View style={{ flexDirection: 'row', gap: 8 }}>
+                {([
+                  { key: 'ALL', label: t('support.filterAll') },
+                  { key: 'OPEN', label: t('support.filterOpen') },
+                  { key: 'IN_PROGRESS', label: t('support.filterInProgress') },
+                  { key: 'DONE', label: t('support.filterDone') },
+                ] as const).map(({ key, label }) => {
+                  const active = statusFilter === key;
+                  return (
+                    <Pressable
+                      key={key}
+                      onPress={() => setStatusFilter(key)}
+                      accessibilityRole="tab"
+                      accessibilityState={{ selected: active }}
+                      style={{
+                        paddingHorizontal: 16,
+                        paddingVertical: 7,
+                        borderRadius: 20,
+                        backgroundColor: active ? colors.neonPurple : theme.card,
+                        borderWidth: 1,
+                        borderColor: active ? colors.neonPurple : theme.border,
+                      }}
+                    >
+                      <AppText style={{ fontSize: 12, fontWeight: '600', color: active ? '#FFFFFF' : theme.textSecondary }}>
+                        {label}
+                      </AppText>
+                    </Pressable>
+                  );
+                })}
               </View>
-            ) : tickets.length === 0 ? (
-              <View style={{ alignItems: 'center', paddingTop: 60 }}>
-                <MaterialCommunityIcons name="ticket-outline" size={56} color={theme.textMuted} />
-                <AppText style={{ color: theme.textMuted, marginTop: 12, fontSize: 14, textAlign: 'center' }}>
-                  {t('support.noTickets')}
-                </AppText>
-                <Pressable
-                  onPress={() => setActiveTab('new')}
-                  accessibilityRole="button"
-                  style={{ marginTop: 16 }}
-                >
-                  <AppText style={{ color: colors.neonPurple, fontWeight: '600' }}>
-                    {t('support.submitFirst')}
-                  </AppText>
-                </Pressable>
-              </View>
-            ) : (
-              tickets.map((item) => (
+            </ScrollView>
+
+            {(() => {
+              const filtered = tickets.filter((t) => {
+                if (statusFilter === 'ALL') return true;
+                if (statusFilter === 'OPEN') return t.status === 'OPEN';
+                if (statusFilter === 'IN_PROGRESS') return t.status === 'IN_PROGRESS';
+                if (statusFilter === 'DONE') return t.status === 'RESOLVED' || t.status === 'CLOSED';
+                return true;
+              });
+
+              if (isLoading) {
+                return <ActivityIndicator color={colors.neonPurple} style={{ marginTop: 40 }} />;
+              }
+              if (error) {
+                return (
+                  <View style={{ alignItems: 'center', paddingTop: 40 }}>
+                    <MaterialCommunityIcons name="alert-circle-outline" size={48} color={colors.error} />
+                    <AppText style={{ color: theme.textSecondary, marginTop: 12, fontSize: 14 }}>{error}</AppText>
+                    <Pressable onPress={refresh} accessibilityRole="button" style={{ marginTop: 16 }}>
+                      <AppText style={{ color: colors.neonPurple, fontWeight: '600' }}>{t('common.retry')}</AppText>
+                    </Pressable>
+                  </View>
+                );
+              }
+              if (tickets.length === 0) {
+                return (
+                  <View style={{ alignItems: 'center', paddingTop: 60 }}>
+                    <MaterialCommunityIcons name="ticket-outline" size={56} color={theme.textMuted} />
+                    <AppText style={{ color: theme.textMuted, marginTop: 12, fontSize: 14, textAlign: 'center' }}>
+                      {t('support.noTickets')}
+                    </AppText>
+                    <Pressable onPress={() => setActiveTab('new')} accessibilityRole="button" style={{ marginTop: 16 }}>
+                      <AppText style={{ color: colors.neonPurple, fontWeight: '600' }}>{t('support.submitFirst')}</AppText>
+                    </Pressable>
+                  </View>
+                );
+              }
+              if (filtered.length === 0) {
+                return (
+                  <View style={{ alignItems: 'center', paddingTop: 60 }}>
+                    <MaterialCommunityIcons name="ticket-outline" size={56} color={theme.textMuted} />
+                    <AppText style={{ color: theme.textMuted, marginTop: 12, fontSize: 14, textAlign: 'center' }}>
+                      {t('support.noTicketsForFilter')}
+                    </AppText>
+                  </View>
+                );
+              }
+              return filtered.map((item) => (
                 <TicketItem key={item.id} item={item} onPress={setSelectedTicket} />
-              ))
-            )}
+              ));
+            })()}
           </View>
         )}
       </ScrollView>

@@ -14,6 +14,8 @@ export class CommentMapper {
       createdAt: model.created_at.toDate(),
       likeCount: model.like_count ?? 0,
       isLikedByCurrentUser: model.is_liked_by_current_user ?? false,
+      dislikeCount: model.dislike_count ?? 0,
+      isDislikedByCurrentUser: model.is_disliked_by_current_user ?? false,
       replyingToName: model.replying_to_name,
     };
   }
@@ -31,6 +33,8 @@ export class CommentMapper {
       replies,
       likeCount: model.like_count ?? 0,
       isLikedByCurrentUser: model.is_liked_by_current_user ?? false,
+      dislikeCount: model.dislike_count ?? 0,
+      isDislikedByCurrentUser: model.is_disliked_by_current_user ?? false,
     };
   }
 }

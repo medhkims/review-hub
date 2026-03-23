@@ -46,7 +46,11 @@ export const useHome = () => {
   } = useHomeStore();
   const { user } = useAuthStore();
   const { role } = useRoleStore();
-  const { isWishlisted, addItem: addWishlistItem, removeItem: removeWishlistItem } = useWishlistStore();
+  const { items: wishlistItems, isWishlisted: storeIsWishlisted, addItem: addWishlistItem, removeItem: removeWishlistItem } = useWishlistStore();
+
+  // Re-create isWishlisted whenever items change so renderItem's useCallback
+  // invalidates and FlatList cells actually re-render with the updated heart state.
+  const isWishlisted = useCallback((id: string) => storeIsWishlisted(id), [wishlistItems]);
   const searchTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   // Ref so useFocusEffect always reads the latest searchQuery without it as a dependency
   const searchQueryRef = useRef(searchQuery);
@@ -196,6 +200,19 @@ export const useHome = () => {
       });
       await container.removeFromWishlistUseCase.execute(user.id, business.id);
     } else {
+      // Optimistic update — turn heart red immediately
+      addWishlistItem({
+        id: business.id,
+        userId: user.id,
+        placeId: business.id,
+        placeName: business.name,
+        placeImageUrl: business.coverImageUrl ?? null,
+        rating: business.rating,
+        reviewCount: business.reviewCount,
+        location: business.location ?? '',
+        addedAt: new Date(),
+      });
+
       const result = await container.addToWishlistUseCase.execute(user.id, {
         placeId: business.id,
         placeName: business.name,
@@ -205,9 +222,12 @@ export const useHome = () => {
         location: business.location,
       });
       result.fold(
-        (failure) => setError(failure.message),
-        (newItem) => {
-          addWishlistItem(newItem);
+        (failure) => {
+          // Rollback on failure
+          removeWishlistItem(business.id);
+          setError(failure.message);
+        },
+        () => {
           AnalyticsHelper.sendEvent(AnalyticsEvents.ADD_TO_WISHLIST, {
             [AnalyticsParams.BUSINESS_ID]: business.id,
             [AnalyticsParams.BUSINESS_NAME]: business.name,

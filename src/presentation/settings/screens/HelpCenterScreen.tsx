@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useEffect } from 'react';
+import React, { useState, useCallback, useEffect, useRef } from 'react';
 import { View, ScrollView, Pressable, ActivityIndicator } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useTranslation } from 'react-i18next';
@@ -9,6 +9,8 @@ import { useFaq } from '@/presentation/settings/hooks/useFaq';
 import { useTheme } from '@/core/theme/useTheme';
 import { useRoleStore } from '@/presentation/auth/store/roleStore';
 import { FaqEntity } from '@/domain/faq/entities/faqEntity';
+
+type AudienceTab = 'user' | 'business' | 'moderator';
 
 type FaqItemProps = {
   faq: FaqEntity;
@@ -63,6 +65,60 @@ const FaqItem = React.memo(({ faq, isExpanded, onToggle, theme }: FaqItemProps) 
   </Pressable>
 ));
 
+type AudienceTabBarProps = {
+  selected: AudienceTab;
+  onSelect: (tab: AudienceTab) => void;
+  theme: ReturnType<typeof useTheme>;
+  t: (key: string) => string;
+};
+
+const TABS: AudienceTab[] = ['user', 'business', 'moderator'];
+
+const AudienceTabBar = React.memo(({ selected, onSelect, theme, t }: AudienceTabBarProps) => (
+  <View
+    style={{
+      flexDirection: 'row',
+      marginHorizontal: 16,
+      marginTop: 14,
+      marginBottom: 4,
+      backgroundColor: theme.border,
+      borderRadius: 10,
+      padding: 3,
+    }}
+  >
+    {TABS.map((tab) => (
+      <Pressable
+        key={tab}
+        onPress={() => onSelect(tab)}
+        accessibilityRole="tab"
+        accessibilityLabel={t(`helpCenter.tabs.${tab}`)}
+        accessibilityState={{ selected: selected === tab }}
+        style={{
+          flex: 1,
+          paddingVertical: 8,
+          borderRadius: 8,
+          alignItems: 'center',
+          backgroundColor: selected === tab ? theme.card : 'transparent',
+        }}
+      >
+        <AppText
+          style={{
+            fontSize: 13,
+            fontWeight: selected === tab ? '700' : '400',
+            color: selected === tab ? theme.text : theme.textSecondary,
+          }}
+        >
+          {t(`helpCenter.tabs.${tab}`)}
+        </AppText>
+      </Pressable>
+    ))}
+  </View>
+));
+
+function filterFaqsByAudience(faqs: FaqEntity[], tab: AudienceTab): FaqEntity[] {
+  return faqs.filter((f) => f.audience.includes(tab));
+}
+
 export default function HelpCenterScreen() {
   const { t } = useTranslation();
   const router = useRouter();
@@ -71,15 +127,32 @@ export default function HelpCenterScreen() {
   const { role } = useRoleStore();
   const [expandedId, setExpandedId] = useState<string | null>(null);
 
+  const [selectedTab, setSelectedTab] = useState<AudienceTab>('user');
+  const tabInitialised = useRef(false);
+
   useEffect(() => {
     if (role === 'admin') {
       router.replace('/(main)/(settings)/manage-faq');
+      return;
+    }
+    if (!tabInitialised.current && role) {
+      tabInitialised.current = true;
+      if (role === 'business' || role === 'moderator') {
+        setSelectedTab(role);
+      }
     }
   }, [role, router]);
 
   const handleToggle = useCallback((id: string) => {
     setExpandedId((prev) => (prev === id ? null : id));
   }, []);
+
+  const handleTabChange = useCallback((tab: AudienceTab) => {
+    setSelectedTab(tab);
+    setExpandedId(null);
+  }, []);
+
+  const visibleFaqs = filterFaqsByAudience(faqs, selectedTab);
 
   return (
     <ScreenLayout>
@@ -108,6 +181,14 @@ export default function HelpCenterScreen() {
         </AppText>
       </View>
 
+      {/* Audience Tab Bar */}
+      <AudienceTabBar
+        selected={selectedTab}
+        onSelect={handleTabChange}
+        theme={theme}
+        t={t}
+      />
+
       {isLoading ? (
         <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
           <ActivityIndicator color={theme.text} />
@@ -131,7 +212,7 @@ export default function HelpCenterScreen() {
             <AppText style={{ color: theme.card, fontWeight: '600' }}>{t('common.retry')}</AppText>
           </Pressable>
         </View>
-      ) : faqs.length === 0 ? (
+      ) : visibleFaqs.length === 0 ? (
         <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', padding: 24 }}>
           <MaterialCommunityIcons name="help-circle-outline" size={48} color={theme.textSecondary} />
           <AppText style={{ color: theme.textSecondary, marginTop: 12, textAlign: 'center' }}>
@@ -143,8 +224,8 @@ export default function HelpCenterScreen() {
           style={{ flex: 1, width: '100%' }}
           showsVerticalScrollIndicator={false}
         >
-          <View style={{ padding: 16 }}>
-            <AppText style={{ fontSize: 14, color: theme.textSecondary, marginBottom: 16 }}>
+          <View style={{ padding: 16, paddingBottom: 8 }}>
+            <AppText style={{ fontSize: 14, color: theme.textSecondary }}>
               {t('helpCenter.subtitle')}
             </AppText>
           </View>
@@ -159,7 +240,7 @@ export default function HelpCenterScreen() {
               marginBottom: 24,
             }}
           >
-            {faqs.map((faq) => (
+            {visibleFaqs.map((faq) => (
               <FaqItem
                 key={faq.id}
                 faq={faq}

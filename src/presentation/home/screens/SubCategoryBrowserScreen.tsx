@@ -344,8 +344,8 @@ export default function SubCategoryBrowserScreen() {
       <ScrollView
         horizontal
         showsHorizontalScrollIndicator={false}
-        style={{ flexGrow: 0, marginBottom: 12 }}
-        contentContainerStyle={{ paddingHorizontal: 24, gap: 8 }}
+        style={{ flexGrow: 0, height: 44, marginBottom: 12 }}
+        contentContainerStyle={{ paddingHorizontal: 24, gap: 8, alignItems: 'center' }}
       >
         <Pressable
           onPress={() => setShowSort(true)}
@@ -359,8 +359,8 @@ export default function SubCategoryBrowserScreen() {
             paddingVertical: 8,
             borderRadius: 20,
             borderWidth: 1,
-            borderColor: activeSort ? colors.neonPurple : theme.border,
-            backgroundColor: activeSort ? 'rgba(168,85,247,0.12)' : theme.card,
+            borderColor: activeSort ? colors.neonPurple : colors.borderDark,
+            backgroundColor: activeSort ? 'rgba(168,85,247,0.15)' : theme.card,
           }}
         >
           <MaterialCommunityIcons
@@ -371,7 +371,7 @@ export default function SubCategoryBrowserScreen() {
           <AppText
             style={{
               fontSize: 13,
-              fontWeight: activeSort ? '600' : '400',
+              fontWeight: activeSort ? '600' : '500',
               color: activeSort ? colors.neonPurple : theme.textSecondary,
             }}
           >
@@ -391,8 +391,8 @@ export default function SubCategoryBrowserScreen() {
             paddingVertical: 8,
             borderRadius: 20,
             borderWidth: 1,
-            borderColor: activeFilters.minRating > 0 ? colors.neonPurple : theme.border,
-            backgroundColor: activeFilters.minRating > 0 ? 'rgba(168,85,247,0.12)' : theme.card,
+            borderColor: activeFilters.minRating > 0 ? colors.neonPurple : colors.borderDark,
+            backgroundColor: activeFilters.minRating > 0 ? 'rgba(168,85,247,0.15)' : theme.card,
           }}
         >
           <MaterialCommunityIcons
@@ -403,7 +403,7 @@ export default function SubCategoryBrowserScreen() {
           <AppText
             style={{
               fontSize: 13,
-              fontWeight: activeFilters.minRating > 0 ? '600' : '400',
+              fontWeight: activeFilters.minRating > 0 ? '600' : '500',
               color: activeFilters.minRating > 0 ? colors.neonPurple : theme.textSecondary,
             }}
           >
@@ -423,8 +423,8 @@ export default function SubCategoryBrowserScreen() {
             paddingVertical: 8,
             borderRadius: 20,
             borderWidth: 1,
-            borderColor: activeLocations.length > 0 ? colors.neonPurple : theme.border,
-            backgroundColor: activeLocations.length > 0 ? 'rgba(168,85,247,0.12)' : theme.card,
+            borderColor: activeLocations.length > 0 ? colors.neonPurple : colors.borderDark,
+            backgroundColor: activeLocations.length > 0 ? 'rgba(168,85,247,0.15)' : theme.card,
           }}
         >
           <MaterialCommunityIcons
@@ -435,7 +435,7 @@ export default function SubCategoryBrowserScreen() {
           <AppText
             style={{
               fontSize: 13,
-              fontWeight: activeLocations.length > 0 ? '600' : '400',
+              fontWeight: activeLocations.length > 0 ? '600' : '500',
               color: activeLocations.length > 0 ? colors.neonPurple : theme.textSecondary,
             }}
           >

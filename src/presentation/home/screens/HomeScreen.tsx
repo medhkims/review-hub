@@ -1,5 +1,15 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { View, FlatList, RefreshControl, Pressable, ActivityIndicator, Keyboard, Image, ScrollView } from 'react-native';
+import {
+  View,
+  FlatList,
+  RefreshControl,
+  Pressable,
+  ActivityIndicator,
+  Keyboard,
+  Image,
+  ScrollView,
+  useWindowDimensions,
+} from 'react-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useRouter, useNavigation } from 'expo-router';
 import { useTranslation } from 'react-i18next';
@@ -11,14 +21,10 @@ import { SearchSuggestions } from '../components/SearchSuggestions';
 import { FilterBySheet, FilterState, DEFAULT_FILTER_STATE } from '@/presentation/shared/components/FilterBySheet';
 import { SortBySheet, SortOption } from '@/presentation/shared/components/SortBySheet';
 import { LocationDropdown } from '@/presentation/shared/components/LocationDropdown';
-import { CategoryChip } from '../components/CategoryChip';
 import { BusinessCard } from '../components/BusinessCard';
-import { BannerSlider } from '../components/BannerSlider';
 import { NoResultsView } from '@/presentation/shared/components/NoResultsView';
 import { useHome } from '../hooks/useHome';
-import { container } from '@/core/di/container';
 import { useAuthStore } from '@/presentation/auth/store/authStore';
-import { useRoleStore } from '@/presentation/auth/store/roleStore';
 import { useAnalyticsScreen } from '@/presentation/shared/hooks/useAnalyticsScreen';
 import { AnalyticsScreens } from '@/core/analytics/analyticsKeys';
 import { BusinessEntity } from '@/domain/business/entities/businessEntity';
@@ -29,15 +35,29 @@ import { getCategoryDefaultCover, getCategoryDefaultLogo } from '@/core/utils/ca
 import { useCategoryDefaultStore } from '@/presentation/shared/store/categoryDefaultStore';
 import { trackKeywordEvent } from '@/core/utils/premiumTracking';
 
+// Accent color cycling for category tiles
+const CATEGORY_ACCENT_COLORS = [
+  colors.neonPurple,
+  colors.blue,
+  colors.pink,
+  colors.emerald,
+  colors.orange,
+  colors.cyan,
+  colors.indigo,
+  colors.yellow,
+];
+
 export default function HomeScreen() {
   useAnalyticsScreen(AnalyticsScreens.HOME);
   const { t } = useTranslation();
   const router = useRouter();
   const navigation = useNavigation();
   const { user } = useAuthStore();
-  const { role } = useRoleStore();
   const theme = useTheme();
   const categoryDefaults = useCategoryDefaultStore((s) => s.defaults);
+  const { width: windowWidth } = useWindowDimensions();
+  // 4 tiles per row, 3 gaps of 10px, FlatList paddingHorizontal 16 on each side
+  const categoryTileWidth = (windowWidth - 32 - 30) / 4;
 
   const {
     businesses,
@@ -50,8 +70,6 @@ export default function HomeScreen() {
     isFuzzySearching,
     fuzzyMatch,
     isNewBusinessesLoading,
-    isBannersLoading,
-    error,
     isWishlisted,
     search,
     toggleWishlist,
@@ -63,15 +81,10 @@ export default function HomeScreen() {
     if (!banner.isClickable) return;
     router.push({
       pathname: '/(main)/(feed)/banner/[bannerId]',
-      params: {
-        bannerId: banner.id,
-      },
+      params: { bannerId: banner.id },
     });
   }, [router]);
 
-  // When the home tab is pressed while already on this screen, reset search.
-  // tabPress fires on the Tab navigator, but useNavigation() gives us the Stack
-  // navigator (the (feed) stack). We must go up to the parent Tab navigator.
   useEffect(() => {
     const tabNavigator = navigation.getParent();
     if (!tabNavigator) return;
@@ -85,14 +98,9 @@ export default function HomeScreen() {
     return unsubscribe;
   }, [navigation, searchQuery, search]);
 
-  const getInitials = (name: string) => {
-    return name
-      .split(' ')
-      .map((n) => n[0])
-      .join('')
-      .toUpperCase()
-      .slice(0, 2);
-  };
+  const getFirstName = (name: string) => name.split(' ')[0];
+  const getInitials = (name: string) =>
+    name.split(' ').map((n) => n[0]).join('').toUpperCase().slice(0, 2);
 
   const handleAvatarPress = useCallback(() => {
     router.push('/(main)/(settings)');
@@ -100,7 +108,6 @@ export default function HomeScreen() {
 
   const handleBusinessPress = useCallback((business: BusinessEntity) => {
     addRecentlyViewed(business);
-    // Track keyword open-event when user opens a business from search results
     if (searchQuery.trim()) {
       trackKeywordEvent(business.id, searchQuery.trim(), true);
     }
@@ -120,209 +127,562 @@ export default function HomeScreen() {
 
   const keyExtractor = useCallback((item: BusinessEntity) => item.id, []);
 
-  // Header shown when NOT searching — useMemo returns JSX element (not a component
-  // function) so FlatList never unmounts/remounts the header on state changes.
-  const defaultListHeader = useMemo(() => (
-    <View>
-      {/* ── Banner Slider ── */}
-      <BannerSlider
-        banners={banners}
-        isLoading={isBannersLoading}
-        onPress={handleBannerPress}
-      />
+  // ── Discovery content shown when NOT searching ──
+  const defaultListHeader = useMemo(() => {
+    const featuredBanner = banners[0] ?? null;
+    const featuredBusiness = newBusinesses[0] ?? null;
+    const totalReviews = businesses.reduce((sum, b) => sum + (b.reviewCount ?? 0), 0);
+    const topRated = [...businesses]
+      .filter((b) => (b.rating ?? 0) > 0)
+      .sort((a, b) => (b.rating ?? 0) - (a.rating ?? 0))
+      .slice(0, 8);
+    const heroImageSrc = featuredBanner?.imageUrl
+      ? { uri: featuredBanner.imageUrl }
+      : featuredBusiness?.coverImageUrl
+        ? { uri: featuredBusiness.coverImageUrl }
+        : featuredBusiness?.logoUrl
+          ? { uri: featuredBusiness.logoUrl }
+          : null;
 
-      {/* ── Categories ── */}
-      <View
-        style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingHorizontal: 14, paddingBottom: 12 }}
-      >
-        <AppText style={{ fontSize: 18, fontWeight: '700', color: theme.text }}>
-          {t('home.categoriesSection')}
-        </AppText>
-        <Pressable
-          onPress={() => router.push('/(main)/(feed)/categories')}
-          accessibilityLabel="See all categories"
-          accessibilityRole="button"
-        >
-          <AppText style={{ color: colors.neonPurple, fontSize: 13, fontWeight: '600' }}>
-            {t('home.seeAll')}
-          </AppText>
-        </Pressable>
-      </View>
+    return (
+      <View style={{ paddingBottom: 24 }}>
 
-      <FlatList
-        data={categories}
-        horizontal
-        showsHorizontalScrollIndicator={false}
-        contentContainerStyle={{ paddingHorizontal: 14, paddingBottom: 8 }}
-        keyExtractor={(item) => item.id}
-        renderItem={({ item }) => (
-          <CategoryChip
-            category={item}
-            isSelected={false}
-            onPress={() =>
-              router.push({
-                pathname: '/(main)/(feed)/sub-category',
-                params: { categoryId: item.id, categoryName: item.name },
-              })
-            }
-          />
+        {/* ── Hero Card ── */}
+        {(featuredBanner || featuredBusiness) && (
+          <View style={{ marginBottom: 32 }}>
+            <Pressable
+              onPress={() => {
+                if (featuredBanner) handleBannerPress(featuredBanner);
+                else if (featuredBusiness) handleBusinessPress(featuredBusiness);
+              }}
+              accessibilityRole="button"
+              accessibilityLabel={featuredBanner?.title ?? featuredBusiness?.name ?? 'Featured'}
+              style={({ pressed }) => ({ opacity: pressed ? 0.9 : 1 })}
+            >
+              <View
+                style={{
+                  height: 210,
+                  borderRadius: 24,
+                  overflow: 'hidden',
+                  backgroundColor: colors.cardDark,
+                }}
+              >
+                {heroImageSrc ? (
+                  <Image
+                    source={heroImageSrc}
+                    style={{ position: 'absolute', width: '100%', height: '100%' }}
+                    resizeMode="cover"
+                  />
+                ) : (
+                  <View
+                    style={{
+                      position: 'absolute', width: '100%', height: '100%',
+                      alignItems: 'center', justifyContent: 'center',
+                    }}
+                  >
+                    <MaterialCommunityIcons name="store" size={60} color={colors.textSlate500} />
+                  </View>
+                )}
+
+                {/* Bottom overlay — kept short so image stays visible */}
+                <View
+                  style={{
+                    position: 'absolute', bottom: 0, left: 0, right: 0, height: 85,
+                    backgroundColor: 'rgba(15,23,42,0.88)',
+                  }}
+                />
+
+                {/* "FEATURED" badge */}
+                <View
+                  style={{
+                    position: 'absolute', top: 14, left: 14,
+                    backgroundColor: colors.neonPurple,
+                    paddingHorizontal: 10, paddingVertical: 4,
+                    borderRadius: 20, flexDirection: 'row', alignItems: 'center', gap: 5,
+                  }}
+                >
+                  <MaterialCommunityIcons name="star-four-points" size={10} color={colors.white} />
+                  <AppText style={{ fontSize: 10, fontWeight: '800', color: colors.white, letterSpacing: 1.2 }}>
+                    {t('home.featuredBadge')}
+                  </AppText>
+                </View>
+
+                {/* Info row at bottom */}
+                <View style={{ position: 'absolute', bottom: 14, left: 16, right: 58 }}>
+                  <AppText
+                    style={{ fontSize: 22, fontWeight: '800', color: colors.white, marginBottom: 5, letterSpacing: -0.3 }}
+                    numberOfLines={1}
+                  >
+                    {featuredBanner?.title ?? featuredBusiness?.name ?? ''}
+                  </AppText>
+                  <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+                    {!featuredBanner && featuredBusiness && (
+                      <>
+                        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 3 }}>
+                          <MaterialCommunityIcons name="star" size={13} color={colors.ratingGold} />
+                          <AppText style={{ fontSize: 13, color: colors.ratingGold, fontWeight: '700' }}>
+                            {featuredBusiness.rating?.toFixed(1) ?? '—'}
+                          </AppText>
+                        </View>
+                        <View style={{ width: 3, height: 3, borderRadius: 2, backgroundColor: colors.textSlate500 }} />
+                        <AppText style={{ fontSize: 12, color: colors.textSlate400 }} numberOfLines={1}>
+                          {featuredBusiness.categoryName}
+                        </AppText>
+                      </>
+                    )}
+                    {featuredBanner && (
+                      <AppText style={{ fontSize: 12, color: colors.textSlate400 }} numberOfLines={1}>
+                        {featuredBanner.description}
+                      </AppText>
+                    )}
+                  </View>
+                </View>
+
+                {/* Arrow button */}
+                <View
+                  style={{
+                    position: 'absolute', bottom: 18, right: 14,
+                    width: 38, height: 38, borderRadius: 19,
+                    backgroundColor: colors.neonPurple,
+                    alignItems: 'center', justifyContent: 'center',
+                  }}
+                >
+                  <MaterialCommunityIcons name="arrow-right" size={20} color={colors.white} />
+                </View>
+              </View>
+            </Pressable>
+          </View>
         )}
-      />
 
-      {/* ── Recent Searches ── */}
-      {recentSearches.length > 0 && (
-        <>
+        {/* ── Quick Stats ── */}
+        {businesses.length > 0 && (
+          <View style={{ flexDirection: 'row', gap: 10, marginBottom: 32 }}>
+            {[
+              { label: t('home.statsBusinesses'), value: businesses.length, icon: 'store-outline', color: colors.neonPurple },
+              { label: t('home.statsReviews'), value: totalReviews, icon: 'star-outline', color: colors.ratingGold },
+              { label: t('home.statsCategories'), value: categories.length, icon: 'shape-outline', color: colors.emerald },
+            ].map((stat) => (
+              <View
+                key={stat.label}
+                style={{
+                  flex: 1,
+                  backgroundColor: colors.cardDark,
+                  borderRadius: 16,
+                  padding: 14,
+                  alignItems: 'center',
+                  borderWidth: 1,
+                  borderColor: `${stat.color}28`,
+                }}
+              >
+                <MaterialCommunityIcons name={stat.icon as never} size={22} color={stat.color} />
+                <AppText style={{ fontSize: 20, fontWeight: '800', color: theme.text, marginTop: 6 }}>
+                  {stat.value.toLocaleString()}
+                </AppText>
+                <AppText style={{ fontSize: 11, color: theme.textSecondary, marginTop: 2, textAlign: 'center' }}>
+                  {stat.label}
+                </AppText>
+              </View>
+            ))}
+          </View>
+        )}
+
+        {/* ── Explore Categories (horizontal scroll) ── */}
+        {categories.length > 0 && (
+          <View style={{ marginBottom: 32 }}>
+            <View
+              style={{
+                flexDirection: 'row', justifyContent: 'space-between',
+                alignItems: 'center', marginBottom: 16,
+              }}
+            >
+              <AppText style={{ fontSize: 20, fontWeight: '800', color: theme.text, letterSpacing: -0.3 }}>
+                {t('home.explore')}
+              </AppText>
+              <Pressable
+                onPress={() => router.push('/(main)/(feed)/categories')}
+                accessibilityLabel="All categories"
+                accessibilityRole="button"
+                style={{ flexDirection: 'row', alignItems: 'center', gap: 2 }}
+              >
+                <AppText style={{ color: colors.neonPurple, fontSize: 13, fontWeight: '600' }}>
+                  {t('home.seeAll')}
+                </AppText>
+                <MaterialCommunityIcons name="chevron-right" size={15} color={colors.neonPurple} />
+              </Pressable>
+            </View>
+
+            {/* ── 2-row horizontal scroll: 4 tiles per row, fills full width ── */}
+            {[categories.filter((_, i) => i % 2 === 0), categories.filter((_, i) => i % 2 !== 0)].map(
+              (row, rowIdx) => (
+                <ScrollView
+                  key={`cat_row_${rowIdx}`}
+                  horizontal
+                  showsHorizontalScrollIndicator={false}
+                  style={{ marginBottom: rowIdx === 0 ? 10 : 0 }}
+                >
+                  {row.map((cat, colIdx) => {
+                    const idx = rowIdx + colIdx * 2;
+                    const accent = CATEGORY_ACCENT_COLORS[idx % CATEGORY_ACCENT_COLORS.length];
+                    const isLast = colIdx === row.length - 1;
+                    return (
+                      <Pressable
+                        key={cat.id}
+                        onPress={() =>
+                          router.push({
+                            pathname: '/(main)/(feed)/sub-category',
+                            params: { categoryId: cat.id, categoryName: cat.name },
+                          })
+                        }
+                        accessibilityRole="button"
+                        accessibilityLabel={cat.name}
+                        style={({ pressed }) => ({
+                          width: categoryTileWidth,
+                          marginRight: isLast ? 0 : 10,
+                          backgroundColor: pressed ? `${accent}18` : colors.cardDark,
+                          borderRadius: 18,
+                          paddingVertical: 16,
+                          paddingHorizontal: 6,
+                          alignItems: 'center',
+                          borderWidth: 1,
+                          borderColor: `${accent}2E`,
+                        })}
+                      >
+                        <View
+                          style={{
+                            width: 48, height: 48, borderRadius: 24,
+                            backgroundColor: `${accent}1E`,
+                            alignItems: 'center', justifyContent: 'center', marginBottom: 8,
+                          }}
+                        >
+                          <MaterialCommunityIcons
+                            name={(cat.icon as never) ?? 'store-outline'}
+                            size={24}
+                            color={accent}
+                          />
+                        </View>
+                        <AppText
+                          style={{ fontSize: 11, fontWeight: '600', color: theme.text, textAlign: 'center' }}
+                          numberOfLines={2}
+                        >
+                          {cat.name}
+                        </AppText>
+                      </Pressable>
+                    );
+                  })}
+                </ScrollView>
+              ),
+            )}
+          </View>
+        )}
+
+        {/* ── Trending Now ── */}
+        <View style={{ marginBottom: 32 }}>
           <View
-            style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingHorizontal: 1, marginTop: 24, marginBottom: 12 }}
+            style={{
+              flexDirection: 'row', justifyContent: 'space-between',
+              alignItems: 'center', marginBottom: 16,
+            }}
           >
             <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
               <View
-                style={{
-                  width: 26,
-                  height: 26,
-                  borderRadius: 13,
-                  backgroundColor: colors.cyan,
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                }}
-              >
-                <MaterialCommunityIcons name="history" size={16} color={colors.white} />
-              </View>
-              <AppText style={{ fontSize: 18, fontWeight: '700', color: theme.text }}>
-                {t('home.lastSearchesSection')}
+                style={{ width: 8, height: 8, borderRadius: 4, backgroundColor: colors.neonPurple }}
+              />
+              <AppText style={{ fontSize: 20, fontWeight: '800', color: theme.text, letterSpacing: -0.3 }}>
+                {t('home.trendingNow')}
               </AppText>
             </View>
             <Pressable
-              onPress={() => router.push('/(main)/(feed)/all-businesses?source=recent')}
-              accessibilityLabel="See all recently viewed"
+              onPress={() => router.push('/(main)/(feed)/all-businesses?source=new')}
+              accessibilityLabel="See all trending businesses"
               accessibilityRole="button"
             >
-              <AppText style={{ color: colors.neonPurple, fontSize: 13, fontWeight: '600' }}>
-                {t('home.seeAll')}
-              </AppText>
+              <MaterialCommunityIcons name="arrow-right" size={22} color={colors.neonPurple} />
             </Pressable>
           </View>
 
-          {/* Horizontal image cards */}
-          <FlatList
-            data={recentSearches.slice(0, 6)}
-            horizontal
-            showsHorizontalScrollIndicator={false}
-            contentContainerStyle={{ paddingHorizontal: 1, paddingBottom: 4 }}
-            keyExtractor={(item) => `recent_card_${item.id}`}
-            renderItem={({ item }) => (
+          {isNewBusinessesLoading ? (
+            <View style={{ height: 180, alignItems: 'center', justifyContent: 'center' }}>
+              <ActivityIndicator size="small" color={colors.neonPurple} />
+            </View>
+          ) : newBusinesses.length > 0 ? (
+            <FlatList
+              data={newBusinesses.slice(0, 8)}
+              horizontal
+              showsHorizontalScrollIndicator={false}
+              contentContainerStyle={{ gap: 12 }}
+              keyExtractor={(item) => `trend_${item.id}`}
+              renderItem={({ item }) => {
+                const remote = categoryDefaults[item.categoryId];
+                const imgSrc = item.coverImageUrl
+                  ? { uri: item.coverImageUrl }
+                  : item.logoUrl
+                    ? { uri: item.logoUrl }
+                    : remote?.profileImageUrl
+                      ? { uri: remote.profileImageUrl }
+                      : getCategoryDefaultCover(item.categoryId) ?? getCategoryDefaultLogo(item.categoryId);
+
+                return (
+                  <Pressable
+                    onPress={() => handleBusinessPress(item)}
+                    accessibilityRole="button"
+                    accessibilityLabel={item.name}
+                    style={({ pressed }) => ({ opacity: pressed ? 0.88 : 1 })}
+                  >
+                    <View
+                      style={{
+                        width: 150, height: 130, borderRadius: 20,
+                        overflow: 'hidden', backgroundColor: colors.cardDark,
+                      }}
+                    >
+                      {imgSrc ? (
+                        <Image
+                          source={imgSrc}
+                          style={{ position: 'absolute', width: '100%', height: '100%' }}
+                          resizeMode="cover"
+                        />
+                      ) : (
+                        <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
+                          <MaterialCommunityIcons name="store" size={40} color={colors.textSlate500} />
+                        </View>
+                      )}
+
+                      {/* Dark overlay at bottom */}
+                      <View
+                        style={{
+                          position: 'absolute', bottom: 0, left: 0, right: 0, height: 52,
+                          backgroundColor: 'rgba(15,23,42,0.82)',
+                          paddingHorizontal: 10, paddingBottom: 10,
+                          justifyContent: 'flex-end',
+                        }}
+                      >
+                        <AppText
+                          style={{ fontSize: 13, fontWeight: '700', color: colors.white }}
+                          numberOfLines={1}
+                        >
+                          {item.name}
+                        </AppText>
+                        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 5, marginTop: 3 }}>
+                          <MaterialCommunityIcons name="star" size={11} color={colors.ratingGold} />
+                          <AppText style={{ fontSize: 11, color: colors.ratingGold, fontWeight: '700' }}>
+                            {item.rating?.toFixed(1) ?? '—'}
+                          </AppText>
+                          <AppText style={{ fontSize: 10, color: colors.textSlate500 }}>
+                            ({item.reviewCount})
+                          </AppText>
+                        </View>
+                      </View>
+
+                      {/* Wishlist heart */}
+                      <Pressable
+                        onPress={() => toggleWishlist(item)}
+                        accessibilityLabel="Toggle wishlist"
+                        accessibilityRole="button"
+                        style={{
+                          position: 'absolute', top: 8, right: 8,
+                          width: 30, height: 30, borderRadius: 15,
+                          backgroundColor: 'rgba(15,23,42,0.65)',
+                          alignItems: 'center', justifyContent: 'center',
+                        }}
+                      >
+                        <MaterialCommunityIcons
+                          name={isWishlisted(item.id) ? 'heart' : 'heart-outline'}
+                          size={15}
+                          color={isWishlisted(item.id) ? colors.pink : colors.white}
+                        />
+                      </Pressable>
+
+                      {/* NEW badge */}
+                      <View
+                        style={{
+                          position: 'absolute', top: 8, left: 8,
+                          backgroundColor: colors.emerald,
+                          paddingHorizontal: 7, paddingVertical: 3,
+                          borderRadius: 10,
+                        }}
+                      >
+                        <AppText style={{ fontSize: 9, fontWeight: '800', color: colors.white, letterSpacing: 0.8 }}>
+                          {t('home.newBadge')}
+                        </AppText>
+                      </View>
+                    </View>
+                    <AppText
+                      style={{ fontSize: 11, color: theme.textSecondary, marginTop: 6, letterSpacing: 0.4 }}
+                      numberOfLines={1}
+                    >
+                      {item.categoryName?.toUpperCase()}
+                    </AppText>
+                  </Pressable>
+                );
+              }}
+            />
+          ) : null}
+        </View>
+
+        {/* ── Top Rated ── */}
+        {topRated.length > 0 && (
+          <View style={{ marginBottom: 32 }}>
+            <View
+              style={{
+                flexDirection: 'row', justifyContent: 'space-between',
+                alignItems: 'center', marginBottom: 16,
+              }}
+            >
+              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+                <MaterialCommunityIcons name="trophy-outline" size={18} color={colors.ratingGold} />
+                <AppText style={{ fontSize: 20, fontWeight: '800', color: theme.text, letterSpacing: -0.3 }}>
+                  {t('home.topRated')}
+                </AppText>
+              </View>
               <Pressable
-                onPress={() => handleBusinessPress(item)}
-                style={{ width: 150, marginRight: 14 }}
-                accessibilityLabel={item.name}
+                onPress={() => router.push('/(main)/(feed)/all-businesses')}
+                accessibilityLabel="See all top rated"
                 accessibilityRole="button"
               >
-                <View
-                  style={{
-                    width: 150,
-                    height: 100,
-                    borderRadius: 16,
-                    overflow: 'hidden',
-                    backgroundColor: theme.card,
-                    marginBottom: 10,
-                  }}
-                >
-                  {(() => {
-                    const remote = categoryDefaults[item.categoryId];
-                    const src = item.logoUrl
-                      ? { uri: item.logoUrl }
-                      : remote?.profileImageUrl
-                        ? { uri: remote.profileImageUrl }
-                        : getCategoryDefaultLogo(item.categoryId) ?? getCategoryDefaultCover(item.categoryId);
-                    return src ? (
-                      <Image
-                        source={src}
-                        style={{ width: '100%', height: '100%' }}
-                        resizeMode="cover"
-                      />
-                    ) : (
-                      <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
-                        <MaterialCommunityIcons name="store" size={36} color={colors.textSlate500} />
-                      </View>
-                    );
-                  })()}
-                </View>
-                <AppText
-                  style={{ fontSize: 13, fontWeight: '700', color: theme.text }}
-                  numberOfLines={1}
-                >
-                  {item.name}
-                </AppText>
-                <AppText
-                  style={{ fontSize: 10, color: theme.textSecondary, marginTop: 2, letterSpacing: 0.5 }}
-                  numberOfLines={1}
-                >
-                  {item.categoryName?.toUpperCase()}
-                </AppText>
+                <MaterialCommunityIcons name="arrow-right" size={22} color={colors.neonPurple} />
               </Pressable>
-            )}
-          />
-        </>
-      )}
+            </View>
+            <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+              {topRated.map((item, idx) => {
+                const remote = categoryDefaults[item.categoryId];
+                const imgSrc = item.coverImageUrl
+                  ? { uri: item.coverImageUrl }
+                  : item.logoUrl
+                    ? { uri: item.logoUrl }
+                    : remote?.profileImageUrl
+                      ? { uri: remote.profileImageUrl }
+                      : getCategoryDefaultCover(item.categoryId) ?? getCategoryDefaultLogo(item.categoryId);
+                const isLast = idx === topRated.length - 1;
+                return (
+                  <Pressable
+                    key={item.id}
+                    onPress={() => handleBusinessPress(item)}
+                    accessibilityRole="button"
+                    accessibilityLabel={item.name}
+                    style={({ pressed }) => ({
+                      marginRight: isLast ? 0 : 12,
+                      opacity: pressed ? 0.88 : 1,
+                    })}
+                  >
+                    <View
+                      style={{
+                        width: 200, height: 145, borderRadius: 20,
+                        overflow: 'hidden', backgroundColor: colors.cardDark,
+                      }}
+                    >
+                      {imgSrc ? (
+                        <Image
+                          source={imgSrc}
+                          style={{ position: 'absolute', width: '100%', height: '100%' }}
+                          resizeMode="cover"
+                        />
+                      ) : (
+                        <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
+                          <MaterialCommunityIcons name="store" size={40} color={colors.textSlate500} />
+                        </View>
+                      )}
+                      {/* Bottom overlay */}
+                      <View
+                        style={{
+                          position: 'absolute', bottom: 0, left: 0, right: 0, height: 62,
+                          backgroundColor: 'rgba(15,23,42,0.88)',
+                          paddingHorizontal: 12, paddingBottom: 10,
+                          justifyContent: 'flex-end',
+                        }}
+                      >
+                        <AppText
+                          style={{ fontSize: 14, fontWeight: '700', color: colors.white }}
+                          numberOfLines={1}
+                        >
+                          {item.name}
+                        </AppText>
+                        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 5, marginTop: 3 }}>
+                          <MaterialCommunityIcons name="star" size={12} color={colors.ratingGold} />
+                          <AppText style={{ fontSize: 12, color: colors.ratingGold, fontWeight: '700' }}>
+                            {item.rating?.toFixed(1) ?? '—'}
+                          </AppText>
+                          <AppText style={{ fontSize: 11, color: colors.textSlate400 }}>
+                            ({item.reviewCount})
+                          </AppText>
+                        </View>
+                      </View>
+                      {/* Rank badge */}
+                      <View
+                        style={{
+                          position: 'absolute', top: 10, left: 10,
+                          width: 28, height: 28, borderRadius: 14,
+                          backgroundColor: colors.ratingGold,
+                          alignItems: 'center', justifyContent: 'center',
+                        }}
+                      >
+                        <AppText style={{ fontSize: 12, fontWeight: '800', color: '#1a1a1a' }}>
+                          {idx + 1}
+                        </AppText>
+                      </View>
+                    </View>
+                    <AppText
+                      style={{ fontSize: 11, color: theme.textSecondary, marginTop: 6, letterSpacing: 0.4 }}
+                      numberOfLines={1}
+                    >
+                      {item.categoryName?.toUpperCase()}
+                    </AppText>
+                  </Pressable>
+                );
+              })}
+            </ScrollView>
+          </View>
+        )}
 
-      {/* ── New Added ── */}
-      <View
-        style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingHorizontal: 1, marginTop: 24, marginBottom: 12 }}
-      >
-        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+        {/* ── Add Business CTA ── */}
+        <Pressable
+          onPress={() => router.push('/(main)/(feed)/add-business')}
+          accessibilityRole="button"
+          accessibilityLabel={t('home.addBusinessCtaTitle')}
+          style={({ pressed }) => ({ opacity: pressed ? 0.85 : 1 })}
+        >
           <View
             style={{
-              width: 26,
-              height: 26,
-              borderRadius: 13,
-              backgroundColor: colors.blue,
+              backgroundColor: colors.cardDark,
+              borderWidth: 1.5,
+              borderColor: `${colors.neonPurple}44`,
+              borderRadius: 20,
+              padding: 20,
+              flexDirection: 'row',
               alignItems: 'center',
-              justifyContent: 'center',
+              gap: 16,
             }}
           >
-            <MaterialCommunityIcons name="fire" size={16} color={colors.white} />
+            <View
+              style={{
+                width: 52, height: 52, borderRadius: 26,
+                backgroundColor: `${colors.neonPurple}22`,
+                alignItems: 'center', justifyContent: 'center',
+              }}
+            >
+              <MaterialCommunityIcons name="plus-circle-outline" size={28} color={colors.neonPurple} />
+            </View>
+            <View style={{ flex: 1 }}>
+              <AppText style={{ fontSize: 16, fontWeight: '700', color: theme.text, marginBottom: 3 }}>
+                {t('home.addBusinessCtaTitle')}
+              </AppText>
+              <AppText style={{ fontSize: 13, color: theme.textSecondary, lineHeight: 18 }}>
+                {t('home.addBusinessCtaSubtitle')}
+              </AppText>
+            </View>
+            <MaterialCommunityIcons name="chevron-right" size={22} color={colors.textSlate500} />
           </View>
-          <AppText style={{ fontSize: 18, fontWeight: '700', color: theme.text }}>
-            {t('home.newAddedSection')}
-          </AppText>
-        </View>
-        <Pressable
-          onPress={() => router.push('/(main)/(feed)/all-businesses?source=new')}
-          accessibilityLabel="See all new businesses"
-          accessibilityRole="button"
-        >
-          <AppText style={{ color: colors.neonPurple, fontSize: 13, fontWeight: '600' }}>
-            {t('home.seeAll')}
-          </AppText>
         </Pressable>
+
       </View>
+    );
+  }, [
+    t, theme, categories, banners, newBusinesses, businesses,
+    isNewBusinessesLoading, handleBannerPress, handleBusinessPress,
+    toggleWishlist, isWishlisted, router, categoryDefaults, categoryTileWidth,
+  ]);
 
-      {isNewBusinessesLoading ? (
-        <View style={{ paddingVertical: 20, alignItems: 'center' }}>
-          <ActivityIndicator size="small" color={colors.neonPurple} />
-        </View>
-      ) : (
-        <View style={{ paddingHorizontal: 1 }}>
-          {newBusinesses.slice(0, 5).map((item) => (
-            <BusinessCard
-              key={item.id}
-              business={item}
-              onPress={() => handleBusinessPress(item)}
-              onWishlistPress={() => toggleWishlist(item)}
-              isWishlisted={isWishlisted(item.id)}
-              showWishlist
-              variant="compact"
-              isNew
-            />
-          ))}
-        </View>
-      )}
-    </View>
-  ), [t, theme, categories, banners, isBannersLoading, handleBannerPress, newBusinesses, isNewBusinessesLoading, recentSearches, handleBusinessPress, toggleWishlist, isWishlisted, router]);
-
-  // Header shown when searching — minimal, no extra sections obscuring results
+  // Minimal header shown when searching
   const searchResultsHeader = useMemo(() => (
-    <View style={{ paddingHorizontal: 14, paddingTop: 16, paddingBottom: 12 }}>
+    <View style={{ paddingTop: 16, paddingBottom: 12 }}>
       <AppText style={{ fontSize: 20, fontWeight: '700', color: theme.text }}>
         {t('home.searchResultsSection')}
       </AppText>
@@ -387,9 +747,7 @@ export default function HomeScreen() {
     let data = [...businesses];
     if (activeLocations.length > 0) {
       data = data.filter((b) =>
-        activeLocations.some((loc) =>
-          b.location?.toLowerCase().includes(loc.toLowerCase()),
-        ),
+        activeLocations.some((loc) => b.location?.toLowerCase().includes(loc.toLowerCase())),
       );
     }
     if (activeFilters.categories.length > 0) {
@@ -399,20 +757,17 @@ export default function HomeScreen() {
       data = data.filter((b) => b.rating >= activeFilters.minRating);
     }
     switch (activeSort) {
-      case 'top_rating':
-        return [...data].sort((a, b) => b.rating - a.rating);
-      case 'top_result':
-        return [...data].sort((a, b) => b.reviewCount - a.reviewCount);
-      case 'new_businesses':
-        return [...data].sort((a, b) => {
-          const aTime = a.createdAt instanceof Date ? a.createdAt.getTime() : 0;
-          const bTime = b.createdAt instanceof Date ? b.createdAt.getTime() : 0;
-          return bTime - aTime;
-        });
-      default:
-        return data;
+      case 'top_rating': return [...data].sort((a, b) => b.rating - a.rating);
+      case 'top_result': return [...data].sort((a, b) => b.reviewCount - a.reviewCount);
+      case 'new_businesses': return [...data].sort((a, b) => {
+        const aTime = a.createdAt instanceof Date ? a.createdAt.getTime() : 0;
+        const bTime = b.createdAt instanceof Date ? b.createdAt.getTime() : 0;
+        return bTime - aTime;
+      });
+      default: return data;
     }
   }, [isSearching, businesses, activeFilters, activeLocations, activeSort]);
+
   const flatListRef = useRef<FlatList<BusinessEntity>>(null);
 
   useEffect(() => {
@@ -440,10 +795,7 @@ export default function HomeScreen() {
     : recentSearches.slice(0, 5).map((b) => ({ id: b.id, name: b.name }));
 
   const showSuggestions = isFocused && suggestionItems.length > 0 && headerHeight > 0;
-
-  const suggestionsTitle = isSearching
-    ? t('home.suggestions')
-    : t('home.recentSearches');
+  const suggestionsTitle = isSearching ? t('home.suggestions') : t('home.recentSearches');
 
   const handleSearchFocus = useCallback(() => {
     if (blurTimeoutRef.current) clearTimeout(blurTimeoutRef.current);
@@ -459,286 +811,227 @@ export default function HomeScreen() {
     setIsFocused(false);
     Keyboard.dismiss();
     const business = [...recentSearches, ...newBusinesses].find((b) => b.id === id);
-    if (business) {
-      addRecentlyViewed(business);
-    }
-    // Track keyword open-event from suggestion tap
-    if (searchQuery.trim()) {
-      trackKeywordEvent(id, searchQuery.trim(), true);
-    }
+    if (business) addRecentlyViewed(business);
+    if (searchQuery.trim()) trackKeywordEvent(id, searchQuery.trim(), true);
     router.push(`/(main)/(feed)/business/${id}`);
-  }, [recentSearches, newBusinesses, addRecentlyViewed, searchQuery]);
+  }, [recentSearches, newBusinesses, addRecentlyViewed, searchQuery, router]);
 
   return (
     <ScreenLayout>
       <View style={{ flex: 1 }}>
-      {/*
-       * Fixed header rendered OUTSIDE the FlatList.
-       * This ensures the SearchBar TextInput is never unmounted/remounted
-       * when the FlatList header changes, preventing the focus-loss bug.
-       */}
-      <View
-        onLayout={(e) => setHeaderHeight(e.nativeEvent.layout.height)}
-        style={{ paddingHorizontal: 12, paddingTop: 8, paddingBottom: 16 }}
-      >
+        {/*
+         * Fixed header rendered OUTSIDE the FlatList.
+         * Prevents SearchBar TextInput from unmounting/remounting on list state changes.
+         */}
         <View
-          style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start', paddingBottom: 16 }}
+          onLayout={(e) => setHeaderHeight(e.nativeEvent.layout.height)}
+          style={{ paddingHorizontal: 16, paddingTop: 10, paddingBottom: 14 }}
         >
-          <View style={{ flex: 1 }}>
-            <AppText
-              style={{ fontSize: 28, fontWeight: '700', color: theme.text, letterSpacing: -0.5 }}
+          {/* ── Top bar: logo + avatar ── */}
+          <View
+            style={{
+              flexDirection: 'row', justifyContent: 'space-between',
+              alignItems: 'center', marginBottom: 20,
+            }}
+          >
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 9 }}>
+              <View
+                style={{
+                  width: 34, height: 34, borderRadius: 11,
+                  backgroundColor: colors.neonPurple,
+                  alignItems: 'center', justifyContent: 'center',
+                }}
+              >
+                <MaterialCommunityIcons name="star-four-points" size={19} color={colors.white} />
+              </View>
+              <AppText style={{ fontSize: 18, fontWeight: '800', color: theme.text, letterSpacing: -0.4 }}>
+                ReviewHub
+              </AppText>
+            </View>
+            <Pressable
+              onPress={handleAvatarPress}
+              accessibilityLabel="Profile"
+              accessibilityRole="button"
             >
-              {t('home.title')}
-            </AppText>
-            <AppText
-              style={{ color: theme.textSecondary, marginTop: 4, fontSize: 14, fontWeight: '500' }}
-            >
-              {t('home.subtitle')}
-            </AppText>
+              <Avatar
+                imageUrl={user?.avatarUrl}
+                size="sm"
+                initials={user ? getInitials(user.displayName) : '?'}
+              />
+            </Pressable>
           </View>
 
-          <Pressable
-            onPress={handleAvatarPress}
-            accessibilityLabel="Profile"
-            accessibilityRole="button"
-          >
-            <Avatar
-              imageUrl={user?.avatarUrl}
-              size="sm"
-              initials={user ? getInitials(user.displayName) : '?'}
-            />
-          </Pressable>
+          {/* ── Greeting (hidden while searching to save space) ── */}
+          {!isSearching && (
+            <View style={{ marginBottom: 18 }}>
+              <AppText
+                style={{ fontSize: 28, fontWeight: '800', color: theme.text, letterSpacing: -0.5 }}
+              >
+                {t('home.greeting', { name: user ? getFirstName(user.displayName) : '' })}
+              </AppText>
+              <AppText style={{ fontSize: 14, color: theme.textSecondary, marginTop: 4 }}>
+                {t('home.greetingSubtitle')}
+              </AppText>
+            </View>
+          )}
+
+          {/* ── Search bar ── */}
+          <SearchBar
+            value={searchQuery}
+            onChangeText={search}
+            placeholder={t('home.searchPlaceholder')}
+            onFocus={handleSearchFocus}
+            onBlur={handleSearchBlur}
+          />
+
+          {/* ── Sort / Filter / Location chips (visible only while searching) ── */}
+          {isSearching && (
+            <>
+              <ScrollView
+                horizontal
+                showsHorizontalScrollIndicator={false}
+                style={{ flexGrow: 0, marginTop: 10 }}
+                contentContainerStyle={{ gap: 10 }}
+              >
+                <Pressable
+                  onPress={() => setShowSort(true)}
+                  accessibilityLabel={t('home.sort')}
+                  accessibilityRole="button"
+                  style={({ pressed }) => ({
+                    flexDirection: 'row', alignItems: 'center', gap: 6,
+                    paddingHorizontal: 16, paddingVertical: 9,
+                    borderRadius: 24, borderWidth: 1.5,
+                    borderColor: isSortActive ? colors.neonPurple : colors.borderDark,
+                    backgroundColor: isSortActive
+                      ? 'rgba(168,85,247,0.18)'
+                      : pressed ? 'rgba(51,65,85,0.6)' : colors.cardDark,
+                  })}
+                >
+                  <MaterialCommunityIcons
+                    name="swap-vertical" size={15}
+                    color={isSortActive ? colors.neonPurple : colors.textSlate200}
+                  />
+                  <AppText style={{ fontSize: 13, fontWeight: isSortActive ? '600' : '500', color: isSortActive ? colors.neonPurple : colors.textSlate200 }}>
+                    {t('home.sort')}
+                  </AppText>
+                  {isSortActive && (
+                    <View style={{ width: 7, height: 7, borderRadius: 4, backgroundColor: colors.neonPurple, marginLeft: 2 }} />
+                  )}
+                </Pressable>
+
+                <Pressable
+                  onPress={() => setShowFilter(true)}
+                  accessibilityLabel={t('home.filter')}
+                  accessibilityRole="button"
+                  style={({ pressed }) => ({
+                    flexDirection: 'row', alignItems: 'center', gap: 6,
+                    paddingHorizontal: 16, paddingVertical: 9,
+                    borderRadius: 24, borderWidth: 1.5,
+                    borderColor: isFilterActive ? colors.neonPurple : colors.borderDark,
+                    backgroundColor: isFilterActive
+                      ? 'rgba(168,85,247,0.18)'
+                      : pressed ? 'rgba(51,65,85,0.6)' : colors.cardDark,
+                  })}
+                >
+                  <MaterialCommunityIcons
+                    name="tune-variant" size={15}
+                    color={isFilterActive ? colors.neonPurple : colors.textSlate200}
+                  />
+                  <AppText style={{ fontSize: 13, fontWeight: isFilterActive ? '600' : '500', color: isFilterActive ? colors.neonPurple : colors.textSlate200 }}>
+                    {t('home.filter')}
+                  </AppText>
+                  {isFilterActive && (
+                    <View style={{ width: 7, height: 7, borderRadius: 4, backgroundColor: colors.neonPurple, marginLeft: 2 }} />
+                  )}
+                </Pressable>
+
+                <Pressable
+                  onPress={() => setShowLocation((prev) => !prev)}
+                  accessibilityLabel={t('home.location')}
+                  accessibilityRole="button"
+                  style={({ pressed }) => ({
+                    flexDirection: 'row', alignItems: 'center', gap: 6,
+                    paddingHorizontal: 16, paddingVertical: 9,
+                    borderRadius: 24, borderWidth: 1.5,
+                    borderColor: isLocationActive ? colors.neonPurple : colors.borderDark,
+                    backgroundColor: isLocationActive
+                      ? 'rgba(168,85,247,0.18)'
+                      : pressed ? 'rgba(51,65,85,0.6)' : colors.cardDark,
+                  })}
+                >
+                  <MaterialCommunityIcons
+                    name="map-marker-outline" size={15}
+                    color={isLocationActive ? colors.neonPurple : colors.textSlate200}
+                  />
+                  <AppText style={{ fontSize: 13, fontWeight: isLocationActive ? '600' : '500', color: isLocationActive ? colors.neonPurple : colors.textSlate200 }}>
+                    {t('home.location')}
+                  </AppText>
+                  {isLocationActive && (
+                    <View style={{ width: 7, height: 7, borderRadius: 4, backgroundColor: colors.neonPurple, marginLeft: 2 }} />
+                  )}
+                </Pressable>
+              </ScrollView>
+
+              <LocationDropdown
+                visible={showLocation}
+                initialLocations={activeLocations}
+                onApply={(locs) => {
+                  setActiveLocations(locs);
+                  setShowLocation(false);
+                }}
+              />
+            </>
+          )}
         </View>
 
-        <SearchBar
-          value={searchQuery}
-          onChangeText={search}
-          placeholder={t('home.searchPlaceholder')}
-          onFocus={handleSearchFocus}
-          onBlur={handleSearchBlur}
+        {/* ── FlatList: empty data when browsing, results when searching ── */}
+        <FlatList
+          ref={flatListRef}
+          data={isSearching ? filteredAndSorted : []}
+          renderItem={renderBusinessCard}
+          keyExtractor={keyExtractor}
+          ListHeaderComponent={isSearching ? searchResultsHeader : defaultListHeader}
+          ListEmptyComponent={ListEmpty}
+          contentContainerStyle={{ paddingHorizontal: 16, paddingBottom: 100 }}
+          showsVerticalScrollIndicator={false}
+          keyboardShouldPersistTaps="handled"
+          refreshControl={
+            <RefreshControl
+              refreshing={isNewBusinessesLoading}
+              onRefresh={refresh}
+              tintColor={colors.neonPurple}
+              colors={[colors.neonPurple]}
+            />
+          }
         />
 
-        {isSearching && (
-          <>
-            <ScrollView
-              horizontal
-              showsHorizontalScrollIndicator={false}
-              style={{ flexGrow: 0, marginTop: 10 }}
-              contentContainerStyle={{ gap: 10 }}
-            >
-              <Pressable
-                onPress={() => setShowSort(true)}
-                accessibilityLabel={t('home.sort')}
-                accessibilityRole="button"
-                style={({ pressed }) => ({
-                  flexDirection: 'row',
-                  alignItems: 'center',
-                  gap: 6,
-                  paddingHorizontal: 16,
-                  paddingVertical: 9,
-                  borderRadius: 24,
-                  borderWidth: 1.5,
-                  borderColor: isSortActive ? colors.neonPurple : colors.borderDark,
-                  backgroundColor: isSortActive
-                    ? 'rgba(168,85,247,0.18)'
-                    : pressed
-                      ? 'rgba(51,65,85,0.6)'
-                      : colors.cardDark,
-                })}
-              >
-                <MaterialCommunityIcons
-                  name="swap-vertical"
-                  size={15}
-                  color={isSortActive ? colors.neonPurple : colors.textSlate200}
-                />
-                <AppText
-                  style={{
-                    fontSize: 13,
-                    fontWeight: isSortActive ? '600' : '500',
-                    color: isSortActive ? colors.neonPurple : colors.textSlate200,
-                  }}
-                >
-                  {t('home.sort')}
-                </AppText>
-                {isSortActive && (
-                  <View
-                    style={{
-                      width: 7,
-                      height: 7,
-                      borderRadius: 4,
-                      backgroundColor: colors.neonPurple,
-                      marginLeft: 2,
-                    }}
-                  />
-                )}
-              </Pressable>
-
-              <Pressable
-                onPress={() => setShowFilter(true)}
-                accessibilityLabel={t('home.filter')}
-                accessibilityRole="button"
-                style={({ pressed }) => ({
-                  flexDirection: 'row',
-                  alignItems: 'center',
-                  gap: 6,
-                  paddingHorizontal: 16,
-                  paddingVertical: 9,
-                  borderRadius: 24,
-                  borderWidth: 1.5,
-                  borderColor: isFilterActive ? colors.neonPurple : colors.borderDark,
-                  backgroundColor: isFilterActive
-                    ? 'rgba(168,85,247,0.18)'
-                    : pressed
-                      ? 'rgba(51,65,85,0.6)'
-                      : colors.cardDark,
-                })}
-              >
-                <MaterialCommunityIcons
-                  name="tune-variant"
-                  size={15}
-                  color={isFilterActive ? colors.neonPurple : colors.textSlate200}
-                />
-                <AppText
-                  style={{
-                    fontSize: 13,
-                    fontWeight: isFilterActive ? '600' : '500',
-                    color: isFilterActive ? colors.neonPurple : colors.textSlate200,
-                  }}
-                >
-                  {t('home.filter')}
-                </AppText>
-                {isFilterActive && (
-                  <View
-                    style={{
-                      width: 7,
-                      height: 7,
-                      borderRadius: 4,
-                      backgroundColor: colors.neonPurple,
-                      marginLeft: 2,
-                    }}
-                  />
-                )}
-              </Pressable>
-
-              <Pressable
-                onPress={() => setShowLocation((prev) => !prev)}
-                accessibilityLabel={t('home.location')}
-                accessibilityRole="button"
-                style={({ pressed }) => ({
-                  flexDirection: 'row',
-                  alignItems: 'center',
-                  gap: 6,
-                  paddingHorizontal: 16,
-                  paddingVertical: 9,
-                  borderRadius: 24,
-                  borderWidth: 1.5,
-                  borderColor: isLocationActive ? colors.neonPurple : colors.borderDark,
-                  backgroundColor: isLocationActive
-                    ? 'rgba(168,85,247,0.18)'
-                    : pressed
-                      ? 'rgba(51,65,85,0.6)'
-                      : colors.cardDark,
-                })}
-              >
-                <MaterialCommunityIcons
-                  name="map-marker-outline"
-                  size={15}
-                  color={isLocationActive ? colors.neonPurple : colors.textSlate200}
-                />
-                <AppText
-                  style={{
-                    fontSize: 13,
-                    fontWeight: isLocationActive ? '600' : '500',
-                    color: isLocationActive ? colors.neonPurple : colors.textSlate200,
-                  }}
-                >
-                  {t('home.location')}
-                </AppText>
-                {isLocationActive && (
-                  <View
-                    style={{
-                      width: 7,
-                      height: 7,
-                      borderRadius: 4,
-                      backgroundColor: colors.neonPurple,
-                      marginLeft: 2,
-                    }}
-                  />
-                )}
-              </Pressable>
-            </ScrollView>
-
-            <LocationDropdown
-              visible={showLocation}
-              initialLocations={activeLocations}
-              onApply={(locs) => {
-                setActiveLocations(locs);
-                setShowLocation(false);
-              }}
+        {/* ── Suggestions overlay ── */}
+        {showSuggestions && (
+          <View
+            style={{
+              position: 'absolute', top: headerHeight, left: 0, right: 0,
+              zIndex: 999, elevation: 999,
+            }}
+          >
+            <SearchSuggestions
+              items={suggestionItems}
+              sectionTitle={suggestionsTitle}
+              onSelect={handleSuggestionSelect}
             />
-          </>
+          </View>
         )}
-
-      </View>
-
-      <FlatList
-        ref={flatListRef}
-        data={isSearching ? filteredAndSorted : []}
-        renderItem={renderBusinessCard}
-        keyExtractor={keyExtractor}
-        ListHeaderComponent={isSearching ? searchResultsHeader : defaultListHeader}
-        ListEmptyComponent={ListEmpty}
-        contentContainerStyle={{ paddingHorizontal: 14, paddingBottom: 100 }}
-        showsVerticalScrollIndicator={false}
-        keyboardShouldPersistTaps="handled"
-        refreshControl={
-          <RefreshControl
-            refreshing={isNewBusinessesLoading}
-            onRefresh={refresh}
-            tintColor={colors.neonPurple}
-            colors={[colors.neonPurple]}
-          />
-        }
-      />
-
-      {showSuggestions && (
-        <View
-          style={{
-            position: 'absolute',
-            top: headerHeight,
-            left: 0,
-            right: 0,
-            zIndex: 999,
-            elevation: 999,
-          }}
-        >
-          <SearchSuggestions
-            items={suggestionItems}
-            sectionTitle={suggestionsTitle}
-            onSelect={handleSuggestionSelect}
-          />
-        </View>
-      )}
-
       </View>
 
       <SortBySheet
         visible={showSort}
         onClose={() => setShowSort(false)}
-        onApply={(sort) => {
-          setActiveSort(sort);
-          setShowSort(false);
-        }}
+        onApply={(sort) => { setActiveSort(sort); setShowSort(false); }}
         initialValue={activeSort}
       />
-
       <FilterBySheet
         visible={showFilter}
         onClose={() => setShowFilter(false)}
-        onApply={(filters) => {
-          setActiveFilters(filters);
-          setShowFilter(false);
-        }}
+        onApply={(filters) => { setActiveFilters(filters); setShowFilter(false); }}
         initialFilters={activeFilters}
         showCategories
         availableCategories={availableCategories}

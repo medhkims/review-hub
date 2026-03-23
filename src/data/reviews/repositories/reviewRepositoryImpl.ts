@@ -171,4 +171,14 @@ export class ReviewRepositoryImpl implements ReviewRepository {
       return left(new ServerFailure('Failed to reject review'));
     }
   }
+
+  async getReviewPhotoUrls(reviewId: string): Promise<Either<Failure, string[]>> {
+    try {
+      const urls = await this.remote.getReviewPhotoUrls(reviewId);
+      return right(urls);
+    } catch (error) {
+      if (error instanceof ServerException) return left(new ServerFailure(error.message));
+      return left(new ServerFailure('Failed to fetch review photos'));
+    }
+  }
 }

@@ -12,4 +12,5 @@ export interface ReviewRepository {
   getRejectedReviews(): Promise<Either<Failure, UserReviewEntity[]>>;
   approveReview(reviewId: string): Promise<Either<Failure, void>>;
   rejectReview(reviewId: string): Promise<Either<Failure, void>>;
+  getReviewPhotoUrls(reviewId: string): Promise<Either<Failure, string[]>>;
 }

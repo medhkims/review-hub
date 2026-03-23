@@ -1,4 +1,4 @@
-import React, { useCallback } from 'react';
+import React, { useCallback, useMemo, useState } from 'react';
 import {
   View,
   FlatList,
@@ -6,12 +6,17 @@ import {
   Image,
   ActivityIndicator,
   ListRenderItemInfo,
+  Modal,
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useTranslation } from 'react-i18next';
 import { ScreenLayout } from '@/presentation/shared/layouts/ScreenLayout';
 import { AppText } from '@/presentation/shared/components/ui/AppText';
+import { AppButton } from '@/presentation/shared/components/ui/AppButton';
+import { SortBySheet, SortOption } from '@/presentation/shared/components/SortBySheet';
+import { FilterBySheet, FilterState, DEFAULT_FILTER_STATE } from '@/presentation/shared/components/FilterBySheet';
+import { LocationDropdown } from '@/presentation/shared/components/LocationDropdown';
 import { useWishlist } from '../hooks/useWishlist';
 import { useAuthStore } from '@/presentation/auth/store/authStore';
 import { useAnalyticsScreen } from '@/presentation/shared/hooks/useAnalyticsScreen';
@@ -190,6 +195,105 @@ const EmptyState = () => {
   );
 };
 
+// ─── Location Sheet ───────────────────────────────────────────────────────────
+
+interface LocationSheetProps {
+  visible: boolean;
+  selectedLocations: string[];
+  onClose: () => void;
+  onApply: (locations: string[]) => void;
+}
+
+const LocationSheet: React.FC<LocationSheetProps> = ({ visible, selectedLocations, onClose, onApply }) => {
+  const { t } = useTranslation();
+  const theme = useTheme();
+  const [pending, setPending] = useState<string[]>(selectedLocations);
+
+  // Sync when opened
+  React.useEffect(() => {
+    if (visible) setPending(selectedLocations);
+  }, [visible]);
+
+  return (
+    <Modal visible={visible} transparent animationType="slide" onRequestClose={onClose}>
+      <Pressable
+        style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.6)', justifyContent: 'flex-end' }}
+        onPress={onClose}
+        accessibilityLabel={t('common.close')}
+      >
+        <Pressable
+          onPress={(e) => e.stopPropagation()}
+          style={{
+            backgroundColor: theme.card,
+            borderTopLeftRadius: 24,
+            borderTopRightRadius: 24,
+            paddingBottom: 40,
+            paddingTop: 12,
+            maxHeight: '80%',
+            borderTopWidth: 1,
+            borderColor: theme.border,
+          }}
+        >
+          {/* Handle bar */}
+          <View
+            style={{
+              width: 40,
+              height: 4,
+              backgroundColor: theme.textMuted,
+              borderRadius: 2,
+              alignSelf: 'center',
+              marginBottom: 20,
+            }}
+          />
+
+          {/* Header */}
+          <View
+            style={{
+              flexDirection: 'row',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+              paddingHorizontal: 24,
+              marginBottom: 12,
+            }}
+          >
+            <AppText style={{ fontSize: 20, fontWeight: '700', color: theme.text }}>
+              {t('wishlist.location')}
+            </AppText>
+            <Pressable onPress={onClose} accessibilityLabel={t('common.close')} accessibilityRole="button">
+              <MaterialCommunityIcons name="close" size={24} color={theme.textSecondary} />
+            </Pressable>
+          </View>
+
+          {/* City list — reuses LocationDropdown inline */}
+          <LocationDropdown
+            visible
+            initialLocations={pending}
+            onApply={(locs) => {
+              onApply(locs);
+              onClose();
+            }}
+          />
+
+          {/* Apply button */}
+          <View style={{ paddingHorizontal: 24, paddingTop: 12 }}>
+            <AppButton
+              title={t('filterBy.apply')}
+              variant="primary"
+              size="lg"
+              shape="pill"
+              onPress={() => {
+                onApply(pending);
+                onClose();
+              }}
+              accessibilityLabel={t('filterBy.apply')}
+            />
+          </View>
+        </Pressable>
+      </Pressable>
+    </Modal>
+  );
+};
+
 // ─── WishlistScreen ───────────────────────────────────────────────────────────
 
 export default function WishlistScreen() {
@@ -201,29 +305,93 @@ export default function WishlistScreen() {
 
   const { items, isLoading, error, removeFromWishlist } = useWishlist(user?.id);
 
+  // ── Sheet visibility ─────────────────────────────────────────────────────
+  const [sortOpen, setSortOpen] = useState(false);
+  const [filterOpen, setFilterOpen] = useState(false);
+  const [locationOpen, setLocationOpen] = useState(false);
+
+  // ── Applied filter state ─────────────────────────────────────────────────
+  const [sortOption, setSortOption] = useState<SortOption | null>(null);
+  const [filterState, setFilterState] = useState<FilterState>(DEFAULT_FILTER_STATE);
+  const [selectedLocations, setSelectedLocations] = useState<string[]>([]);
+
+  // ── Active indicators ─────────────────────────────────────────────────────
+  const isSortActive = sortOption !== null;
+  const isFilterActive = filterState.minRating > 0;
+  const isLocationActive = selectedLocations.length > 0;
+
+  // ── Derived list ─────────────────────────────────────────────────────────
+  const displayedItems = useMemo(() => {
+    let result = [...items];
+
+    // Location filter
+    if (selectedLocations.length > 0) {
+      result = result.filter((item) =>
+        selectedLocations.some((city) =>
+          item.location.toLowerCase().includes(city.toLowerCase()),
+        ),
+      );
+    }
+
+    // Rating filter
+    if (filterState.minRating > 0) {
+      result = result.filter((item) => item.rating >= filterState.minRating);
+    }
+
+    // Sort
+    switch (sortOption) {
+      case 'top_rating':
+        result.sort((a, b) => b.rating - a.rating);
+        break;
+      case 'top_result':
+        result.sort((a, b) => b.reviewCount - a.reviewCount);
+        break;
+      case 'new_businesses':
+        result.sort((a, b) => b.addedAt.getTime() - a.addedAt.getTime());
+        break;
+    }
+
+    return result;
+  }, [items, selectedLocations, filterState, sortOption]);
+
+  // ── Handlers ─────────────────────────────────────────────────────────────
   const handleRemove = useCallback(
     (itemId: string) => {
       if (!user?.id) return;
       removeFromWishlist(user.id, itemId);
     },
-    [user?.id, removeFromWishlist]
+    [user?.id, removeFromWishlist],
   );
 
   const handlePress = useCallback(
     (item: WishlistItemEntity) => {
       router.push(`/(main)/(feed)/business/${item.placeId}`);
     },
-    [router]
+    [router],
   );
 
   const renderItem = useCallback(
     ({ item }: ListRenderItemInfo<WishlistItemEntity>) => (
       <WishlistCard item={item} onRemove={handleRemove} onPress={handlePress} />
     ),
-    [handleRemove, handlePress]
+    [handleRemove, handlePress],
   );
 
   const keyExtractor = useCallback((item: WishlistItemEntity) => item.id, []);
+
+  // ── Pill style helper ─────────────────────────────────────────────────────
+  const pillStyle = (active: boolean, pressed: boolean) => ({
+    flexDirection: 'row' as const,
+    alignItems: 'center' as const,
+    gap: 4,
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 20,
+    backgroundColor: active ? colors.neonPurple : theme.card,
+    borderWidth: 1,
+    borderColor: active ? colors.neonPurple : theme.border,
+    opacity: pressed ? 0.7 : 1,
+  });
 
   return (
     <ScreenLayout>
@@ -289,47 +457,96 @@ export default function WishlistScreen() {
         <View style={{ flex: 1, paddingHorizontal: 20 }}>
           {/* Section header */}
           {items.length > 0 && (
-            <View
-              style={{
-                flexDirection: 'row',
-                alignItems: 'center',
-                justifyContent: 'space-between',
-                marginBottom: 16,
-                paddingHorizontal: 4,
-              }}
-            >
+            <View style={{ marginBottom: 16, paddingHorizontal: 4, gap: 10 }}>
               <AppText style={{ fontSize: 18, fontWeight: '700', color: theme.text, letterSpacing: -0.3 }}>
                 {t('wishlist.allResults')}
               </AppText>
-              <Pressable
-                style={({ pressed }) => ({
-                  padding: 6,
-                  borderRadius: 8,
-                  backgroundColor: theme.card,
-                  borderWidth: 1,
-                  borderColor: theme.border,
-                  opacity: pressed ? 0.7 : 1,
-                })}
-                accessibilityLabel="Filter wishlist"
-                accessibilityRole="button"
-              >
-                <MaterialCommunityIcons name="tune" size={18} color={colors.neonPurple} />
-              </Pressable>
+
+              {/* Pill buttons */}
+              <View style={{ flexDirection: 'row', gap: 8 }}>
+                {/* Sort by */}
+                <Pressable
+                  onPress={() => setSortOpen(true)}
+                  style={({ pressed }) => pillStyle(isSortActive, pressed)}
+                  accessibilityLabel={t('wishlist.sortBy')}
+                  accessibilityRole="button"
+                >
+                  <MaterialCommunityIcons name="sort" size={14} color={isSortActive ? '#fff' : colors.neonPurple} />
+                  <AppText style={{ fontSize: 12, fontWeight: '600', color: isSortActive ? '#fff' : theme.text }}>
+                    {t('wishlist.sortBy')}
+                  </AppText>
+                </Pressable>
+
+                {/* Filter */}
+                <Pressable
+                  onPress={() => setFilterOpen(true)}
+                  style={({ pressed }) => pillStyle(isFilterActive, pressed)}
+                  accessibilityLabel={t('wishlist.filter')}
+                  accessibilityRole="button"
+                >
+                  <MaterialCommunityIcons name="tune" size={14} color={isFilterActive ? '#fff' : colors.neonPurple} />
+                  <AppText style={{ fontSize: 12, fontWeight: '600', color: isFilterActive ? '#fff' : theme.text }}>
+                    {t('wishlist.filter')}
+                  </AppText>
+                </Pressable>
+
+                {/* Location */}
+                <Pressable
+                  onPress={() => setLocationOpen(true)}
+                  style={({ pressed }) => pillStyle(isLocationActive, pressed)}
+                  accessibilityLabel={t('wishlist.location')}
+                  accessibilityRole="button"
+                >
+                  <MaterialCommunityIcons name="map-marker-outline" size={14} color={isLocationActive ? '#fff' : colors.neonPurple} />
+                  <AppText style={{ fontSize: 12, fontWeight: '600', color: isLocationActive ? '#fff' : theme.text }}>
+                    {t('wishlist.location')}
+                  </AppText>
+                </Pressable>
+              </View>
             </View>
           )}
 
           <FlatList
-            data={items}
+            data={displayedItems}
             renderItem={renderItem}
             keyExtractor={keyExtractor}
             ListEmptyComponent={<EmptyState />}
             showsVerticalScrollIndicator={false}
             contentContainerStyle={
-              items.length === 0 ? { flex: 1 } : { paddingBottom: 100 }
+              displayedItems.length === 0 ? { flex: 1 } : { paddingBottom: 100 }
             }
           />
         </View>
       )}
+
+      {/* ── Bottom Sheets ── */}
+      <SortBySheet
+        visible={sortOpen}
+        initialValue={sortOption}
+        onClose={() => setSortOpen(false)}
+        onApply={(opt) => {
+          setSortOption(opt);
+          setSortOpen(false);
+        }}
+      />
+
+      <FilterBySheet
+        visible={filterOpen}
+        initialFilters={filterState}
+        showCategories={false}
+        onClose={() => setFilterOpen(false)}
+        onApply={(filters) => {
+          setFilterState(filters);
+          setFilterOpen(false);
+        }}
+      />
+
+      <LocationSheet
+        visible={locationOpen}
+        selectedLocations={selectedLocations}
+        onClose={() => setLocationOpen(false)}
+        onApply={(locs) => setSelectedLocations(locs)}
+      />
     </ScreenLayout>
   );
 }

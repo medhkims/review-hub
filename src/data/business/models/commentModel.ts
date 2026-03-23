@@ -12,6 +12,8 @@ export interface CommentModel {
   author_name?: string;
   author_avatar_url?: string | null;
   is_liked_by_current_user?: boolean;
+  dislike_count?: number;
+  is_disliked_by_current_user?: boolean;
 }
 
 export interface ReplyModel {
@@ -27,4 +29,6 @@ export interface ReplyModel {
   author_name?: string;
   author_avatar_url?: string | null;
   is_liked_by_current_user?: boolean;
+  dislike_count?: number;
+  is_disliked_by_current_user?: boolean;
 }

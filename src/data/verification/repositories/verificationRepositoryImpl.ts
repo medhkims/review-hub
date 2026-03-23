@@ -110,4 +110,15 @@ export class VerificationRepositoryImpl implements VerificationRepository {
       return left(new ServerFailure(msg));
     }
   }
+
+  async extractAndSaveCin(verificationId: string): Promise<Either<Failure, string | null>> {
+    try {
+      const cinNumber = await this.remote.extractAndSaveCin(verificationId);
+      return right(cinNumber);
+    } catch (error: unknown) {
+      if (error instanceof ServerException) return left(new ServerFailure(error.message));
+      const msg = error instanceof Error ? error.message : 'Failed to extract CIN';
+      return left(new ServerFailure(msg));
+    }
+  }
 }

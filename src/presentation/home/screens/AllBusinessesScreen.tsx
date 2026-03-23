@@ -201,147 +201,102 @@ export default function AllBusinessesScreen() {
         horizontal
         showsHorizontalScrollIndicator={false}
         style={{ flexGrow: 0, height: 44, marginBottom: 12 }}
-        contentContainerStyle={{ paddingHorizontal: 20, gap: 10, alignItems: 'center' }}
+        contentContainerStyle={{ paddingHorizontal: 20, gap: 8, alignItems: 'center' }}
       >
         <Pressable
           onPress={() => setShowSort(true)}
           accessibilityLabel={t('home.sort')}
           accessibilityRole="button"
-          style={({ pressed }) => ({
+          style={{
             flexDirection: 'row',
             alignItems: 'center',
             gap: 6,
-            paddingHorizontal: 16,
-            paddingVertical: 9,
-            borderRadius: 24,
-            borderWidth: 1.5,
+            paddingHorizontal: 14,
+            paddingVertical: 8,
+            borderRadius: 20,
+            borderWidth: 1,
             borderColor: isSortActive ? colors.neonPurple : colors.borderDark,
-            backgroundColor: isSortActive
-              ? 'rgba(168,85,247,0.18)'
-              : pressed
-                ? 'rgba(51,65,85,0.6)'
-                : colors.cardDark,
-          })}
+            backgroundColor: isSortActive ? 'rgba(168,85,247,0.15)' : theme.card,
+          }}
         >
           <MaterialCommunityIcons
             name="swap-vertical"
-            size={15}
-            color={isSortActive ? colors.neonPurple : colors.textSlate200}
+            size={16}
+            color={isSortActive ? colors.neonPurple : theme.textSecondary}
           />
           <AppText
             style={{
               fontSize: 13,
               fontWeight: isSortActive ? '600' : '500',
-              color: isSortActive ? colors.neonPurple : colors.textSlate200,
+              color: isSortActive ? colors.neonPurple : theme.textSecondary,
             }}
           >
             {t('home.sort')}
           </AppText>
-          {isSortActive && (
-            <View
-              style={{
-                width: 7,
-                height: 7,
-                borderRadius: 4,
-                backgroundColor: colors.neonPurple,
-                marginLeft: 2,
-              }}
-            />
-          )}
         </Pressable>
 
         <Pressable
           onPress={() => setShowFilter(true)}
           accessibilityLabel={t('home.filter')}
           accessibilityRole="button"
-          style={({ pressed }) => ({
+          style={{
             flexDirection: 'row',
             alignItems: 'center',
             gap: 6,
-            paddingHorizontal: 16,
-            paddingVertical: 9,
-            borderRadius: 24,
-            borderWidth: 1.5,
+            paddingHorizontal: 14,
+            paddingVertical: 8,
+            borderRadius: 20,
+            borderWidth: 1,
             borderColor: isFilterActive ? colors.neonPurple : colors.borderDark,
-            backgroundColor: isFilterActive
-              ? 'rgba(168,85,247,0.18)'
-              : pressed
-                ? 'rgba(51,65,85,0.6)'
-                : colors.cardDark,
-          })}
+            backgroundColor: isFilterActive ? 'rgba(168,85,247,0.15)' : theme.card,
+          }}
         >
           <MaterialCommunityIcons
             name="tune-variant"
-            size={15}
-            color={isFilterActive ? colors.neonPurple : colors.textSlate200}
+            size={16}
+            color={isFilterActive ? colors.neonPurple : theme.textSecondary}
           />
           <AppText
             style={{
               fontSize: 13,
               fontWeight: isFilterActive ? '600' : '500',
-              color: isFilterActive ? colors.neonPurple : colors.textSlate200,
+              color: isFilterActive ? colors.neonPurple : theme.textSecondary,
             }}
           >
             {t('home.filter')}
           </AppText>
-          {isFilterActive && (
-            <View
-              style={{
-                width: 7,
-                height: 7,
-                borderRadius: 4,
-                backgroundColor: colors.neonPurple,
-                marginLeft: 2,
-              }}
-            />
-          )}
         </Pressable>
 
         <Pressable
           onPress={() => setShowLocation((prev) => !prev)}
           accessibilityLabel={t('home.location')}
           accessibilityRole="button"
-          style={({ pressed }) => ({
+          style={{
             flexDirection: 'row',
             alignItems: 'center',
             gap: 6,
-            paddingHorizontal: 16,
-            paddingVertical: 9,
-            borderRadius: 24,
-            borderWidth: 1.5,
+            paddingHorizontal: 14,
+            paddingVertical: 8,
+            borderRadius: 20,
+            borderWidth: 1,
             borderColor: isLocationActive ? colors.neonPurple : colors.borderDark,
-            backgroundColor: isLocationActive
-              ? 'rgba(168,85,247,0.18)'
-              : pressed
-                ? 'rgba(51,65,85,0.6)'
-                : colors.cardDark,
-          })}
+            backgroundColor: isLocationActive ? 'rgba(168,85,247,0.15)' : theme.card,
+          }}
         >
           <MaterialCommunityIcons
             name="map-marker-outline"
-            size={15}
-            color={isLocationActive ? colors.neonPurple : colors.textSlate200}
+            size={16}
+            color={isLocationActive ? colors.neonPurple : theme.textSecondary}
           />
           <AppText
             style={{
               fontSize: 13,
               fontWeight: isLocationActive ? '600' : '500',
-              color: isLocationActive ? colors.neonPurple : colors.textSlate200,
+              color: isLocationActive ? colors.neonPurple : theme.textSecondary,
             }}
           >
             {t('home.location')}
           </AppText>
-          {isLocationActive && (
-            <View
-              style={{
-                width: 7,
-                height: 7,
-                borderRadius: 4,
-                backgroundColor: colors.neonPurple,
-                marginLeft: 2,
-              }}
-            />
-          )}
         </Pressable>
       </ScrollView>
 

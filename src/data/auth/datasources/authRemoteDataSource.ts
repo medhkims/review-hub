@@ -12,6 +12,7 @@ import {
   signInWithPopup,
   onAuthStateChanged,
   sendEmailVerification,
+  sendPasswordResetEmail as firebaseSendPasswordResetEmail,
 } from 'firebase/auth';
 import { User as FirebaseUser } from 'firebase/auth';
 import { GoogleSignin, isSuccessResponse, isErrorWithCode, statusCodes } from '@react-native-google-signin/google-signin';
@@ -36,6 +37,7 @@ export interface AuthRemoteDataSource {
   signInWithGoogle(loginHint?: string): Promise<UserModel>;
   sendPhoneOtp(phone: string): Promise<void>;
   verifyPhoneOtp(businessId: string, code: string): Promise<void>;
+  sendPasswordResetEmail(email: string): Promise<void>;
 }
 
 function friendlyAuthError(code: string | undefined): string {
@@ -417,6 +419,21 @@ export class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
         throw new ServerException('Invalid or expired code. Please try again.');
       }
       throw new ServerException('Verification failed. Please try again.');
+    }
+  }
+
+  async sendPasswordResetEmail(email: string): Promise<void> {
+    try {
+      await firebaseSendPasswordResetEmail(auth, email);
+    } catch (error: unknown) {
+      const err = error as { code?: string };
+      if (err.code === 'auth/user-not-found' || err.code === 'auth/invalid-email') {
+        throw new AuthException('No account found with this email address.');
+      }
+      if (err.code === 'auth/too-many-requests') {
+        throw new AuthException('Too many attempts. Please try again later.');
+      }
+      throw new ServerException('Failed to send reset email. Please try again.');
     }
   }
 }

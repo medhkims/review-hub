@@ -5,6 +5,7 @@ export interface ReviewModel {
   user_id: string;
   overall_rating: number;
   review_text: string;
+  photo_urls?: string[];
   created_at: Timestamp;
   status?: string;
   like_count?: number;
@@ -15,4 +16,6 @@ export interface ReviewModel {
   author_avatar_url?: string | null;
   // Enriched after like-status check
   is_liked_by_current_user?: boolean;
+  dislike_count?: number;
+  is_disliked_by_current_user?: boolean;
 }

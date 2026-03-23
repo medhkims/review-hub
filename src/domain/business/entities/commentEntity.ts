@@ -9,6 +9,8 @@ export interface ReplyEntity {
   createdAt: Date;
   likeCount: number;
   isLikedByCurrentUser: boolean;
+  dislikeCount: number;
+  isDislikedByCurrentUser: boolean;
   replyingToName?: string;
 }
 
@@ -24,4 +26,6 @@ export interface CommentEntity {
   replies: ReplyEntity[];
   likeCount: number;
   isLikedByCurrentUser: boolean;
+  dislikeCount: number;
+  isDislikedByCurrentUser: boolean;
 }

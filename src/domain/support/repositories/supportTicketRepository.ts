@@ -13,4 +13,9 @@ export interface SupportTicketRepository {
   ): Promise<Either<Failure, SupportTicketEntity>>;
   getUserSupportTickets(userId: string): Promise<Either<Failure, SupportTicketEntity[]>>;
   getAllSupportTickets(): Promise<Either<Failure, SupportTicketEntity[]>>;
+  replyToSupportTicket(
+    ticketId: string,
+    adminReply: string,
+    status: string,
+  ): Promise<Either<Failure, void>>;
 }

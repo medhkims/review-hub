@@ -23,6 +23,7 @@ export interface ReviewRemoteDataSource {
   getRejectedReviews(): Promise<UserReviewModel[]>;
   approveReview(reviewId: string): Promise<void>;
   rejectReview(reviewId: string): Promise<void>;
+  getReviewPhotoUrls(reviewId: string): Promise<string[]>;
 }
 
 export class ReviewRemoteDataSourceImpl implements ReviewRemoteDataSource {
@@ -367,6 +368,18 @@ export class ReviewRemoteDataSourceImpl implements ReviewRemoteDataSource {
       });
     } catch (error: unknown) {
       const message = error instanceof Error ? error.message : 'Failed to reject review';
+      throw new ServerException(message);
+    }
+  }
+
+  async getReviewPhotoUrls(reviewId: string): Promise<string[]> {
+    try {
+      const snap = await getDoc(doc(firestore, this.REVIEWS, reviewId));
+      if (!snap.exists()) return [];
+      const data = snap.data();
+      return Array.isArray(data['photo_urls']) ? (data['photo_urls'] as string[]) : [];
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : 'Failed to fetch review photos';
       throw new ServerException(message);
     }
   }

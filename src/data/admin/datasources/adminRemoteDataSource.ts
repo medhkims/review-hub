@@ -10,8 +10,8 @@ function toRankItem(id: string, data: Record<string, unknown>): CompanyRankItem 
   const reviews = (data.review_count as number) ?? 0;
   const rawStatus = (data.status as string) ?? 'active';
   const status: CompanyRankItem['status'] =
-    rawStatus === 'pending' || rawStatus === 'rejected' || rawStatus === 'blocked'
-      ? rawStatus
+    rawStatus === 'pending' || rawStatus === 'rejected' || rawStatus === 'blocked' || rawStatus === 'suspended'
+      ? rawStatus === 'suspended' ? 'blocked' : rawStatus
       : 'active';
 
   const isPremiumActive = (() => {

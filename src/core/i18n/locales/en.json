@@ -100,6 +100,17 @@
       "birthday": "Date of Birth",
       "birthdayPlaceholder": "Select your date of birth"
     },
+    "forgotPasswordScreen": {
+      "title": "Forgot Password",
+      "subtitle": "Enter your email address and we'll send you a link to reset your password.",
+      "email": "Email Address",
+      "emailPlaceholder": "hello@example.com",
+      "button": "Send Reset Link",
+      "successTitle": "Check Your Email",
+      "successMessage": "A password reset link has been sent to {{email}}. Please check your inbox.",
+      "backToSignIn": "Back to Sign In",
+      "sending": "Sending..."
+    },
     "currentPassword": "Current Password",
     "newPassword": "New Password",
     "confirmNewPassword": "Confirm New Password",
@@ -182,6 +193,18 @@
     "filter": "Filter",
     "location": "Location",
     "errorLoading": "Failed to load businesses",
+    "greeting": "Hey, {{name}}.",
+    "greetingSubtitle": "Discover the best around you",
+    "explore": "Explore",
+    "trendingNow": "Trending Now",
+    "featuredBadge": "FEATURED",
+    "newBadge": "NEW",
+    "addBusinessCtaTitle": "Add a Business",
+    "addBusinessCtaSubtitle": "Know a great place? Help others discover it.",
+    "statsBusinesses": "Businesses",
+    "statsReviews": "Reviews",
+    "statsCategories": "Categories",
+    "topRated": "Top Rated",
     "allCategories": {
       "title": "All Categories",
       "searchPlaceholder": "Search categories...",
@@ -385,22 +408,41 @@
   "helpCenter": {
     "title": "Help Center",
     "subtitle": "Find answers to the most common questions below.",
-    "empty": "No questions available yet.",
+    "empty": "No questions available for this section yet.",
+    "tabs": {
+      "user": "User",
+      "business": "Business",
+      "moderator": "Moderator"
+    },
+    "audience": {
+      "user": "User",
+      "business": "Business",
+      "moderator": "Moderator",
+      "all": "All"
+    },
     "admin": {
       "title": "Manage FAQ",
       "addFaq": "Add FAQ",
       "editFaq": "Edit FAQ",
       "empty": "No FAQ entries yet. Tap the button to add one.",
+      "emptyTab": "No questions in this section yet.",
       "deleteTitle": "Delete FAQ",
-      "deleteConfirm": "Delete \"{{question}}\"?",
+      "deleteConfirm": "Delete",
+      "deleteConfirmInline": "Delete this FAQ?",
       "questionLabel": "Question",
       "questionPlaceholder": "Enter the question...",
       "answerLabel": "Answer",
       "answerPlaceholder": "Enter the answer...",
+      "audienceLabel": "Visible To (select at least one)",
+      "selectAll": "Select All",
+      "deselectAll": "Deselect All",
       "orderLabel": "Display Order",
       "errorQuestion": "Question is required.",
       "errorAnswer": "Answer is required.",
-      "errorOrder": "Order must be a valid number."
+      "errorOrder": "Order must be a valid number.",
+      "errorAudience": "Please select at least one audience.",
+      "seedFaqs": "Load Default FAQs",
+      "seeding": "Loading defaults..."
     }
   },
   "adminInfo": {
@@ -499,8 +541,15 @@
     "messageLabel": "Message",
     "messagePlaceholder": "Please describe your issue in detail (min. 10 characters)...",
     "submit": "Submit Ticket",
+    "subjectRequired": "Subject is required.",
+    "messageMinLength": "Message must be at least 10 characters.",
     "noTickets": "You haven't submitted any tickets yet.",
+    "noTicketsForFilter": "No tickets with this status.",
     "submitFirst": "Submit your first ticket",
+    "filterAll": "All",
+    "filterOpen": "Open",
+    "filterInProgress": "In Progress",
+    "filterDone": "Done",
     "category": {
       "label": "Category",
       "account": "Account",
@@ -669,7 +718,8 @@
       "cinNotDetected": "CIN not detected",
       "phone": "Phone",
       "submittedAt": "Submitted",
-      "detailTitle": "Verified User"
+      "detailTitle": "Verified User",
+      "detectCin": "Detect CIN"
     },
     "banners": {
       "title": "Manage Banners",
@@ -1009,10 +1059,16 @@
     "replyingTo": "Replying to",
     "like": "Like",
     "unlike": "Unlike",
+    "dislike": "Dislike",
+    "undislike": "Remove dislike",
     "likeComment": "Like comment",
     "unlikeComment": "Unlike comment",
+    "dislikeComment": "Dislike comment",
+    "undislikeComment": "Remove dislike from comment",
     "likeReply": "Like reply",
     "unlikeReply": "Unlike reply",
+    "dislikeReply": "Dislike reply",
+    "undislikeReply": "Remove dislike from reply",
     "replyToReply": "Reply",
     "seeAllAnswers_one": "See {{count}} answer",
     "seeAllAnswers_other": "See all {{count}} answers",
@@ -1029,7 +1085,10 @@
     "emptyDescription": "Save places you want to visit and review later",
     "review": "Review",
     "removeSuccess": "Removed from wishlist",
-    "removeError": "Failed to remove item"
+    "removeError": "Failed to remove item",
+    "sortBy": "Sort by",
+    "filter": "Filter",
+    "location": "Location"
   },
   "locationSearch": {
     "title": "Search Location",

@@ -590,6 +590,97 @@ export const handleBudgetAlert = functions.pubsub
     }
   });
 
+// ─── Admin: Extract & Save CIN from stored ID card ────────────────────────────
+/**
+ * For existing verification records where cin_number is null,
+ * re-fetches the stored ID card image URL, runs Vision OCR,
+ * extracts the 8-digit CIN, and saves it back to Firestore.
+ */
+export const extractAndSaveCin = functions.https.onCall(async (data, context) => {
+  if (!context.auth) {
+    throw new functions.https.HttpsError('unauthenticated', 'Authentication required');
+  }
+
+  // Admin only
+  const profile = await admin.firestore().collection('profiles').doc(context.auth.uid).get();
+  if (!profile.exists || profile.data()?.role !== 'admin') {
+    throw new functions.https.HttpsError('permission-denied', 'Admins only');
+  }
+
+  const { verificationId } = data as { verificationId?: string };
+  if (!verificationId || typeof verificationId !== 'string') {
+    throw new functions.https.HttpsError('invalid-argument', 'verificationId is required');
+  }
+
+  const verDoc = await admin.firestore().collection('verification_requests').doc(verificationId).get();
+  if (!verDoc.exists) {
+    throw new functions.https.HttpsError('not-found', 'Verification not found');
+  }
+
+  const idCardUrl: string | undefined = verDoc.data()?.id_card_url;
+  if (!idCardUrl) {
+    throw new functions.https.HttpsError('not-found', 'ID card URL not found for this verification');
+  }
+
+  try {
+    // Download the image using Admin SDK (avoids auth/CORS issues with fetch)
+    let base64: string;
+    try {
+      // Parse the Firebase Storage file path from the download URL
+      // URL format: https://firebasestorage.googleapis.com/v0/b/{bucket}/o/{encodedPath}?alt=media&token=...
+      const urlObj = new URL(idCardUrl);
+      const encodedPath = urlObj.pathname.split('/o/')[1];
+      if (encodedPath) {
+        const filePath = decodeURIComponent(encodedPath);
+        const [fileBuffer] = await admin.storage().bucket().file(filePath).download();
+        base64 = fileBuffer.toString('base64');
+      } else {
+        throw new Error('Cannot parse storage path from URL');
+      }
+    } catch {
+      // Fallback: direct fetch (works for public download URLs with token)
+      const imageRes = await fetch(idCardUrl);
+      if (!imageRes.ok) throw new functions.https.HttpsError('internal', 'Failed to fetch ID card image');
+      const buffer = await imageRes.arrayBuffer();
+      base64 = Buffer.from(buffer).toString('base64');
+    }
+
+    // Run Vision OCR
+    const client = await visionAuth.getClient();
+    const { token } = await client.getAccessToken();
+
+    const visionRes = await fetch('https://vision.googleapis.com/v1/images:annotate', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+      body: JSON.stringify({
+        requests: [{ image: { content: base64 }, features: [{ type: 'TEXT_DETECTION', maxResults: 1 }] }],
+      }),
+    });
+
+    const result = await visionRes.json() as {
+      responses?: Array<{ fullTextAnnotation?: { text?: string } }>;
+    };
+    const detectedText: string = result?.responses?.[0]?.fullTextAnnotation?.text ?? '';
+
+    // Try exact 8-digit match first (standard Tunisian CIN), then 7-9 digit fallback
+    const cinMatch = detectedText.match(/\b\d{8}\b/) ?? detectedText.match(/\b\d{7,9}\b/);
+    const cinNumber: string | null = cinMatch ? cinMatch[0] : null;
+    console.log('extractAndSaveCin OCR text:', detectedText.substring(0, 300));
+    console.log('extractAndSaveCin CIN match:', cinNumber);
+
+    // Save back to Firestore
+    await admin.firestore().collection('verification_requests').doc(verificationId).update({
+      cin_number: cinNumber,
+    });
+
+    return { cinNumber };
+  } catch (error) {
+    if (error instanceof functions.https.HttpsError) throw error;
+    console.error('extractAndSaveCin error:', error);
+    throw new functions.https.HttpsError('internal', 'Failed to extract CIN');
+  }
+});
+
 // ─── Admin: Get Spending Stats ─────────────────────────────────────────────────
 /**
  * Callable by admins to view today's Vision API usage and current limits.

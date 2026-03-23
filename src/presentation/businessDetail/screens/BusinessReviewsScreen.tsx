@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useCallback } from 'react';
-import { View, FlatList, Pressable, Image, RefreshControl } from 'react-native';
+import { View, FlatList, Pressable, Image, ScrollView, RefreshControl } from 'react-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useTranslation } from 'react-i18next';
 import { router } from 'expo-router';
@@ -15,6 +15,7 @@ import { StarRating } from '../components/BusinessCoverSection';
 interface BusinessReviewsScreenProps {
   businessId: string;
   businessName: string;
+  businessLogoUrl?: string | null;
 }
 
 const formatTimeAgo = (date: Date): string => {
@@ -120,15 +121,42 @@ const ReviewItem = React.memo<ReviewItemProps>(
             </AppText>
           ) : null}
 
+          {review.photoUrls && review.photoUrls.length > 0 && (
+            <ScrollView
+              horizontal
+              showsHorizontalScrollIndicator={false}
+              style={{ marginTop: 10 }}
+              contentContainerStyle={{ gap: 6 }}
+            >
+              {review.photoUrls.map((uri, index) => (
+                <Image
+                  key={index}
+                  source={{ uri }}
+                  style={{ width: 80, height: 80, borderRadius: 8 }}
+                  resizeMode="cover"
+                  accessibilityLabel={`Review photo ${index + 1}`}
+                />
+              ))}
+            </ScrollView>
+          )}
+
           {/* Stats row */}
           <View style={{ flexDirection: 'row', gap: 16, marginTop: 10 }}>
             <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
               <MaterialCommunityIcons
-                name={review.isLikedByCurrentUser ? 'heart' : 'heart-outline'}
+                name={review.isLikedByCurrentUser ? 'thumb-up' : 'thumb-up-outline'}
                 size={14}
-                color={review.isLikedByCurrentUser ? '#ef4444' : theme.textMuted}
+                color={review.isLikedByCurrentUser ? '#3b82f6' : theme.textMuted}
               />
               <AppText style={{ fontSize: 12, color: theme.textMuted }}>{review.likeCount}</AppText>
+            </View>
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
+              <MaterialCommunityIcons
+                name={review.isDislikedByCurrentUser ? 'thumb-down' : 'thumb-down-outline'}
+                size={14}
+                color={review.isDislikedByCurrentUser ? '#ef4444' : theme.textMuted}
+              />
+              <AppText style={{ fontSize: 12, color: theme.textMuted }}>{review.dislikeCount}</AppText>
             </View>
             <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
               <MaterialCommunityIcons name="eye-outline" size={14} color={theme.textMuted} />
@@ -148,7 +176,7 @@ const ReviewItem = React.memo<ReviewItemProps>(
   },
 );
 
-export default function BusinessReviewsScreen({ businessId, businessName }: BusinessReviewsScreenProps) {
+export default function BusinessReviewsScreen({ businessId, businessName, businessLogoUrl }: BusinessReviewsScreenProps) {
   const { t } = useTranslation();
   const theme = useTheme();
   const [reviews, setReviews] = useState<ReviewEntity[]>([]);
@@ -176,6 +204,7 @@ export default function BusinessReviewsScreen({ businessId, businessName }: Busi
       params: {
         reviewId: review.id,
         businessName,
+        businessId,
         reviewData: JSON.stringify({
           id: review.id,
           authorId: review.authorId,
@@ -183,15 +212,20 @@ export default function BusinessReviewsScreen({ businessId, businessName }: Busi
           authorAvatarUrl: review.authorAvatarUrl,
           rating: review.rating,
           text: review.text,
+          photoUrls: review.photoUrls,
           createdAtMs: review.createdAt.getTime(),
           likeCount: review.likeCount,
           viewCount: review.viewCount,
           commentCount: review.commentCount,
           isLikedByCurrentUser: review.isLikedByCurrentUser,
+          dislikeCount: review.dislikeCount,
+          isDislikedByCurrentUser: review.isDislikedByCurrentUser,
+          businessId,
+          businessLogoUrl: businessLogoUrl ?? null,
         }),
       },
     });
-  }, [businessName]);
+  }, [businessName, businessId, businessLogoUrl]);
 
   return (
     <View style={{ flex: 1, backgroundColor: theme.background }}>
@@ -229,6 +263,28 @@ export default function BusinessReviewsScreen({ businessId, businessName }: Busi
           <AppText style={{ fontSize: 18, fontWeight: '700', color: theme.text }}>{t('businessDetail.allReviews')}</AppText>
           <AppText style={{ fontSize: 12, color: theme.textSecondary }}>{businessName}</AppText>
         </View>
+        {businessLogoUrl ? (
+          <Pressable
+            onPress={() => router.push(`/(main)/(feed)/business/${businessId}` as Parameters<typeof router.push>[0])}
+            accessibilityLabel={`View ${businessName} profile`}
+            accessibilityRole="button"
+            style={{
+              width: 44,
+              height: 44,
+              borderRadius: 10,
+              overflow: 'hidden',
+              borderWidth: 1,
+              borderColor: 'rgba(139, 92, 246, 0.3)',
+            }}
+          >
+            <Image
+              source={{ uri: businessLogoUrl }}
+              style={{ width: '100%', height: '100%' }}
+              resizeMode="cover"
+              accessibilityLabel={`${businessName} logo`}
+            />
+          </Pressable>
+        ) : null}
       </View>
 
       {isLoading && reviews.length === 0 ? (

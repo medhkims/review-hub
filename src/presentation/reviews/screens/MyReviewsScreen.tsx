@@ -330,7 +330,7 @@ const ReviewCard = React.memo(({ review, onDeleteRequest, onPress }: ReviewCardP
             {review.reviewText}
           </AppText>
 
-          {/* Footer: likes + views */}
+          {/* Footer: likes + dislikes + views */}
           <View
             style={{
               borderTopWidth: 1,
@@ -342,8 +342,12 @@ const ReviewCard = React.memo(({ review, onDeleteRequest, onPress }: ReviewCardP
             }}
           >
             <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
-              <MaterialCommunityIcons name="heart" size={13} color={review.likesCount > 0 ? colors.red : theme.textMuted} />
+              <MaterialCommunityIcons name="thumb-up" size={13} color={review.likesCount > 0 ? '#3b82f6' : theme.textMuted} />
               <AppText style={{ fontSize: 11, color: theme.textSecondary }}>{review.likesCount}</AppText>
+            </View>
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
+              <MaterialCommunityIcons name="thumb-down" size={13} color={theme.textMuted} />
+              <AppText style={{ fontSize: 11, color: theme.textSecondary }}>0</AppText>
             </View>
             <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
               <MaterialCommunityIcons name="eye" size={13} color={theme.textMuted} />
@@ -487,17 +491,22 @@ export default function MyReviewsScreen() {
       authorAvatarUrl: currentUser?.photoURL ?? null,
       rating: review.overallRating,
       text: review.reviewText,
+      photoUrls: review.photoUrls,
       createdAtMs: review.createdAt.getTime(),
       likeCount: review.likesCount,
       viewCount: review.viewsCount,
       commentCount: review.commentCount,
       isLikedByCurrentUser: review.isLikedByCurrentUser,
+      dislikeCount: 0,
+      isDislikedByCurrentUser: false,
+      businessId: review.businessId,
     });
     router.push({
       pathname: '/(main)/(feed)/review-detail',
       params: {
         reviewId: review.id,
         businessName: review.businessName,
+        businessId: review.businessId,
         reviewData: serialized,
         from: 'my-reviews',
       },

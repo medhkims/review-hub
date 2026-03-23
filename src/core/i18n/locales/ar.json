@@ -100,6 +100,17 @@
       "birthday": "تاريخ الميلاد",
       "birthdayPlaceholder": "اختر تاريخ ميلادك"
     },
+    "forgotPasswordScreen": {
+      "title": "نسيت كلمة المرور",
+      "subtitle": "أدخل عنوان بريدك الإلكتروني وسنرسل لك رابطاً لإعادة تعيين كلمة المرور.",
+      "email": "عنوان البريد الإلكتروني",
+      "emailPlaceholder": "hello@example.com",
+      "button": "إرسال رابط إعادة التعيين",
+      "successTitle": "تحقق من بريدك الإلكتروني",
+      "successMessage": "تم إرسال رابط إعادة تعيين كلمة المرور إلى {{email}}. يرجى التحقق من صندوق الوارد.",
+      "backToSignIn": "العودة إلى تسجيل الدخول",
+      "sending": "جارٍ الإرسال..."
+    },
     "currentPassword": "كلمة المرور الحالية",
     "newPassword": "كلمة المرور الجديدة",
     "confirmNewPassword": "تأكيد كلمة المرور الجديدة",
@@ -182,6 +193,18 @@
     "filter": "تصفية",
     "location": "الموقع",
     "errorLoading": "فشل تحميل الأعمال",
+    "greeting": "مرحباً، {{name}}.",
+    "greetingSubtitle": "اكتشف الأفضل في محيطك",
+    "explore": "استكشف",
+    "trendingNow": "الأكثر رواجاً",
+    "featuredBadge": "مميز",
+    "newBadge": "جديد",
+    "addBusinessCtaTitle": "أضف عملاً تجارياً",
+    "addBusinessCtaSubtitle": "تعرف على مكان رائع؟ ساعد الآخرين على اكتشافه.",
+    "statsBusinesses": "الأعمال",
+    "statsReviews": "التقييمات",
+    "statsCategories": "الفئات",
+    "topRated": "الأعلى تقييماً",
     "allCategories": {
       "title": "جميع الفئات",
       "searchPlaceholder": "ابحث عن الفئات...",
@@ -385,22 +408,41 @@
   "helpCenter": {
     "title": "مركز المساعدة",
     "subtitle": "اعثر على إجابات للأسئلة الأكثر شيوعاً أدناه.",
-    "empty": "لا توجد أسئلة متاحة بعد.",
+    "empty": "لا توجد أسئلة متاحة لهذا القسم بعد.",
+    "tabs": {
+      "user": "مستخدم",
+      "business": "صاحب عمل",
+      "moderator": "مشرف"
+    },
+    "audience": {
+      "user": "مستخدم",
+      "business": "صاحب عمل",
+      "moderator": "مشرف",
+      "all": "الجميع"
+    },
     "admin": {
       "title": "إدارة الأسئلة الشائعة",
       "addFaq": "إضافة سؤال",
       "editFaq": "تعديل السؤال",
       "empty": "لا توجد أسئلة شائعة بعد. اضغط الزر لإضافة واحدة.",
+      "emptyTab": "لا توجد أسئلة في هذا القسم بعد.",
       "deleteTitle": "حذف السؤال",
-      "deleteConfirm": "هل تريد حذف \"{{question}}\"؟",
+      "deleteConfirm": "حذف",
+      "deleteConfirmInline": "هل تريد حذف هذا السؤال؟",
       "questionLabel": "السؤال",
       "questionPlaceholder": "أدخل السؤال...",
       "answerLabel": "الإجابة",
       "answerPlaceholder": "أدخل الإجابة...",
+      "audienceLabel": "مرئي لـ (اختر واحداً على الأقل)",
+      "selectAll": "تحديد الكل",
+      "deselectAll": "إلغاء تحديد الكل",
       "orderLabel": "ترتيب العرض",
       "errorQuestion": "السؤال مطلوب.",
       "errorAnswer": "الإجابة مطلوبة.",
-      "errorOrder": "يجب أن يكون الترتيب رقماً صحيحاً."
+      "errorOrder": "يجب أن يكون الترتيب رقماً صحيحاً.",
+      "errorAudience": "يرجى اختيار فئة واحدة على الأقل.",
+      "seedFaqs": "تحميل الأسئلة الافتراضية",
+      "seeding": "جاري التحميل..."
     }
   },
   "adminInfo": {
@@ -499,8 +541,15 @@
     "messageLabel": "الرسالة",
     "messagePlaceholder": "يرجى وصف مشكلتك بالتفصيل (10 أحرف على الأقل)...",
     "submit": "إرسال التذكرة",
+    "subjectRequired": "الموضوع مطلوب.",
+    "messageMinLength": "يجب أن تحتوي الرسالة على 10 أحرف على الأقل.",
     "noTickets": "لم تقم بإرسال أي تذاكر بعد.",
+    "noTicketsForFilter": "لا توجد تذاكر بهذه الحالة.",
     "submitFirst": "أرسل أول تذكرة",
+    "filterAll": "الكل",
+    "filterOpen": "مفتوح",
+    "filterInProgress": "قيد المعالجة",
+    "filterDone": "منتهي",
     "category": {
       "label": "الفئة",
       "account": "الحساب",
@@ -669,7 +718,8 @@
       "cinNotDetected": "لم يتم التعرف على رقم الهوية",
       "phone": "الهاتف",
       "submittedAt": "تاريخ التقديم",
-      "detailTitle": "مستخدم موثق"
+      "detailTitle": "مستخدم موثق",
+      "detectCin": "استخراج رقم الهوية"
     },
     "banners": {
       "title": "إدارة البانرات",
@@ -1009,10 +1059,16 @@
     "replyingTo": "رداً على",
     "like": "إعجاب",
     "unlike": "إلغاء الإعجاب",
+    "dislike": "عدم الإعجاب",
+    "undislike": "إلغاء عدم الإعجاب",
     "likeComment": "أعجبني التعليق",
     "unlikeComment": "إلغاء الإعجاب بالتعليق",
+    "dislikeComment": "عدم الإعجاب بالتعليق",
+    "undislikeComment": "إلغاء عدم الإعجاب بالتعليق",
     "likeReply": "أعجبني الرد",
     "unlikeReply": "إلغاء الإعجاب بالرد",
+    "dislikeReply": "عدم الإعجاب بالرد",
+    "undislikeReply": "إلغاء عدم الإعجاب بالرد",
     "replyToReply": "رد",
     "seeAllAnswers_one": "عرض {{count}} رد",
     "seeAllAnswers_other": "عرض جميع الردود ({{count}})",
@@ -1029,7 +1085,10 @@
     "emptyDescription": "احفظ الأماكن التي تريد زيارتها ومراجعتها لاحقاً",
     "review": "مراجعة",
     "removeSuccess": "تم الحذف من قائمة الأمنيات",
-    "removeError": "فشل حذف العنصر"
+    "removeError": "فشل حذف العنصر",
+    "sortBy": "ترتيب حسب",
+    "filter": "تصفية",
+    "location": "الموقع"
   },
   "locationSearch": {
     "title": "البحث عن موقع",

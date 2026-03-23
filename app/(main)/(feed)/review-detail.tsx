@@ -2,9 +2,10 @@ import { useLocalSearchParams } from 'expo-router';
 import ReviewDetailScreen, { SerializedReview } from '@/presentation/businessDetail/screens/ReviewDetailScreen';
 
 export default function ReviewDetailRoute() {
-  const { reviewId, businessName, reviewData, from } = useLocalSearchParams<{
+  const { reviewId, businessName, businessId, reviewData, from } = useLocalSearchParams<{
     reviewId: string;
     businessName: string;
+    businessId?: string;
     reviewData: string;
     from?: string;
   }>();
@@ -19,11 +20,13 @@ export default function ReviewDetailRoute() {
   }
 
   const backHref = from === 'my-reviews' ? '/(main)/(reviews)' : undefined;
+  const resolvedBusinessId = businessId ?? initialReview?.businessId ?? '';
 
   return (
     <ReviewDetailScreen
       reviewId={reviewId ?? ''}
       businessName={businessName ?? ''}
+      businessId={resolvedBusinessId}
       initialReview={initialReview}
       backHref={backHref}
     />

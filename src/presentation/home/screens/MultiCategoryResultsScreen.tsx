@@ -409,8 +409,8 @@ export default function MultiCategoryResultsScreen() {
       <ScrollView
         horizontal
         showsHorizontalScrollIndicator={false}
-        style={{ flexGrow: 0, marginBottom: 12 }}
-        contentContainerStyle={{ paddingHorizontal: 24, gap: 8 }}
+        style={{ flexGrow: 0, height: 44, marginBottom: 12 }}
+        contentContainerStyle={{ paddingHorizontal: 24, gap: 8, alignItems: 'center' }}
       >
         <Pressable
           onPress={() => setShowSort(true)}
@@ -424,8 +424,8 @@ export default function MultiCategoryResultsScreen() {
             paddingVertical: 8,
             borderRadius: 20,
             borderWidth: 1,
-            borderColor: isSortActive ? colors.neonPurple : theme.border,
-            backgroundColor: isSortActive ? 'rgba(168,85,247,0.12)' : theme.card,
+            borderColor: isSortActive ? colors.neonPurple : colors.borderDark,
+            backgroundColor: isSortActive ? 'rgba(168,85,247,0.15)' : theme.card,
           }}
         >
           <MaterialCommunityIcons
@@ -436,7 +436,7 @@ export default function MultiCategoryResultsScreen() {
           <AppText
             style={{
               fontSize: 13,
-              fontWeight: isSortActive ? '600' : '400',
+              fontWeight: isSortActive ? '600' : '500',
               color: isSortActive ? colors.neonPurple : theme.textSecondary,
             }}
           >
@@ -456,8 +456,8 @@ export default function MultiCategoryResultsScreen() {
             paddingVertical: 8,
             borderRadius: 20,
             borderWidth: 1,
-            borderColor: isFilterActive ? colors.neonPurple : theme.border,
-            backgroundColor: isFilterActive ? 'rgba(168,85,247,0.12)' : theme.card,
+            borderColor: isFilterActive ? colors.neonPurple : colors.borderDark,
+            backgroundColor: isFilterActive ? 'rgba(168,85,247,0.15)' : theme.card,
           }}
         >
           <MaterialCommunityIcons
@@ -468,7 +468,7 @@ export default function MultiCategoryResultsScreen() {
           <AppText
             style={{
               fontSize: 13,
-              fontWeight: isFilterActive ? '600' : '400',
+              fontWeight: isFilterActive ? '600' : '500',
               color: isFilterActive ? colors.neonPurple : theme.textSecondary,
             }}
           >
@@ -488,8 +488,8 @@ export default function MultiCategoryResultsScreen() {
             paddingVertical: 8,
             borderRadius: 20,
             borderWidth: 1,
-            borderColor: isLocationActive ? colors.neonPurple : theme.border,
-            backgroundColor: isLocationActive ? 'rgba(168,85,247,0.12)' : theme.card,
+            borderColor: isLocationActive ? colors.neonPurple : colors.borderDark,
+            backgroundColor: isLocationActive ? 'rgba(168,85,247,0.15)' : theme.card,
           }}
         >
           <MaterialCommunityIcons
@@ -500,7 +500,7 @@ export default function MultiCategoryResultsScreen() {
           <AppText
             style={{
               fontSize: 13,
-              fontWeight: isLocationActive ? '600' : '400',
+              fontWeight: isLocationActive ? '600' : '500',
               color: isLocationActive ? colors.neonPurple : theme.textSecondary,
             }}
           >

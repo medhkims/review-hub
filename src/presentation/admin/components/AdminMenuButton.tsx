@@ -8,8 +8,8 @@ import { useAdminBadgeStore } from '../store/adminBadgeStore';
 
 export const AdminMenuButton: React.FC = () => {
   const open = useAdminDrawerStore((s) => s.open);
-  const { tickets, verification, chat } = useAdminBadgeStore();
-  const total = tickets + verification + chat;
+  const { tickets, supportTickets, verification, chat } = useAdminBadgeStore();
+  const total = tickets + supportTickets + verification + chat;
 
   return (
     <Pressable

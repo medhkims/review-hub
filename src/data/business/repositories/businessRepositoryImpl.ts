@@ -533,4 +533,76 @@ export class BusinessRepositoryImpl implements BusinessRepository {
       return left(new ServerFailure('Failed to unlike reply'));
     }
   }
+
+  async dislikeReview(reviewId: string): Promise<Either<Failure, void>> {
+    const userId = auth.currentUser?.uid;
+    if (!userId) return left(new ServerFailure('Not authenticated'));
+    try {
+      await this.remote.dislikeReview(reviewId, userId);
+      return right(undefined);
+    } catch (error) {
+      if (error instanceof ServerException) return left(new ServerFailure(error.message));
+      return left(new ServerFailure('Failed to dislike review'));
+    }
+  }
+
+  async undislikeReview(reviewId: string): Promise<Either<Failure, void>> {
+    const userId = auth.currentUser?.uid;
+    if (!userId) return left(new ServerFailure('Not authenticated'));
+    try {
+      await this.remote.undislikeReview(reviewId, userId);
+      return right(undefined);
+    } catch (error) {
+      if (error instanceof ServerException) return left(new ServerFailure(error.message));
+      return left(new ServerFailure('Failed to undislike review'));
+    }
+  }
+
+  async dislikeComment(commentId: string): Promise<Either<Failure, void>> {
+    const userId = auth.currentUser?.uid;
+    if (!userId) return left(new ServerFailure('Not authenticated'));
+    try {
+      await this.remote.dislikeComment(commentId, userId);
+      return right(undefined);
+    } catch (error) {
+      if (error instanceof ServerException) return left(new ServerFailure(error.message));
+      return left(new ServerFailure('Failed to dislike comment'));
+    }
+  }
+
+  async undislikeComment(commentId: string): Promise<Either<Failure, void>> {
+    const userId = auth.currentUser?.uid;
+    if (!userId) return left(new ServerFailure('Not authenticated'));
+    try {
+      await this.remote.undislikeComment(commentId, userId);
+      return right(undefined);
+    } catch (error) {
+      if (error instanceof ServerException) return left(new ServerFailure(error.message));
+      return left(new ServerFailure('Failed to undislike comment'));
+    }
+  }
+
+  async dislikeReply(replyId: string): Promise<Either<Failure, void>> {
+    const userId = auth.currentUser?.uid;
+    if (!userId) return left(new ServerFailure('Not authenticated'));
+    try {
+      await this.remote.dislikeReply(replyId, userId);
+      return right(undefined);
+    } catch (error) {
+      if (error instanceof ServerException) return left(new ServerFailure(error.message));
+      return left(new ServerFailure('Failed to dislike reply'));
+    }
+  }
+
+  async undislikeReply(replyId: string): Promise<Either<Failure, void>> {
+    const userId = auth.currentUser?.uid;
+    if (!userId) return left(new ServerFailure('Not authenticated'));
+    try {
+      await this.remote.undislikeReply(replyId, userId);
+      return right(undefined);
+    } catch (error) {
+      if (error instanceof ServerException) return left(new ServerFailure(error.message));
+      return left(new ServerFailure('Failed to undislike reply'));
+    }
+  }
 }

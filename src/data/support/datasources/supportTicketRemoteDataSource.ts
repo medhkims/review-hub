@@ -3,6 +3,8 @@ import {
   collection,
   addDoc,
   getDocs,
+  updateDoc,
+  doc,
   query,
   where,
   orderBy,
@@ -23,6 +25,7 @@ export interface SupportTicketRemoteDataSource {
   ): Promise<SupportTicketModel>;
   getUserTickets(userId: string): Promise<SupportTicketModel[]>;
   getAllTickets(): Promise<SupportTicketModel[]>;
+  replyToTicket(ticketId: string, adminReply: string, status: string): Promise<void>;
 }
 
 export class SupportTicketRemoteDataSourceImpl implements SupportTicketRemoteDataSource {
@@ -102,6 +105,19 @@ export class SupportTicketRemoteDataSourceImpl implements SupportTicketRemoteDat
       return snap.docs.map((d) => ({ id: d.id, ...d.data() } as SupportTicketModel));
     } catch (error: unknown) {
       const msg = error instanceof Error ? error.message : 'Failed to fetch all support tickets';
+      throw new ServerException(msg);
+    }
+  }
+
+  async replyToTicket(ticketId: string, adminReply: string, status: string): Promise<void> {
+    try {
+      await updateDoc(doc(firestore, this.COLLECTION, ticketId), {
+        admin_reply: adminReply,
+        status,
+        updated_at: serverTimestamp(),
+      });
+    } catch (error: unknown) {
+      const msg = error instanceof Error ? error.message : 'Failed to reply to support ticket';
       throw new ServerException(msg);
     }
   }

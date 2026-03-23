@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { View, FlatList, Pressable, Image, ActivityIndicator, Modal, ScrollView, Alert, TextInput } from 'react-native';
+import { View, FlatList, Pressable, Image, ActivityIndicator, Modal, ScrollView, Alert, TextInput, useWindowDimensions } from 'react-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useTranslation } from 'react-i18next';
 import { ScreenLayout } from '@/presentation/shared/layouts/ScreenLayout';
@@ -34,6 +34,7 @@ const TABS: TabConfig[] = [
 
 export function PendingBusinessesScreen() {
   const { t } = useTranslation();
+  const { height: screenHeight } = useWindowDimensions();
   const categoryDefaults = useCategoryDefaultStore((s) => s.defaults);
   const { user: currentUser } = useAuthStore();
   const [activeTab, setActiveTab] = useState<VerifyTab>('company');
@@ -86,6 +87,14 @@ export function PendingBusinessesScreen() {
   const [userRejectTarget, setUserRejectTarget] = useState<VerificationEntity | null>(null);
   const [userRejectReason, setUserRejectReason] = useState('');
   const [userIdCardVisible, setUserIdCardVisible] = useState<string | null>(null);
+  const [selectedUserVerification, setSelectedUserVerification] = useState<VerificationEntity | null>(null);
+  const [isExtractingCin, setIsExtractingCin] = useState(false);
+  type UserSortBy = 'date_desc' | 'date_asc' | 'name_asc' | 'cin';
+  const [userSortBy, setUserSortBy] = useState<UserSortBy>('date_desc');
+  const [showUserSortMenu, setShowUserSortMenu] = useState(false);
+  const [isBulkAccepting, setIsBulkAccepting] = useState(false);
+  const [isBulkDeclining, setIsBulkDeclining] = useState(false);
+  const [bulkConfirmAction, setBulkConfirmAction] = useState<'accept' | 'decline' | null>(null);
 
   // Per-tab pending counts for badges
   const tabBadges = useMemo<Record<VerifyTab, number>>(() => ({
@@ -209,7 +218,6 @@ export function PendingBusinessesScreen() {
   }, []);
 
   const loadUserVerifications = useCallback(async (filter: StatusFilter) => {
-    if (filter === 'suspended') { setUserVerifications([]); return; }
     const status: VerificationStatus = filter === 'declined' ? 'rejected' : filter as VerificationStatus;
     setUserVerificationsLoading(true);
     setUserVerificationsError(null);
@@ -267,6 +275,44 @@ export function PendingBusinessesScreen() {
       },
     );
   }, [userRejectTarget, userRejectReason, currentUser]);
+
+  const handleChangeUserStatus = useCallback(async (verification: VerificationEntity, newStatus: 'approved' | 'suspended' | 'rejected') => {
+    if (!currentUser) return;
+    setUserActionId(verification.id);
+    const result = await container.updateVerificationStatusUseCase.execute({
+      id: verification.id,
+      status: newStatus,
+      reviewedBy: currentUser.id,
+      userId: verification.userId,
+      userName: verification.userName,
+    });
+    setUserActionId(null);
+    result.fold(
+      (failure) => { setUserVerificationsError(failure.message); },
+      () => {
+        setUserVerifications((prev) => prev.filter((v) => v.id !== verification.id));
+        setSelectedUserVerification(null);
+      },
+    );
+  }, [currentUser]);
+
+  const handleExtractCin = useCallback(async (verification: VerificationEntity) => {
+    setIsExtractingCin(true);
+    setUserVerificationsError(null);
+    const result = await container.extractAndSaveCinUseCase.execute(verification.id);
+    setIsExtractingCin(false);
+    result.fold(
+      (failure) => { setUserVerificationsError(failure.message); },
+      (cinNumber) => {
+        if (!cinNumber) {
+          setUserVerificationsError('Could not detect a CIN number in this ID card image.');
+          return;
+        }
+        setUserVerifications((prev) => prev.map((v) => v.id === verification.id ? { ...v, cinNumber } : v));
+        setSelectedUserVerification((prev) => (prev?.id === verification.id ? { ...prev, cinNumber } : prev));
+      },
+    );
+  }, []);
 
   useEffect(() => {
     setCategoryFilter([]);
@@ -438,6 +484,81 @@ export function PendingBusinessesScreen() {
     setActionReviewId(null);
   }, [confirmReviewAction]);
 
+  const handleAcceptAll = useCallback(() => {
+    const count = activeTab === 'company' ? businesses.length : pendingReviews.length;
+    if (count === 0) return;
+    setBulkConfirmAction('accept');
+  }, [activeTab, businesses.length, pendingReviews.length]);
+
+  const handleDeclineAll = useCallback(() => {
+    const count = activeTab === 'company' ? businesses.length : pendingReviews.length;
+    if (count === 0) return;
+    setBulkConfirmAction('decline');
+  }, [activeTab, businesses.length, pendingReviews.length]);
+
+  const handleBulkConfirm = useCallback(async () => {
+    const action = bulkConfirmAction;
+    setBulkConfirmAction(null);
+    if (!action) return;
+    if (action === 'accept') {
+      setIsBulkAccepting(true);
+      if (activeTab === 'company') {
+        const items = [...businesses];
+        await Promise.all(
+          items.map((b) =>
+            container.acceptBusinessUseCase.execute({
+              businessId: b.id,
+              ownerId: b.ownerId,
+              businessName: b.name,
+            }),
+          ),
+        );
+        setBusinesses([]);
+      } else if (activeTab === 'reviews') {
+        const items = [...pendingReviews];
+        await Promise.all(
+          items.map((r) =>
+            container.approveReviewUseCase.execute({
+              reviewId: r.id,
+              userId: r.userId,
+              businessName: r.businessName,
+            }),
+          ),
+        );
+        setPendingReviews([]);
+      }
+      setIsBulkAccepting(false);
+    } else {
+      setIsBulkDeclining(true);
+      if (activeTab === 'company') {
+        const items = [...businesses];
+        await Promise.all(
+          items.map((b) =>
+            container.rejectBusinessUseCase.execute({
+              businessId: b.id,
+              ownerId: b.ownerId,
+              businessName: b.name,
+            }),
+          ),
+        );
+        setBusinesses([]);
+      } else if (activeTab === 'reviews') {
+        const items = [...pendingReviews];
+        await Promise.all(
+          items.map((r) =>
+            container.rejectReviewUseCase.execute({
+              reviewId: r.id,
+              userId: r.userId,
+              businessName: r.businessName,
+            }),
+          ),
+        );
+        setPendingReviews([]);
+      }
+      setIsBulkDeclining(false);
+    }
+  }, [bulkConfirmAction, activeTab, businesses, pendingReviews]);
+
   const renderReviewItem = useCallback(({ item }: { item: UserReviewEntity }) => {
     const isActing = actionReviewId === item.id;
     const stars = Math.round(item.overallRating);
@@ -595,12 +716,12 @@ export function PendingBusinessesScreen() {
           marginVertical: 8,
           overflow: 'hidden',
           borderWidth: 1,
-          borderColor: colors.borderDark,
+          borderColor: statusFilter === 'approved' ? 'rgba(34,197,94,0.35)' : statusFilter === 'suspended' ? 'rgba(249,115,22,0.3)' : statusFilter === 'declined' ? 'rgba(239,68,68,0.3)' : colors.borderDark,
           opacity: pressed ? 0.88 : 1,
         })}
       >
         {/* Cover */}
-        <View style={{ height: 110, backgroundColor: colors.midnight }}>
+        <View style={{ height: 150, backgroundColor: colors.midnight }}>
           {coverSource ? (
             <Image
               source={coverSource}
@@ -631,9 +752,9 @@ export function PendingBusinessesScreen() {
             <MaterialCommunityIcons
               name={statusFilter === 'approved' ? 'check-circle-outline' : statusFilter === 'declined' ? 'close-circle-outline' : statusFilter === 'suspended' ? 'pause-circle-outline' : 'clock-outline'}
               size={12}
-              color="#1C1917"
+              color={colors.white}
             />
-            <AppText style={{ fontSize: 10, fontWeight: '700', color: '#1C1917' }}>
+            <AppText style={{ fontSize: 10, fontWeight: '700', color: colors.white }}>
               {statusFilter === 'approved' ? 'Approved' : statusFilter === 'declined' ? 'Declined' : statusFilter === 'suspended' ? 'Suspended' : t('businessOwner.pendingBadge.buttonLabel')}
             </AppText>
           </View>
@@ -744,9 +865,11 @@ export function PendingBusinessesScreen() {
           </View>
         )}
         {statusFilter === 'approved' && (
-          <View style={{ paddingHorizontal: 16, paddingBottom: 14, flexDirection: 'row', alignItems: 'center', gap: 6 }}>
-            <MaterialCommunityIcons name="check-circle-outline" size={14} color={colors.success} />
-            <AppText style={{ fontSize: 12, color: colors.success, fontWeight: '600', flex: 1 }}>Approved</AppText>
+          <View style={{ paddingHorizontal: 16, paddingBottom: 14, paddingTop: 4, flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 5, flex: 1, backgroundColor: 'rgba(34,197,94,0.08)', borderRadius: 8, paddingHorizontal: 10, paddingVertical: 6 }}>
+              <MaterialCommunityIcons name="check-circle" size={15} color={colors.success} />
+              <AppText style={{ fontSize: 13, color: colors.success, fontWeight: '700' }}>Approved</AppText>
+            </View>
             <Pressable
               onPress={(e) => { e.stopPropagation(); handleSuspend(item); }}
               accessibilityRole="button"
@@ -755,7 +878,7 @@ export function PendingBusinessesScreen() {
               style={({ pressed }) => ({
                 flexDirection: 'row', alignItems: 'center', gap: 5,
                 backgroundColor: 'rgba(249,115,22,0.12)', borderWidth: 1, borderColor: '#F97316',
-                paddingHorizontal: 12, paddingVertical: 7, borderRadius: 10,
+                paddingHorizontal: 14, paddingVertical: 8, borderRadius: 10,
                 opacity: pressed || suspendingId === item.id ? 0.6 : 1,
               })}
             >
@@ -764,7 +887,7 @@ export function PendingBusinessesScreen() {
               ) : (
                 <>
                   <MaterialCommunityIcons name="pause-circle-outline" size={15} color="#F97316" />
-                  <AppText style={{ fontSize: 12, fontWeight: '700', color: '#F97316' }}>Suspend</AppText>
+                  <AppText style={{ fontSize: 13, fontWeight: '700', color: '#F97316' }}>Suspend</AppText>
                 </>
               )}
             </Pressable>
@@ -927,16 +1050,6 @@ export function PendingBusinessesScreen() {
     }
 
     if (activeTab === 'user') {
-      if (statusFilter === 'suspended') {
-        return (
-          <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center', gap: 12 }}>
-            <MaterialCommunityIcons name="shield-check" size={48} color={colors.textSlate500} />
-            <AppText style={{ fontSize: 16, color: colors.textSlate400, textAlign: 'center' }}>
-              N/A for user verifications
-            </AppText>
-          </View>
-        );
-      }
       if (userVerificationsLoading) {
         return (
           <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
@@ -960,111 +1073,179 @@ export function PendingBusinessesScreen() {
           </View>
         );
       }
-      if (userVerifications.length === 0) {
-        const emptyLabel = statusFilter === 'pending' ? 'No pending verification requests'
-          : statusFilter === 'approved' ? 'No approved verifications' : 'No rejected verifications';
+      const SORT_LABELS: Record<UserSortBy, string> = {
+        date_desc: 'Newest first',
+        date_asc: 'Oldest first',
+        name_asc: 'Name (A–Z)',
+        cin: 'CIN number',
+      };
+
+      const sortedVerifications = [...userVerifications].sort((a, b) => {
+        if (userSortBy === 'date_asc') return a.submittedAt.getTime() - b.submittedAt.getTime();
+        if (userSortBy === 'name_asc') return a.fullName.localeCompare(b.fullName);
+        if (userSortBy === 'cin') return (a.cinNumber ?? '').localeCompare(b.cinNumber ?? '');
+        return b.submittedAt.getTime() - a.submittedAt.getTime(); // date_desc
+      });
+
+      const emptyLabel = statusFilter === 'pending' ? 'No pending verification requests'
+        : statusFilter === 'approved' ? 'No approved verifications'
+        : statusFilter === 'suspended' ? 'No suspended verifications'
+        : 'No declined verifications';
+
+      const SortBar = (
+        <View style={{ marginBottom: 12, flexDirection: 'row', alignItems: 'center', justifyContent: 'flex-start' }}>
+          <Pressable
+            onPress={() => setShowUserSortMenu(true)}
+            accessibilityRole="button"
+            accessibilityLabel="Sort"
+            style={{ flexDirection: 'row', alignItems: 'center', gap: 6, paddingHorizontal: 12, paddingVertical: 7, borderRadius: 10, backgroundColor: colors.cardDark, borderWidth: 1, borderColor: colors.borderDark }}
+          >
+            <MaterialCommunityIcons name="sort" size={16} color={colors.neonPurple} />
+            <AppText style={{ fontSize: 13, fontWeight: '600', color: colors.neonPurple }}>{SORT_LABELS[userSortBy]}</AppText>
+            <MaterialCommunityIcons name="chevron-down" size={14} color={colors.textSlate500} />
+          </Pressable>
+        </View>
+      );
+
+      if (sortedVerifications.length === 0) {
         return (
-          <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center', gap: 12 }}>
-            <MaterialCommunityIcons name="shield-check" size={48} color={colors.textSlate500} />
-            <AppText style={{ fontSize: 16, color: colors.textSlate400, textAlign: 'center' }}>{emptyLabel}</AppText>
+          <View style={{ flex: 1, paddingHorizontal: 16 }}>
+            {SortBar}
+            <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center', gap: 12 }}>
+              <MaterialCommunityIcons name="shield-check" size={48} color={colors.textSlate500} />
+              <AppText style={{ fontSize: 16, color: colors.textSlate400, textAlign: 'center' }}>{emptyLabel}</AppText>
+            </View>
           </View>
         );
       }
       return (
         <FlatList
-          data={userVerifications}
+          data={sortedVerifications}
           keyExtractor={(item) => item.id}
+          ListHeaderComponent={SortBar}
           contentContainerStyle={{ paddingVertical: 8, paddingHorizontal: 16, gap: 12 }}
           showsVerticalScrollIndicator={false}
-          renderItem={({ item }) => (
-            <View style={{ backgroundColor: colors.cardDark, borderRadius: 14, borderWidth: 1, borderColor: colors.borderDark, overflow: 'hidden' }}>
-              {/* User row */}
-              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10, padding: 14, paddingBottom: 10 }}>
-                <View style={{ width: 40, height: 40, borderRadius: 20, backgroundColor: 'rgba(168,85,247,0.15)', alignItems: 'center', justifyContent: 'center' }}>
-                  <MaterialCommunityIcons name="account" size={20} color={colors.neonPurple} />
-                </View>
-                <View style={{ flex: 1 }}>
-                  <AppText style={{ fontSize: 14, fontWeight: '700', color: colors.white }}>{item.fullName}</AppText>
-                  <AppText style={{ fontSize: 12, color: colors.textSlate400 }}>{item.userEmail}</AppText>
-                </View>
-                <View style={{
-                  paddingHorizontal: 9, paddingVertical: 3, borderRadius: 9999,
-                  backgroundColor: item.status === 'pending' ? 'rgba(251,191,36,0.15)' : item.status === 'approved' ? 'rgba(34,197,94,0.15)' : 'rgba(239,68,68,0.1)',
-                  borderWidth: 1,
-                  borderColor: item.status === 'pending' ? 'rgba(251,191,36,0.3)' : item.status === 'approved' ? 'rgba(34,197,94,0.3)' : 'rgba(239,68,68,0.3)',
-                }}>
-                  <AppText style={{ fontSize: 11, fontWeight: '600', color: item.status === 'pending' ? '#FBB024' : item.status === 'approved' ? colors.success : '#EF4444' }}>
-                    {item.status.charAt(0).toUpperCase() + item.status.slice(1)}
-                  </AppText>
-                </View>
-              </View>
-              {/* Details */}
-              <View style={{ paddingHorizontal: 14, gap: 4, marginBottom: 10 }}>
-                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
-                  <MaterialCommunityIcons name="phone" size={13} color={colors.textSlate500} />
-                  <AppText style={{ fontSize: 13, color: colors.textSlate300 }}>{item.phoneNumber}</AppText>
-                </View>
-                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
-                  <MaterialCommunityIcons name="calendar" size={13} color={colors.textSlate500} />
-                  <AppText style={{ fontSize: 13, color: colors.textSlate300 }}>
-                    {item.submittedAt.toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' })}
-                  </AppText>
-                </View>
-                {item.reviewedAt ? (
-                  <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
-                    <MaterialCommunityIcons name="check-circle-outline" size={13} color={colors.textSlate500} />
-                    <AppText style={{ fontSize: 13, color: colors.textSlate300 }}>
-                      Reviewed: {item.reviewedAt.toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' })}
+          renderItem={({ item }) => {
+            // Non-pending tabs: compact row — tap to see all details
+            if (statusFilter !== 'pending') {
+              const iconName = statusFilter === 'approved' ? 'shield-check' : statusFilter === 'suspended' ? 'shield-off' : 'shield-remove';
+              const iconColor = statusFilter === 'approved' ? colors.success : statusFilter === 'suspended' ? '#F97316' : '#EF4444';
+              const iconBg = statusFilter === 'approved' ? 'rgba(34,197,94,0.12)' : statusFilter === 'suspended' ? 'rgba(249,115,22,0.12)' : 'rgba(239,68,68,0.12)';
+              return (
+                <Pressable
+                  onPress={() => setSelectedUserVerification(item)}
+                  accessibilityRole="button"
+                  accessibilityLabel={item.fullName}
+                  style={{ flexDirection: 'row', alignItems: 'center', gap: 12, backgroundColor: colors.cardDark, borderRadius: 14, borderWidth: 1, borderColor: colors.borderDark, padding: 14 }}
+                >
+                  <View style={{ width: 44, height: 44, borderRadius: 22, backgroundColor: iconBg, alignItems: 'center', justifyContent: 'center' }}>
+                    <MaterialCommunityIcons name={iconName} size={22} color={iconColor} />
+                  </View>
+                  <View style={{ flex: 1 }}>
+                    <AppText style={{ fontSize: 15, fontWeight: '700', color: colors.white }}>{item.fullName}</AppText>
+                    {item.cinNumber ? (
+                      <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4, marginTop: 3 }}>
+                        <MaterialCommunityIcons name="card-account-details-outline" size={12} color={colors.neonPurple} />
+                        <AppText style={{ fontSize: 12, color: colors.neonPurple, fontWeight: '600' }}>{item.cinNumber}</AppText>
+                      </View>
+                    ) : (
+                      <AppText style={{ fontSize: 12, color: colors.textSlate500, marginTop: 2 }}>CIN not detected</AppText>
+                    )}
+                  </View>
+                  <MaterialCommunityIcons name="chevron-right" size={20} color={colors.textSlate500} />
+                </Pressable>
+              );
+            }
+            return (
+              <View style={{ backgroundColor: colors.cardDark, borderRadius: 14, borderWidth: 1, borderColor: colors.borderDark, overflow: 'hidden' }}>
+                {/* User row */}
+                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10, padding: 14, paddingBottom: 10 }}>
+                  <View style={{ width: 40, height: 40, borderRadius: 20, backgroundColor: 'rgba(168,85,247,0.15)', alignItems: 'center', justifyContent: 'center' }}>
+                    <MaterialCommunityIcons name="account" size={20} color={colors.neonPurple} />
+                  </View>
+                  <View style={{ flex: 1 }}>
+                    <AppText style={{ fontSize: 14, fontWeight: '700', color: colors.white }}>{item.fullName}</AppText>
+                    <AppText style={{ fontSize: 12, color: colors.textSlate400 }}>{item.userEmail}</AppText>
+                  </View>
+                  <View style={{
+                    paddingHorizontal: 9, paddingVertical: 3, borderRadius: 9999,
+                    backgroundColor: item.status === 'pending' ? 'rgba(251,191,36,0.15)' : 'rgba(239,68,68,0.1)',
+                    borderWidth: 1,
+                    borderColor: item.status === 'pending' ? 'rgba(251,191,36,0.3)' : 'rgba(239,68,68,0.3)',
+                  }}>
+                    <AppText style={{ fontSize: 11, fontWeight: '600', color: item.status === 'pending' ? '#FBB024' : '#EF4444' }}>
+                      {item.status.charAt(0).toUpperCase() + item.status.slice(1)}
                     </AppText>
                   </View>
-                ) : null}
-                {item.rejectionReason ? (
-                  <View style={{ backgroundColor: 'rgba(239,68,68,0.08)', borderRadius: 8, padding: 9, borderWidth: 1, borderColor: 'rgba(239,68,68,0.2)', marginTop: 4 }}>
-                    <AppText style={{ fontSize: 11, color: '#EF4444', fontWeight: '600', marginBottom: 2 }}>Rejection reason</AppText>
-                    <AppText style={{ fontSize: 12, color: colors.textSlate300 }}>{item.rejectionReason}</AppText>
+                </View>
+                {/* Details */}
+                <View style={{ paddingHorizontal: 14, gap: 4, marginBottom: 10 }}>
+                  <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+                    <MaterialCommunityIcons name="phone" size={13} color={colors.textSlate500} />
+                    <AppText style={{ fontSize: 13, color: colors.textSlate200 }}>{item.phoneNumber}</AppText>
+                  </View>
+                  <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+                    <MaterialCommunityIcons name="calendar" size={13} color={colors.textSlate500} />
+                    <AppText style={{ fontSize: 13, color: colors.textSlate200 }}>
+                      {item.submittedAt.toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' })}
+                    </AppText>
+                  </View>
+                  {item.reviewedAt ? (
+                    <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+                      <MaterialCommunityIcons name="check-circle-outline" size={13} color={colors.textSlate500} />
+                      <AppText style={{ fontSize: 13, color: colors.textSlate200 }}>
+                        Reviewed: {item.reviewedAt.toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' })}
+                      </AppText>
+                    </View>
+                  ) : null}
+                  {item.rejectionReason ? (
+                    <View style={{ backgroundColor: 'rgba(239,68,68,0.08)', borderRadius: 8, padding: 9, borderWidth: 1, borderColor: 'rgba(239,68,68,0.2)', marginTop: 4 }}>
+                      <AppText style={{ fontSize: 11, color: '#EF4444', fontWeight: '600', marginBottom: 2 }}>Rejection reason</AppText>
+                      <AppText style={{ fontSize: 12, color: colors.textSlate200 }}>{item.rejectionReason}</AppText>
+                    </View>
+                  ) : null}
+                </View>
+                {/* ID card preview */}
+                <Pressable
+                  onPress={() => setUserIdCardVisible(item.id)}
+                  accessibilityRole="button"
+                  accessibilityLabel="View ID card"
+                  style={{ marginHorizontal: 14, marginBottom: item.status === 'pending' ? 10 : 14, borderRadius: 10, overflow: 'hidden', height: 110, borderWidth: 1, borderColor: colors.borderDark }}
+                >
+                  <Image source={{ uri: item.idCardUrl }} style={{ width: '100%', height: '100%' }} resizeMode="cover" accessibilityLabel="ID card" />
+                  <View style={{ position: 'absolute', bottom: 0, left: 0, right: 0, backgroundColor: 'rgba(0,0,0,0.5)', paddingVertical: 5, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 5 }}>
+                    <MaterialCommunityIcons name="eye" size={13} color={colors.white} />
+                    <AppText style={{ fontSize: 12, color: colors.white }}>View ID Card</AppText>
+                  </View>
+                </Pressable>
+                {/* Actions — pending only */}
+                {item.status === 'pending' ? (
+                  <View style={{ flexDirection: 'row', gap: 10, paddingHorizontal: 14, paddingBottom: 14 }}>
+                    <Pressable
+                      onPress={() => setUserRejectTarget(item)}
+                      disabled={userActionId === item.id}
+                      accessibilityRole="button"
+                      accessibilityLabel="Reject"
+                      style={{ flex: 1, paddingVertical: 9, borderRadius: 10, borderWidth: 1, borderColor: 'rgba(239,68,68,0.4)', alignItems: 'center' }}
+                    >
+                      <AppText style={{ fontSize: 13, fontWeight: '600', color: '#EF4444' }}>Reject</AppText>
+                    </Pressable>
+                    <Pressable
+                      onPress={() => handleApproveUser(item)}
+                      disabled={userActionId === item.id}
+                      accessibilityRole="button"
+                      accessibilityLabel="Approve"
+                      style={{ flex: 1, paddingVertical: 9, borderRadius: 10, backgroundColor: 'rgba(34,197,94,0.15)', borderWidth: 1, borderColor: 'rgba(34,197,94,0.3)', alignItems: 'center', justifyContent: 'center' }}
+                    >
+                      {userActionId === item.id
+                        ? <ActivityIndicator size="small" color={colors.success} />
+                        : <AppText style={{ fontSize: 13, fontWeight: '600', color: colors.success }}>Approve</AppText>}
+                    </Pressable>
                   </View>
                 ) : null}
               </View>
-              {/* ID card preview */}
-              <Pressable
-                onPress={() => setUserIdCardVisible(item.id)}
-                accessibilityRole="button"
-                accessibilityLabel="View ID card"
-                style={{ marginHorizontal: 14, marginBottom: item.status === 'pending' ? 10 : 14, borderRadius: 10, overflow: 'hidden', height: 110, borderWidth: 1, borderColor: colors.borderDark }}
-              >
-                <Image source={{ uri: item.idCardUrl }} style={{ width: '100%', height: '100%' }} resizeMode="cover" accessibilityLabel="ID card" />
-                <View style={{ position: 'absolute', bottom: 0, left: 0, right: 0, backgroundColor: 'rgba(0,0,0,0.5)', paddingVertical: 5, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 5 }}>
-                  <MaterialCommunityIcons name="eye" size={13} color={colors.white} />
-                  <AppText style={{ fontSize: 12, color: colors.white }}>View ID Card</AppText>
-                </View>
-              </Pressable>
-              {/* Actions — pending only */}
-              {item.status === 'pending' ? (
-                <View style={{ flexDirection: 'row', gap: 10, paddingHorizontal: 14, paddingBottom: 14 }}>
-                  <Pressable
-                    onPress={() => setUserRejectTarget(item)}
-                    disabled={userActionId === item.id}
-                    accessibilityRole="button"
-                    accessibilityLabel="Reject"
-                    style={{ flex: 1, paddingVertical: 9, borderRadius: 10, borderWidth: 1, borderColor: 'rgba(239,68,68,0.4)', alignItems: 'center' }}
-                  >
-                    <AppText style={{ fontSize: 13, fontWeight: '600', color: '#EF4444' }}>Reject</AppText>
-                  </Pressable>
-                  <Pressable
-                    onPress={() => handleApproveUser(item)}
-                    disabled={userActionId === item.id}
-                    accessibilityRole="button"
-                    accessibilityLabel="Approve"
-                    style={{ flex: 1, paddingVertical: 9, borderRadius: 10, backgroundColor: 'rgba(34,197,94,0.15)', borderWidth: 1, borderColor: 'rgba(34,197,94,0.3)', alignItems: 'center', justifyContent: 'center' }}
-                  >
-                    {userActionId === item.id
-                      ? <ActivityIndicator size="small" color={colors.success} />
-                      : <AppText style={{ fontSize: 13, fontWeight: '600', color: colors.success }}>Approve</AppText>}
-                  </Pressable>
-                </View>
-              ) : null}
-            </View>
-          )}
+            );
+          }}
         />
       );
     }
@@ -1328,6 +1509,86 @@ export function PendingBusinessesScreen() {
           </View>
         </View>
       )}
+
+      {/* Bulk Action Bar — pending tab, company / reviews / moderator only */}
+      {statusFilter === 'pending' && activeTab !== 'user' && (() => {
+        const count = activeTab === 'company' ? businesses.length : activeTab === 'reviews' ? pendingReviews.length : 0;
+        if (count === 0) return null;
+        const isBusy = isBulkAccepting || isBulkDeclining;
+        return (
+          <View
+            style={{
+              flexDirection: 'row',
+              alignItems: 'center',
+              marginHorizontal: 16,
+              marginBottom: 8,
+              gap: 8,
+              paddingHorizontal: 12,
+              paddingVertical: 10,
+              borderRadius: 12,
+              backgroundColor: 'rgba(168,85,247,0.08)',
+              borderWidth: 1,
+              borderColor: 'rgba(168,85,247,0.2)',
+            }}
+          >
+            <AppText style={{ flex: 1, fontSize: 12, fontWeight: '600', color: colors.textSlate400 }}>
+              {count} pending {activeTab === 'company' ? 'companies' : 'reviews'}
+            </AppText>
+            <Pressable
+              onPress={handleDeclineAll}
+              disabled={isBusy}
+              accessibilityRole="button"
+              accessibilityLabel="Decline all pending"
+              style={({ pressed }) => ({
+                flexDirection: 'row',
+                alignItems: 'center',
+                gap: 5,
+                paddingHorizontal: 11,
+                paddingVertical: 7,
+                borderRadius: 9,
+                borderWidth: 1,
+                borderColor: '#EF4444',
+                backgroundColor: 'rgba(239,68,68,0.1)',
+                opacity: pressed || isBusy ? 0.6 : 1,
+              })}
+            >
+              {isBulkDeclining ? (
+                <ActivityIndicator size="small" color="#EF4444" />
+              ) : (
+                <>
+                  <MaterialCommunityIcons name="close-circle-outline" size={14} color="#EF4444" />
+                  <AppText style={{ fontSize: 12, fontWeight: '700', color: '#EF4444' }}>Decline All</AppText>
+                </>
+              )}
+            </Pressable>
+            <Pressable
+              onPress={handleAcceptAll}
+              disabled={isBusy}
+              accessibilityRole="button"
+              accessibilityLabel="Accept all pending"
+              style={({ pressed }) => ({
+                flexDirection: 'row',
+                alignItems: 'center',
+                gap: 5,
+                paddingHorizontal: 11,
+                paddingVertical: 7,
+                borderRadius: 9,
+                backgroundColor: colors.success,
+                opacity: pressed || isBusy ? 0.6 : 1,
+              })}
+            >
+              {isBulkAccepting ? (
+                <ActivityIndicator size="small" color={colors.white} />
+              ) : (
+                <>
+                  <MaterialCommunityIcons name="check-circle-outline" size={14} color={colors.white} />
+                  <AppText style={{ fontSize: 12, fontWeight: '700', color: colors.white }}>Accept All</AppText>
+                </>
+              )}
+            </Pressable>
+          </View>
+        );
+      })()}
 
       {/* Content */}
       {renderContent()}
@@ -2828,6 +3089,262 @@ export function PendingBusinessesScreen() {
                 {userActionId === userRejectTarget?.id
                   ? <ActivityIndicator size="small" color={colors.white} />
                   : <AppText style={{ fontSize: 15, fontWeight: '600', color: colors.white }}>Reject</AppText>}
+              </Pressable>
+            </View>
+          </View>
+        </View>
+      </Modal>
+
+      {/* User sort menu */}
+      <Modal visible={showUserSortMenu} transparent animationType="fade" onRequestClose={() => setShowUserSortMenu(false)}>
+        <Pressable style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.6)', justifyContent: 'flex-end' }} onPress={() => setShowUserSortMenu(false)} accessibilityRole="button" accessibilityLabel="Close sort menu">
+          <View style={{ backgroundColor: colors.cardDark, borderTopLeftRadius: 20, borderTopRightRadius: 20, padding: 20, borderWidth: 1, borderColor: colors.borderDark }}>
+            <AppText style={{ fontSize: 15, fontWeight: '700', color: colors.white, marginBottom: 16 }}>Sort by</AppText>
+            {([
+              { key: 'date_desc', label: 'Newest first', icon: 'sort-calendar-descending' },
+              { key: 'date_asc',  label: 'Oldest first', icon: 'sort-calendar-ascending' },
+              { key: 'name_asc',  label: 'Name (A–Z)',   icon: 'sort-alphabetical-ascending' },
+              { key: 'cin',       label: 'CIN number',   icon: 'card-account-details-outline' },
+            ] as { key: UserSortBy; label: string; icon: string }[]).map(({ key, label, icon }) => (
+              <Pressable
+                key={key}
+                onPress={() => { setUserSortBy(key); setShowUserSortMenu(false); }}
+                accessibilityRole="button"
+                accessibilityLabel={label}
+                style={{ flexDirection: 'row', alignItems: 'center', gap: 12, paddingVertical: 13, borderBottomWidth: 1, borderBottomColor: colors.borderDark }}
+              >
+                <MaterialCommunityIcons name={icon as 'sort'} size={20} color={userSortBy === key ? colors.neonPurple : colors.textSlate400} />
+                <AppText style={{ flex: 1, fontSize: 14, fontWeight: userSortBy === key ? '700' : '400', color: userSortBy === key ? colors.neonPurple : colors.white }}>{label}</AppText>
+                {userSortBy === key ? <MaterialCommunityIcons name="check" size={18} color={colors.neonPurple} /> : null}
+              </Pressable>
+            ))}
+            <View style={{ height: 16 }} />
+          </View>
+        </Pressable>
+      </Modal>
+
+      {/* Approved user detail bottom sheet */}
+      {selectedUserVerification ? (
+        <Modal visible transparent animationType="slide" onRequestClose={() => setSelectedUserVerification(null)}>
+          <View style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.7)', justifyContent: 'flex-end' }}>
+            <View style={{ backgroundColor: colors.cardDark, borderTopLeftRadius: 24, borderTopRightRadius: 24, padding: 24, borderWidth: 1, borderColor: colors.borderDark, maxHeight: screenHeight * 0.90 }}>
+              {/* Error banner */}
+              {userVerificationsError ? (
+                <View style={{ backgroundColor: 'rgba(239,68,68,0.12)', borderRadius: 10, padding: 10, marginBottom: 12, borderWidth: 1, borderColor: 'rgba(239,68,68,0.3)' }}>
+                  <AppText style={{ fontSize: 13, color: '#EF4444', textAlign: 'center' }}>{userVerificationsError}</AppText>
+                </View>
+              ) : null}
+              {/* Header */}
+              <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 20 }}>
+                <AppText style={{ flex: 1, fontSize: 18, fontWeight: '700', color: colors.white }}>Verified User</AppText>
+                <Pressable
+                  onPress={() => setSelectedUserVerification(null)}
+                  accessibilityRole="button"
+                  accessibilityLabel="Close"
+                  style={{ width: 32, height: 32, borderRadius: 16, backgroundColor: 'rgba(255,255,255,0.08)', alignItems: 'center', justifyContent: 'center' }}
+                >
+                  <MaterialCommunityIcons name="close" size={18} color={colors.textSlate400} />
+                </Pressable>
+              </View>
+              <ScrollView showsVerticalScrollIndicator={false} style={{ flex: 1 }}>
+                {/* Avatar + name */}
+                <View style={{ alignItems: 'center', marginBottom: 20 }}>
+                  <View style={{ width: 64, height: 64, borderRadius: 32, backgroundColor: 'rgba(34,197,94,0.15)', alignItems: 'center', justifyContent: 'center', marginBottom: 10 }}>
+                    <MaterialCommunityIcons name="shield-check" size={32} color={colors.success} />
+                  </View>
+                  <AppText style={{ fontSize: 20, fontWeight: '700', color: colors.white }}>{selectedUserVerification.fullName}</AppText>
+                  <AppText style={{ fontSize: 13, color: colors.textSlate400, marginTop: 2 }}>{selectedUserVerification.userEmail}</AppText>
+                </View>
+                {/* CIN row */}
+                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12, paddingVertical: 12, borderBottomWidth: 1, borderBottomColor: colors.borderDark }}>
+                  <MaterialCommunityIcons name="card-account-details-outline" size={18} color={colors.neonPurple} />
+                  <View style={{ flex: 1 }}>
+                    <AppText style={{ fontSize: 11, color: colors.textSlate500, marginBottom: 2 }}>CIN Number</AppText>
+                    {selectedUserVerification.cinNumber ? (
+                      <AppText style={{ fontSize: 16, fontWeight: '700', color: colors.neonPurple, letterSpacing: 1 }}>{selectedUserVerification.cinNumber}</AppText>
+                    ) : (
+                      <AppText style={{ fontSize: 13, color: colors.textSlate500, fontStyle: 'italic' }}>CIN not detected</AppText>
+                    )}
+                  </View>
+                  {!selectedUserVerification.cinNumber ? (
+                    <Pressable
+                      onPress={() => handleExtractCin(selectedUserVerification)}
+                      disabled={isExtractingCin}
+                      accessibilityRole="button"
+                      accessibilityLabel="Detect CIN"
+                      style={{ flexDirection: 'row', alignItems: 'center', gap: 6, paddingHorizontal: 12, paddingVertical: 7, borderRadius: 9999, backgroundColor: 'rgba(168,85,247,0.15)', borderWidth: 1, borderColor: 'rgba(168,85,247,0.3)' }}
+                    >
+                      {isExtractingCin
+                        ? <ActivityIndicator size="small" color={colors.neonPurple} />
+                        : <MaterialCommunityIcons name="magnify-scan" size={15} color={colors.neonPurple} />}
+                      <AppText style={{ fontSize: 12, fontWeight: '600', color: colors.neonPurple }}>Detect CIN</AppText>
+                    </Pressable>
+                  ) : null}
+                </View>
+                {/* Info rows */}
+                {([
+                  { icon: 'phone', label: 'Phone', value: selectedUserVerification.phoneNumber },
+                  { icon: 'calendar-plus', label: 'Submitted', value: selectedUserVerification.submittedAt.toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' }) },
+                  { icon: 'calendar-check', label: 'Reviewed at', value: selectedUserVerification.reviewedAt ? selectedUserVerification.reviewedAt.toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' }) : '—' },
+                  { icon: 'shield-account', label: 'Reviewed by', value: selectedUserVerification.reviewedBy ?? '—' },
+                ] as { icon: string; label: string; value: string }[]).map(({ icon, label, value }) => (
+                  <View key={label} style={{ flexDirection: 'row', alignItems: 'center', gap: 12, paddingVertical: 12, borderBottomWidth: 1, borderBottomColor: colors.borderDark }}>
+                    <MaterialCommunityIcons name={icon as 'phone'} size={18} color={colors.neonPurple} />
+                    <View style={{ flex: 1 }}>
+                      <AppText style={{ fontSize: 11, color: colors.textSlate500, marginBottom: 2 }}>{label}</AppText>
+                      <AppText style={{ fontSize: 14, fontWeight: '600', color: colors.white }}>{value}</AppText>
+                    </View>
+                  </View>
+                ))}
+                {/* ID Card */}
+                <AppText style={{ fontSize: 13, fontWeight: '600', color: colors.textSlate200, marginTop: 16, marginBottom: 8 }}>ID Card</AppText>
+                <Pressable
+                  onPress={() => setUserIdCardVisible(selectedUserVerification.id)}
+                  accessibilityRole="button"
+                  accessibilityLabel="View ID card"
+                  style={{ borderRadius: 12, overflow: 'hidden', borderWidth: 1, borderColor: colors.borderDark, height: 160, marginBottom: 8 }}
+                >
+                  <Image source={{ uri: selectedUserVerification.idCardUrl }} style={{ width: '100%', height: '100%' }} resizeMode="cover" accessibilityLabel="ID card" />
+                  <View style={{ position: 'absolute', bottom: 0, left: 0, right: 0, backgroundColor: 'rgba(0,0,0,0.5)', paddingVertical: 6, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 6 }}>
+                    <MaterialCommunityIcons name="eye" size={14} color={colors.white} />
+                    <AppText style={{ fontSize: 12, color: colors.white }}>View ID Card</AppText>
+                  </View>
+                </Pressable>
+
+              </ScrollView>
+              {/* Action buttons — fixed footer, always visible without scrolling */}
+              {selectedUserVerification.status !== 'pending' ? (
+                <View style={{ flexDirection: 'row', gap: 8, paddingTop: 12, marginTop: 4, borderTopWidth: 1, borderTopColor: colors.borderDark }}>
+                  {selectedUserVerification.status !== 'approved' ? (
+                    <Pressable
+                      onPress={() => handleChangeUserStatus(selectedUserVerification, 'approved')}
+                      disabled={userActionId === selectedUserVerification.id}
+                      accessibilityRole="button"
+                      accessibilityLabel="Approve"
+                      style={{ flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 6, paddingVertical: 11, borderRadius: 12, backgroundColor: 'rgba(34,197,94,0.15)', borderWidth: 1, borderColor: 'rgba(34,197,94,0.3)' }}
+                    >
+                      {userActionId === selectedUserVerification.id
+                        ? <ActivityIndicator size="small" color={colors.success} />
+                        : <MaterialCommunityIcons name="shield-check" size={16} color={colors.success} />}
+                      <AppText style={{ fontSize: 13, fontWeight: '700', color: colors.success }}>Approve</AppText>
+                    </Pressable>
+                  ) : null}
+                  {selectedUserVerification.status !== 'suspended' ? (
+                    <Pressable
+                      onPress={() => handleChangeUserStatus(selectedUserVerification, 'suspended')}
+                      disabled={userActionId === selectedUserVerification.id}
+                      accessibilityRole="button"
+                      accessibilityLabel="Suspend"
+                      style={{ flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 6, paddingVertical: 11, borderRadius: 12, backgroundColor: 'rgba(249,115,22,0.15)', borderWidth: 1, borderColor: 'rgba(249,115,22,0.3)' }}
+                    >
+                      {userActionId === selectedUserVerification.id
+                        ? <ActivityIndicator size="small" color="#F97316" />
+                        : <MaterialCommunityIcons name="shield-off" size={16} color="#F97316" />}
+                      <AppText style={{ fontSize: 13, fontWeight: '700', color: '#F97316' }}>Suspend</AppText>
+                    </Pressable>
+                  ) : null}
+                  {selectedUserVerification.status !== 'rejected' ? (
+                    <Pressable
+                      onPress={() => handleChangeUserStatus(selectedUserVerification, 'rejected')}
+                      disabled={userActionId === selectedUserVerification.id}
+                      accessibilityRole="button"
+                      accessibilityLabel="Decline"
+                      style={{ flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 6, paddingVertical: 11, borderRadius: 12, backgroundColor: 'rgba(239,68,68,0.12)', borderWidth: 1, borderColor: 'rgba(239,68,68,0.3)' }}
+                    >
+                      {userActionId === selectedUserVerification.id
+                        ? <ActivityIndicator size="small" color="#EF4444" />
+                        : <MaterialCommunityIcons name="shield-remove" size={16} color="#EF4444" />}
+                      <AppText style={{ fontSize: 13, fontWeight: '700', color: '#EF4444' }}>Decline</AppText>
+                    </Pressable>
+                  ) : null}
+                </View>
+              ) : null}
+            </View>
+          </View>
+        </Modal>
+      ) : null}
+
+      {/* Bulk Action Confirmation Modal */}
+      <Modal
+        visible={bulkConfirmAction !== null}
+        transparent
+        animationType="fade"
+        onRequestClose={() => setBulkConfirmAction(null)}
+      >
+        <View style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.7)', justifyContent: 'center', paddingHorizontal: 24 }}>
+          <View
+            style={{
+              backgroundColor: colors.cardDark,
+              borderRadius: 20,
+              padding: 24,
+              borderWidth: 1,
+              borderColor: colors.borderDark,
+            }}
+          >
+            {/* Icon */}
+            <View style={{ alignItems: 'center', marginBottom: 16 }}>
+              <View
+                style={{
+                  width: 56,
+                  height: 56,
+                  borderRadius: 28,
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  backgroundColor: bulkConfirmAction === 'accept' ? 'rgba(34,197,94,0.15)' : 'rgba(239,68,68,0.12)',
+                }}
+              >
+                <MaterialCommunityIcons
+                  name={bulkConfirmAction === 'accept' ? 'check-circle-outline' : 'close-circle-outline'}
+                  size={30}
+                  color={bulkConfirmAction === 'accept' ? colors.success : '#EF4444'}
+                />
+              </View>
+            </View>
+            {/* Title */}
+            <AppText style={{ fontSize: 18, fontWeight: '700', color: colors.white, textAlign: 'center', marginBottom: 8 }}>
+              {bulkConfirmAction === 'accept' ? 'Accept All?' : 'Decline All?'}
+            </AppText>
+            {/* Message */}
+            <AppText style={{ fontSize: 14, color: colors.textSlate400, textAlign: 'center', marginBottom: 24 }}>
+              {bulkConfirmAction === 'accept'
+                ? `Are you sure you want to accept all ${activeTab === 'company' ? businesses.length : pendingReviews.length} pending ${activeTab === 'company' ? 'company' : 'review'} requests? This cannot be undone.`
+                : `Are you sure you want to decline all ${activeTab === 'company' ? businesses.length : pendingReviews.length} pending ${activeTab === 'company' ? 'company' : 'review'} requests? This cannot be undone.`}
+            </AppText>
+            {/* Buttons */}
+            <View style={{ flexDirection: 'row', gap: 12 }}>
+              <Pressable
+                onPress={() => setBulkConfirmAction(null)}
+                accessibilityRole="button"
+                accessibilityLabel="Cancel"
+                style={({ pressed }) => ({
+                  flex: 1,
+                  paddingVertical: 13,
+                  borderRadius: 12,
+                  borderWidth: 1,
+                  borderColor: colors.borderDark,
+                  alignItems: 'center',
+                  opacity: pressed ? 0.7 : 1,
+                })}
+              >
+                <AppText style={{ fontSize: 15, fontWeight: '600', color: colors.textSlate400 }}>Cancel</AppText>
+              </Pressable>
+              <Pressable
+                onPress={handleBulkConfirm}
+                accessibilityRole="button"
+                accessibilityLabel="Confirm"
+                style={({ pressed }) => ({
+                  flex: 1,
+                  paddingVertical: 13,
+                  borderRadius: 12,
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  backgroundColor: bulkConfirmAction === 'accept' ? colors.success : '#EF4444',
+                  opacity: pressed ? 0.7 : 1,
+                })}
+              >
+                <AppText style={{ fontSize: 15, fontWeight: '700', color: colors.white }}>
+                  {bulkConfirmAction === 'accept' ? 'Yes, Accept All' : 'Yes, Decline All'}
+                </AppText>
               </Pressable>
             </View>
           </View>

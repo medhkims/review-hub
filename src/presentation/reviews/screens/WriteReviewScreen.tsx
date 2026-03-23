@@ -71,7 +71,7 @@ export default function WriteReviewScreen() {
   const resolvedBusinessId = businessId ?? '';
   const resolvedBusinessName = businessName ?? 'Business';
 
-  const { isSubmitting, submitSuccess, error, submitReview, reset } =
+  const { isSubmitting, submitSuccess, submittedReviewId, error, submitReview, reset } =
     useWriteReview(resolvedBusinessId, resolvedBusinessName);
 
   const ratingCriteria = useMemo<RatingCriterionDef[]>(() => {
@@ -117,8 +117,10 @@ export default function WriteReviewScreen() {
         pathname: '/(main)/(feed)/review-success',
         params: {
           businessName: resolvedBusinessName,
+          businessId: resolvedBusinessId,
           ratings: JSON.stringify(ratings),
           reviewText,
+          reviewId: submittedReviewId ?? '',
         },
       });
     }

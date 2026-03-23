@@ -108,10 +108,10 @@ export const AdminDrawer: React.FC = () => {
   const { signOut } = useAuth();
   // useAdminBadges drives the fetch + 60s refresh; reads come from the store
   useAdminBadges();
-  const { tickets, verification, chat } = useAdminBadgeStore();
+  const { tickets, supportTickets, verification, chat } = useAdminBadgeStore();
 
   const badgeCount: Record<string, number> = {
-    tickets,
+    tickets: tickets + supportTickets,
     verification,
     chat,
   };
@@ -233,7 +233,7 @@ export const AdminDrawer: React.FC = () => {
                 Admin Panel
               </AppText>
             </View>
-            {(tickets + verification + chat) > 0 && (
+            {(tickets + supportTickets + verification + chat) > 0 && (
               <View
                 style={{
                   flexDirection: 'row',
@@ -249,7 +249,7 @@ export const AdminDrawer: React.FC = () => {
               >
                 <View style={{ width: 6, height: 6, borderRadius: 3, backgroundColor: '#EF4444' }} />
                 <AppText style={{ fontSize: 12, fontWeight: '700', color: '#EF4444' }}>
-                  {tickets + verification + chat} pending
+                  {tickets + supportTickets + verification + chat} pending
                 </AppText>
               </View>
             )}
