@@ -1,5 +1,18 @@
 {
-  "projects": {},
-  "targets": {},
+  "projects": {
+    "default": "reviewhub-91cfb"
+  },
+  "targets": {
+    "reviewhub-91cfb": {
+      "hosting": {
+        "tchecki-com": [
+          "tchecki-com"
+        ],
+        "tchecki-tn": [
+          "tchecki-tn"
+        ]
+      }
+    }
+  },
   "etags": {}
 }
