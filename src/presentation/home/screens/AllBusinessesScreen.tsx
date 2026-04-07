@@ -215,7 +215,7 @@ export default function AllBusinessesScreen() {
             paddingVertical: 8,
             borderRadius: 20,
             borderWidth: 1,
-            borderColor: isSortActive ? colors.neonPurple : colors.borderDark,
+            borderColor: isSortActive ? colors.neonPurple : theme.border,
             backgroundColor: isSortActive ? 'rgba(168,85,247,0.15)' : theme.card,
           }}
         >
@@ -247,7 +247,7 @@ export default function AllBusinessesScreen() {
             paddingVertical: 8,
             borderRadius: 20,
             borderWidth: 1,
-            borderColor: isFilterActive ? colors.neonPurple : colors.borderDark,
+            borderColor: isFilterActive ? colors.neonPurple : theme.border,
             backgroundColor: isFilterActive ? 'rgba(168,85,247,0.15)' : theme.card,
           }}
         >
@@ -279,7 +279,7 @@ export default function AllBusinessesScreen() {
             paddingVertical: 8,
             borderRadius: 20,
             borderWidth: 1,
-            borderColor: isLocationActive ? colors.neonPurple : colors.borderDark,
+            borderColor: isLocationActive ? colors.neonPurple : theme.border,
             backgroundColor: isLocationActive ? 'rgba(168,85,247,0.15)' : theme.card,
           }}
         >

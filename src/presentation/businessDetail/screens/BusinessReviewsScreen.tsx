@@ -239,7 +239,7 @@ export default function BusinessReviewsScreen({ businessId, businessName, busine
           paddingHorizontal: 20,
           gap: 12,
           borderBottomWidth: 1,
-          borderBottomColor: 'rgba(255, 255, 255, 0.05)',
+          borderBottomColor: theme.border,
         }}
       >
         <Pressable
@@ -250,11 +250,11 @@ export default function BusinessReviewsScreen({ businessId, businessName, busine
             width: 40,
             height: 40,
             borderRadius: 20,
-            backgroundColor: 'rgba(30, 41, 59, 0.6)',
+            backgroundColor: theme.card,
             alignItems: 'center',
             justifyContent: 'center',
             borderWidth: 1,
-            borderColor: 'rgba(255, 255, 255, 0.1)',
+            borderColor: theme.border,
           }}
         >
           <MaterialCommunityIcons name="chevron-left" size={24} color={theme.text} />

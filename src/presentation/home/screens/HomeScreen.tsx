@@ -164,7 +164,7 @@ export default function HomeScreen() {
                   height: 210,
                   borderRadius: 24,
                   overflow: 'hidden',
-                  backgroundColor: colors.cardDark,
+                  backgroundColor: theme.card,
                 }}
               >
                 {heroImageSrc ? (
@@ -180,7 +180,7 @@ export default function HomeScreen() {
                       alignItems: 'center', justifyContent: 'center',
                     }}
                   >
-                    <MaterialCommunityIcons name="store" size={60} color={colors.textSlate500} />
+                    <MaterialCommunityIcons name="store" size={60} color={theme.textMuted} />
                   </View>
                 )}
 
@@ -224,8 +224,8 @@ export default function HomeScreen() {
                             {featuredBusiness.rating?.toFixed(1) ?? '—'}
                           </AppText>
                         </View>
-                        <View style={{ width: 3, height: 3, borderRadius: 2, backgroundColor: colors.textSlate500 }} />
-                        <AppText style={{ fontSize: 12, color: colors.textSlate400 }} numberOfLines={1}>
+                        <View style={{ width: 3, height: 3, borderRadius: 2, backgroundColor: theme.textMuted }} />
+                        <AppText style={{ fontSize: 12, color: theme.textMuted }} numberOfLines={1}>
                           {featuredBusiness.categoryName}
                         </AppText>
                       </>
@@ -266,7 +266,7 @@ export default function HomeScreen() {
                 key={stat.label}
                 style={{
                   flex: 1,
-                  backgroundColor: colors.cardDark,
+                  backgroundColor: theme.card,
                   borderRadius: 16,
                   padding: 14,
                   alignItems: 'center',
@@ -338,7 +338,7 @@ export default function HomeScreen() {
                         style={({ pressed }) => ({
                           width: categoryTileWidth,
                           marginRight: isLast ? 0 : 10,
-                          backgroundColor: pressed ? `${accent}18` : colors.cardDark,
+                          backgroundColor: pressed ? `${accent}18` : theme.card,
                           borderRadius: 18,
                           paddingVertical: 16,
                           paddingHorizontal: 6,
@@ -431,7 +431,7 @@ export default function HomeScreen() {
                     <View
                       style={{
                         width: 150, height: 130, borderRadius: 20,
-                        overflow: 'hidden', backgroundColor: colors.cardDark,
+                        overflow: 'hidden', backgroundColor: theme.card,
                       }}
                     >
                       {imgSrc ? (
@@ -442,7 +442,7 @@ export default function HomeScreen() {
                         />
                       ) : (
                         <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
-                          <MaterialCommunityIcons name="store" size={40} color={colors.textSlate500} />
+                          <MaterialCommunityIcons name="store" size={40} color={theme.textMuted} />
                         </View>
                       )}
 
@@ -466,7 +466,7 @@ export default function HomeScreen() {
                           <AppText style={{ fontSize: 11, color: colors.ratingGold, fontWeight: '700' }}>
                             {item.rating?.toFixed(1) ?? '—'}
                           </AppText>
-                          <AppText style={{ fontSize: 10, color: colors.textSlate500 }}>
+                          <AppText style={{ fontSize: 10, color: 'rgba(255,255,255,0.7)' }}>
                             ({item.reviewCount})
                           </AppText>
                         </View>
@@ -566,7 +566,7 @@ export default function HomeScreen() {
                     <View
                       style={{
                         width: 200, height: 145, borderRadius: 20,
-                        overflow: 'hidden', backgroundColor: colors.cardDark,
+                        overflow: 'hidden', backgroundColor: theme.card,
                       }}
                     >
                       {imgSrc ? (
@@ -577,7 +577,7 @@ export default function HomeScreen() {
                         />
                       ) : (
                         <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
-                          <MaterialCommunityIcons name="store" size={40} color={colors.textSlate500} />
+                          <MaterialCommunityIcons name="store" size={40} color={theme.textMuted} />
                         </View>
                       )}
                       {/* Bottom overlay */}
@@ -641,7 +641,7 @@ export default function HomeScreen() {
         >
           <View
             style={{
-              backgroundColor: colors.cardDark,
+              backgroundColor: theme.card,
               borderWidth: 1.5,
               borderColor: `${colors.neonPurple}44`,
               borderRadius: 20,
@@ -668,7 +668,7 @@ export default function HomeScreen() {
                 {t('home.addBusinessCtaSubtitle')}
               </AppText>
             </View>
-            <MaterialCommunityIcons name="chevron-right" size={22} color={colors.textSlate500} />
+            <MaterialCommunityIcons name="chevron-right" size={22} color={theme.textMuted} />
           </View>
         </Pressable>
 
@@ -901,17 +901,17 @@ export default function HomeScreen() {
                     flexDirection: 'row', alignItems: 'center', gap: 6,
                     paddingHorizontal: 16, paddingVertical: 9,
                     borderRadius: 24, borderWidth: 1.5,
-                    borderColor: isSortActive ? colors.neonPurple : colors.borderDark,
+                    borderColor: isSortActive ? colors.neonPurple : theme.border,
                     backgroundColor: isSortActive
                       ? 'rgba(168,85,247,0.18)'
-                      : pressed ? 'rgba(51,65,85,0.6)' : colors.cardDark,
+                      : pressed ? (theme.isDark ? 'rgba(51,65,85,0.6)' : theme.border) : theme.card,
                   })}
                 >
                   <MaterialCommunityIcons
                     name="swap-vertical" size={15}
-                    color={isSortActive ? colors.neonPurple : colors.textSlate200}
+                    color={isSortActive ? colors.neonPurple : theme.textSecondary}
                   />
-                  <AppText style={{ fontSize: 13, fontWeight: isSortActive ? '600' : '500', color: isSortActive ? colors.neonPurple : colors.textSlate200 }}>
+                  <AppText style={{ fontSize: 13, fontWeight: isSortActive ? '600' : '500', color: isSortActive ? colors.neonPurple : theme.textSecondary }}>
                     {t('home.sort')}
                   </AppText>
                   {isSortActive && (
@@ -927,17 +927,17 @@ export default function HomeScreen() {
                     flexDirection: 'row', alignItems: 'center', gap: 6,
                     paddingHorizontal: 16, paddingVertical: 9,
                     borderRadius: 24, borderWidth: 1.5,
-                    borderColor: isFilterActive ? colors.neonPurple : colors.borderDark,
+                    borderColor: isFilterActive ? colors.neonPurple : theme.border,
                     backgroundColor: isFilterActive
                       ? 'rgba(168,85,247,0.18)'
-                      : pressed ? 'rgba(51,65,85,0.6)' : colors.cardDark,
+                      : pressed ? (theme.isDark ? 'rgba(51,65,85,0.6)' : theme.border) : theme.card,
                   })}
                 >
                   <MaterialCommunityIcons
                     name="tune-variant" size={15}
-                    color={isFilterActive ? colors.neonPurple : colors.textSlate200}
+                    color={isFilterActive ? colors.neonPurple : theme.textSecondary}
                   />
-                  <AppText style={{ fontSize: 13, fontWeight: isFilterActive ? '600' : '500', color: isFilterActive ? colors.neonPurple : colors.textSlate200 }}>
+                  <AppText style={{ fontSize: 13, fontWeight: isFilterActive ? '600' : '500', color: isFilterActive ? colors.neonPurple : theme.textSecondary }}>
                     {t('home.filter')}
                   </AppText>
                   {isFilterActive && (
@@ -953,17 +953,17 @@ export default function HomeScreen() {
                     flexDirection: 'row', alignItems: 'center', gap: 6,
                     paddingHorizontal: 16, paddingVertical: 9,
                     borderRadius: 24, borderWidth: 1.5,
-                    borderColor: isLocationActive ? colors.neonPurple : colors.borderDark,
+                    borderColor: isLocationActive ? colors.neonPurple : theme.border,
                     backgroundColor: isLocationActive
                       ? 'rgba(168,85,247,0.18)'
-                      : pressed ? 'rgba(51,65,85,0.6)' : colors.cardDark,
+                      : pressed ? (theme.isDark ? 'rgba(51,65,85,0.6)' : theme.border) : theme.card,
                   })}
                 >
                   <MaterialCommunityIcons
                     name="map-marker-outline" size={15}
-                    color={isLocationActive ? colors.neonPurple : colors.textSlate200}
+                    color={isLocationActive ? colors.neonPurple : theme.textSecondary}
                   />
-                  <AppText style={{ fontSize: 13, fontWeight: isLocationActive ? '600' : '500', color: isLocationActive ? colors.neonPurple : colors.textSlate200 }}>
+                  <AppText style={{ fontSize: 13, fontWeight: isLocationActive ? '600' : '500', color: isLocationActive ? colors.neonPurple : theme.textSecondary }}>
                     {t('home.location')}
                   </AppText>
                   {isLocationActive && (

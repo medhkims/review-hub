@@ -280,7 +280,7 @@ const BusinessCardComponent: React.FC<BusinessCardProps> = ({
                 style={{
                   width: '100%',
                   height: '100%',
-                  backgroundColor: '#334155',
+                  backgroundColor: theme.card,
                   alignItems: 'center',
                   justifyContent: 'center',
                 }}
@@ -348,12 +348,12 @@ const BusinessCardComponent: React.FC<BusinessCardProps> = ({
             {/* Text info — tappable to navigate */}
             <Pressable onPress={onPress} style={{ flex: 1, marginRight: 8 }}>
               <AppText
-                style={{ fontSize: 18, fontWeight: '700', color: colors.white }}
+                style={{ fontSize: 18, fontWeight: '700', color: theme.text }}
               >
                 {business.name}
               </AppText>
               <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, marginTop: 4, flexWrap: 'wrap' }}>
-                <AppText style={{ fontSize: 12, color: colors.textSlate400 }}>
+                <AppText style={{ fontSize: 12, color: theme.textSecondary }}>
                   {business.location} • {business.categoryName}
                 </AppText>
                 {openStatus !== null && (
@@ -408,7 +408,7 @@ const BusinessCardComponent: React.FC<BusinessCardProps> = ({
                 </AppText>
               </View>
               {timeRange && (
-                <AppText style={{ fontSize: 13, color: colors.textSlate400 }}>
+                <AppText style={{ fontSize: 13, color: theme.textSecondary }}>
                   {timeRange}
                 </AppText>
               )}

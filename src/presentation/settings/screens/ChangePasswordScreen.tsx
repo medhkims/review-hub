@@ -9,6 +9,7 @@ import { AppInput } from '@/presentation/shared/components/ui/AppInput';
 import { container } from '@/core/di/container';
 import { useAuthStore } from '@/presentation/auth/store/authStore';
 import { useProfileStore } from '@/presentation/profile/store/profileStore';
+import { useTheme } from '@/core/theme/useTheme';
 
 type ModalStep = 'choose' | 'email-sent' | 'phone-otp';
 
@@ -29,6 +30,7 @@ function maskPhone(phone: string): string {
 export default function ChangePasswordScreen() {
   const { t } = useTranslation();
   const router = useRouter();
+  const theme = useTheme();
   const { user, isLoading, setLoading, setError, error } = useAuthStore();
   const { profile } = useProfileStore();
 
@@ -225,25 +227,25 @@ export default function ChangePasswordScreen() {
         animationType="slide"
         onRequestClose={closeModal}
       >
-        <View className="flex-1 justify-end bg-black/60">
-          <View className="bg-[#12122a] rounded-t-3xl px-6 pt-6 pb-10">
+        <View style={{ flex: 1, justifyContent: 'flex-end', backgroundColor: 'rgba(0,0,0,0.6)' }}>
+          <View style={{ backgroundColor: theme.card, borderTopLeftRadius: 24, borderTopRightRadius: 24, paddingHorizontal: 24, paddingTop: 24, paddingBottom: 40 }}>
 
             {/* ── Step: choose method ── */}
             {modalStep === 'choose' && (
               <>
-                <View className="items-center mb-5">
-                  <View className="w-10 h-1 bg-slate-600 rounded-full mb-5" />
+                <View style={{ alignItems: 'center', marginBottom: 20 }}>
+                  <View style={{ width: 40, height: 4, backgroundColor: theme.border, borderRadius: 2, alignSelf: 'center', marginBottom: 20 }} />
                   <MaterialCommunityIcons name="shield-check-outline" size={40} color="#A855F7" />
                 </View>
-                <AppText className="text-white text-lg font-bold text-center mb-1">
+                <AppText style={{ color: theme.text, fontSize: 18, fontWeight: '700', textAlign: 'center', marginBottom: 4 }}>
                   {t('changePassword.confirmModal.title')}
                 </AppText>
-                <AppText className="text-slate-400 text-sm text-center mb-6">
+                <AppText style={{ color: theme.textMuted, fontSize: 14, textAlign: 'center', marginBottom: 24 }}>
                   {t('changePassword.confirmModal.description')}
                 </AppText>
 
                 {localError ? (
-                  <AppText className="text-red-400 text-sm text-center mb-4">{localError}</AppText>
+                  <AppText style={{ color: '#f87171', fontSize: 14, textAlign: 'center', marginBottom: 16 }}>{localError}</AppText>
                 ) : null}
 
                 {/* Email option */}
@@ -251,24 +253,22 @@ export default function ChangePasswordScreen() {
                   accessibilityRole="button"
                   accessibilityLabel={t('changePassword.confirmModal.viaEmail')}
                   accessibilityState={{ disabled: !hasEmail }}
-                  className={`flex-row items-center gap-3 p-4 rounded-2xl border mb-3 ${
-                    hasEmail
-                      ? 'border-neon-purple/40 bg-neon-purple/10 active:opacity-80'
-                      : 'border-slate-700 bg-slate-800/30 opacity-40'
-                  }`}
+                  style={{
+                    flexDirection: 'row', alignItems: 'center', gap: 12, padding: 16,
+                    borderRadius: 16, borderWidth: 1, marginBottom: 12,
+                    borderColor: hasEmail ? 'rgba(168,85,247,0.4)' : theme.border,
+                    backgroundColor: hasEmail ? 'rgba(168,85,247,0.1)' : (theme.isDark ? 'rgba(30,41,59,0.3)' : 'rgba(148,163,184,0.1)'),
+                    opacity: hasEmail ? 1 : 0.4,
+                  }}
                   onPress={handleEmailChoice}
                   disabled={!hasEmail || localLoading}
                 >
-                  <MaterialCommunityIcons
-                    name="email-outline"
-                    size={26}
-                    color={hasEmail ? '#A855F7' : '#475569'}
-                  />
-                  <View className="flex-1">
-                    <AppText className={`font-semibold ${hasEmail ? 'text-white' : 'text-slate-500'}`}>
+                  <MaterialCommunityIcons name="email-outline" size={26} color={hasEmail ? '#A855F7' : theme.textMuted} />
+                  <View style={{ flex: 1 }}>
+                    <AppText style={{ fontWeight: '600', color: hasEmail ? theme.text : theme.textMuted }}>
                       {t('changePassword.confirmModal.viaEmail')}
                     </AppText>
-                    <AppText className="text-slate-400 text-xs mt-0.5">
+                    <AppText style={{ color: theme.textMuted, fontSize: 12, marginTop: 2 }}>
                       {hasEmail ? maskEmail(email) : t('changePassword.confirmModal.noEmail')}
                     </AppText>
                   </View>
@@ -277,7 +277,7 @@ export default function ChangePasswordScreen() {
                   ) : hasEmail ? (
                     <MaterialCommunityIcons name="chevron-right" size={20} color="#A855F7" />
                   ) : (
-                    <MaterialCommunityIcons name="lock-outline" size={18} color="#475569" />
+                    <MaterialCommunityIcons name="lock-outline" size={18} color={theme.textMuted} />
                   )}
                 </Pressable>
 
@@ -286,24 +286,22 @@ export default function ChangePasswordScreen() {
                   accessibilityRole="button"
                   accessibilityLabel={t('changePassword.confirmModal.viaPhone')}
                   accessibilityState={{ disabled: !hasPhone }}
-                  className={`flex-row items-center gap-3 p-4 rounded-2xl border mb-5 ${
-                    hasPhone
-                      ? 'border-neon-purple/40 bg-neon-purple/10 active:opacity-80'
-                      : 'border-slate-700 bg-slate-800/30 opacity-40'
-                  }`}
+                  style={{
+                    flexDirection: 'row', alignItems: 'center', gap: 12, padding: 16,
+                    borderRadius: 16, borderWidth: 1, marginBottom: 20,
+                    borderColor: hasPhone ? 'rgba(168,85,247,0.4)' : theme.border,
+                    backgroundColor: hasPhone ? 'rgba(168,85,247,0.1)' : (theme.isDark ? 'rgba(30,41,59,0.3)' : 'rgba(148,163,184,0.1)'),
+                    opacity: hasPhone ? 1 : 0.4,
+                  }}
                   onPress={handlePhoneChoice}
                   disabled={!hasPhone || localLoading}
                 >
-                  <MaterialCommunityIcons
-                    name="phone-outline"
-                    size={26}
-                    color={hasPhone ? '#A855F7' : '#475569'}
-                  />
-                  <View className="flex-1">
-                    <AppText className={`font-semibold ${hasPhone ? 'text-white' : 'text-slate-500'}`}>
+                  <MaterialCommunityIcons name="phone-outline" size={26} color={hasPhone ? '#A855F7' : theme.textMuted} />
+                  <View style={{ flex: 1 }}>
+                    <AppText style={{ fontWeight: '600', color: hasPhone ? theme.text : theme.textMuted }}>
                       {t('changePassword.confirmModal.viaPhone')}
                     </AppText>
-                    <AppText className="text-slate-400 text-xs mt-0.5">
+                    <AppText style={{ color: theme.textMuted, fontSize: 12, marginTop: 2 }}>
                       {hasPhone ? maskPhone(phone) : t('changePassword.confirmModal.noPhone')}
                     </AppText>
                   </View>
@@ -312,7 +310,7 @@ export default function ChangePasswordScreen() {
                   ) : hasPhone ? (
                     <MaterialCommunityIcons name="chevron-right" size={20} color="#A855F7" />
                   ) : (
-                    <MaterialCommunityIcons name="lock-outline" size={18} color="#475569" />
+                    <MaterialCommunityIcons name="lock-outline" size={18} color={theme.textMuted} />
                   )}
                 </Pressable>
 
@@ -320,9 +318,9 @@ export default function ChangePasswordScreen() {
                   accessibilityRole="button"
                   accessibilityLabel={t('common.cancel')}
                   onPress={closeModal}
-                  className="py-3 items-center"
+                  style={{ paddingVertical: 12, alignItems: 'center' }}
                 >
-                  <AppText className="text-slate-400">{t('common.cancel')}</AppText>
+                  <AppText style={{ color: theme.textMuted }}>{t('common.cancel')}</AppText>
                 </Pressable>
               </>
             )}
@@ -330,32 +328,32 @@ export default function ChangePasswordScreen() {
             {/* ── Step: email sent ── */}
             {modalStep === 'email-sent' && (
               <>
-                <View className="items-center mb-5">
-                  <View className="w-10 h-1 bg-slate-600 rounded-full mb-5" />
+                <View style={{ alignItems: 'center', marginBottom: 20 }}>
+                  <View style={{ width: 40, height: 4, backgroundColor: theme.border, borderRadius: 2, alignSelf: 'center', marginBottom: 20 }} />
                   <MaterialCommunityIcons name="email-check-outline" size={48} color="#A855F7" />
                 </View>
-                <AppText className="text-white text-lg font-bold text-center mb-2">
+                <AppText style={{ color: theme.text, fontSize: 18, fontWeight: '700', textAlign: 'center', marginBottom: 8 }}>
                   {t('changePassword.emailStep.title')}
                 </AppText>
-                <AppText className="text-slate-400 text-sm text-center mb-6 leading-5">
+                <AppText style={{ color: theme.textMuted, fontSize: 14, textAlign: 'center', marginBottom: 24, lineHeight: 20 }}>
                   {t('changePassword.emailStep.description', { email: maskEmail(email) })}
                 </AppText>
 
                 {localError ? (
-                  <AppText className="text-red-400 text-sm text-center mb-4">{localError}</AppText>
+                  <AppText style={{ color: '#f87171', fontSize: 14, textAlign: 'center', marginBottom: 16 }}>{localError}</AppText>
                 ) : null}
 
                 <Pressable
                   accessibilityRole="button"
                   accessibilityLabel={t('changePassword.emailStep.continueButton')}
-                  className={`w-full bg-neon-purple py-4 rounded-xl items-center justify-center mb-3 ${localLoading ? 'opacity-70' : ''}`}
+                  style={{ width: '100%', backgroundColor: '#A855F7', paddingVertical: 16, borderRadius: 12, alignItems: 'center', marginBottom: 12, opacity: localLoading ? 0.7 : 1 }}
                   onPress={doChangePassword}
                   disabled={localLoading}
                 >
                   {localLoading ? (
                     <ActivityIndicator color="white" />
                   ) : (
-                    <AppText className="text-white font-semibold">
+                    <AppText style={{ color: '#fff', fontWeight: '600' }}>
                       {t('changePassword.emailStep.continueButton')}
                     </AppText>
                   )}
@@ -365,9 +363,9 @@ export default function ChangePasswordScreen() {
                   accessibilityRole="button"
                   accessibilityLabel={t('common.back')}
                   onPress={() => { setLocalError(null); setModalStep('choose'); }}
-                  className="py-3 items-center"
+                  style={{ paddingVertical: 12, alignItems: 'center' }}
                 >
-                  <AppText className="text-slate-400">{t('common.back')}</AppText>
+                  <AppText style={{ color: theme.textMuted }}>{t('common.back')}</AppText>
                 </Pressable>
               </>
             )}
@@ -375,27 +373,27 @@ export default function ChangePasswordScreen() {
             {/* ── Step: phone OTP ── */}
             {modalStep === 'phone-otp' && (
               <>
-                <View className="items-center mb-4">
-                  <View className="w-10 h-1 bg-slate-600 rounded-full mb-5" />
+                <View style={{ alignItems: 'center', marginBottom: 16 }}>
+                  <View style={{ width: 40, height: 4, backgroundColor: theme.border, borderRadius: 2, alignSelf: 'center', marginBottom: 20 }} />
                   <MaterialCommunityIcons name="message-text-outline" size={48} color="#A855F7" />
                 </View>
-                <AppText className="text-white text-lg font-bold text-center mb-2">
+                <AppText style={{ color: theme.text, fontSize: 18, fontWeight: '700', textAlign: 'center', marginBottom: 8 }}>
                   {t('changePassword.phoneStep.title')}
                 </AppText>
-                <AppText className="text-slate-400 text-sm text-center mb-6">
+                <AppText style={{ color: theme.textMuted, fontSize: 14, textAlign: 'center', marginBottom: 24 }}>
                   {t('changePassword.phoneStep.description', { phone: maskPhone(phone) })}
                 </AppText>
 
                 <TextInput
                   accessibilityLabel={t('changePassword.phoneStep.title')}
                   style={{
-                    backgroundColor: 'rgba(30,30,60,0.8)',
-                    borderWidth: 1,
-                    borderColor: otpCode.length === 6 ? '#A855F7' : '#334155',
+                    backgroundColor: theme.card,
+                    borderWidth: 1.5,
+                    borderColor: otpCode.length === 6 ? '#A855F7' : theme.border,
                     borderRadius: 12,
                     paddingHorizontal: 16,
                     paddingVertical: 16,
-                    color: 'white',
+                    color: theme.text,
                     textAlign: 'center',
                     fontSize: 28,
                     letterSpacing: 12,
@@ -406,26 +404,24 @@ export default function ChangePasswordScreen() {
                   keyboardType="number-pad"
                   maxLength={6}
                   placeholder="------"
-                  placeholderTextColor="#334155"
+                  placeholderTextColor={theme.textMuted}
                 />
 
                 {localError ? (
-                  <AppText className="text-red-400 text-sm text-center mb-4">{localError}</AppText>
+                  <AppText style={{ color: '#f87171', fontSize: 14, textAlign: 'center', marginBottom: 16 }}>{localError}</AppText>
                 ) : null}
 
                 <Pressable
                   accessibilityRole="button"
                   accessibilityLabel={t('changePassword.phoneStep.verifyButton')}
-                  className={`w-full bg-neon-purple py-4 rounded-xl items-center justify-center mb-3 ${
-                    localLoading || otpCode.length < 6 ? 'opacity-60' : ''
-                  }`}
+                  style={{ width: '100%', backgroundColor: '#A855F7', paddingVertical: 16, borderRadius: 12, alignItems: 'center', marginBottom: 12, opacity: (localLoading || otpCode.length < 6) ? 0.6 : 1 }}
                   onPress={handleVerifyOtp}
                   disabled={localLoading || otpCode.length < 6}
                 >
                   {localLoading ? (
                     <ActivityIndicator color="white" />
                   ) : (
-                    <AppText className="text-white font-semibold">
+                    <AppText style={{ color: '#fff', fontWeight: '600' }}>
                       {t('changePassword.phoneStep.verifyButton')}
                     </AppText>
                   )}
@@ -436,18 +432,18 @@ export default function ChangePasswordScreen() {
                   accessibilityLabel={t('changePassword.phoneStep.resend')}
                   onPress={handlePhoneChoice}
                   disabled={localLoading}
-                  className="py-2 items-center"
+                  style={{ paddingVertical: 8, alignItems: 'center' }}
                 >
-                  <AppText className="text-slate-400 text-sm">{t('changePassword.phoneStep.resend')}</AppText>
+                  <AppText style={{ color: theme.textMuted, fontSize: 14 }}>{t('changePassword.phoneStep.resend')}</AppText>
                 </Pressable>
 
                 <Pressable
                   accessibilityRole="button"
                   accessibilityLabel={t('common.back')}
                   onPress={() => { setLocalError(null); setModalStep('choose'); }}
-                  className="py-2 items-center"
+                  style={{ paddingVertical: 8, alignItems: 'center' }}
                 >
-                  <AppText className="text-slate-500 text-xs">{t('common.back')}</AppText>
+                  <AppText style={{ color: theme.textSecondary, fontSize: 12 }}>{t('common.back')}</AppText>
                 </Pressable>
               </>
             )}

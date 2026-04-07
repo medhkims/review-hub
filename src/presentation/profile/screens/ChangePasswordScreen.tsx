@@ -209,7 +209,7 @@ export default function ChangePasswordScreen() {
       keyboardType="number-pad"
       maxLength={6}
       placeholder="• • • • • •"
-      placeholderTextColor="#334155"
+      placeholderTextColor={theme.textMuted}
       style={{
         backgroundColor: theme.card,
         borderWidth: 1.5,
@@ -245,7 +245,7 @@ export default function ChangePasswordScreen() {
               accessibilityRole="button"
               accessibilityLabel={t('common.back')}
             >
-              <MaterialCommunityIcons name="chevron-left" size={26} color="#fff" />
+              <MaterialCommunityIcons name="chevron-left" size={26} color={theme.text} />
             </Pressable>
           </View>
 
@@ -269,10 +269,10 @@ export default function ChangePasswordScreen() {
               </View>
             </View>
 
-            <AppText style={{ color: '#fff', fontSize: 20, fontWeight: '700', marginBottom: 4, textAlign: 'center' }}>
+            <AppText style={{ color: theme.text, fontSize: 20, fontWeight: '700', marginBottom: 4, textAlign: 'center' }}>
               {t('changePassword.title')}
             </AppText>
-            <AppText style={{ color: '#94a3b8', fontSize: 12, textAlign: 'center', lineHeight: 18, maxWidth: 260 }}>
+            <AppText style={{ color: theme.textMuted, fontSize: 12, textAlign: 'center', lineHeight: 18, maxWidth: 260 }}>
               {t('changePassword.description')}
             </AppText>
           </View>
@@ -541,7 +541,7 @@ export const PasswordField: React.FC<PasswordFieldProps> = ({
           onChangeText={onChangeText}
           style={{ flex: 1, paddingVertical: 15, marginLeft: 12, color: theme.text, fontSize: 15 }}
           placeholder="••••••••"
-          placeholderTextColor="#334155"
+          placeholderTextColor={theme.textMuted}
           secureTextEntry={!show}
           autoCapitalize="none"
           autoCorrect={false}
