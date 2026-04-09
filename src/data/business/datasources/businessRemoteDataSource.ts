@@ -228,7 +228,7 @@ export class BusinessRemoteDataSourceImpl implements BusinessRemoteDataSource {
             return (
               Array.isArray(cat.items) &&
               cat.items.some(
-                (item) =>
+                (item: { name?: unknown; description?: unknown }) =>
                   (typeof item.name === 'string' && item.name.toLowerCase().includes(lower)) ||
                   (typeof item.description === 'string' && item.description.toLowerCase().includes(lower))
               )

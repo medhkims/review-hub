@@ -106,10 +106,7 @@ export default function AllCategoriesScreen() {
           paddingBottom: 16,
         }}
       >
-        {role === 'admin' ? (
-          <AdminMenuButton />
-        ) : (
-          <Pressable
+        <Pressable
             onPress={handleBack}
             style={({ pressed }) => ({
               width: 40,
@@ -130,7 +127,6 @@ export default function AllCategoriesScreen() {
               color={theme.text}
             />
           </Pressable>
-        )}
         <AppText
           style={{
             fontSize: 20,

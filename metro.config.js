@@ -15,6 +15,26 @@ config.resolver.resolveRequest = (context, moduleName, platform) => {
       type: 'sourceFile',
     };
   }
+  // On web, @expo/vector-icons passes the hashed TTF asset URL to Font.loadAsync,
+  // which injects a @font-face pointing to /assets/.../hash.ttf. Firebase Hosting
+  // returns index.html for missing paths (SPA rewrite), so the browser gets HTML
+  // instead of a font (OTS parse error → no glyphs).
+  //
+  // Two redirects are needed:
+  // 1. Replace MaterialCommunityIcons.js with our shim that uses /fonts/ URL directly.
+  // 2. Replace all vector-icons TTF imports with null so they don't pollute the bundle.
+  if (platform === 'web' && moduleName.endsWith('MaterialCommunityIcons.js') && moduleName.includes('vector-icons')) {
+    return {
+      filePath: path.resolve(__dirname, 'src/core/fonts/MaterialCommunityIconsWeb.js'),
+      type: 'sourceFile',
+    };
+  }
+  if (platform === 'web' && moduleName.endsWith('.ttf') && moduleName.includes('react-native-vector-icons')) {
+    return {
+      filePath: path.resolve(__dirname, 'src/core/fonts/nullFont.js'),
+      type: 'sourceFile',
+    };
+  }
   if (defaultResolveRequest) {
     return defaultResolveRequest(context, moduleName, platform);
   }

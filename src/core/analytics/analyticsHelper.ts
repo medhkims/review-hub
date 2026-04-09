@@ -41,10 +41,9 @@ export class AnalyticsHelper {
     try {
       const instance = await this.getInstance();
       if (!instance) return;
-      logEvent(instance, 'screen_view', {
-        screen_name: screenName,
-        screen_class: screenClass ?? screenName,
-      });
+      (logEvent as (a: ReturnType<typeof getAnalytics>, name: string, p?: Record<string, unknown>) => void)(
+        instance, 'screen_view', { firebase_screen: screenName, firebase_screen_class: screenClass ?? screenName },
+      );
     } catch {
       // Analytics not available — silently skip
     }

@@ -19,19 +19,19 @@ const POLICY_EN: PolicySection[] = [
   {
     title: 'Introduction',
     content: [
-      'Welcome to ReviewHub ("we", "our", or "us"). ReviewHub is a mobile application designed to help users discover, review, and rate local businesses in Tunisia.',
-      'This Privacy Policy explains how we collect, use, store, share, and protect your personal information when you use the ReviewHub mobile application and related services (collectively, the "Service").',
+      'Welcome to TChecki ("we", "our", or "us"). TChecki is a mobile application designed to help users discover, review, and rate local businesses in Tunisia.',
+      'This Privacy Policy explains how we collect, use, store, share, and protect your personal information when you use the TChecki mobile application and related services (collectively, the "Service").',
       'We are committed to protecting your personal data in compliance with the Tunisian Organic Law No. 2004-63 of 27 July 2004 on the Protection of Personal Data, as well as internationally recognized data protection principles.',
-      'By using ReviewHub, you consent to the collection and use of your information as described in this Privacy Policy. If you do not agree, please discontinue use of the Service.',
+      'By using TChecki, you consent to the collection and use of your information as described in this Privacy Policy. If you do not agree, please discontinue use of the Service.',
     ],
   },
   {
     title: '1. Who We Are',
     content: [
-      'ReviewHub is operated and owned by a company registered in the Republic of Tunisia.',
+      'TChecki is operated and owned by a company registered in the Republic of Tunisia.',
       'Registered Country: Republic of Tunisia',
       'Supervisory Authority: Instance Nationale de Protection des Données Personnelles (INPDP) — the national authority responsible for data protection in Tunisia.',
-      'For any privacy-related inquiries, contact us at: support@reviewhub.app',
+      'For any privacy-related inquiries, contact us at: support@tchecki.app',
     ],
   },
   {
@@ -85,14 +85,14 @@ const POLICY_EN: PolicySection[] = [
       'We may share your data in the following limited circumstances:',
       '6.1 Public Information\nYour display name, profile picture, and reviews are visible to all users of the app. Reviews linked to businesses are visible to business owners and the general public.',
       '6.2 Service Providers (Sub-processors)\nWe use the following trusted third-party services that may process your data on our behalf:\n• Google Firebase (Firestore, Authentication, Cloud Storage, Cloud Functions, Analytics, Crashlytics, FCM) — Cloud infrastructure and analytics. Data may be processed on Google servers outside Tunisia.\n• Google Sign-In — Authentication provider.',
-      '6.3 Legal Requirements\nWe may disclose your information when required by Tunisian law, court order, or government authority, or to protect the rights, property, or safety of ReviewHub, our users, or the public.',
-      '6.4 Business Transfer\nIf ReviewHub is involved in a merger, acquisition, or sale of assets, your data may be transferred as part of that transaction. You will be notified in advance.',
+      '6.3 Legal Requirements\nWe may disclose your information when required by Tunisian law, court order, or government authority, or to protect the rights, property, or safety of TChecki, our users, or the public.',
+      '6.4 Business Transfer\nIf TChecki is involved in a merger, acquisition, or sale of assets, your data may be transferred as part of that transaction. You will be notified in advance.',
     ],
   },
   {
     title: '7. International Data Transfers',
     content: [
-      'ReviewHub uses Google Firebase, which stores and processes data on servers located in the United States and other countries outside Tunisia.',
+      'TChecki uses Google Firebase, which stores and processes data on servers located in the United States and other countries outside Tunisia.',
       'These transfers are made subject to Google\'s standard data processing agreements and security measures, which are designed to protect your personal data to a level equivalent to Tunisian legal requirements.',
       'By using the Service, you acknowledge that your data may be transferred to and processed in countries outside Tunisia that may have different data protection laws.',
     ],
@@ -130,13 +130,13 @@ const POLICY_EN: PolicySection[] = [
       '• Right to Object: You may object to the processing of your data for direct marketing or where processing is based on our legitimate interests.',
       '• Right to Withdraw Consent: Where processing is based on your consent, you may withdraw it at any time without affecting the lawfulness of processing prior to withdrawal.',
       '• Right to Lodge a Complaint: You have the right to lodge a complaint with the INPDP (Instance Nationale de Protection des Données Personnelles) at: www.inpdp.nat.tn',
-      'To exercise any of these rights, contact us at: support@reviewhub.app. We will respond within 30 days.',
+      'To exercise any of these rights, contact us at: support@tchecki.app. We will respond within 30 days.',
     ],
   },
   {
     title: '11. Cookies and Tracking Technologies',
     content: [
-      'ReviewHub is a mobile application and does not use browser cookies.',
+      'TChecki is a mobile application and does not use browser cookies.',
       'However, we use the following tracking technologies within the app:',
       '• Firebase Analytics: Collects anonymized usage data to help us understand how users interact with the app. You may opt out by disabling notifications and analytics in your device settings.',
       '• Firebase Crashlytics: Automatically collects crash reports and error logs to help us fix bugs. Data collected is technical and does not include personally identifiable information beyond device identifiers.',
@@ -146,15 +146,15 @@ const POLICY_EN: PolicySection[] = [
   {
     title: '12. Children\'s Privacy',
     content: [
-      'ReviewHub is not intended for use by children under the age of 13.',
-      'We do not knowingly collect personal data from children under 13. If you believe a child under 13 has provided us with their personal information, please contact us immediately at support@reviewhub.app and we will delete that information.',
+      'TChecki is not intended for use by children under the age of 13.',
+      'We do not knowingly collect personal data from children under 13. If you believe a child under 13 has provided us with their personal information, please contact us immediately at support@tchecki.app and we will delete that information.',
       'Users between the ages of 13 and 18 should use the Service only with the consent and supervision of a parent or legal guardian.',
     ],
   },
   {
     title: '13. Third-Party Links and Services',
     content: [
-      'ReviewHub may display links to external websites (such as business websites, Facebook pages, or Instagram profiles). These external sites are not operated by us and have their own privacy policies.',
+      'TChecki may display links to external websites (such as business websites, Facebook pages, or Instagram profiles). These external sites are not operated by us and have their own privacy policies.',
       'We are not responsible for the privacy practices or content of any third-party websites. We encourage you to review the privacy policies of any third-party sites you visit.',
     ],
   },
@@ -179,7 +179,7 @@ const POLICY_EN: PolicySection[] = [
     title: '16. Contact Us',
     content: [
       'If you have any questions, concerns, or requests regarding this Privacy Policy or our data practices, please contact us:',
-      'Email: support@reviewhub.app',
+      'Email: support@tchecki.app',
       'Country: Republic of Tunisia',
       'Supervisory Authority: Instance Nationale de Protection des Données Personnelles (INPDP)\nWebsite: www.inpdp.nat.tn',
       'We are committed to resolving any concerns and will respond to all inquiries within 30 days.',
@@ -192,19 +192,19 @@ const POLICY_AR: PolicySection[] = [
   {
     title: 'مقدمة',
     content: [
-      'مرحبًا بك في ReviewHub ("نحن" أو "لنا"). ReviewHub هو تطبيق جوّال مصمّم لمساعدة المستخدمين على اكتشاف الأعمال التجارية المحلية في تونس وتقييمها والتحقق منها.',
+      'مرحبًا بك في TChecki ("نحن" أو "لنا"). TChecki هو تطبيق جوّال مصمّم لمساعدة المستخدمين على اكتشاف الأعمال التجارية المحلية في تونس وتقييمها والتحقق منها.',
       'توضّح سياسة الخصوصية هذه كيفية جمعنا لمعلوماتك الشخصية واستخدامها وتخزينها ومشاركتها وحمايتها عند استخدامك للتطبيق.',
       'نلتزم بحماية بياناتك الشخصية وفقًا للقانون التونسي الأساسي عدد 63 لسنة 2004 المؤرخ في 27 يوليو 2004 المتعلق بحماية المعطيات الشخصية، فضلًا عن المبادئ الدولية المعترف بها في حماية البيانات.',
-      'باستخدامك لـ ReviewHub، فإنك توافق على جمع معلوماتك واستخدامها وفق ما هو موضّح في هذه السياسة.',
+      'باستخدامك لـ TChecki، فإنك توافق على جمع معلوماتك واستخدامها وفق ما هو موضّح في هذه السياسة.',
     ],
   },
   {
     title: '1. من نحن',
     content: [
-      'يُشغَّل ReviewHub ويمتلكه كيان مسجّل في الجمهورية التونسية.',
+      'يُشغَّل TChecki ويمتلكه كيان مسجّل في الجمهورية التونسية.',
       'البلد: الجمهورية التونسية',
       'الهيئة الإشرافية: الهيئة الوطنية لحماية المعطيات الشخصية (INPDP)',
-      'للتواصل بشأن أي استفسارات تتعلق بالخصوصية: support@reviewhub.app',
+      'للتواصل بشأن أي استفسارات تتعلق بالخصوصية: support@tchecki.app',
     ],
   },
   {
@@ -259,13 +259,13 @@ const POLICY_AR: PolicySection[] = [
       '6.1 المعلومات العامة\nاسمك وصورتك الشخصية ومراجعاتك مرئية لجميع مستخدمي التطبيق. المراجعات المرتبطة بالأعمال مرئية لأصحابها وللعامة.',
       '6.2 مزوّدو الخدمة\nنستخدم خدمات Google Firebase (Firestore، Authentication، Cloud Storage، Functions، Analytics، Crashlytics، FCM) كبنية تحتية سحابية. قد تُعالَج البيانات على خوادم Google خارج تونس.',
       '6.3 المتطلبات القانونية\nقد نكشف عن معلوماتك عند الاقتضاء بموجب القانون التونسي أو أمر قضائي أو سلطة حكومية.',
-      '6.4 نقل الأعمال\nإذا انخرطت ReviewHub في عملية دمج أو استحواذ أو بيع أصول، فقد تُنقل بياناتك. سيتم إخطارك مسبقًا.',
+      '6.4 نقل الأعمال\nإذا انخرطت TChecki في عملية دمج أو استحواذ أو بيع أصول، فقد تُنقل بياناتك. سيتم إخطارك مسبقًا.',
     ],
   },
   {
     title: '7. النقل الدولي للبيانات',
     content: [
-      'يستخدم ReviewHub Google Firebase، الذي يُخزّن البيانات ويعالجها على خوادم في الولايات المتحدة ودول أخرى خارج تونس.',
+      'يستخدم TChecki Google Firebase، الذي يُخزّن البيانات ويعالجها على خوادم في الولايات المتحدة ودول أخرى خارج تونس.',
       'تتم هذه النقلات وفق اتفاقيات معالجة البيانات القياسية لـ Google وتدابير الأمان المصممة لحماية بياناتك.',
       'باستخدامك للخدمة، فإنك تُقرّ بأن بياناتك قد تُنقل وتُعالَج في دول خارج تونس.',
     ],
@@ -302,13 +302,13 @@ const POLICY_AR: PolicySection[] = [
       '• حق الاعتراض: يمكنك الاعتراض على معالجة بياناتك لأغراض التسويق المباشر.',
       '• حق سحب الموافقة: يمكنك سحب موافقتك في أي وقت دون المساس بمشروعية المعالجة السابقة.',
       '• حق تقديم شكوى: يحق لك تقديم شكوى إلى INPDP على الموقع: www.inpdp.nat.tn',
-      'لممارسة أي من هذه الحقوق، تواصل معنا على: support@reviewhub.app. سنردّ خلال 30 يومًا.',
+      'لممارسة أي من هذه الحقوق، تواصل معنا على: support@tchecki.app. سنردّ خلال 30 يومًا.',
     ],
   },
   {
     title: '11. ملفات تعريف الارتباط وتقنيات التتبع',
     content: [
-      'ReviewHub تطبيق جوّال ولا يستخدم ملفات تعريف الارتباط في المتصفح.',
+      'TChecki تطبيق جوّال ولا يستخدم ملفات تعريف الارتباط في المتصفح.',
       'لكننا نستخدم تقنيات التتبع التالية داخل التطبيق:',
       '• Firebase Analytics: يجمع بيانات استخدام مجهولة. يمكنك إلغاء الاشتراك عبر إعدادات الجهاز.',
       '• Firebase Crashlytics: يجمع تلقائيًا تقارير الأعطال وسجلات الأخطاء. البيانات تقنية فقط.',
@@ -318,15 +318,15 @@ const POLICY_AR: PolicySection[] = [
   {
     title: '12. خصوصية الأطفال',
     content: [
-      'ReviewHub غير مخصص للأطفال دون سن 13 عامًا.',
-      'لا نجمع عمدًا بيانات شخصية من الأطفال دون 13 عامًا. إذا اعتقدت أن طفلًا دون 13 عامًا قدّم لنا معلوماته، يُرجى التواصل معنا فورًا على support@reviewhub.app.',
+      'TChecki غير مخصص للأطفال دون سن 13 عامًا.',
+      'لا نجمع عمدًا بيانات شخصية من الأطفال دون 13 عامًا. إذا اعتقدت أن طفلًا دون 13 عامًا قدّم لنا معلوماته، يُرجى التواصل معنا فورًا على support@tchecki.app.',
       'يجب على المستخدمين بين 13 و18 عامًا استخدام الخدمة بإشراف وموافقة ولي الأمر.',
     ],
   },
   {
     title: '13. روابط وخدمات الأطراف الثالثة',
     content: [
-      'قد يعرض ReviewHub روابط لمواقع خارجية (مواقع الأعمال، صفحات Facebook، Instagram). هذه المواقع لا تُديرها ReviewHub ولها سياسات خصوصية خاصة بها.',
+      'قد يعرض TChecki روابط لمواقع خارجية (مواقع الأعمال، صفحات Facebook، Instagram). هذه المواقع لا تُديرها TChecki ولها سياسات خصوصية خاصة بها.',
       'لسنا مسؤولين عن ممارسات الخصوصية أو محتوى أي مواقع خارجية. ننصحك بمراجعة سياسات خصوصية المواقع الخارجية التي تزورها.',
     ],
   },
@@ -349,7 +349,7 @@ const POLICY_AR: PolicySection[] = [
     title: '16. تواصل معنا',
     content: [
       'إذا كانت لديك أي أسئلة أو مخاوف أو طلبات تتعلق بسياسة الخصوصية هذه، يُرجى التواصل معنا:',
-      'البريد الإلكتروني: support@reviewhub.app',
+      'البريد الإلكتروني: support@tchecki.app',
       'البلد: الجمهورية التونسية',
       'الهيئة الإشرافية: الهيئة الوطنية لحماية المعطيات الشخصية (INPDP)\nالموقع: www.inpdp.nat.tn',
       'سنردّ على جميع الاستفسارات خلال 30 يومًا.',
@@ -470,8 +470,8 @@ export default function PrivacyPolicyScreen() {
           />
           <AppText style={{ flex: 1, fontSize: 12, color: theme.textSecondary, lineHeight: 18 }}>
             {isRTL
-              ? 'آخر تحديث: 22 مارس 2026 — تسري هذه السياسة على جميع مستخدمي تطبيق ReviewHub في تونس.'
-              : 'Last Updated: March 22, 2026 — This policy applies to all users of ReviewHub in Tunisia.'}
+              ? 'آخر تحديث: 22 مارس 2026 — تسري هذه السياسة على جميع مستخدمي تطبيق TChecki في تونس.'
+              : 'Last Updated: March 22, 2026 — This policy applies to all users of TChecki in Tunisia.'}
           </AppText>
         </View>
 
@@ -483,8 +483,8 @@ export default function PrivacyPolicyScreen() {
         <View style={{ alignItems: 'center', paddingTop: 8 }}>
           <AppText style={{ fontSize: 11, color: theme.textSecondary, textAlign: 'center' }}>
             {isRTL
-              ? '© 2026 ReviewHub. جميع الحقوق محفوظة. الجمهورية التونسية.'
-              : '© 2026 ReviewHub. All rights reserved. Republic of Tunisia.'}
+              ? '© 2026 TChecki. جميع الحقوق محفوظة. الجمهورية التونسية.'
+              : '© 2026 TChecki. All rights reserved. Republic of Tunisia.'}
           </AppText>
         </View>
       </ScrollView>

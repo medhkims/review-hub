@@ -8,8 +8,14 @@ import {
 import {
   initializeAuth,
   getAuth,
-  getReactNativePersistence,
 } from 'firebase/auth';
+import type { Persistence } from 'firebase/auth';
+import * as _firebaseAuth from 'firebase/auth';
+// getReactNativePersistence is in the Metro-bundled RN build of firebase/auth but absent
+// from the main TypeScript declarations. Access it via the module namespace.
+const getReactNativePersistence = (
+  _firebaseAuth as unknown as { getReactNativePersistence: (s: object) => Persistence }
+).getReactNativePersistence;
 import { getStorage } from 'firebase/storage';
 import { getFunctions } from 'firebase/functions';
 import { getRemoteConfig } from 'firebase/remote-config';

@@ -24,7 +24,7 @@ export const lightTheme = {
   statusBar: 'dark' as const,
 };
 
-export type AppTheme = typeof darkTheme;
+export type AppTheme = Omit<typeof darkTheme, 'statusBar'> & { statusBar: 'light' | 'dark' };
 
 export const useTheme = (): AppTheme => {
   const settings = useSettingsStore((state) => state.settings);

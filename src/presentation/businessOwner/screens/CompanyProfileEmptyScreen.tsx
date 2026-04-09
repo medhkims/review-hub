@@ -128,7 +128,7 @@ export default function CompanyProfileEmptyScreen() {
           onContactPress={handleContactPress}
         />
 
-        <DeliveryCard onAddLink={handleAddLink} />
+        <DeliveryCard />
 
         <PriceListCard onAddCategory={handleAddCategory} />
       </ScrollView>

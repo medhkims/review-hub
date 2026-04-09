@@ -2,7 +2,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { SettingsModel } from '../models/settingsModel';
 import { CacheException } from '@/core/error/exceptions';
 
-const SETTINGS_KEY = '@reviewhub:settings';
+const SETTINGS_KEY = '@tchecki:settings';
 
 const DEFAULT_SETTINGS: SettingsModel = {
   language: 'en',

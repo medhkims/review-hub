@@ -1,5 +1,5 @@
 import { firestore, auth } from '@/core/firebase/firebaseConfig';
-import { doc, getDoc, setDoc, serverTimestamp } from 'firebase/firestore';
+import { doc, getDoc, setDoc, updateDoc, serverTimestamp } from 'firebase/firestore';
 import { updateEmail as firebaseUpdateEmail, updateProfile as firebaseUpdateProfile } from 'firebase/auth';
 import { ProfileModel } from '../models/profileModel';
 import { ServerException, AuthException } from '@/core/error/exceptions';

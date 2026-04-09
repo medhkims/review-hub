@@ -244,13 +244,14 @@ export const ImageCropModal: React.FC<ImageCropModalProps> = ({
           }}
         >
           {imageUri && (
-            <Image
-              source={{ uri: imageUri }}
-              style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0 }}
-              resizeMode="contain"
-              pointerEvents="none"
-              accessibilityLabel={t('imageCrop.title')}
-            />
+            <View style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0 }} pointerEvents="none">
+              <Image
+                source={{ uri: imageUri }}
+                style={{ width: '100%', height: '100%' }}
+                resizeMode="contain"
+                accessibilityLabel={t('imageCrop.title')}
+              />
+            </View>
           )}
 
           {ready && (
@@ -338,8 +339,8 @@ export const ImageCropModal: React.FC<ImageCropModalProps> = ({
               flexDirection: 'row', gap: 8,
             })}
           >
-            <MaterialCommunityIcons name="image-multiple-outline" size={18} color={colors.textSlate300} />
-            <AppText style={{ fontSize: 15, fontWeight: '600', color: colors.textSlate300 }}>
+            <MaterialCommunityIcons name="image-multiple-outline" size={18} color={colors.textSlate100} />
+            <AppText style={{ fontSize: 15, fontWeight: '600', color: colors.textSlate100 }}>
               {t('imageCrop.retake')}
             </AppText>
           </Pressable>

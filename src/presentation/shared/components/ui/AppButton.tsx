@@ -75,7 +75,7 @@ export const AppButton: React.FC<AppButtonProps> = ({
           ...sizePadding[normalizedSize],
           ...(variant === 'secondary' ? { borderWidth: 1, borderColor: theme.border } : {}),
         },
-        style,
+        typeof style !== 'function' ? (style as object) : undefined,
       ]}
       disabled={disabled || isLoading}
       {...props}

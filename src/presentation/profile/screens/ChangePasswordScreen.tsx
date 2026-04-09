@@ -167,7 +167,7 @@ export default function ChangePasswordScreen() {
     const result = await container.verifyEmailOtpUseCase.execute(email, otpCode);
     result.fold(
       (failure) => { setModalLoading(false); setModalError(failure.message); },
-      () => doChangePassword(),
+      () => { void doChangePassword(); },
     );
   }, [otpCode, email, doChangePassword, t]);
 
@@ -192,7 +192,7 @@ export default function ChangePasswordScreen() {
     const result = await container.verifyPhoneOtpUseCase.execute(user?.id ?? '', otpCode);
     result.fold(
       (failure) => { setModalLoading(false); setModalError(failure.message); },
-      () => doChangePassword(),
+      () => { void doChangePassword(); },
     );
   }, [otpCode, user, doChangePassword, t]);
 

@@ -3,6 +3,7 @@ import { Platform, LogBox } from 'react-native';
 import { useCategoryDefaultStore } from '@/presentation/shared/store/categoryDefaultStore';
 import { Stack } from 'expo-router';
 import { useTheme } from '@/core/theme/useTheme';
+import { useFonts } from 'expo-font';
 
 LogBox.ignoreLogs(['Unknown event handler property']);
 import { SafeAreaProvider } from 'react-native-safe-area-context';
@@ -32,6 +33,16 @@ export default function RootLayout() {
   const loadCategoryDefaults = useCategoryDefaultStore((s) => s.load);
   const theme = useTheme();
   useEffect(() => { loadCategoryDefaults(); }, [loadCategoryDefaults]);
+
+  // On web, @expo/vector-icons' TTF import is redirected to null (see metro.config.js)
+  // to avoid Firebase Hosting's SPA rewrite returning HTML instead of a font.
+  // useFonts registers 'material-community' in expo-font's cache synchronously so
+  // that when icon components check Font.isLoaded() on first render they get true.
+  useFonts(
+    Platform.OS === 'web'
+      ? { 'material-community': '/fonts/MaterialCommunityIcons.ttf' }
+      : {}
+  );
 
   return (
     <SafeAreaProvider>

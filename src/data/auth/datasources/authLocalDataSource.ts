@@ -2,7 +2,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { UserModel } from '../models/userModel';
 import { CacheException } from '@/core/error/exceptions';
 
-const USER_KEY = '@reviewhub:current_user';
+const USER_KEY = '@tchecki:current_user';
 
 export interface AuthLocalDataSource {
   getCachedUser(): Promise<UserModel | null>;

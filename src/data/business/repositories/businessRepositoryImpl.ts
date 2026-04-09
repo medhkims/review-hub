@@ -2,6 +2,7 @@ import { BusinessRepository } from '@/domain/business/repositories/businessRepos
 import { BusinessEntity } from '@/domain/business/entities/businessEntity';
 import { BusinessDetailEntity } from '@/domain/business/entities/businessDetailEntity';
 import { ReviewEntity } from '@/domain/business/entities/reviewEntity';
+import { RecentReviewEntity } from '@/domain/business/entities/recentReviewEntity';
 import { CommentEntity, ReplyEntity } from '@/domain/business/entities/commentEntity';
 import { ActiveCategoryInfoEntity } from '@/domain/business/entities/activeCategoryInfoEntity';
 import { RegisterBusinessParams, SubmitBusinessParams, DuplicateCheckResult } from '@/domain/business/repositories/businessRepository';
@@ -603,6 +604,26 @@ export class BusinessRepositoryImpl implements BusinessRepository {
     } catch (error) {
       if (error instanceof ServerException) return left(new ServerFailure(error.message));
       return left(new ServerFailure('Failed to undislike reply'));
+    }
+  }
+
+  async getRecentReviews(count: number): Promise<Either<Failure, RecentReviewEntity[]>> {
+    try {
+      const models = await this.remote.getRecentReviews(count);
+      const entities: RecentReviewEntity[] = models.map((m) => ({
+        id: m.id,
+        authorName: m.author_name ?? 'Anonymous',
+        authorAvatarUrl: m.author_avatar_url ?? null,
+        rating: m.overall_rating,
+        text: m.review_text,
+        businessId: m.business_id,
+        businessName: m.business_name,
+        createdAt: m.created_at instanceof Date ? m.created_at : (m.created_at as { toDate(): Date }).toDate(),
+      }));
+      return right(entities);
+    } catch (error) {
+      if (error instanceof ServerException) return left(new ServerFailure(error.message));
+      return left(new ServerFailure('Failed to fetch recent reviews'));
     }
   }
 }

@@ -317,6 +317,7 @@ const CompanyCard: React.FC<CompanyCardProps> = ({ item, rank }) => {
 const FILTER_LABELS: Record<CompanyFilter, string> = {
   all: 'All Companies', active: 'Active Companies', pending: 'Pending Companies',
   ownerVerified: 'Owner Verified', ownerUnverified: 'Unclaimed',
+  suspended: 'Suspended Companies',
   premium: 'Premium Companies', verifiedBasic: 'Verified Basic',
 };
 

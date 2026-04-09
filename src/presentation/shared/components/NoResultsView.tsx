@@ -207,7 +207,7 @@ export const NoResultsView: React.FC<NoResultsViewProps> = ({
           <View style={{ width: '100%' }}>
             <AppButton
               title="No, add new business"
-              variant="outline"
+              variant="secondary"
               size="lg"
               shape="pill"
               onPress={onAddNew}

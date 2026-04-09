@@ -845,7 +845,7 @@ export default function HomeScreen() {
                 <MaterialCommunityIcons name="star-four-points" size={19} color={colors.white} />
               </View>
               <AppText style={{ fontSize: 18, fontWeight: '800', color: theme.text, letterSpacing: -0.4 }}>
-                ReviewHub
+                TChecki
               </AppText>
             </View>
             <Pressable

@@ -136,7 +136,7 @@ export default function MainLayout() {
               listeners={({ navigation }) => ({
                 tabPress: () => {
                   const state = navigation.getState();
-                  const tabRoute = state.routes.find((r) => r.name === route);
+                  const tabRoute = state.routes.find((r: { name: string; state?: { key?: string } | null }) => r.name === route);
                   if (tabRoute?.state?.key) {
                     navigation.dispatch({
                       ...StackActions.popToTop(),

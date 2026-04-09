@@ -146,7 +146,7 @@ export default function ChangePasswordScreen() {
         setLocalLoading(false);
         setLocalError(failure.message);
       },
-      () => doChangePassword(),
+      () => { void doChangePassword(); },
     );
   }, [otpCode, user, verifyPhoneOtpUseCase, doChangePassword, t]);
 

@@ -25,7 +25,7 @@ interface CoverPhotoSectionProps {
   logoImageUri?: string;
   populated?: boolean;
   isPending?: boolean;
-  businessStatus?: 'pending' | 'active' | 'rejected' | 'blocked';
+  businessStatus?: 'pending' | 'active' | 'rejected' | 'blocked' | 'suspended';
 }
 
 export const CoverPhotoSection: React.FC<CoverPhotoSectionProps> = ({

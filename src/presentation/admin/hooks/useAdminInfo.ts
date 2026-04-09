@@ -74,10 +74,9 @@ export const useAdminInfo = () => {
       asset.mimeType ?? 'image/jpeg',
     );
     if (result.isLeft()) {
-      setError(result.value.message);
+      setError((result.value as { message: string }).message);
     } else {
-      const updated = { ...info, pictureUrl: result.value };
-      await save(updated);
+      await save({ ...info, pictureUrl: result.value as string });
     }
     setIsUploadingPicture(false);
   }, [info, save]);

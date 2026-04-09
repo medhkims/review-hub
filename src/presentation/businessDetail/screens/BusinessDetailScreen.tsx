@@ -68,7 +68,7 @@ export default function BusinessDetailScreen({ businessId }: BusinessDetailScree
         message: Platform.OS === 'ios'
           ? business.name
           : `${business.name} — ${business.categoryName}`,
-        url: Platform.OS === 'ios' ? `https://reviewhub.app/business/${business.id}` : undefined,
+        url: Platform.OS === 'ios' ? `https://tchecki.app/business/${business.id}` : undefined,
       });
     } catch {
       // user dismissed share sheet — no-op

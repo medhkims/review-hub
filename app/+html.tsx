@@ -1,6 +1,10 @@
 import { ScrollViewStyleReset } from 'expo-router/html';
 import type { PropsWithChildren } from 'react';
 
+// Served from public/fonts/ → dist/fonts/ at build time.
+// Metro redirects vector-icons TTF imports to null on web (see metro.config.js),
+// so icon components use fontFamily:'material-community' — a valid CSS identifier
+// that the browser can match against this @font-face declaration.
 const FONT_PATH = '/fonts/MaterialCommunityIcons.ttf';
 
 export default function Root({ children }: PropsWithChildren) {
@@ -18,14 +22,6 @@ export default function Root({ children }: PropsWithChildren) {
               src: url('${FONT_PATH}') format('truetype');
               font-display: block;
             }
-          `,
-        }} />
-        <script dangerouslySetInnerHTML={{
-          __html: `
-            (function() {
-              var font = new FontFace('material-community', 'url(${FONT_PATH})', { display: 'block' });
-              font.load().then(function(f) { document.fonts.add(f); });
-            })();
           `,
         }} />
         <ScrollViewStyleReset />

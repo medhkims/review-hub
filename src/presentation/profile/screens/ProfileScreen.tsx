@@ -45,7 +45,7 @@ export default function ProfileScreen() {
   // Fallback user data if not authenticated
   const displayUser = user || {
     displayName: 'Guest User',
-    email: 'guest@reviewhub.app',
+    email: 'guest@tchecki.app',
     avatarUrl: null,
   };
 

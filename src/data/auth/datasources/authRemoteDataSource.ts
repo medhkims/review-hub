@@ -280,16 +280,17 @@ export class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
     // references. Firebase auth calls JSON.stringify internally when opening the popup, which
     // throws on those refs. Patch JSON.stringify to skip circular values for the duration.
     const _origStringify = JSON.stringify;
-    // @ts-expect-error: intentional temporary global patch for RN Web circular fiber refs
-    JSON.stringify = (value: unknown, _rep?: unknown, space?: unknown) => {
+    // Intentional temporary global patch for RN Web circular fiber refs.
+    (JSON as unknown as { stringify: unknown }).stringify = (value: unknown, _rep?: unknown, space?: unknown) => {
       const seen = new WeakSet<object>();
-      return _origStringify.call(JSON, value, (_key: string, val: unknown) => {
+      const replacer = (_key: string, val: unknown): unknown => {
         if (val !== null && typeof val === 'object') {
           if (seen.has(val as object)) return undefined;
           seen.add(val as object);
         }
         return val;
-      }, space as string | number | undefined);
+      };
+      return _origStringify.call(JSON, value, replacer as unknown as Parameters<typeof _origStringify>[1], space as string | number | undefined);
     };
 
     try {

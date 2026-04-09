@@ -180,8 +180,8 @@ export const ImagePreviewModal: React.FC<ImagePreviewModalProps> = ({
               gap: 8,
             })}
           >
-            <MaterialCommunityIcons name="crop-rotate" size={18} color={colors.textSlate300} />
-            <AppText style={{ fontSize: 15, fontWeight: '600', color: colors.textSlate300 }}>
+            <MaterialCommunityIcons name="crop-rotate" size={18} color={colors.textSlate100} />
+            <AppText style={{ fontSize: 15, fontWeight: '600', color: colors.textSlate100 }}>
               {t('imagePreview.retake')}
             </AppText>
           </Pressable>

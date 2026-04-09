@@ -137,8 +137,8 @@ export default function HelpCenterScreen() {
     }
     if (!tabInitialised.current && role) {
       tabInitialised.current = true;
-      if (role === 'business' || role === 'moderator') {
-        setSelectedTab(role);
+      if (role === 'business_owner' || role === 'moderator') {
+        setSelectedTab(role === 'business_owner' ? 'business' : role as AudienceTab);
       }
     }
   }, [role, router]);

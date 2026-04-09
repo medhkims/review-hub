@@ -35,6 +35,7 @@ const STATUS_CONFIG: Record<BusinessStatus, { color: string; bg: string; icon: s
   pending: { color: '#1C1917', bg: '#F59E0B', icon: 'clock-outline' },
   rejected: { color: '#fff', bg: '#EF4444', icon: 'close-circle-outline' },
   blocked: { color: '#fff', bg: '#7C3AED', icon: 'cancel' },
+  suspended: { color: '#fff', bg: '#64748B', icon: 'pause-circle-outline' },
 };
 
 interface BusinessCardProps {
@@ -73,6 +74,7 @@ const BusinessCardComponent: React.FC<BusinessCardProps> = ({
     pending: t('businessOwner.pendingBadge.buttonLabel'),
     rejected: t('businessOwner.pendingBadge.rejectedLabel'),
     blocked: t('businessOwner.pendingBadge.blockedLabel'),
+    suspended: t('businessOwner.pendingBadge.blockedLabel'),
   };
 
   const renderStatusBadge = (position: 'cover' | 'inline') => {

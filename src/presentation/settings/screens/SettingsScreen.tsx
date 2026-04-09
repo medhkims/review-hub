@@ -62,7 +62,7 @@ export default function SettingsScreen() {
 
   const displayUser = user || {
     displayName: 'Guest User',
-    email: 'guest@reviewhub.app',
+    email: 'guest@tchecki.app',
     avatarUrl: null,
   };
 

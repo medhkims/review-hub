@@ -410,7 +410,7 @@ const SupportDetailModal: React.FC<SupportDetailModalProps> = ({ ticket, onClose
 
           <ScrollView showsVerticalScrollIndicator={false}>
             <View style={{ gap: 14 }}>
-              <InfoRow icon="text-subject" label="Subject" value={ticket.subject} />
+              <InfoRow icon="text-box-outline" label="Subject" value={ticket.subject} />
               <InfoRow icon="shape-outline" label="Category" value={ticket.category} />
               <InfoRow icon="account-outline" label="User" value={`${ticket.userName} (${ticket.userEmail})`} />
               <InfoRow icon="calendar-outline" label="Submitted" value={formatDate(ticket.createdAt)} />

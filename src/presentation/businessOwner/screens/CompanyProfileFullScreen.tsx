@@ -138,7 +138,8 @@ export default function CompanyProfileFullScreen({ business, onRefresh }: Compan
     const mapping = CONTACT_FIELD_MAP[type];
     if (!mapping || !business) return;
 
-    const currentValue = business.contact[mapping.entityKey] || '';
+    const rawValue = business.contact[mapping.entityKey];
+    const currentValue = typeof rawValue === 'string' ? rawValue : '';
     openEditModal(
       t(`businessOwner.companyProfile.${type}`),
       currentValue,
@@ -561,7 +562,7 @@ export default function CompanyProfileFullScreen({ business, onRefresh }: Compan
 
             <Pressable
               onPress={() => {}}
-              accessibilityLabel="Support@reviewhub.tn"
+              accessibilityLabel="Support@tchecki.tn"
               accessibilityRole="button"
               style={{
                 flexDirection: 'row',
@@ -577,7 +578,7 @@ export default function CompanyProfileFullScreen({ business, onRefresh }: Compan
             >
               <MaterialCommunityIcons name="email-outline" size={18} color="#EF4444" />
               <AppText style={{ fontSize: 14, fontWeight: '700', color: '#EF4444' }}>
-                Support@reviewhub.tn
+                Support@tchecki.tn
               </AppText>
             </Pressable>
 
@@ -768,7 +769,7 @@ export default function CompanyProfileFullScreen({ business, onRefresh }: Compan
                 gotIt: t('common.ok'),
               },
             };
-            const cfg = statusConfig[status] ?? statusConfig.pending;
+            const cfg = statusConfig[status as keyof typeof statusConfig] ?? statusConfig.pending;
             return (
               <View style={{ backgroundColor: colors.cardDark, borderRadius: 20, padding: 24, alignItems: 'center', gap: 16 }}>
                 <View style={{ width: 64, height: 64, borderRadius: 32, backgroundColor: cfg.iconBg, alignItems: 'center', justifyContent: 'center' }}>

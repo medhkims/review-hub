@@ -43,5 +43,18 @@
         "APP_ENV": "production"
       }
     }
+  },
+  "submit": {
+    "production": {
+      "android": {
+        "serviceAccountKeyPath": "./google-play-service-account.json",
+        "track": "internal"
+      },
+      "ios": {
+        "appleId": "Mohamed33hakim96@gmail.com",
+        "ascAppId": "6761780920",
+        "appleTeamId": "2G8492CVVB"
+      }
+    }
   }
 }
