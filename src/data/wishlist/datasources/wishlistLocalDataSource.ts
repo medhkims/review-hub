@@ -47,9 +47,8 @@ export class WishlistLocalDataSourceImpl implements WishlistLocalDataSource {
       }));
 
       await AsyncStorage.setItem(cacheKey, JSON.stringify(serializable));
-    } catch (error: unknown) {
-      const err = error instanceof Error ? error.message : 'Failed to cache wishlist';
-      throw new CacheException(err);
+    } catch {
+      // Storage quota exceeded on web — silently ignore
     }
   }
 
@@ -73,9 +72,8 @@ export class WishlistLocalDataSourceImpl implements WishlistLocalDataSource {
       }
 
       await AsyncStorage.setItem(cacheKey, JSON.stringify(parsed));
-    } catch (error: unknown) {
-      const err = error instanceof Error ? error.message : 'Failed to add item to wishlist cache';
-      throw new CacheException(err);
+    } catch {
+      // Storage quota exceeded on web — silently ignore
     }
   }
 
@@ -89,9 +87,8 @@ export class WishlistLocalDataSourceImpl implements WishlistLocalDataSource {
       const parsed = JSON.parse(cached) as Array<{ id: string }>;
       const updated = parsed.filter((item) => item.id !== itemId);
       await AsyncStorage.setItem(cacheKey, JSON.stringify(updated));
-    } catch (error: unknown) {
-      const err = error instanceof Error ? error.message : 'Failed to update wishlist cache';
-      throw new CacheException(err);
+    } catch {
+      // Storage quota exceeded on web — silently ignore
     }
   }
 }

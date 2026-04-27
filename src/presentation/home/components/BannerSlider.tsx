@@ -1,13 +1,12 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
-import { View, FlatList, Pressable, Image, Platform, Dimensions } from 'react-native';
+import { View, FlatList, Pressable, Platform, useWindowDimensions } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { AppText } from '@/presentation/shared/components/ui/AppText';
+import { AppImage } from '@/presentation/shared/components/ui/AppImage';
 import { BannerEntity } from '@/domain/banner/entities/bannerEntity';
 import { colors } from '@/core/theme/colors';
 import { useTheme } from '@/core/theme/useTheme';
 
-const { width: SCREEN_WIDTH } = Dimensions.get('window');
-const SLIDE_HEIGHT = Platform.OS === 'web' || SCREEN_WIDTH >= 600 ? 320 : 190;
 const AUTO_ADVANCE_MS = 4000;
 
 interface BannerSliderProps {
@@ -22,8 +21,8 @@ interface BannerSlideProps {
   onPress: (banner: BannerEntity) => void;
 }
 
-const BannerSlide = React.memo<BannerSlideProps>(
-  ({ banner, slideWidth, onPress }) => {
+const BannerSlide = React.memo<BannerSlideProps & { slideHeight: number }>(
+  ({ banner, slideWidth, slideHeight, onPress }) => {
     const theme = useTheme();
     return (
       <Pressable
@@ -35,16 +34,17 @@ const BannerSlide = React.memo<BannerSlideProps>(
         <View
           style={{
             width: slideWidth,
-            height: SLIDE_HEIGHT,
+            height: slideHeight,
             borderRadius: 16,
             overflow: 'hidden',
             backgroundColor: theme.card,
           }}
         >
-          <Image
+          <AppImage
             source={{ uri: banner.imageUrl }}
             style={{ width: '100%', height: '100%' }}
             resizeMode="cover"
+            fallbackIconSize={32}
           />
           <LinearGradient
             colors={['transparent', 'rgba(0,0,0,0.72)']}
@@ -81,6 +81,8 @@ const BannerSlide = React.memo<BannerSlideProps>(
 
 export const BannerSlider = React.memo<BannerSliderProps>(({ banners, isLoading, onPress }) => {
   const theme = useTheme();
+  const { width: screenWidth } = useWindowDimensions();
+  const SLIDE_HEIGHT = Platform.OS === 'web' || screenWidth >= 600 ? 320 : 190;
   const flatListRef = useRef<FlatList<BannerEntity>>(null);
   const [activeIndex, setActiveIndex] = useState(0);
   const [containerWidth, setContainerWidth] = useState(0);
@@ -126,9 +128,9 @@ export const BannerSlider = React.memo<BannerSliderProps>(({ banners, isLoading,
 
   const renderItem = useCallback(
     ({ item }: { item: BannerEntity }) => (
-      <BannerSlide banner={item} slideWidth={containerWidth} onPress={onPress} />
+      <BannerSlide banner={item} slideWidth={containerWidth} slideHeight={SLIDE_HEIGHT} onPress={onPress} />
     ),
-    [onPress, containerWidth],
+    [onPress, containerWidth, SLIDE_HEIGHT],
   );
 
   const getItemLayout = useCallback(

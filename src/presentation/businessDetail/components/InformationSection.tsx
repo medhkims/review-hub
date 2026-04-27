@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Pressable, Linking, Image, Platform } from 'react-native';
+import { View, Pressable, Image, Platform } from 'react-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useTranslation } from 'react-i18next';
 import Constants from 'expo-constants';
@@ -9,6 +9,7 @@ import { useTheme } from '@/core/theme/useTheme';
 import { SectionCard } from './SectionCard';
 import { ContactInfo, OpeningHours, DayKey } from '@/domain/business/entities/businessDetailEntity';
 import { trackProfileClick } from '@/core/utils/premiumTracking';
+import { openURL } from '@/core/utils/webLinks';
 
 const GMAPS_KEY: string =
   ((Constants.expoConfig?.extra as Record<string, string> | undefined)?.googleMapsApiKey) ?? '';
@@ -45,10 +46,7 @@ const openDirections = (lat: number, lng: number) => {
     android: `google.navigation:q=${lat},${lng}`,
     default: `https://www.google.com/maps/dir/?api=1&destination=${lat},${lng}`,
   });
-  Linking.openURL(url).catch(() => {
-    // Fallback to web URL
-    Linking.openURL(`https://www.google.com/maps/dir/?api=1&destination=${lat},${lng}`).catch(() => {});
-  });
+  openURL(url);
 };
 
 export const InformationSection: React.FC<InformationSectionProps> = ({
@@ -160,7 +158,7 @@ export const InformationSection: React.FC<InformationSectionProps> = ({
 
   const handlePress = (url: string, type: string) => {
     if (businessId) trackProfileClick(businessId, type);
-    Linking.openURL(url).catch(() => {});
+    openURL(url);
   };
 
   return (

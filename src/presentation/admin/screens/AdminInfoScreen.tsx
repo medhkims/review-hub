@@ -5,9 +5,9 @@ import {
   Pressable,
   TextInput,
   ActivityIndicator,
-  Alert,
 } from 'react-native';
 import { useTranslation } from 'react-i18next';
+import { crossPlatformAlert } from '@/core/utils/crossPlatformAlert';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { ScreenLayout } from '@/presentation/shared/layouts/ScreenLayout';
 import { AppText } from '@/presentation/shared/components/ui/AppText';
@@ -131,7 +131,7 @@ export default function AdminInfoScreen() {
   };
 
   const confirmDelete = (label: string, onConfirm: () => void) => {
-    Alert.alert(t('adminInfo.deleteConfirm'), label, [
+    crossPlatformAlert(t('adminInfo.deleteConfirm'), label, [
       { text: t('common.cancel'), style: 'cancel' },
       { text: t('common.confirm'), style: 'destructive', onPress: onConfirm },
     ]);

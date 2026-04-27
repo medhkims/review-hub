@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
-import { View, Pressable, ScrollView, Modal, Image, TouchableWithoutFeedback } from 'react-native';
+import { View, Pressable, ScrollView, Image, Platform } from 'react-native';
+import { AppModal } from '@/presentation/shared/components/ui/AppModal';
 import { useRouter, Redirect } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 import Svg, { Path } from 'react-native-svg';
@@ -198,6 +199,7 @@ export default function SignInScreen() {
                 accessibilityRole="button"
                 accessibilityLabel={isEditing ? t('accountSwitcher.doneEditing') : t('accountSwitcher.editAccounts')}
                 hitSlop={8}
+                style={{ minWidth: 44, minHeight: 44, justifyContent: 'center' }}
               >
                 <AppText style={{ fontSize: 13, fontWeight: '600', color: colors.neonPurple }}>
                   {isEditing ? t('accountSwitcher.doneEditing') : t('accountSwitcher.editAccounts')}
@@ -253,9 +255,9 @@ export default function SignInScreen() {
                               accessibilityLabel={`Remove ${account.displayName}`}
                               hitSlop={8}
                               style={{
-                                width: 22,
-                                height: 22,
-                                borderRadius: 11,
+                                width: 44,
+                                height: 44,
+                                borderRadius: 22,
                                 backgroundColor: '#EF4444',
                                 alignItems: 'center',
                                 justifyContent: 'center',
@@ -481,18 +483,15 @@ export default function SignInScreen() {
       </ScrollView>
 
       {/* Password Modal for saved account */}
-      <Modal
+      <AppModal
         visible={selectedAccount !== null}
         transparent
         animationType="fade"
-        onRequestClose={closeModal}
+        onDismiss={closeModal}
       >
-        <TouchableWithoutFeedback onPress={closeModal} accessibilityLabel="Close">
-          <View style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.6)', justifyContent: 'center', alignItems: 'center' }}>
-            <TouchableWithoutFeedback onPress={() => {}}>
           <View
             style={{
-              width: '85%',
+              width: 320,
               backgroundColor: theme.card,
               borderRadius: 20,
               borderWidth: 1,
@@ -571,24 +570,18 @@ export default function SignInScreen() {
               accessibilityLabel={t('accountSwitcher.signInButton')}
             />
           </View>
-            </TouchableWithoutFeedback>
-          </View>
-        </TouchableWithoutFeedback>
-      </Modal>
+      </AppModal>
 
       {/* Remove account confirmation modal */}
-      <Modal
+      <AppModal
         visible={accountToRemove !== null}
         transparent
         animationType="fade"
-        onRequestClose={() => setAccountToRemove(null)}
+        onDismiss={() => setAccountToRemove(null)}
       >
-        <TouchableWithoutFeedback onPress={() => setAccountToRemove(null)} accessibilityLabel="Close">
-          <View style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.6)', justifyContent: 'center', alignItems: 'center' }}>
-            <TouchableWithoutFeedback onPress={() => {}}>
           <View
             style={{
-              width: '80%',
+              width: 300,
               backgroundColor: theme.card,
               borderRadius: 20,
               borderWidth: 1,
@@ -655,10 +648,7 @@ export default function SignInScreen() {
               </Pressable>
             </View>
           </View>
-            </TouchableWithoutFeedback>
-          </View>
-        </TouchableWithoutFeedback>
-      </Modal>
+      </AppModal>
     </ScreenLayout>
   );
 }

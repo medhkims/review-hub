@@ -1,7 +1,8 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { View, FlatList, Alert, ActivityIndicator } from 'react-native';
+import { View, FlatList, ActivityIndicator } from 'react-native';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import { useTranslation } from 'react-i18next';
+import { crossPlatformAlert } from '@/core/utils/crossPlatformAlert';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { ScreenLayout } from '@/presentation/shared/layouts/ScreenLayout';
 import { AppText } from '@/presentation/shared/components/ui/AppText';
@@ -38,7 +39,7 @@ export default function BookingRequestsScreen() {
   const handleConfirm = useCallback(async (requestId: string) => {
     const result = await container.updateBookingRequestStatusUseCase.execute(requestId, 'confirmed');
     result.fold(
-      (failure) => Alert.alert(t('common.error'), failure.message),
+      (failure) => crossPlatformAlert(t('common.error'), failure.message),
       () => {
         setRequests((prev) =>
           prev.map((r) => (r.id === requestId ? { ...r, status: 'confirmed' as const } : r)),
@@ -48,7 +49,7 @@ export default function BookingRequestsScreen() {
   }, [t]);
 
   const handleReject = useCallback(async (requestId: string) => {
-    Alert.alert(t('booking.rejectConfirmTitle'), t('booking.rejectConfirmMessage'), [
+    crossPlatformAlert(t('booking.rejectConfirmTitle'), t('booking.rejectConfirmMessage'), [
       { text: t('common.cancel'), style: 'cancel' },
       {
         text: t('booking.reject'),
@@ -56,7 +57,7 @@ export default function BookingRequestsScreen() {
         onPress: async () => {
           const result = await container.updateBookingRequestStatusUseCase.execute(requestId, 'rejected');
           result.fold(
-            (failure) => Alert.alert(t('common.error'), failure.message),
+            (failure) => crossPlatformAlert(t('common.error'), failure.message),
             () => {
               setRequests((prev) =>
                 prev.map((r) => (r.id === requestId ? { ...r, status: 'rejected' as const } : r)),

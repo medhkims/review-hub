@@ -72,21 +72,21 @@ function TimeStepper({ value, onChange }: { value: string; onChange: (v: string)
   return (
     <View style={{ flexDirection: 'row', alignItems: 'center', gap: 2 }}>
       <View style={{ alignItems: 'center', gap: 2 }}>
-        <Pressable onPress={() => setH(h + 1)} accessibilityRole="button" hitSlop={6}>
+        <Pressable onPress={() => setH(h + 1)} accessibilityRole="button" hitSlop={6} style={{ minWidth: 44, minHeight: 44, alignItems: 'center', justifyContent: 'center' }}>
           <MaterialCommunityIcons name="chevron-up" size={16} color={colors.neonPurple} />
         </Pressable>
         <AppText style={{ fontSize: 15, fontWeight: '700', color: colors.white, width: 24, textAlign: 'center' }}>{pad(h)}</AppText>
-        <Pressable onPress={() => setH(h - 1)} accessibilityRole="button" hitSlop={6}>
+        <Pressable onPress={() => setH(h - 1)} accessibilityRole="button" hitSlop={6} style={{ minWidth: 44, minHeight: 44, alignItems: 'center', justifyContent: 'center' }}>
           <MaterialCommunityIcons name="chevron-down" size={16} color={colors.neonPurple} />
         </Pressable>
       </View>
       <AppText style={{ fontSize: 15, fontWeight: '700', color: colors.textSlate400, marginBottom: 2 }}>:</AppText>
       <View style={{ alignItems: 'center', gap: 2 }}>
-        <Pressable onPress={() => setM(nextM)} accessibilityRole="button" hitSlop={6}>
+        <Pressable onPress={() => setM(nextM)} accessibilityRole="button" hitSlop={6} style={{ minWidth: 44, minHeight: 44, alignItems: 'center', justifyContent: 'center' }}>
           <MaterialCommunityIcons name="chevron-up" size={16} color={colors.neonPurple} />
         </Pressable>
         <AppText style={{ fontSize: 15, fontWeight: '700', color: colors.white, width: 24, textAlign: 'center' }}>{pad(m)}</AppText>
-        <Pressable onPress={() => setM(prevM)} accessibilityRole="button" hitSlop={6}>
+        <Pressable onPress={() => setM(prevM)} accessibilityRole="button" hitSlop={6} style={{ minWidth: 44, minHeight: 44, alignItems: 'center', justifyContent: 'center' }}>
           <MaterialCommunityIcons name="chevron-down" size={16} color={colors.neonPurple} />
         </Pressable>
       </View>
@@ -115,7 +115,7 @@ export const OpeningHoursModal: React.FC<OpeningHoursModalProps> = ({ visible, i
             <AppText style={{ fontSize: 18, fontWeight: '700', color: colors.white }}>
               {t('businessOwner.companyProfile.openingHours')}
             </AppText>
-            <Pressable onPress={onClose} accessibilityRole="button" accessibilityLabel={t('common.cancel')} hitSlop={8}>
+            <Pressable onPress={onClose} accessibilityRole="button" accessibilityLabel={t('common.cancel')} hitSlop={8} style={{ minWidth: 44, minHeight: 44, alignItems: 'center', justifyContent: 'center' }}>
               <MaterialCommunityIcons name="close" size={22} color={colors.textSlate400} />
             </Pressable>
           </View>

@@ -360,7 +360,7 @@ const ReviewCard = React.memo(({ review, onDeleteRequest, onPress }: ReviewCardP
       {/* Delete button — outside the card Pressable to avoid nested buttons on web */}
       {review.status !== 'removed' && (
         <Pressable
-          style={{ position: 'absolute', top: 12, right: 12, padding: 10 }}
+          style={{ position: 'absolute', top: 12, right: 12, padding: 10, minWidth: 44, minHeight: 44, alignItems: 'center', justifyContent: 'center' }}
           onPress={() => onDeleteRequest(review.id)}
           accessibilityLabel={`Delete review for ${review.businessName}`}
           accessibilityRole="button"

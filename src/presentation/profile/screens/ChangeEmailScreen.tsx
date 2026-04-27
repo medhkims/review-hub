@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
-import { View, ScrollView, Pressable, TextInput, Alert } from 'react-native';
+import { View, ScrollView, Pressable, TextInput } from 'react-native';
 import { useRouter } from 'expo-router';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useTranslation } from 'react-i18next';
+import { crossPlatformAlert } from '@/core/utils/crossPlatformAlert';
 import { AppText } from '@/presentation/shared/components/ui/AppText';
 import { AppButton } from '@/presentation/shared/components/ui/AppButton';
 import { ScreenLayout } from '@/presentation/shared/layouts/ScreenLayout';
@@ -50,7 +51,7 @@ export default function ChangeEmailScreen() {
     await updateEmail(user.id, newEmail.trim());
     setIsSending(false);
 
-    Alert.alert(
+    crossPlatformAlert(
       t('personalInfo.success'),
       t('changeEmail.success'),
       [{ text: t('common.ok'), onPress: () => router.back() }]

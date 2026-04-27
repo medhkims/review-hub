@@ -4,7 +4,6 @@ import {
   Pressable,
   TextInput,
   Modal,
-  TouchableOpacity,
   ActivityIndicator,
   Image,
   ScrollView,
@@ -54,12 +53,12 @@ function ConfirmModal({
           <AppText style={{ fontSize: 17, fontWeight: '700', color: colors.textWhite, marginBottom: 8 }}>{title}</AppText>
           <AppText style={{ color: colors.textSlate200, marginBottom: 20, lineHeight: 20 }}>{message}</AppText>
           <View style={{ flexDirection: 'row', gap: 10 }}>
-            <TouchableOpacity style={{ flex: 1, backgroundColor: 'rgba(51,65,85,0.4)', borderRadius: 8, padding: 12, alignItems: 'center' }} onPress={onCancel} accessibilityRole="button">
+            <Pressable style={{ flex: 1, backgroundColor: 'rgba(51,65,85,0.4)', borderRadius: 8, padding: 12, alignItems: 'center' }} onPress={onCancel} accessibilityRole="button">
               <AppText style={{ color: colors.textSlate200 }}>{t('common.cancel')}</AppText>
-            </TouchableOpacity>
-            <TouchableOpacity style={{ flex: 1, backgroundColor: confirmColor ?? colors.error, borderRadius: 8, padding: 12, alignItems: 'center' }} onPress={onConfirm} accessibilityRole="button">
+            </Pressable>
+            <Pressable style={{ flex: 1, backgroundColor: confirmColor ?? colors.error, borderRadius: 8, padding: 12, alignItems: 'center' }} onPress={onConfirm} accessibilityRole="button">
               <AppText style={{ color: colors.white, fontWeight: '600' }}>{confirmLabel ?? t('common.confirm')}</AppText>
-            </TouchableOpacity>
+            </Pressable>
           </View>
         </View>
       </View>
@@ -90,15 +89,15 @@ function RecoverCategoryModal({
           <AppText style={{ fontSize: 17, fontWeight: '700', color: colors.textWhite, marginBottom: 8 }}>{t('manageCategories.recoverCategory')}</AppText>
           <AppText style={{ color: colors.textSlate200, marginBottom: 20, lineHeight: 20 }}>{t('manageCategories.recoverCategoryMessage', { name: category.name })}</AppText>
           <View style={{ gap: 10 }}>
-            <TouchableOpacity style={{ backgroundColor: colors.primary, borderRadius: 8, padding: 13, alignItems: 'center' }} onPress={onRecoverWithSubs} accessibilityRole="button">
+            <Pressable style={{ backgroundColor: colors.primary, borderRadius: 8, padding: 13, alignItems: 'center' }} onPress={onRecoverWithSubs} accessibilityRole="button">
               <AppText style={{ color: colors.white, fontWeight: '600' }}>{t('manageCategories.recoverCategoryWithSubs')}</AppText>
-            </TouchableOpacity>
-            <TouchableOpacity style={{ backgroundColor: 'rgba(168,85,247,0.15)', borderRadius: 8, padding: 13, alignItems: 'center', borderWidth: 1, borderColor: colors.primary }} onPress={onRecoverOnly} accessibilityRole="button">
+            </Pressable>
+            <Pressable style={{ backgroundColor: 'rgba(168,85,247,0.15)', borderRadius: 8, padding: 13, alignItems: 'center', borderWidth: 1, borderColor: colors.primary }} onPress={onRecoverOnly} accessibilityRole="button">
               <AppText style={{ color: colors.primary, fontWeight: '600' }}>{t('manageCategories.recoverCategoryOnly')}</AppText>
-            </TouchableOpacity>
-            <TouchableOpacity style={{ backgroundColor: 'rgba(51,65,85,0.4)', borderRadius: 8, padding: 12, alignItems: 'center' }} onPress={onCancel} accessibilityRole="button">
+            </Pressable>
+            <Pressable style={{ backgroundColor: 'rgba(51,65,85,0.4)', borderRadius: 8, padding: 12, alignItems: 'center' }} onPress={onCancel} accessibilityRole="button">
               <AppText style={{ color: colors.textSlate200 }}>{t('common.cancel')}</AppText>
-            </TouchableOpacity>
+            </Pressable>
           </View>
         </View>
       </View>
@@ -130,12 +129,12 @@ function SubcategoryRow({
           <AppText style={{ color: colors.primary, fontSize: 11, fontWeight: '600' }}>{businessCount} {t('manageCategories.businesses')}</AppText>
         </View>
       )}
-      <TouchableOpacity onPress={() => onEdit(categoryId, sub)} accessibilityRole="button" accessibilityLabel={t('manageCategories.editSubcategory')} style={{ marginRight: 14, padding: 4 }}>
+      <Pressable onPress={() => onEdit(categoryId, sub)} accessibilityRole="button" accessibilityLabel={t('manageCategories.editSubcategory')} style={{ marginRight: 14, padding: 4 }}>
         <MaterialCommunityIcons name="pencil-outline" size={16} color={colors.primary} />
-      </TouchableOpacity>
-      <TouchableOpacity onPress={() => onDelete(categoryId, sub)} accessibilityRole="button" accessibilityLabel={t('manageCategories.deleteSubcategory')} style={{ padding: 4 }}>
+      </Pressable>
+      <Pressable onPress={() => onDelete(categoryId, sub)} accessibilityRole="button" accessibilityLabel={t('manageCategories.deleteSubcategory')} style={{ padding: 4 }}>
         <MaterialCommunityIcons name="trash-can-outline" size={16} color={colors.error} />
-      </TouchableOpacity>
+      </Pressable>
     </View>
   );
 }
@@ -169,7 +168,7 @@ function CategoryRow({
   return (
     <View style={{ backgroundColor: colors.cardDark, borderRadius: 12, borderWidth: 1, borderColor: colors.borderDark, marginBottom: 10, overflow: 'hidden' }}>
       <View style={{ flexDirection: 'row', alignItems: 'center', padding: 14 }}>
-        <TouchableOpacity style={{ flex: 1, flexDirection: 'row', alignItems: 'center' }} onPress={() => onToggle(item.id)} accessibilityRole="button" activeOpacity={0.7}>
+        <Pressable style={{ flex: 1, flexDirection: 'row', alignItems: 'center' }} onPress={() => onToggle(item.id)} accessibilityRole="button">
           <MaterialCommunityIcons name={item.icon as IconName} size={22} color={colors.primary} style={{ marginRight: 10 }} />
           <AppText style={{ flex: 1, color: colors.textWhite, fontWeight: '600' }}>{item.name}</AppText>
           {categoryTotal !== undefined && (
@@ -179,13 +178,13 @@ function CategoryRow({
           )}
           <AppText style={{ color: colors.textSlate400, fontSize: 12, marginRight: 6 }}>{item.subcategories.length} {t('manageCategories.subcategories')}</AppText>
           <MaterialCommunityIcons name={expanded ? 'chevron-up' : 'chevron-down'} size={20} color={colors.textSlate400} style={{ marginRight: 10 }} />
-        </TouchableOpacity>
-        <TouchableOpacity onPress={() => onEditCategory(item)} accessibilityRole="button" style={{ padding: 6, marginRight: 4 }}>
+        </Pressable>
+        <Pressable onPress={() => onEditCategory(item)} accessibilityRole="button" style={{ padding: 6, marginRight: 4 }}>
           <MaterialCommunityIcons name="pencil-outline" size={18} color={colors.primary} />
-        </TouchableOpacity>
-        <TouchableOpacity onPress={() => onDeleteCategory(item)} accessibilityRole="button" style={{ padding: 6 }}>
+        </Pressable>
+        <Pressable onPress={() => onDeleteCategory(item)} accessibilityRole="button" style={{ padding: 6 }}>
           <MaterialCommunityIcons name="trash-can-outline" size={18} color={colors.error} />
-        </TouchableOpacity>
+        </Pressable>
       </View>
       {expanded && (
         <>
@@ -199,10 +198,10 @@ function CategoryRow({
               onEdit={onEditSubcategory}
             />
           ))}
-          <TouchableOpacity style={{ flexDirection: 'row', alignItems: 'center', padding: 10, paddingLeft: 20, borderTopWidth: 1, borderTopColor: 'rgba(51,65,85,0.3)' }} onPress={() => onAddSubcategory(item.id)} accessibilityRole="button">
+          <Pressable style={{ flexDirection: 'row', alignItems: 'center', padding: 10, paddingLeft: 20, borderTopWidth: 1, borderTopColor: 'rgba(51,65,85,0.3)' }} onPress={() => onAddSubcategory(item.id)} accessibilityRole="button">
             <MaterialCommunityIcons name="plus" size={16} color={colors.primary} />
             <AppText style={{ color: colors.primary, marginLeft: 6, fontSize: 13 }}>{t('manageCategories.addSubcategory')}</AppText>
-          </TouchableOpacity>
+          </Pressable>
         </>
       )}
     </View>
@@ -260,9 +259,9 @@ function DeletedTab({
                 <MaterialCommunityIcons name={category.icon as IconName} size={22} color={colors.textSlate400} style={{ marginRight: 10 }} />
                 <AppText style={{ flex: 1, color: colors.textSlate400, fontWeight: '600' }}>{category.name}</AppText>
                 <AppText style={{ color: colors.textSlate400, fontSize: 11, marginRight: 10 }}>{category.subcategories.length} subs</AppText>
-                <TouchableOpacity onPress={() => onRecoverCategory(category)} accessibilityRole="button" style={{ backgroundColor: 'rgba(168,85,247,0.15)', borderRadius: 6, paddingHorizontal: 10, paddingVertical: 5, borderWidth: 1, borderColor: colors.primary }}>
+                <Pressable onPress={() => onRecoverCategory(category)} accessibilityRole="button" style={{ backgroundColor: 'rgba(168,85,247,0.15)', borderRadius: 6, paddingHorizontal: 10, paddingVertical: 5, borderWidth: 1, borderColor: colors.primary }}>
                   <AppText style={{ color: colors.primary, fontSize: 12, fontWeight: '600' }}>{t('manageCategories.recoverConfirm')}</AppText>
-                </TouchableOpacity>
+                </Pressable>
               </View>
               {category.subcategories.map((sub) => (
                 <View key={sub.id} style={{ flexDirection: 'row', alignItems: 'center', paddingVertical: 8, paddingLeft: 20, paddingRight: 14, borderTopWidth: 1, borderTopColor: 'rgba(51,65,85,0.2)' }}>
@@ -292,9 +291,9 @@ function DeletedTab({
                 <View key={item.subcategory.id} style={{ flexDirection: 'row', alignItems: 'center', paddingVertical: 10, paddingLeft: 20, paddingRight: 14, borderTopWidth: 1, borderTopColor: 'rgba(51,65,85,0.3)' }}>
                   <MaterialCommunityIcons name="circle-small" size={16} color={colors.textSlate400} />
                   <AppText style={{ flex: 1, color: colors.textSlate400, marginLeft: 4, fontSize: 14 }}>{item.subcategory.name}</AppText>
-                  <TouchableOpacity onPress={() => onRecoverSubcategory(item)} accessibilityRole="button" style={{ backgroundColor: 'rgba(168,85,247,0.15)', borderRadius: 6, paddingHorizontal: 10, paddingVertical: 5, borderWidth: 1, borderColor: colors.primary }}>
+                  <Pressable onPress={() => onRecoverSubcategory(item)} accessibilityRole="button" style={{ backgroundColor: 'rgba(168,85,247,0.15)', borderRadius: 6, paddingHorizontal: 10, paddingVertical: 5, borderWidth: 1, borderColor: colors.primary }}>
                     <AppText style={{ color: colors.primary, fontSize: 12, fontWeight: '600' }}>{t('manageCategories.recoverConfirm')}</AppText>
-                  </TouchableOpacity>
+                  </Pressable>
                 </View>
               ))}
             </View>
@@ -323,8 +322,8 @@ function CategoryFormModal({ visible, title, name, logoUri, isSaving, onChangeNa
             {logoUri ? <Image source={{ uri: logoUri }} style={{ width: 80, height: 80, borderRadius: 10 }} resizeMode="cover" /> : <View style={{ alignItems: 'center', gap: 4 }}><MaterialCommunityIcons name="image-plus" size={24} color={colors.textSlate400} /><AppText style={{ color: colors.textSlate400, fontSize: 12 }}>{t('manageCategories.pickLogo')}</AppText></View>}
           </Pressable>
           <View style={{ flexDirection: 'row', gap: 10 }}>
-            <TouchableOpacity style={{ flex: 1, backgroundColor: 'rgba(51,65,85,0.4)', borderRadius: 8, padding: 12, alignItems: 'center' }} onPress={onCancel}><AppText style={{ color: colors.textSlate200 }}>{t('common.cancel')}</AppText></TouchableOpacity>
-            <TouchableOpacity style={{ flex: 1, backgroundColor: colors.primary, borderRadius: 8, padding: 12, alignItems: 'center', opacity: isSaving ? 0.6 : 1 }} onPress={onSave} disabled={isSaving}>{isSaving ? <ActivityIndicator size="small" color={colors.white} /> : <AppText style={{ color: colors.white, fontWeight: '600' }}>{t('common.save')}</AppText>}</TouchableOpacity>
+            <Pressable style={{ flex: 1, backgroundColor: 'rgba(51,65,85,0.4)', borderRadius: 8, padding: 12, alignItems: 'center' }} onPress={onCancel}><AppText style={{ color: colors.textSlate200 }}>{t('common.cancel')}</AppText></Pressable>
+            <Pressable style={{ flex: 1, backgroundColor: colors.primary, borderRadius: 8, padding: 12, alignItems: 'center', opacity: isSaving ? 0.6 : 1 }} onPress={onSave} disabled={isSaving}>{isSaving ? <ActivityIndicator size="small" color={colors.white} /> : <AppText style={{ color: colors.white, fontWeight: '600' }}>{t('common.save')}</AppText>}</Pressable>
           </View>
         </View>
       </View>
@@ -366,7 +365,7 @@ function SubcategoryFormModal({
 
           {/* Parent category */}
           <AppText style={{ color: colors.textSlate400, marginBottom: 6, fontSize: 13 }}>{t('manageCategories.parentCategory')}</AppText>
-          <TouchableOpacity
+          <Pressable
             onPress={() => setPickerOpen((v) => !v)}
             accessibilityRole="button"
             style={{
@@ -387,14 +386,14 @@ function SubcategoryFormModal({
               <AppText style={{ color: colors.primary, fontSize: 11, marginRight: 6 }}>{t('manageCategories.willMove')}</AppText>
             )}
             <MaterialCommunityIcons name={pickerOpen ? 'chevron-up' : 'chevron-down'} size={18} color={colors.textSlate400} />
-          </TouchableOpacity>
+          </Pressable>
 
           {/* Dropdown list */}
           {pickerOpen && (
             <View style={{ backgroundColor: 'rgba(30,41,59,0.98)', borderRadius: 8, borderWidth: 1, borderColor: colors.borderDark, marginBottom: 8, maxHeight: 200, overflow: 'hidden' }}>
               <ScrollView showsVerticalScrollIndicator={false}>
                 {categories.map((cat) => (
-                  <TouchableOpacity
+                  <Pressable
                     key={cat.id}
                     onPress={() => { onSelectCategory(cat.id); setPickerOpen(false); }}
                     accessibilityRole="button"
@@ -413,19 +412,19 @@ function SubcategoryFormModal({
                     {cat.id === selectedCategoryId && (
                       <MaterialCommunityIcons name="check" size={16} color={colors.primary} />
                     )}
-                  </TouchableOpacity>
+                  </Pressable>
                 ))}
               </ScrollView>
             </View>
           )}
 
           <View style={{ flexDirection: 'row', gap: 10, marginTop: 8 }}>
-            <TouchableOpacity style={{ flex: 1, backgroundColor: 'rgba(51,65,85,0.4)', borderRadius: 8, padding: 12, alignItems: 'center' }} onPress={onCancel} accessibilityRole="button">
+            <Pressable style={{ flex: 1, backgroundColor: 'rgba(51,65,85,0.4)', borderRadius: 8, padding: 12, alignItems: 'center' }} onPress={onCancel} accessibilityRole="button">
               <AppText style={{ color: colors.textSlate200 }}>{t('common.cancel')}</AppText>
-            </TouchableOpacity>
-            <TouchableOpacity style={{ flex: 1, backgroundColor: colors.primary, borderRadius: 8, padding: 12, alignItems: 'center', opacity: isSaving ? 0.6 : 1 }} onPress={onSave} disabled={isSaving} accessibilityRole="button">
+            </Pressable>
+            <Pressable style={{ flex: 1, backgroundColor: colors.primary, borderRadius: 8, padding: 12, alignItems: 'center', opacity: isSaving ? 0.6 : 1 }} onPress={onSave} disabled={isSaving} accessibilityRole="button">
               {isSaving ? <ActivityIndicator size="small" color={colors.white} /> : <AppText style={{ color: colors.white, fontWeight: '600' }}>{t('common.save')}</AppText>}
-            </TouchableOpacity>
+            </Pressable>
           </View>
         </View>
       </View>
@@ -470,12 +469,12 @@ function CriterionFormModal({
             style={{ backgroundColor: 'rgba(51,65,85,0.4)', borderRadius: 8, paddingHorizontal: 12, paddingVertical: 10, color: colors.textWhite, marginBottom: 16 }}
           />
           <View style={{ flexDirection: 'row', gap: 10 }}>
-            <TouchableOpacity style={{ flex: 1, backgroundColor: 'rgba(51,65,85,0.4)', borderRadius: 8, padding: 12, alignItems: 'center' }} onPress={onCancel} accessibilityRole="button">
+            <Pressable style={{ flex: 1, backgroundColor: 'rgba(51,65,85,0.4)', borderRadius: 8, padding: 12, alignItems: 'center' }} onPress={onCancel} accessibilityRole="button">
               <AppText style={{ color: colors.textSlate200 }}>{t('common.cancel')}</AppText>
-            </TouchableOpacity>
-            <TouchableOpacity style={{ flex: 1, backgroundColor: colors.primary, borderRadius: 8, padding: 12, alignItems: 'center', opacity: isSaving ? 0.6 : 1 }} onPress={onSave} disabled={isSaving} accessibilityRole="button">
+            </Pressable>
+            <Pressable style={{ flex: 1, backgroundColor: colors.primary, borderRadius: 8, padding: 12, alignItems: 'center', opacity: isSaving ? 0.6 : 1 }} onPress={onSave} disabled={isSaving} accessibilityRole="button">
               {isSaving ? <ActivityIndicator size="small" color={colors.white} /> : <AppText style={{ color: colors.white, fontWeight: '600' }}>{t('common.save')}</AppText>}
-            </TouchableOpacity>
+            </Pressable>
           </View>
         </View>
       </View>
@@ -513,17 +512,17 @@ function RatingCriteriaCard({
         return (
           <View key={cat.id} style={{ borderTopWidth: 1, borderTopColor: 'rgba(51,65,85,0.3)' }}>
             {/* Category row */}
-            <TouchableOpacity
+            <Pressable
               style={{ flexDirection: 'row', alignItems: 'center', paddingHorizontal: 14, paddingVertical: 12 }}
               onPress={() => toggle(cat.id)}
               accessibilityRole="button"
-              activeOpacity={0.7}
+
             >
               <MaterialCommunityIcons name={cat.icon as IconName} size={18} color={colors.primary} style={{ marginRight: 8 }} />
               <AppText style={{ flex: 1, color: colors.textWhite, fontWeight: '600', fontSize: 14 }}>{cat.name}</AppText>
               <AppText style={{ color: colors.textSlate400, fontSize: 12, marginRight: 6 }}>{cat.ratingCriteria.length} {t('manageCategories.ratingCriteriaCard').toLowerCase()}</AppText>
               <MaterialCommunityIcons name={expanded ? 'chevron-up' : 'chevron-down'} size={18} color={colors.textSlate400} />
-            </TouchableOpacity>
+            </Pressable>
 
             {expanded && (
               <>
@@ -537,22 +536,22 @@ function RatingCriteriaCard({
                     <MaterialCommunityIcons name={criterion.icon as IconName} size={16} color={colors.textSlate400} style={{ marginRight: 8 }} />
                     <AppText style={{ flex: 1, color: colors.textSlate200, fontSize: 13 }}>{criterion.label}</AppText>
                     <AppText style={{ color: colors.textSlate400, fontSize: 11, marginRight: 10 }}>{criterion.key}</AppText>
-                    <TouchableOpacity onPress={() => onEditCriterion(cat.id, criterion, idx)} accessibilityRole="button" style={{ marginRight: 10, padding: 4 }}>
+                    <Pressable onPress={() => onEditCriterion(cat.id, criterion, idx)} accessibilityRole="button" style={{ marginRight: 10, padding: 4 }}>
                       <MaterialCommunityIcons name="pencil-outline" size={15} color={colors.primary} />
-                    </TouchableOpacity>
-                    <TouchableOpacity onPress={() => onDeleteCriterion(cat.id, criterion)} accessibilityRole="button" style={{ padding: 4 }}>
+                    </Pressable>
+                    <Pressable onPress={() => onDeleteCriterion(cat.id, criterion)} accessibilityRole="button" style={{ padding: 4 }}>
                       <MaterialCommunityIcons name="trash-can-outline" size={15} color={colors.error} />
-                    </TouchableOpacity>
+                    </Pressable>
                   </View>
                 ))}
-                <TouchableOpacity
+                <Pressable
                   style={{ flexDirection: 'row', alignItems: 'center', paddingVertical: 9, paddingLeft: 36, paddingRight: 14, borderTopWidth: 1, borderTopColor: 'rgba(51,65,85,0.2)' }}
                   onPress={() => onAddCriterion(cat.id)}
                   accessibilityRole="button"
                 >
                   <MaterialCommunityIcons name="plus" size={15} color={colors.primary} />
                   <AppText style={{ color: colors.primary, marginLeft: 6, fontSize: 13 }}>{t('manageCategories.addCriterion')}</AppText>
-                </TouchableOpacity>
+                </Pressable>
               </>
             )}
           </View>
@@ -910,7 +909,7 @@ export function ManageCategoriesScreen() {
       {subTab === 'categories' && (
         <View style={{ flexDirection: 'row', marginHorizontal: 16, marginBottom: 12, backgroundColor: 'rgba(51,65,85,0.3)', borderRadius: 10, padding: 3 }}>
           {(['active', 'deleted'] as const).map((tabKey) => (
-            <TouchableOpacity
+            <Pressable
               key={tabKey}
               style={{ flex: 1, paddingVertical: 8, borderRadius: 8, alignItems: 'center', backgroundColor: tab === tabKey ? (tabKey === 'deleted' ? colors.error : colors.primary) : 'transparent' }}
               onPress={() => handleTabChange(tabKey)}
@@ -919,7 +918,7 @@ export function ManageCategoriesScreen() {
               <AppText style={{ color: tab === tabKey ? colors.white : colors.textSlate400, fontWeight: '600', fontSize: 13 }}>
                 {tabKey === 'active' ? t('manageCategories.tabActive') : t('manageCategories.tabDeleted')}
               </AppText>
-            </TouchableOpacity>
+            </Pressable>
           ))}
         </View>
       )}
@@ -934,8 +933,8 @@ export function ManageCategoriesScreen() {
           /* ── Landing: two big cards ── */
           <ScrollView contentContainerStyle={{ padding: 20, gap: 16 }} showsVerticalScrollIndicator={false}>
             {/* Card: Category */}
-            <TouchableOpacity
-              activeOpacity={0.85}
+            <Pressable
+
               onPress={() => setSubTab('categories')}
               accessibilityRole="button"
               style={{ backgroundColor: colors.cardDark, borderRadius: 18, borderWidth: 1, borderColor: colors.borderDark, padding: 28, alignItems: 'center', gap: 12 }}
@@ -948,11 +947,11 @@ export function ManageCategoriesScreen() {
               <View style={{ marginTop: 4, backgroundColor: 'rgba(168,85,247,0.15)', borderRadius: 10, paddingHorizontal: 18, paddingVertical: 8, borderWidth: 1, borderColor: colors.primary }}>
                 <AppText style={{ color: colors.primary, fontWeight: '600', fontSize: 14 }}>{t('manageCategories.manage')} →</AppText>
               </View>
-            </TouchableOpacity>
+            </Pressable>
 
             {/* Card: Rating Criteria */}
-            <TouchableOpacity
-              activeOpacity={0.85}
+            <Pressable
+
               onPress={() => setSubTab('rating')}
               accessibilityRole="button"
               style={{ backgroundColor: colors.cardDark, borderRadius: 18, borderWidth: 1, borderColor: colors.borderDark, padding: 28, alignItems: 'center', gap: 12 }}
@@ -965,15 +964,15 @@ export function ManageCategoriesScreen() {
               <View style={{ marginTop: 4, backgroundColor: 'rgba(20,184,166,0.12)', borderRadius: 10, paddingHorizontal: 18, paddingVertical: 8, borderWidth: 1, borderColor: '#14b8a6' }}>
                 <AppText style={{ color: '#14b8a6', fontWeight: '600', fontSize: 14 }}>{t('manageCategories.manage')} →</AppText>
               </View>
-            </TouchableOpacity>
+            </Pressable>
           </ScrollView>
         ) : subTab === 'categories' ? (
           /* ── Category sub-screen ── */
           <>
             <View style={{ flexDirection: 'row', alignItems: 'center', paddingHorizontal: 16, marginBottom: 10, gap: 10 }}>
-              <TouchableOpacity onPress={() => setSubTab(null)} accessibilityRole="button" style={{ padding: 6 }}>
+              <Pressable onPress={() => setSubTab(null)} accessibilityRole="button" style={{ padding: 6 }}>
                 <MaterialCommunityIcons name="arrow-left" size={22} color={colors.textWhite} />
-              </TouchableOpacity>
+              </Pressable>
               <AppText style={{ flex: 1, fontSize: 16, fontWeight: '700', color: colors.textWhite }}>{t('manageCategories.subTabCategory')}</AppText>
               <Pressable
                 onPress={() => { setNewCategoryName(''); setNewCategoryLogoUri(null); setAddCategoryVisible(true); }}
@@ -1006,16 +1005,16 @@ export function ManageCategoriesScreen() {
           /* ── Rating Criteria sub-screen ── */
           <>
             <View style={{ flexDirection: 'row', alignItems: 'center', paddingHorizontal: 16, marginBottom: 10 }}>
-              <TouchableOpacity onPress={() => { setSubTab(null); setCriteriaTab('active'); }} accessibilityRole="button" style={{ padding: 6, marginRight: 8 }}>
+              <Pressable onPress={() => { setSubTab(null); setCriteriaTab('active'); }} accessibilityRole="button" style={{ padding: 6, marginRight: 8 }}>
                 <MaterialCommunityIcons name="arrow-left" size={22} color={colors.textWhite} />
-              </TouchableOpacity>
+              </Pressable>
               <AppText style={{ flex: 1, fontSize: 16, fontWeight: '700', color: colors.textWhite }}>{t('manageCategories.subTabRatingCriteria')}</AppText>
             </View>
 
             {/* Criteria sub-tabs */}
             <View style={{ flexDirection: 'row', marginHorizontal: 16, marginBottom: 12, backgroundColor: 'rgba(51,65,85,0.3)', borderRadius: 10, padding: 3 }}>
               {(['active', 'deleted'] as const).map((tabKey) => (
-                <TouchableOpacity
+                <Pressable
                   key={tabKey}
                   style={{ flex: 1, paddingVertical: 8, borderRadius: 8, alignItems: 'center', backgroundColor: criteriaTab === tabKey ? (tabKey === 'deleted' ? colors.error : colors.primary) : 'transparent' }}
                   onPress={() => setCriteriaTab(tabKey)}
@@ -1024,7 +1023,7 @@ export function ManageCategoriesScreen() {
                   <AppText style={{ color: criteriaTab === tabKey ? colors.white : colors.textSlate400, fontWeight: '600', fontSize: 13 }}>
                     {tabKey === 'active' ? t('manageCategories.tabActiveCriteria') : t('manageCategories.tabDeletedCriteria')}
                   </AppText>
-                </TouchableOpacity>
+                </Pressable>
               ))}
             </View>
 
@@ -1057,7 +1056,7 @@ export function ManageCategoriesScreen() {
                           <MaterialCommunityIcons name={criterion.icon as IconName} size={16} color={colors.textSlate400} style={{ marginRight: 8 }} />
                           <AppText style={{ flex: 1, color: colors.textSlate400, fontSize: 13 }}>{criterion.label}</AppText>
                           <AppText style={{ color: colors.textSlate400, fontSize: 11, marginRight: 10 }}>{criterion.key}</AppText>
-                          <TouchableOpacity
+                          <Pressable
                             onPress={() => showConfirm(
                               t('manageCategories.recoverCriterion'),
                               t('manageCategories.recoverCriterionMessage', { label: criterion.label, category: cat.name }),
@@ -1067,7 +1066,7 @@ export function ManageCategoriesScreen() {
                             style={{ backgroundColor: 'rgba(168,85,247,0.15)', borderRadius: 6, paddingHorizontal: 10, paddingVertical: 5, borderWidth: 1, borderColor: colors.primary }}
                           >
                             <AppText style={{ color: colors.primary, fontSize: 12, fontWeight: '600' }}>{t('manageCategories.recoverConfirm')}</AppText>
-                          </TouchableOpacity>
+                          </Pressable>
                         </View>
                       ))}
                     </View>

@@ -1,14 +1,11 @@
 import React from 'react';
-import { View, Image, ScrollView, Pressable, Dimensions, StatusBar, Platform } from 'react-native';
+import { View, Image, ScrollView, Pressable, StatusBar, Platform, useWindowDimensions } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { AppText } from '@/presentation/shared/components/ui/AppText';
 import { colors } from '@/core/theme/colors';
 import { useTheme } from '@/core/theme/useTheme';
-
-const WINDOW_HEIGHT = Dimensions.get('window').height;
-const HERO_HEIGHT = Math.min(Math.round(WINDOW_HEIGHT * 0.4), 320);
 
 interface BannerDetailScreenProps {
   title: string;
@@ -20,10 +17,12 @@ interface BannerDetailScreenProps {
 export function BannerDetailScreen({ title, description, content, imageUrl }: BannerDetailScreenProps) {
   const router = useRouter();
   const theme = useTheme();
+  const { height: windowHeight } = useWindowDimensions();
+  const HERO_HEIGHT = Math.min(Math.round(windowHeight * 0.4), 320);
 
   return (
     <View style={{ flex: 1, backgroundColor: theme.background }}>
-      <StatusBar barStyle="light-content" />
+      {Platform.OS !== 'web' && <StatusBar barStyle="light-content" />}
       <ScrollView
         style={{ flex: 1 }}
         contentContainerStyle={{ paddingBottom: 48 }}
@@ -52,17 +51,20 @@ export function BannerDetailScreen({ title, description, content, imageUrl }: Ba
               position: 'absolute',
               top: Platform.OS === 'ios' ? 52 : 16,
               left: 16,
-              width: 40,
+              minWidth: 40,
               height: 40,
               borderRadius: 20,
               backgroundColor: 'rgba(0,0,0,0.5)',
+              flexDirection: 'row',
               alignItems: 'center',
               justifyContent: 'center',
+              paddingHorizontal: Platform.OS === 'web' ? 12 : 0,
             }}
             accessibilityLabel="Go back"
             accessibilityRole="button"
           >
             <MaterialCommunityIcons name="arrow-left" size={22} color={colors.white} />
+            {Platform.OS === 'web' && <AppText style={{ color: '#fff', fontSize: 14, fontWeight: '600', marginLeft: 4 }}>Back</AppText>}
           </Pressable>
         </View>
 

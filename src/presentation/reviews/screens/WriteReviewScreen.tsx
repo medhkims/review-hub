@@ -1,8 +1,9 @@
 import React, { useState, useCallback, useEffect, useMemo } from 'react';
-import { View, ScrollView, TextInput, Pressable, Alert } from 'react-native';
+import { View, ScrollView, TextInput, Pressable } from 'react-native';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useTranslation } from 'react-i18next';
+import { crossPlatformAlert } from '@/core/utils/crossPlatformAlert';
 import { ScreenLayout } from '@/presentation/shared/layouts/ScreenLayout';
 import { AppText } from '@/presentation/shared/components/ui/AppText';
 import { AppButton } from '@/presentation/shared/components/ui/AppButton';
@@ -44,6 +45,7 @@ const StarRating = React.memo(
             accessibilityLabel={`Rate ${star} star${star > 1 ? 's' : ''}`}
             accessibilityRole="button"
             hitSlop={4}
+            style={{ minWidth: 44, minHeight: 44, alignItems: 'center', justifyContent: 'center' }}
           >
             <MaterialCommunityIcons
               name={star <= rating ? 'star' : 'star-outline'}
@@ -147,7 +149,7 @@ export default function WriteReviewScreen() {
 
   useEffect(() => {
     if (error) {
-      Alert.alert('Error', error);
+      crossPlatformAlert('Error', error);
     }
   }, [error]);
 
@@ -172,7 +174,7 @@ export default function WriteReviewScreen() {
             accessibilityRole="button"
             hitSlop={8}
             style={{
-              width: 40, height: 40, borderRadius: 20, backgroundColor: theme.card,
+              width: 44, height: 44, borderRadius: 22, backgroundColor: theme.card,
               alignItems: 'center', justifyContent: 'center',
             }}
           >

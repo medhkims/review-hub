@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, Modal, Pressable, ScrollView } from 'react-native';
+import { View, Modal, Pressable, ScrollView, Platform } from 'react-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useTranslation } from 'react-i18next';
 import { AppText } from './ui/AppText';
@@ -129,7 +129,7 @@ const Dropdown: React.FC<DropdownProps> = ({
             maxHeight: 350,
           }}
         >
-          <ScrollView nestedScrollEnabled showsVerticalScrollIndicator={false}>
+          <ScrollView nestedScrollEnabled showsVerticalScrollIndicator={Platform.OS === 'web'}>
             {children}
           </ScrollView>
           <Pressable
@@ -362,7 +362,7 @@ export const FilterBySheet: React.FC<FilterBySheetProps> = ({
 
           <ScrollView
             contentContainerStyle={{ paddingHorizontal: 24, paddingBottom: 20 }}
-            showsVerticalScrollIndicator={false}
+            showsVerticalScrollIndicator={Platform.OS === 'web'}
             nestedScrollEnabled
           >
             {/* Categories Dropdown */}

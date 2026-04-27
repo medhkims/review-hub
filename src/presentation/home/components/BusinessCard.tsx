@@ -266,7 +266,7 @@ const BusinessCardComponent: React.FC<BusinessCardProps> = ({
           <Pressable
             onPress={onWishlistPress}
             hitSlop={8}
-            style={{ paddingHorizontal: 14 }}
+            style={{ paddingHorizontal: 14, minWidth: 44, minHeight: 44, justifyContent: 'center', alignItems: 'center' }}
             accessibilityLabel={isWishlisted ? 'Remove from wishlist' : 'Save to wishlist'}
             accessibilityRole="button"
           >
@@ -406,6 +406,7 @@ const BusinessCardComponent: React.FC<BusinessCardProps> = ({
                   hitSlop={8}
                   accessibilityLabel={isWishlisted ? 'Remove from wishlist' : 'Save to wishlist'}
                   accessibilityRole="button"
+                  style={{ minWidth: 44, minHeight: 44, alignItems: 'center', justifyContent: 'center' }}
                 >
                   <MaterialCommunityIcons
                     name={isWishlisted ? 'heart' : 'heart-outline'}

@@ -1,12 +1,11 @@
 import React, { useState, useCallback } from 'react';
-import { View, FlatList, Image, Pressable, Modal, Dimensions, Platform } from 'react-native';
+import { View, FlatList, Image, Pressable, Modal, Platform, useWindowDimensions } from 'react-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useTranslation } from 'react-i18next';
 import { SectionCard } from './SectionCard';
 import { AppText } from '@/presentation/shared/components/ui/AppText';
 import { useTheme } from '@/core/theme/useTheme';
 
-const { width: SCREEN_WIDTH } = Dimensions.get('window');
 const ITEM_WIDTH = 240;
 const ITEM_HEIGHT = 160;
 
@@ -47,6 +46,7 @@ const GalleryItem: React.FC<GalleryItemProps> = React.memo(({ uri, onPress }) =>
 
 export const PhotoGallerySection: React.FC<PhotoGallerySectionProps> = ({ galleryImages }) => {
   const { t } = useTranslation();
+  const { width: SCREEN_WIDTH } = useWindowDimensions();
   const [previewIndex, setPreviewIndex] = useState<number | null>(null);
 
   const handleClose = useCallback(() => setPreviewIndex(null), []);
@@ -91,7 +91,7 @@ export const PhotoGallerySection: React.FC<PhotoGallerySectionProps> = ({ galler
         transparent
         animationType="fade"
         onRequestClose={handleClose}
-        statusBarTranslucent
+        statusBarTranslucent={Platform.OS !== 'web'}
       >
         <View style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.95)', justifyContent: 'center', alignItems: 'center' }}>
           <Pressable
@@ -102,9 +102,9 @@ export const PhotoGallerySection: React.FC<PhotoGallerySectionProps> = ({ galler
               position: 'absolute',
               top: Platform.OS === 'web' ? 16 : 56,
               right: 20,
-              width: 40,
-              height: 40,
-              borderRadius: 20,
+              width: 44,
+              height: 44,
+              borderRadius: 22,
               backgroundColor: 'rgba(255,255,255,0.15)',
               alignItems: 'center',
               justifyContent: 'center',

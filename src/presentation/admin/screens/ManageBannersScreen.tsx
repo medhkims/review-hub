@@ -5,11 +5,11 @@ import {
   Pressable,
   Image,
   ActivityIndicator,
-  Alert,
 } from 'react-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import { useTranslation } from 'react-i18next';
+import { crossPlatformAlert } from '@/core/utils/crossPlatformAlert';
 import { ScreenLayout } from '@/presentation/shared/layouts/ScreenLayout';
 import { AppText } from '@/presentation/shared/components/ui/AppText';
 import { BannerFormModal } from '../components/BannerFormModal';
@@ -52,7 +52,7 @@ export function ManageBannersScreen() {
   }, []);
 
   const handleDelete = useCallback((banner: BannerEntity) => {
-    Alert.alert(
+    crossPlatformAlert(
       t('admin.banners.deleteTitle'),
       t('admin.banners.deleteMessage', { title: banner.title }),
       [

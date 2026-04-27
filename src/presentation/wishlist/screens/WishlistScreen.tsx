@@ -128,8 +128,8 @@ const WishlistCard = React.memo(({ item, onRemove, onPress }: WishlistCardProps)
       <Pressable
         onPress={() => onRemove(item.id)}
         style={({ pressed }) => ({
-          width: 40,
-          height: 40,
+          width: 44,
+          height: 44,
           borderRadius: 8,
           backgroundColor: colors.neonPurple,
           alignItems: 'center',

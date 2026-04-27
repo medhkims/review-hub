@@ -1,6 +1,7 @@
 import React, { useState, useCallback } from 'react';
-import { View, Pressable, Switch, Alert } from 'react-native';
+import { View, Pressable, Switch } from 'react-native';
 import { useTranslation } from 'react-i18next';
+import { crossPlatformAlert } from '@/core/utils/crossPlatformAlert';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { AppText } from '@/presentation/shared/components/ui/AppText';
 import { AppButton } from '@/presentation/shared/components/ui/AppButton';
@@ -65,11 +66,11 @@ export const BookingSettingsCard: React.FC<BookingSettingsCardProps> = ({
 
   const handleSave = useCallback(() => {
     if (isEnabled && selectedDays.length === 0) {
-      Alert.alert(t('common.error'), t('booking.settings.selectDaysError'));
+      crossPlatformAlert(t('common.error'), t('booking.settings.selectDaysError'));
       return;
     }
     if (isEnabled && selectedSlots.length === 0) {
-      Alert.alert(t('common.error'), t('booking.settings.selectSlotsError'));
+      crossPlatformAlert(t('common.error'), t('booking.settings.selectSlotsError'));
       return;
     }
     onSaveConfig({

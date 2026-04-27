@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo, useRef } from 'react';
-import { View, ScrollView, Pressable, TextInput } from 'react-native';
+import { View, ScrollView, Pressable, TextInput, Platform } from 'react-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useTranslation } from 'react-i18next';
 import { AppText } from './ui/AppText';
@@ -159,6 +159,7 @@ const DropdownTrigger = React.memo<DropdownTriggerProps>(
             hitSlop={8}
             accessibilityRole="button"
             accessibilityLabel="Clear"
+            style={{ minWidth: 44, minHeight: 44, alignItems: 'center', justifyContent: 'center' }}
           >
             <MaterialCommunityIcons name="close-circle" size={15} color={theme.textMuted} />
           </Pressable>
@@ -316,7 +317,7 @@ export const LocationFilterSheet: React.FC<LocationFilterSheetProps> = ({
           accessibilityRole="search"
         />
         {isSearching && (
-          <Pressable onPress={() => setSearchQuery('')} hitSlop={6} accessibilityRole="button" accessibilityLabel="Clear">
+          <Pressable onPress={() => setSearchQuery('')} hitSlop={6} accessibilityRole="button" accessibilityLabel="Clear" style={{ minWidth: 44, minHeight: 44, alignItems: 'center', justifyContent: 'center' }}>
             <MaterialCommunityIcons name="close-circle" size={16} color={theme.textMuted} />
           </Pressable>
         )}
@@ -324,7 +325,7 @@ export const LocationFilterSheet: React.FC<LocationFilterSheetProps> = ({
 
       {/* ── Search results (shown while typing) ── */}
       {isSearching && (
-        <ScrollView style={{ maxHeight: 220, borderBottomWidth: 1, borderBottomColor: theme.border }} showsVerticalScrollIndicator={false} nestedScrollEnabled keyboardShouldPersistTaps="handled">
+        <ScrollView style={{ maxHeight: 220, borderBottomWidth: 1, borderBottomColor: theme.border }} showsVerticalScrollIndicator={Platform.OS === 'web'} nestedScrollEnabled keyboardShouldPersistTaps="handled">
           {searchResults.length === 0 ? (
             <View style={{ padding: 14 }}>
               <AppText style={{ fontSize: 13, color: theme.textMuted }}>{t('locationFilter.noResults')}</AppText>
@@ -428,7 +429,7 @@ export const LocationFilterSheet: React.FC<LocationFilterSheetProps> = ({
           {openPanel === 'gov' && (
             <ScrollView
               style={{ maxHeight: 200, borderBottomWidth: 1, borderBottomColor: theme.border }}
-              showsVerticalScrollIndicator={false}
+              showsVerticalScrollIndicator={Platform.OS === 'web'}
               nestedScrollEnabled
               keyboardShouldPersistTaps="handled"
             >
@@ -469,7 +470,7 @@ export const LocationFilterSheet: React.FC<LocationFilterSheetProps> = ({
               )}
               <ScrollView
                 style={{ maxHeight: 200, borderBottomWidth: 1, borderBottomColor: theme.border }}
-                showsVerticalScrollIndicator={false}
+                showsVerticalScrollIndicator={Platform.OS === 'web'}
                 nestedScrollEnabled
                 keyboardShouldPersistTaps="handled"
               >

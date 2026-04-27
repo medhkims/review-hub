@@ -49,9 +49,9 @@ const AccountRowContent: React.FC<AccountRowProps> = ({ item, isActive, isEditin
           accessibilityLabel={`Remove ${item.displayName}`}
           hitSlop={8}
           style={{
-            width: 24,
-            height: 24,
-            borderRadius: 12,
+            width: 44,
+            height: 44,
+            borderRadius: 22,
             backgroundColor: '#EF4444',
             alignItems: 'center',
             justifyContent: 'center',
@@ -287,6 +287,7 @@ export default function AccountSwitcherScreen() {
                   accessibilityRole="button"
                   accessibilityLabel={isEditing ? t('accountSwitcher.doneEditing') : t('accountSwitcher.editAccounts')}
                   hitSlop={8}
+                  style={{ minWidth: 44, minHeight: 44, justifyContent: 'center' }}
                 >
                   <AppText style={{ fontSize: 14, fontWeight: '600', color: colors.neonPurple }}>
                     {isEditing ? t('accountSwitcher.doneEditing') : t('accountSwitcher.editAccounts')}

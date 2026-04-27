@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, ScrollView, Pressable } from 'react-native';
+import { View, ScrollView, Pressable, Platform } from 'react-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useTranslation } from 'react-i18next';
 import { AppText } from './ui/AppText';
@@ -65,7 +65,7 @@ export const LocationDropdown: React.FC<LocationDropdownProps> = ({
       {/* City list */}
       <ScrollView
         style={{ maxHeight: 220 }}
-        showsVerticalScrollIndicator={false}
+        showsVerticalScrollIndicator={Platform.OS === 'web'}
         nestedScrollEnabled
       >
         {TUNISIA_CITIES.map((city, index) => {

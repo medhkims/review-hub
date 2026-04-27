@@ -459,9 +459,9 @@ export default function BusinessReviewsScreen({ businessId, businessName, busine
           accessibilityLabel={t('common.back')}
           accessibilityRole="button"
           style={{
-            width: 40,
-            height: 40,
-            borderRadius: 20,
+            width: 44,
+            height: 44,
+            borderRadius: 22,
             backgroundColor: theme.card,
             alignItems: 'center',
             justifyContent: 'center',
@@ -579,6 +579,7 @@ export default function BusinessReviewsScreen({ businessId, businessName, busine
               accessibilityLabel="Clear filter"
               accessibilityRole="button"
               hitSlop={8}
+              style={{ minWidth: 44, minHeight: 44, alignItems: 'center', justifyContent: 'center' }}
             >
               <MaterialCommunityIcons name="close-circle" size={14} color="#fff" />
             </Pressable>

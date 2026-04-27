@@ -1,5 +1,5 @@
 import React, { useState, useCallback, useMemo } from 'react';
-import { ScrollView, View, RefreshControl, Modal, Pressable, Share, Platform, TextInput } from 'react-native';
+import { ScrollView, View, RefreshControl, Modal, Pressable, Platform, TextInput } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
@@ -25,6 +25,7 @@ import { OpeningHours, DayKey } from '@/domain/business/entities/businessDetailE
 import { container } from '@/core/di/container';
 import { useAuthStore } from '@/presentation/auth/store/authStore';
 import { useHomeStore } from '@/presentation/home/store/homeStore';
+import { crossPlatformShare } from '@/core/utils/webLinks';
 
 const DAY_INDEX: DayKey[] = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
 
@@ -87,15 +88,11 @@ export default function BusinessDetailScreen({ businessId }: BusinessDetailScree
       `https://tchecki.app/business/${business.id}`,
     ].filter(Boolean);
     const richMessage = parts.join('\n');
-    try {
-      await Share.share({
-        title: business.name,
-        message: Platform.OS === 'ios' ? business.name : richMessage,
-        url: Platform.OS === 'ios' ? `https://tchecki.app/business/${business.id}` : undefined,
-      });
-    } catch {
-      // user dismissed share sheet — no-op
-    }
+    await crossPlatformShare({
+      title: business.name,
+      message: richMessage,
+      url: `https://tchecki.app/business/${business.id}`,
+    });
   }, [business]);
 
   const handleSubmitReport = useCallback(async () => {
@@ -172,7 +169,7 @@ export default function BusinessDetailScreen({ businessId }: BusinessDetailScree
         transparent
         animationType="fade"
         onRequestClose={() => setAlreadyReviewedVisible(false)}
-        statusBarTranslucent
+        statusBarTranslucent={Platform.OS !== 'web'}
       >
         <View
           style={{
@@ -280,7 +277,7 @@ export default function BusinessDetailScreen({ businessId }: BusinessDetailScree
         transparent
         animationType="slide"
         onRequestClose={() => { setReportVisible(false); setSelectedReason(null); setOtherText(''); setReportDone(false); }}
-        statusBarTranslucent
+        statusBarTranslucent={Platform.OS !== 'web'}
       >
         <View style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.7)', justifyContent: 'flex-end' }}>
           <View

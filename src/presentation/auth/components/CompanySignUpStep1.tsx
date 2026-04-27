@@ -116,6 +116,7 @@ const IconInputField: React.FC<IconInputFieldProps> = ({
             accessibilityRole="button"
             accessibilityLabel={visible ? 'Hide password' : 'Show password'}
             hitSlop={8}
+            style={{ minWidth: 44, minHeight: 44, alignItems: 'center', justifyContent: 'center' }}
           >
             <MaterialCommunityIcons
               name={visible ? 'eye-off-outline' : 'eye-outline'}
@@ -250,6 +251,7 @@ const SearchableSelectField: React.FC<SearchableSelectFieldProps> = ({
             hitSlop={8}
             accessibilityRole="button"
             accessibilityLabel="Clear"
+            style={{ minWidth: 44, minHeight: 44, alignItems: 'center', justifyContent: 'center' }}
           >
             <MaterialCommunityIcons name="close-circle" size={18} color={theme.textMuted} />
           </Pressable>

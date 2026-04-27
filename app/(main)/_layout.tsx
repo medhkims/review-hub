@@ -12,6 +12,7 @@ import { useRoleStore } from '@/presentation/auth/store/roleStore';
 import { AdminDrawer } from '@/presentation/admin/components/AdminDrawer';
 import { useNotificationStore } from '@/presentation/notifications/store/notificationStore';
 import { AppText } from '@/presentation/shared/components/ui/AppText';
+import { ErrorBoundary } from '@/presentation/shared/components/ErrorBoundary';
 import { auth } from '@/core/firebase/firebaseConfig';
 import { container } from '@/core/di/container';
 
@@ -62,6 +63,7 @@ export default function MainLayout() {
   const isAdmin = role === 'admin';
 
   return (
+    <ErrorBoundary>
     <View style={{ flex: 1 }}>
     <Tabs
       screenOptions={{
@@ -74,9 +76,9 @@ export default function MainLayout() {
               backgroundColor: theme.card,
               borderTopColor: theme.border,
               borderTopWidth: 1,
-              paddingBottom: Platform.OS === 'ios' ? 24 : 8 + bottom,
+              paddingBottom: Platform.OS === 'ios' ? 24 : Platform.OS === 'web' ? 8 : 8 + bottom,
               paddingTop: 8,
-              height: Platform.OS === 'ios' ? 85 : 65 + bottom,
+              height: Platform.OS === 'ios' ? 85 : Platform.OS === 'web' ? 60 : 65 + bottom,
             },
         tabBarLabelStyle: {
           fontSize: 10,
@@ -160,5 +162,6 @@ export default function MainLayout() {
     </Tabs>
     {isAdmin && <AdminDrawer />}
     </View>
+    </ErrorBoundary>
   );
 }

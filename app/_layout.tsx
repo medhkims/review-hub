@@ -11,7 +11,6 @@ import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { StatusBar } from 'expo-status-bar';
 import { ErrorBoundary } from '@/presentation/shared/components/ErrorBoundary';
 import { CookieConsentBanner } from '@/presentation/shared/components/CookieConsentBanner';
-import { GoogleSignin } from '@react-native-google-signin/google-signin';
 import Constants from 'expo-constants';
 import '@/core/i18n/i18n';
 import '@/core/firebase/firebaseConfig';
@@ -26,6 +25,8 @@ if (Platform.OS === 'web') {
 }
 
 if (Platform.OS !== 'web') {
+  // Conditional require: @react-native-google-signin is native-only (crashes on web import)
+  const { GoogleSignin } = require('@react-native-google-signin/google-signin');
   GoogleSignin.configure({
     webClientId: Constants.expoConfig?.extra?.firebase?.webClientId,
   });

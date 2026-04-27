@@ -141,6 +141,9 @@ const MessageInputBar = React.memo(({ onSend }: MessageInputBarProps) => {
             maxHeight: 100,
           }}
           accessibilityLabel="Message input"
+          onSubmitEditing={Platform.OS === 'web' ? handleSend : undefined}
+          blurOnSubmit={Platform.OS === 'web'}
+          returnKeyType="send"
         />
       </View>
 
@@ -332,12 +335,15 @@ export const ChatScreen: React.FC<ChatScreenProps> = ({ conversationId }) => {
             data={messages}
             renderItem={renderItem}
             keyExtractor={keyExtractor}
-            inverted
+            inverted={Platform.OS !== 'web'}
             showsVerticalScrollIndicator={false}
             contentContainerStyle={{
-              flexDirection: 'column-reverse',
+              ...(Platform.OS === 'web'
+                ? { flexDirection: 'column-reverse' as const }
+                : { flexDirection: 'column-reverse' as const }),
               paddingVertical: 12,
             }}
+            {...(Platform.OS === 'web' ? { style: { transform: [{ scaleY: -1 }] } } : {})}
           />
         )}
 

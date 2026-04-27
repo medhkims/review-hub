@@ -29,8 +29,8 @@ export class AuthLocalDataSourceImpl implements AuthLocalDataSource {
   async cacheUser(user: UserModel): Promise<void> {
     try {
       await AsyncStorage.setItem(USER_KEY, JSON.stringify(user));
-    } catch (error) {
-      throw new CacheException('Failed to cache user');
+    } catch {
+      // Storage quota exceeded on web — silently ignore
     }
   }
 

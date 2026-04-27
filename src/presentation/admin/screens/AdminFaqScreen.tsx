@@ -190,7 +190,7 @@ const FaqCard = React.memo(({
               accessibilityRole="button"
               accessibilityLabel="Edit FAQ"
               hitSlop={8}
-              style={{ padding: 8, borderRadius: 8, borderWidth: 1, borderColor: theme.border }}
+              style={{ padding: 8, borderRadius: 8, borderWidth: 1, borderColor: theme.border, minWidth: 44, minHeight: 44, alignItems: 'center', justifyContent: 'center' }}
             >
               <MaterialCommunityIcons name="pencil-outline" size={18} color={theme.text} />
             </Pressable>
@@ -199,7 +199,7 @@ const FaqCard = React.memo(({
               accessibilityRole="button"
               accessibilityLabel="Delete FAQ"
               hitSlop={8}
-              style={{ padding: 8, borderRadius: 8, borderWidth: 1, borderColor: '#fca5a5' }}
+              style={{ padding: 8, borderRadius: 8, borderWidth: 1, borderColor: '#fca5a5', minWidth: 44, minHeight: 44, alignItems: 'center', justifyContent: 'center' }}
             >
               <MaterialCommunityIcons name="trash-can-outline" size={18} color="#ef4444" />
             </Pressable>

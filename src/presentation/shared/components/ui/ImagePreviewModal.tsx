@@ -4,17 +4,15 @@ import {
   View,
   Image,
   Pressable,
-  Dimensions,
   ActivityIndicator,
   StatusBar,
   Platform,
+  useWindowDimensions,
 } from 'react-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useTranslation } from 'react-i18next';
 import { AppText } from './AppText';
 import { colors } from '@/core/theme/colors';
-
-const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
 
 interface ImagePreviewModalProps {
   visible: boolean;
@@ -34,6 +32,7 @@ export const ImagePreviewModal: React.FC<ImagePreviewModalProps> = ({
   isLoading = false,
 }) => {
   const { t } = useTranslation();
+  const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = useWindowDimensions();
 
   return (
     <Modal
@@ -62,9 +61,9 @@ export const ImagePreviewModal: React.FC<ImagePreviewModalProps> = ({
             accessibilityLabel={t('common.cancel')}
             hitSlop={8}
             style={{
-              width: 40,
-              height: 40,
-              borderRadius: 20,
+              width: 44,
+              height: 44,
+              borderRadius: 22,
               backgroundColor: 'rgba(255,255,255,0.12)',
               alignItems: 'center',
               justifyContent: 'center',

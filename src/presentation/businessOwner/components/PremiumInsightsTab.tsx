@@ -1,7 +1,8 @@
 import React from 'react';
-import { View, ScrollView, Pressable, ActivityIndicator, Alert } from 'react-native';
+import { View, ScrollView, Pressable, ActivityIndicator } from 'react-native';
 import Svg, { Path, Circle, Text as SvgText } from 'react-native-svg';
 import { router } from 'expo-router';
+import { crossPlatformAlert } from '@/core/utils/crossPlatformAlert';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { AppText } from '@/presentation/shared/components/ui/AppText';
 import { colors } from '@/core/theme/colors';
@@ -166,8 +167,8 @@ export const PremiumInsightsTab: React.FC = () => {
   const peakMax  = Math.max(...peakDays.map(d => d.count), 1);
 
   const handleBoost = () => {
-    if (activeBoost) { Alert.alert('Active Boost', 'You already have an active boost running.'); return; }
-    Alert.alert('Boost Your Business', 'Your business will appear at the top of search results for 30 days.', [
+    if (activeBoost) { crossPlatformAlert('Active Boost', 'You already have an active boost running.'); return; }
+    crossPlatformAlert('Boost Your Business', 'Your business will appear at the top of search results for 30 days.', [
       { text: 'Cancel', style: 'cancel' },
       { text: 'Boost Now', onPress: activateBoost },
     ]);

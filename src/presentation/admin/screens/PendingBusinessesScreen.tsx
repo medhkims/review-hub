@@ -1,7 +1,8 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { View, FlatList, Pressable, Image, ActivityIndicator, Modal, ScrollView, Alert, TextInput, useWindowDimensions } from 'react-native';
+import { View, FlatList, Pressable, Image, ActivityIndicator, Modal, ScrollView, TextInput, useWindowDimensions, Platform } from 'react-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useTranslation } from 'react-i18next';
+import { crossPlatformAlert } from '@/core/utils/crossPlatformAlert';
 import { ScreenLayout } from '@/presentation/shared/layouts/ScreenLayout';
 import { AppText } from '@/presentation/shared/components/ui/AppText';
 import { BusinessDetailEntity } from '@/domain/business/entities/businessDetailEntity';
@@ -474,7 +475,7 @@ export function PendingBusinessesScreen() {
       ? await container.approveReviewUseCase.execute(params)
       : await container.rejectReviewUseCase.execute(params);
     result.fold(
-      () => Alert.alert('Error', `Failed to ${action} review`),
+      () => crossPlatformAlert('Error', `Failed to ${action} review`),
       () => {
         setPendingReviews((prev) => prev.filter((r) => r.id !== review.id));
         setSelectedReview(null);
@@ -986,6 +987,7 @@ export function PendingBusinessesScreen() {
           keyExtractor={(item) => item.id}
           contentContainerStyle={{ paddingVertical: 8 }}
           showsVerticalScrollIndicator={false}
+          removeClippedSubviews={Platform.OS !== 'web'}
         />
       );
     }
@@ -1044,6 +1046,7 @@ export function PendingBusinessesScreen() {
           keyExtractor={(item) => item.id}
           contentContainerStyle={{ paddingVertical: 8 }}
           showsVerticalScrollIndicator={false}
+          removeClippedSubviews={Platform.OS !== 'web'}
         />
       );
     }
@@ -1124,6 +1127,7 @@ export function PendingBusinessesScreen() {
           ListHeaderComponent={SortBar}
           contentContainerStyle={{ paddingVertical: 8, paddingHorizontal: 16, gap: 12 }}
           showsVerticalScrollIndicator={false}
+          removeClippedSubviews={Platform.OS !== 'web'}
           renderItem={({ item }) => {
             // Non-pending tabs: compact row — tap to see all details
             if (statusFilter !== 'pending') {

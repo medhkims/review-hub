@@ -1,8 +1,9 @@
 import React, { useState, useCallback, useRef } from 'react';
-import { View, ScrollView, Pressable, TextInput, ActivityIndicator, Image, Alert, Modal } from 'react-native';
+import { View, ScrollView, Pressable, TextInput, ActivityIndicator, Image, Modal } from 'react-native';
 import { useRouter, useFocusEffect, router as rootRouter } from 'expo-router';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useTranslation } from 'react-i18next';
+import { crossPlatformAlert } from '@/core/utils/crossPlatformAlert';
 import * as ImagePicker from 'expo-image-picker';
 import { AppText } from '@/presentation/shared/components/ui/AppText';
 import { AppButton } from '@/presentation/shared/components/ui/AppButton';
@@ -57,7 +58,7 @@ export default function VerifyAccountScreen() {
   const handleSelectFile = useCallback(async () => {
     const permission = await ImagePicker.requestMediaLibraryPermissionsAsync();
     if (!permission.granted) {
-      Alert.alert(t('common.error'), t('common.permissionDenied'));
+      crossPlatformAlert(t('common.error'), t('common.permissionDenied'));
       return;
     }
     const result = await ImagePicker.launchImageLibraryAsync({
@@ -76,15 +77,15 @@ export default function VerifyAccountScreen() {
 
   const handleSubmit = useCallback(async () => {
     if (!fullName.trim()) {
-      Alert.alert(t('common.error'), t('verifyAccount.errorFullName'));
+      crossPlatformAlert(t('common.error'), t('verifyAccount.errorFullName'));
       return;
     }
     if (!phoneNumber.trim()) {
-      Alert.alert(t('common.error'), t('verifyAccount.errorPhone'));
+      crossPlatformAlert(t('common.error'), t('verifyAccount.errorPhone'));
       return;
     }
     if (!idCardUri) {
-      Alert.alert(t('common.error'), t('verifyAccount.errorIdCard'));
+      crossPlatformAlert(t('common.error'), t('verifyAccount.errorIdCard'));
       return;
     }
     // Validate that the uploaded image is a Tunisian ID card

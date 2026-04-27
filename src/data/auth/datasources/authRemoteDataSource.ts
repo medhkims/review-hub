@@ -16,8 +16,13 @@ import {
   signInAnonymously,
 } from 'firebase/auth';
 import { User as FirebaseUser } from 'firebase/auth';
-import { GoogleSignin, isSuccessResponse, isErrorWithCode, statusCodes } from '@react-native-google-signin/google-signin';
 import { Platform } from 'react-native';
+
+// Conditional import: @react-native-google-signin is native-only (crashes on web)
+const GoogleSigninModule = Platform.OS !== 'web'
+  ? require('@react-native-google-signin/google-signin')
+  : { GoogleSignin: null, isSuccessResponse: () => false, isErrorWithCode: () => false, statusCodes: {} };
+const { GoogleSignin, isSuccessResponse, isErrorWithCode, statusCodes } = GoogleSigninModule;
 import { doc, setDoc, getDoc, serverTimestamp, Timestamp } from 'firebase/firestore';
 import { httpsCallable } from 'firebase/functions';
 import { UserModel } from '../models/userModel';
@@ -349,7 +354,8 @@ export class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
     } catch (error: unknown) {
       if (error instanceof AuthException) throw error;
       if (isErrorWithCode(error)) {
-        switch (error.code) {
+        const errorWithCode = error as { code: string };
+        switch (errorWithCode.code) {
           case statusCodes.SIGN_IN_CANCELLED:
             throw new AuthException('Google sign in was cancelled');
           case statusCodes.IN_PROGRESS:

@@ -44,17 +44,18 @@ import {
   Pressable,
   ActivityIndicator,
   Keyboard,
-  Image,
   ScrollView,
   useWindowDimensions,
   Animated,
   Easing,
+  Platform,
 } from 'react-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useRouter, useNavigation } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 import { ScreenLayout } from '@/presentation/shared/layouts/ScreenLayout';
 import { AppText } from '@/presentation/shared/components/ui/AppText';
+import { AppImage } from '@/presentation/shared/components/ui/AppImage';
 import { Avatar } from '@/presentation/shared/components/ui/Avatar';
 import { SearchBar } from '../components/SearchBar';
 import { SearchSuggestions } from '../components/SearchSuggestions';
@@ -277,10 +278,11 @@ export default function HomeScreen() {
                 {isSectionsLoading ? (
                   <View style={{ flex: 1, backgroundColor: theme.isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)' }} />
                 ) : heroImageSrc ? (
-                  <Image
+                  <AppImage
                     source={heroImageSrc}
                     style={{ position: 'absolute', width: '100%', height: '100%' }}
                     resizeMode="cover"
+                    fallbackIconSize={40}
                   />
                 ) : (
                   <View
@@ -440,7 +442,7 @@ export default function HomeScreen() {
 
             {/* ── Skeleton tiles while categories load ── */}
             {isSectionsLoading && (
-              <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+              <ScrollView horizontal showsHorizontalScrollIndicator={Platform.OS === 'web'}>
                 <View style={{ flexDirection: 'row', gap: 10 }}>
                   {Array.from({ length: 8 }).map((_, i) => (
                     <View key={i} style={{ width: categoryTileWidth, alignItems: 'center', gap: 8 }}>
@@ -461,7 +463,7 @@ export default function HomeScreen() {
               return (
                 <ScrollView
                   horizontal
-                  showsHorizontalScrollIndicator={false}
+                  showsHorizontalScrollIndicator={Platform.OS === 'web'}
                 >
                   <View style={{ width: totalWidth }}>
                     {[row1, row2].map((row, rowIdx) => (
@@ -553,7 +555,7 @@ export default function HomeScreen() {
           </View>
 
           {isNewBusinessesLoading ? (
-            <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 12 }}>
+            <ScrollView horizontal showsHorizontalScrollIndicator={Platform.OS === 'web'} contentContainerStyle={{ gap: 12 }}>
               {Array.from({ length: 5 }).map((_, i) => (
                 <SkeletonBox key={i} width={150} height={130} borderRadius={20} isDark={theme.isDark} />
               ))}
@@ -562,7 +564,7 @@ export default function HomeScreen() {
             <FlatList
               data={newBusinesses.slice(0, 8)}
               horizontal
-              showsHorizontalScrollIndicator={false}
+              showsHorizontalScrollIndicator={Platform.OS === 'web'}
               contentContainerStyle={{ gap: 12 }}
               keyExtractor={(item) => `trend_${item.id}`}
               renderItem={({ item }) => {
@@ -590,10 +592,12 @@ export default function HomeScreen() {
                         }}
                       >
                         {imgSrc ? (
-                          <Image
+                          <AppImage
                             source={imgSrc}
                             style={{ position: 'absolute', width: '100%', height: '100%' }}
                             resizeMode="cover"
+                            fallbackIcon="store"
+                            fallbackIconSize={40}
                           />
                         ) : (
                           <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
@@ -655,8 +659,8 @@ export default function HomeScreen() {
                       accessibilityLabel="Toggle wishlist"
                       accessibilityRole="button"
                       style={{
-                        position: 'absolute', top: 8, right: 8,
-                        width: 30, height: 30, borderRadius: 15,
+                        position: 'absolute', top: 4, right: 4,
+                        width: 44, height: 44, borderRadius: 22,
                         backgroundColor: theme.isDark ? 'rgba(15,23,42,0.65)' : 'rgba(255,255,255,0.85)',
                         alignItems: 'center', justifyContent: 'center',
                         zIndex: 1,
@@ -698,7 +702,7 @@ export default function HomeScreen() {
                 <MaterialCommunityIcons name="arrow-right" size={22} color={colors.neonPurple} />
               </Pressable>
             </View>
-            <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 12 }}>
+            <ScrollView horizontal showsHorizontalScrollIndicator={Platform.OS === 'web'} contentContainerStyle={{ gap: 12 }}>
               {isSectionsLoading
                 ? Array.from({ length: 4 }).map((_, i) => (
                   <SkeletonBox key={i} width={200} height={145} borderRadius={20} isDark={theme.isDark} />
@@ -731,10 +735,12 @@ export default function HomeScreen() {
                       }}
                     >
                       {imgSrc ? (
-                        <Image
+                        <AppImage
                           source={imgSrc}
                           style={{ position: 'absolute', width: '100%', height: '100%' }}
                           resizeMode="cover"
+                          fallbackIcon="store"
+                          fallbackIconSize={40}
                         />
                       ) : (
                         <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
@@ -802,7 +808,7 @@ export default function HomeScreen() {
                 {t('home.recentReviews')}
               </AppText>
             </View>
-            <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 12 }}>
+            <ScrollView horizontal showsHorizontalScrollIndicator={Platform.OS === 'web'} contentContainerStyle={{ gap: 12 }}>
               {isSectionsLoading
                 ? Array.from({ length: 3 }).map((_, i) => (
                   <SkeletonBox key={i} width={260} height={130} borderRadius={18} isDark={theme.isDark} />
@@ -835,9 +841,11 @@ export default function HomeScreen() {
                         }}
                       >
                         {review.authorAvatarUrl ? (
-                          <Image
+                          <AppImage
                             source={{ uri: review.authorAvatarUrl }}
                             style={{ width: 36, height: 36 }}
+                            fallbackIcon="account"
+                            fallbackIconSize={18}
                           />
                         ) : (
                           <AppText style={{ fontSize: 14, fontWeight: '700', color: colors.neonPurple }}>
@@ -886,7 +894,7 @@ export default function HomeScreen() {
                 {t('home.recentlyViewed')}
               </AppText>
             </View>
-            <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+            <ScrollView horizontal showsHorizontalScrollIndicator={Platform.OS === 'web'}>
               {recentSearches.map((item, idx) => {
                 const remote = categoryDefaults[item.categoryId];
                 const imgSrc = item.coverImageUrl
@@ -917,7 +925,7 @@ export default function HomeScreen() {
                         }}
                       >
                         {imgSrc ? (
-                          <Image source={imgSrc} style={{ width: '100%', height: '100%' }} resizeMode="cover" />
+                          <AppImage source={imgSrc} style={{ width: '100%', height: '100%' }} resizeMode="cover" fallbackIcon="store" fallbackIconSize={28} />
                         ) : (
                           <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
                             <MaterialCommunityIcons name="store" size={28} color={theme.textMuted} />
@@ -979,7 +987,7 @@ export default function HomeScreen() {
                   </AppText>
                 </View>
               </View>
-              <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+              <ScrollView horizontal showsHorizontalScrollIndicator={Platform.OS === 'web'}>
                 {withDistance.map(({ business: item, distance }, idx) => {
                   const remote = categoryDefaults[item.categoryId];
                   const imgSrc = item.coverImageUrl
@@ -1007,7 +1015,7 @@ export default function HomeScreen() {
                         }}
                       >
                         {imgSrc ? (
-                          <Image source={imgSrc} style={{ position: 'absolute', width: '100%', height: '100%' }} resizeMode="cover" />
+                          <AppImage source={imgSrc} style={{ position: 'absolute', width: '100%', height: '100%' }} resizeMode="cover" fallbackIcon="store" fallbackIconSize={40} />
                         ) : (
                           <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
                             <MaterialCommunityIcons name="store" size={40} color={theme.textMuted} />
@@ -1055,7 +1063,7 @@ export default function HomeScreen() {
                   </AppText>
                 </View>
               </View>
-              <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+              <ScrollView horizontal showsHorizontalScrollIndicator={Platform.OS === 'web'}>
                 {popular.map((item, idx) => {
                   const remote = categoryDefaults[item.categoryId];
                   const imgSrc = item.coverImageUrl
@@ -1083,7 +1091,7 @@ export default function HomeScreen() {
                         }}
                       >
                         {imgSrc ? (
-                          <Image source={imgSrc} style={{ position: 'absolute', width: '100%', height: '100%' }} resizeMode="cover" />
+                          <AppImage source={imgSrc} style={{ position: 'absolute', width: '100%', height: '100%' }} resizeMode="cover" fallbackIcon="store" fallbackIconSize={40} />
                         ) : (
                           <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
                             <MaterialCommunityIcons name="store" size={40} color={theme.textMuted} />
@@ -1132,7 +1140,7 @@ export default function HomeScreen() {
                 {t('home.dealsAndPromotions')}
               </AppText>
             </View>
-            <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+            <ScrollView horizontal showsHorizontalScrollIndicator={Platform.OS === 'web'}>
               {deals.map((deal, idx) => (
                 <Pressable
                   key={deal.id}
@@ -1151,10 +1159,12 @@ export default function HomeScreen() {
                     }}
                   >
                     {deal.businessCoverUrl ? (
-                      <Image
+                      <AppImage
                         source={{ uri: deal.businessCoverUrl }}
                         style={{ position: 'absolute', width: '100%', height: '100%' }}
                         resizeMode="cover"
+                        fallbackIcon="tag-heart"
+                        fallbackIconSize={40}
                       />
                     ) : (
                       <View
@@ -1224,7 +1234,7 @@ export default function HomeScreen() {
                 {t('home.weeklyPicksSubtitle')}
               </AppText>
             </View>
-            <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+            <ScrollView horizontal showsHorizontalScrollIndicator={Platform.OS === 'web'}>
               {weeklyPicks.map((pick, idx) => (
                 <Pressable
                   key={pick.id}
@@ -1245,10 +1255,12 @@ export default function HomeScreen() {
                   >
                     <View style={{ height: 110, overflow: 'hidden' }}>
                       {pick.businessCoverUrl ? (
-                        <Image
+                        <AppImage
                           source={{ uri: pick.businessCoverUrl }}
                           style={{ width: '100%', height: '100%' }}
                           resizeMode="cover"
+                          fallbackIcon="crown-outline"
+                          fallbackIconSize={36}
                         />
                       ) : (
                         <View
@@ -1553,7 +1565,7 @@ export default function HomeScreen() {
             <>
               <ScrollView
                 horizontal
-                showsHorizontalScrollIndicator={false}
+                showsHorizontalScrollIndicator={Platform.OS === 'web'}
                 style={{ flexGrow: 0, marginTop: 10 }}
                 contentContainerStyle={{ gap: 10 }}
               >

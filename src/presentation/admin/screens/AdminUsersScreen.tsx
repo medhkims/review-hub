@@ -1,6 +1,7 @@
 import React, { useCallback, useState, useEffect } from 'react';
-import { View, FlatList, RefreshControl, Pressable, Alert, ActivityIndicator } from 'react-native';
+import { View, FlatList, RefreshControl, Pressable, ActivityIndicator } from 'react-native';
 import { useTranslation } from 'react-i18next';
+import { crossPlatformAlert } from '@/core/utils/crossPlatformAlert';
 import { ScreenLayout } from '@/presentation/shared/layouts/ScreenLayout';
 import { AppText } from '@/presentation/shared/components/ui/AppText';
 import { useAnalyticsScreen } from '@/presentation/shared/hooks/useAnalyticsScreen';
@@ -37,7 +38,7 @@ export default function AdminUsersScreen() {
 
   const handleChangeRole = useCallback((user: UserItem) => {
     const roleOptions = USER_ROLES.filter((r) => r !== user.role);
-    Alert.alert(
+    crossPlatformAlert(
       t('admin.users.changeRole'),
       `${user.name}`,
       [
@@ -45,7 +46,7 @@ export default function AdminUsersScreen() {
           text: t(`roles.${role}`),
           onPress: () => {
             // TODO: Call updateUserRole Cloud Function
-            Alert.alert(t('admin.users.roleUpdated'));
+            crossPlatformAlert(t('admin.users.roleUpdated'));
           },
         })),
         { text: t('common.cancel'), style: 'cancel' as const },

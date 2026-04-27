@@ -524,6 +524,8 @@ export default function SignUpScreen() {
                 autoComplete="new-password"
                 textContentType="newPassword"
                 accessibilityLabel={t('auth.signUp.password')}
+                returnKeyType="done"
+                onSubmitEditing={handleSignUp}
               />
 
               {/* Terms Agreement */}

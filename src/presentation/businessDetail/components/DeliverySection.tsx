@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Pressable, Linking, Modal } from 'react-native';
+import { View, Pressable, Modal } from 'react-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useTranslation } from 'react-i18next';
 import { AppText } from '@/presentation/shared/components/ui/AppText';
@@ -8,6 +8,7 @@ import { useTheme } from '@/core/theme/useTheme';
 import { SectionCard } from './SectionCard';
 import { DeliveryService } from '@/domain/business/entities/businessDetailEntity';
 import { trackProfileClick } from '@/core/utils/premiumTracking';
+import { openURL, openPhone } from '@/core/utils/webLinks';
 
 interface DeliverySectionProps {
   deliveryServices: DeliveryService[];
@@ -34,9 +35,9 @@ export const DeliverySection: React.FC<DeliverySectionProps> = ({ deliveryServic
     if (hasUrl && hasPhone) {
       setChoiceService(service);
     } else if (hasUrl) {
-      Linking.openURL(service.url!).catch(() => {});
+      openURL(service.url!);
     } else if (hasPhone) {
-      Linking.openURL(`tel:${service.phone}`).catch(() => {});
+      openPhone(service.phone!);
     }
   };
 
@@ -57,7 +58,7 @@ export const DeliverySection: React.FC<DeliverySectionProps> = ({ deliveryServic
           <AppText style={{ fontSize: 18, fontWeight: '700', color: theme.text }}>{choiceService?.name}</AppText>
           <AppText style={{ fontSize: 14, color: theme.textSecondary }}>{t('businessDetail.deliveryOpenWith')}</AppText>
           <Pressable
-            onPress={() => { Linking.openURL(choiceService!.url!).catch(() => {}); setChoiceService(null); }}
+            onPress={() => { openURL(choiceService!.url!); setChoiceService(null); }}
             accessibilityLabel={t('businessDetail.openWebsite')}
             accessibilityRole="button"
             style={({ pressed }) => ({
@@ -71,7 +72,7 @@ export const DeliverySection: React.FC<DeliverySectionProps> = ({ deliveryServic
             <AppText style={{ fontSize: 15, fontWeight: '600', color: colors.neonPurple }}>{t('businessDetail.openWebsite')}</AppText>
           </Pressable>
           <Pressable
-            onPress={() => { Linking.openURL(`tel:${choiceService!.phone}`).catch(() => {}); setChoiceService(null); }}
+            onPress={() => { openPhone(choiceService!.phone!); setChoiceService(null); }}
             accessibilityLabel={t('businessDetail.callNumber')}
             accessibilityRole="button"
             style={({ pressed }) => ({

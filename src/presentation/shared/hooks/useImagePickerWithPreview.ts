@@ -1,5 +1,6 @@
 import { useState, useCallback, useRef } from 'react';
-import { Alert } from 'react-native';
+import { Platform } from 'react-native';
+import { crossPlatformAlert } from '@/core/utils/crossPlatformAlert';
 import * as ImagePicker from 'expo-image-picker';
 import { useTranslation } from 'react-i18next';
 
@@ -46,14 +47,16 @@ export function useImagePickerWithPreview({
   onSelectedRef.current = onSelected;
 
   const openPicker = useCallback(async () => {
-    const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
-    if (status !== 'granted') {
-      Alert.alert(
-        t('imageCrop.permissionTitle'),
-        t('imageCrop.permissionMessage'),
-        [{ text: t('common.ok') }],
-      );
-      return;
+    if (Platform.OS !== 'web') {
+      const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+      if (status !== 'granted') {
+        crossPlatformAlert(
+          t('imageCrop.permissionTitle'),
+          t('imageCrop.permissionMessage'),
+          [{ text: t('common.ok') }],
+        );
+        return;
+      }
     }
 
     // Cropping is handled by ImageCropModal — do NOT use allowsEditing here

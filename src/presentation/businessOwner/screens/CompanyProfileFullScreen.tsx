@@ -1,5 +1,5 @@
 import React, { useCallback, useRef, useState } from 'react';
-import { View, ScrollView, Pressable, StatusBar, TextInput, Modal } from 'react-native';
+import { View, ScrollView, Pressable, StatusBar, TextInput, Modal, Platform } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import { useRouter } from 'expo-router';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
@@ -570,7 +570,7 @@ export default function CompanyProfileFullScreen({ business, onRefresh }: Compan
   if (isBlocked) {
     return (
       <View style={{ flex: 1, backgroundColor: colors.midnight }}>
-        <StatusBar barStyle="light-content" translucent backgroundColor="transparent" />
+        {Platform.OS !== 'web' && <StatusBar barStyle="light-content" translucent backgroundColor="transparent" />}
 
         {/* Faded background content */}
         <View style={{ flex: 1, opacity: 0.12, pointerEvents: 'none' }}>
@@ -697,7 +697,7 @@ export default function CompanyProfileFullScreen({ business, onRefresh }: Compan
 
   return (
     <View style={{ flex: 1, backgroundColor: colors.midnight }}>
-      <StatusBar barStyle="light-content" translucent backgroundColor="transparent" />
+      {Platform.OS !== 'web' && <StatusBar barStyle="light-content" translucent backgroundColor="transparent" />}
       <NetworkBanner />
 
       {/* Upload overlay */}

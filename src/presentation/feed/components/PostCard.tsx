@@ -134,7 +134,7 @@ export const PostCard = React.memo(({ post, onLike, onPress }: PostCardProps) =>
         {/* Like Button */}
         <Pressable
           onPress={() => onLike(post.id)}
-          style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}
+          style={{ flexDirection: 'row', alignItems: 'center', gap: 6, minHeight: 44, justifyContent: 'center' }}
           accessibilityLabel={post.isLiked ? 'Unlike post' : 'Like post'}
           accessibilityRole="button"
           hitSlop={8}

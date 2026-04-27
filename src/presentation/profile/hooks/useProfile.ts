@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from 'react';
-import { Alert } from 'react-native';
+import { crossPlatformAlert } from '@/core/utils/crossPlatformAlert';
 import { useProfileStore } from '../store/profileStore';
 import { useAuthStore } from '@/presentation/auth/store/authStore';
 import { container } from '@/core/di/container';
@@ -103,7 +103,7 @@ export const useProfile = (userId?: string) => {
         result.fold(
           (failure) => {
             setError(failure.message);
-            Alert.alert('Upload Failed', failure.message, [{ text: 'OK' }]);
+            crossPlatformAlert('Upload Failed', failure.message, [{ text: 'OK' }]);
           },
           (avatarUrl) => {
             // Optimistically update the profile in the store
@@ -119,7 +119,7 @@ export const useProfile = (userId?: string) => {
       } catch (err) {
         const message = err instanceof Error ? err.message : 'Failed to upload profile picture. Please try again.';
         setError(message);
-        Alert.alert('Upload Failed', message, [{ text: 'OK' }]);
+        crossPlatformAlert('Upload Failed', message, [{ text: 'OK' }]);
       } finally {
         setIsUploading(false);
         setUploadProgress(0);

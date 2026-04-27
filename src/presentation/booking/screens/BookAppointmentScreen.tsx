@@ -1,7 +1,8 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { View, ScrollView, TextInput, Alert, ActivityIndicator } from 'react-native';
+import { View, ScrollView, TextInput, ActivityIndicator } from 'react-native';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import { useTranslation } from 'react-i18next';
+import { crossPlatformAlert } from '@/core/utils/crossPlatformAlert';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { ScreenLayout } from '@/presentation/shared/layouts/ScreenLayout';
 import { AppText } from '@/presentation/shared/components/ui/AppText';
@@ -57,9 +58,9 @@ export default function BookAppointmentScreen() {
     });
     setIsSubmitting(false);
     result.fold(
-      (failure) => Alert.alert(t('common.error'), failure.message),
+      (failure) => crossPlatformAlert(t('common.error'), failure.message),
       () => {
-        Alert.alert(t('booking.successTitle'), t('booking.successMessage'), [
+        crossPlatformAlert(t('booking.successTitle'), t('booking.successMessage'), [
           { text: t('common.ok'), onPress: () => router.back() },
         ]);
       },

@@ -8,12 +8,15 @@ import {
   StatusBar,
   Platform,
   PanResponder,
+  GestureResponderHandlers,
 } from 'react-native';
 import * as ImageManipulator from 'expo-image-manipulator';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useTranslation } from 'react-i18next';
 import { AppText } from './AppText';
 import { colors } from '@/core/theme/colors';
+
+const isWeb = Platform.OS === 'web';
 
 const HANDLE = 44;   // touch target size for corner handles
 const BRACKET = 22;  // visual L-bracket size
@@ -80,49 +83,29 @@ export const ImageCropModal: React.FC<ImageCropModalProps> = ({
     if (!visible) { setReady(false); setBusy(false); }
   }, [visible]);
 
-  // ── Move gesture (drag entire crop box) ──────────────────────────────────
-  const ms = useRef<CropBox>({ x: 0, y: 0, width: 0, height: 0 });
-  const movePan = useRef(PanResponder.create({
-    onStartShouldSetPanResponder: () => true,
-    onMoveShouldSetPanResponder: () => true,
-    onPanResponderGrant: () => { ms.current = { ...cropRef.current }; },
-    onPanResponderMove: (_, { dx, dy }) => {
-      const { w: rW, h: rH } = rendered.current;
-      const { x: sx, y: sy, width: sw, height: sh } = ms.current;
-      setFn.current({
-        ...ms.current,
-        x: Math.max(0, Math.min(rW - sw, sx + dx)),
-        y: Math.max(0, Math.min(rH - sh, sy + dy)),
-      });
-    },
-  })).current;
+  // ── Gesture move/resize logic (shared between native PanResponder & web pointer events) ──
 
-  // ── Corner resize gestures ────────────────────────────────────────────────
-  // Shared start-state ref (only one corner active at a time)
-  const cs = useRef<CropBox>({ x: 0, y: 0, width: 0, height: 0 });
+  // Move handler: compute new position from dx/dy
+  const moveHandler = useCallback((dx: number, dy: number, start: CropBox) => {
+    const { w: rW, h: rH } = rendered.current;
+    setFn.current({
+      ...start,
+      x: Math.max(0, Math.min(rW - start.width, start.x + dx)),
+      y: Math.max(0, Math.min(rH - start.height, start.y + dy)),
+    });
+  }, []);
 
-  const brPan = useRef(PanResponder.create({
-    onStartShouldSetPanResponder: () => true,
-    onMoveShouldSetPanResponder: () => true,
-    onPanResponderGrant: () => { cs.current = { ...cropRef.current }; },
-    onPanResponderMove: (_, { dx, dy }) => {
-      const ar = arRef.current;
-      const { w: rW, h: rH } = rendered.current;
-      const s = cs.current;
+  // Corner resize handlers keyed by corner name
+  const cornerHandler = useCallback((corner: 'br' | 'tl' | 'tr' | 'bl', dx: number, dy: number, start: CropBox) => {
+    const ar = arRef.current;
+    const { w: rW, h: rH } = rendered.current;
+    const s = start;
+    if (corner === 'br') {
       const delta = (dx + dy * ar) / 2;
       const nW = Math.max(MIN, Math.min(rW - s.x, s.width + delta));
       const nH = Math.min(rH - s.y, nW / ar);
       setFn.current({ x: s.x, y: s.y, width: nH * ar, height: nH });
-    },
-  })).current;
-
-  const tlPan = useRef(PanResponder.create({
-    onStartShouldSetPanResponder: () => true,
-    onMoveShouldSetPanResponder: () => true,
-    onPanResponderGrant: () => { cs.current = { ...cropRef.current }; },
-    onPanResponderMove: (_, { dx, dy }) => {
-      const ar = arRef.current;
-      const s = cs.current;
+    } else if (corner === 'tl') {
       const delta = (-dx - dy * ar) / 2;
       const nW = Math.max(MIN, Math.min(s.x + s.width, s.width + delta));
       const nH = Math.min(s.y + s.height, nW / ar);
@@ -130,42 +113,106 @@ export const ImageCropModal: React.FC<ImageCropModalProps> = ({
       const nX = s.x + s.width - fW;
       const nY = s.y + s.height - nH;
       if (nX >= 0 && nY >= 0) setFn.current({ x: nX, y: nY, width: fW, height: nH });
-    },
-  })).current;
-
-  const trPan = useRef(PanResponder.create({
-    onStartShouldSetPanResponder: () => true,
-    onMoveShouldSetPanResponder: () => true,
-    onPanResponderGrant: () => { cs.current = { ...cropRef.current }; },
-    onPanResponderMove: (_, { dx, dy }) => {
-      const ar = arRef.current;
-      const { w: rW } = rendered.current;
-      const s = cs.current;
+    } else if (corner === 'tr') {
       const delta = (dx - dy * ar) / 2;
       const nW = Math.max(MIN, Math.min(rW - s.x, s.width + delta));
       const nH = Math.min(s.y + s.height, nW / ar);
       const fW = nH * ar;
       const nY = s.y + s.height - nH;
       if (nY >= 0) setFn.current({ x: s.x, y: nY, width: fW, height: nH });
-    },
-  })).current;
-
-  const blPan = useRef(PanResponder.create({
-    onStartShouldSetPanResponder: () => true,
-    onMoveShouldSetPanResponder: () => true,
-    onPanResponderGrant: () => { cs.current = { ...cropRef.current }; },
-    onPanResponderMove: (_, { dx, dy }) => {
-      const ar = arRef.current;
-      const { h: rH } = rendered.current;
-      const s = cs.current;
+    } else { // bl
       const delta = (-dx + dy * ar) / 2;
       const nW = Math.max(MIN, Math.min(s.x + s.width, s.width + delta));
       const nH = Math.min(rH - s.y, nW / ar);
       const fW = nH * ar;
       const nX = s.x + s.width - fW;
       if (nX >= 0) setFn.current({ x: nX, y: s.y, width: fW, height: nH });
-    },
+    }
+  }, []);
+
+  // ── Native PanResponders (iOS/Android only) ──────────────────────────────
+  const ms = useRef<CropBox>({ x: 0, y: 0, width: 0, height: 0 });
+  const cs = useRef<CropBox>({ x: 0, y: 0, width: 0, height: 0 });
+
+  const movePan = useRef(isWeb ? { panHandlers: {} as GestureResponderHandlers } : PanResponder.create({
+    onStartShouldSetPanResponder: () => true,
+    onMoveShouldSetPanResponder: () => true,
+    onPanResponderGrant: () => { ms.current = { ...cropRef.current }; },
+    onPanResponderMove: (_, { dx, dy }) => moveHandler(dx, dy, ms.current),
   })).current;
+
+  const makePan = (corner: 'br' | 'tl' | 'tr' | 'bl') =>
+    isWeb ? { panHandlers: {} as GestureResponderHandlers } : PanResponder.create({
+      onStartShouldSetPanResponder: () => true,
+      onMoveShouldSetPanResponder: () => true,
+      onPanResponderGrant: () => { cs.current = { ...cropRef.current }; },
+      onPanResponderMove: (_, { dx, dy }) => cornerHandler(corner, dx, dy, cs.current),
+    });
+
+  const brPan = useRef(makePan('br')).current;
+  const tlPan = useRef(makePan('tl')).current;
+  const trPan = useRef(makePan('tr')).current;
+  const blPan = useRef(makePan('bl')).current;
+
+  // ── Web pointer event helpers (attach via refs to avoid RN type conflicts) ──
+  const moveRef = useRef<View>(null);
+  const tlRef = useRef<View>(null);
+  const trRef = useRef<View>(null);
+  const blRef = useRef<View>(null);
+  const brRef = useRef<View>(null);
+
+  useEffect(() => {
+    if (!isWeb || !ready) return;
+
+    const attach = (
+      ref: React.RefObject<View | null>,
+      kind: 'move' | 'br' | 'tl' | 'tr' | 'bl',
+    ) => {
+      // On web, View refs resolve to HTMLDivElement
+      const el = ref.current as unknown as HTMLElement | null;
+      if (!el) return () => {};
+
+      const onDown = (e: PointerEvent) => {
+        e.preventDefault();
+        e.stopPropagation();
+        const startX = e.clientX;
+        const startY = e.clientY;
+        const startCrop = { ...cropRef.current };
+
+        const onMove = (ev: PointerEvent) => {
+          const dx = ev.clientX - startX;
+          const dy = ev.clientY - startY;
+          if (kind === 'move') {
+            moveHandler(dx, dy, startCrop);
+          } else {
+            cornerHandler(kind, dx, dy, startCrop);
+          }
+        };
+
+        const onUp = () => {
+          document.removeEventListener('pointermove', onMove);
+          document.removeEventListener('pointerup', onUp);
+        };
+
+        document.addEventListener('pointermove', onMove);
+        document.addEventListener('pointerup', onUp);
+      };
+
+      el.addEventListener('pointerdown', onDown);
+      el.style.touchAction = 'none';
+      return () => el.removeEventListener('pointerdown', onDown);
+    };
+
+    const cleanups = [
+      attach(moveRef, 'move'),
+      attach(tlRef, 'tl'),
+      attach(trRef, 'tr'),
+      attach(blRef, 'bl'),
+      attach(brRef, 'br'),
+    ];
+
+    return () => cleanups.forEach((fn) => fn());
+  }, [ready, moveHandler, cornerHandler]);
 
   // ── Crop & confirm ────────────────────────────────────────────────────────
   const handleUsePhoto = useCallback(async () => {
@@ -225,14 +272,14 @@ export const ImageCropModal: React.FC<ImageCropModalProps> = ({
             hitSlop={8}
             accessibilityRole="button"
             accessibilityLabel={t('common.cancel')}
-            style={{ width: 40, height: 40, borderRadius: 20, backgroundColor: 'rgba(255,255,255,0.12)', alignItems: 'center', justifyContent: 'center' }}
+            style={{ width: 44, height: 44, borderRadius: 22, backgroundColor: 'rgba(255,255,255,0.12)', alignItems: 'center', justifyContent: 'center' }}
           >
             <MaterialCommunityIcons name="close" size={22} color="#fff" />
           </Pressable>
           <AppText style={{ fontSize: 16, fontWeight: '600', color: '#fff', letterSpacing: 0.2 }}>
             {t('imageCrop.title')}
           </AppText>
-          <View style={{ width: 40 }} />
+          <View style={{ width: 44 }} />
         </View>
 
         {/* Image + Crop UI */}
@@ -278,13 +325,13 @@ export const ImageCropModal: React.FC<ImageCropModalProps> = ({
               <View pointerEvents="none" style={{ position: 'absolute', left: ax + crop.width - BRACKET, top: ay + crop.height - BRACKET, width: BRACKET, height: BRACKET, borderBottomWidth: LINE, borderRightWidth: LINE, borderColor: '#fff' }} />
 
               {/* Move zone (full crop box interior) */}
-              <View {...movePan.panHandlers} style={{ position: 'absolute', left: ax, top: ay, width: crop.width, height: crop.height }} />
+              <View ref={moveRef} {...movePan.panHandlers} style={[{ position: 'absolute', left: ax, top: ay, width: crop.width, height: crop.height }, isWeb && { cursor: 'move' } as Record<string, unknown>]} />
 
               {/* Corner touch targets — rendered after move zone to get gesture priority */}
-              <View {...tlPan.panHandlers} style={{ position: 'absolute', left: ax - HANDLE / 2, top: ay - HANDLE / 2, width: HANDLE, height: HANDLE }} />
-              <View {...trPan.panHandlers} style={{ position: 'absolute', left: ax + crop.width - HANDLE / 2, top: ay - HANDLE / 2, width: HANDLE, height: HANDLE }} />
-              <View {...blPan.panHandlers} style={{ position: 'absolute', left: ax - HANDLE / 2, top: ay + crop.height - HANDLE / 2, width: HANDLE, height: HANDLE }} />
-              <View {...brPan.panHandlers} style={{ position: 'absolute', left: ax + crop.width - HANDLE / 2, top: ay + crop.height - HANDLE / 2, width: HANDLE, height: HANDLE }} />
+              <View ref={tlRef} {...tlPan.panHandlers} style={[{ position: 'absolute', left: ax - HANDLE / 2, top: ay - HANDLE / 2, width: HANDLE, height: HANDLE }, isWeb && { cursor: 'nwse-resize' } as Record<string, unknown>]} />
+              <View ref={trRef} {...trPan.panHandlers} style={[{ position: 'absolute', left: ax + crop.width - HANDLE / 2, top: ay - HANDLE / 2, width: HANDLE, height: HANDLE }, isWeb && { cursor: 'nesw-resize' } as Record<string, unknown>]} />
+              <View ref={blRef} {...blPan.panHandlers} style={[{ position: 'absolute', left: ax - HANDLE / 2, top: ay + crop.height - HANDLE / 2, width: HANDLE, height: HANDLE }, isWeb && { cursor: 'nesw-resize' } as Record<string, unknown>]} />
+              <View ref={brRef} {...brPan.panHandlers} style={[{ position: 'absolute', left: ax + crop.width - HANDLE / 2, top: ay + crop.height - HANDLE / 2, width: HANDLE, height: HANDLE }, isWeb && { cursor: 'nwse-resize' } as Record<string, unknown>]} />
             </>
           )}
         </View>

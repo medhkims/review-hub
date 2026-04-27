@@ -3,9 +3,8 @@ import {
   View,
   FlatList,
   Pressable,
-  Image,
+  // Image removed — using AppImage instead
   ActivityIndicator,
-  Alert,
   TextInput,
   Modal,
   ScrollView,
@@ -13,8 +12,10 @@ import {
 } from 'react-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useTranslation } from 'react-i18next';
+import { crossPlatformAlert } from '@/core/utils/crossPlatformAlert';
 import { ScreenLayout } from '@/presentation/shared/layouts/ScreenLayout';
 import { AppText } from '@/presentation/shared/components/ui/AppText';
+import { AppImage } from '@/presentation/shared/components/ui/AppImage';
 import { BusinessEntity } from '@/domain/business/entities/businessEntity';
 import { colors } from '@/core/theme/colors';
 import { container } from '@/core/di/container';
@@ -94,7 +95,7 @@ export function ManageTrendingScreen({ onBack }: ManageTrendingScreenProps) {
     if (Platform.OS === 'web') {
       setDeleteTarget(business);
     } else {
-      Alert.alert(
+      crossPlatformAlert(
         t('admin.trending.deleteTitle'),
         t('admin.trending.deleteMessage', { name: business.name }),
         [
@@ -140,7 +141,7 @@ export function ManageTrendingScreen({ onBack }: ManageTrendingScreenProps) {
         }}
       >
         {item.coverImageUrl || item.logoUrl ? (
-          <Image
+          <AppImage
             source={{ uri: (item.coverImageUrl ?? item.logoUrl)! }}
             style={{ width: 56, height: 56, borderRadius: 12 }}
             resizeMode="cover"
@@ -304,7 +305,7 @@ export function ManageTrendingScreen({ onBack }: ManageTrendingScreenProps) {
                             })}
                           >
                             {biz.logoUrl ? (
-                              <Image source={{ uri: biz.logoUrl }} style={{ width: 32, height: 32, borderRadius: 8 }} accessibilityLabel={biz.name} />
+                              <AppImage source={{ uri: biz.logoUrl }} style={{ width: 32, height: 32, borderRadius: 8 }} accessibilityLabel={biz.name} />
                             ) : (
                               <View style={{ width: 32, height: 32, borderRadius: 8, backgroundColor: `${colors.neonPurple}20`, alignItems: 'center', justifyContent: 'center' }}>
                                 <MaterialCommunityIcons name="store" size={16} color={colors.neonPurple} />

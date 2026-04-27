@@ -1,10 +1,11 @@
 import React, { useState, useCallback, useRef, useEffect } from 'react';
-import { View, Pressable, Image, Linking, Animated } from 'react-native';
+import { View, Pressable, Image, Animated } from 'react-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useTranslation } from 'react-i18next';
 import { AppText } from '@/presentation/shared/components/ui/AppText';
 import { ContactRow } from './ContactRow';
 import { colors } from '@/core/theme/colors';
+import { openURL } from '@/core/utils/webLinks';
 import type { OpeningHours, DayKey } from '@/domain/business/entities/businessDetailEntity';
 
 const DAY_KEYS: DayKey[] = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'];
@@ -185,7 +186,7 @@ export const InformationCard: React.FC<InformationCardProps> = ({
     const url = latitude && longitude
       ? `https://www.google.com/maps?q=${latitude},${longitude}`
       : `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(location)}`;
-    Linking.openURL(url);
+    openURL(url);
   }, [location, latitude, longitude]);
 
   if (populated) {
@@ -360,6 +361,7 @@ export const InformationCard: React.FC<InformationCardProps> = ({
                       accessibilityRole="button"
                       accessibilityLabel={t('businessOwner.companyProfile.openingHours')}
                       hitSlop={8}
+                      style={{ minWidth: 44, minHeight: 44, alignItems: 'center', justifyContent: 'center' }}
                     >
                       <MaterialCommunityIcons name="pencil" size={16} color={colors.neonPurple} />
                     </Pressable>

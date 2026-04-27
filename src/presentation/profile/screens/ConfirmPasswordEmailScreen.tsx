@@ -1,5 +1,5 @@
 import React, { useCallback } from 'react';
-import { View, Linking, Platform } from 'react-native';
+import { View, Platform } from 'react-native';
 import { useRouter } from 'expo-router';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useTranslation } from 'react-i18next';
@@ -8,23 +8,21 @@ import { AppButton } from '@/presentation/shared/components/ui/AppButton';
 import { ScreenLayout } from '@/presentation/shared/layouts/ScreenLayout';
 import { useAnalyticsScreen } from '@/presentation/shared/hooks/useAnalyticsScreen';
 import { AnalyticsScreens } from '@/core/analytics/analyticsKeys';
+import { openURL } from '@/core/utils/webLinks';
 
 export default function ConfirmPasswordEmailScreen() {
   useAnalyticsScreen(AnalyticsScreens.CONFIRM_PASSWORD_EMAIL);
   const { t } = useTranslation();
   const router = useRouter();
 
-  const handleGoToInbox = useCallback(async () => {
+  const handleGoToInbox = useCallback(() => {
     const mailUrl = Platform.select({
       ios: 'message://',
       android: 'intent:#Intent;action=android.intent.action.MAIN;category=android.intent.category.APP_EMAIL;end',
       default: 'mailto:',
     });
 
-    const canOpen = await Linking.canOpenURL(mailUrl);
-    if (canOpen) {
-      await Linking.openURL(mailUrl);
-    }
+    openURL(mailUrl);
   }, []);
 
   const handleClose = useCallback(() => {

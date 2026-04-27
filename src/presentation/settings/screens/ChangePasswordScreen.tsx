@@ -1,8 +1,9 @@
 import React, { useState, useCallback } from 'react';
-import { View, Pressable, Modal, TextInput, ActivityIndicator, Alert } from 'react-native';
+import { View, Pressable, Modal, TextInput, ActivityIndicator } from 'react-native';
 import { useRouter } from 'expo-router';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useTranslation } from 'react-i18next';
+import { crossPlatformAlert } from '@/core/utils/crossPlatformAlert';
 import { ScreenLayout } from '@/presentation/shared/layouts/ScreenLayout';
 import { AppText } from '@/presentation/shared/components/ui/AppText';
 import { AppInput } from '@/presentation/shared/components/ui/AppInput';
@@ -91,7 +92,7 @@ export default function ChangePasswordScreen() {
       () => {
         setLocalLoading(false);
         setModalStep(null);
-        Alert.alert(
+        crossPlatformAlert(
           t('changePassword.successTitle'),
           t('changePassword.successMessage'),
           [{ text: t('common.ok'), onPress: () => router.back() }],

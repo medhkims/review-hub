@@ -39,10 +39,10 @@ export class SettingsLocalDataSourceImpl implements SettingsLocalDataSource {
   async saveSettings(settings: SettingsModel): Promise<SettingsModel> {
     try {
       await AsyncStorage.setItem(SETTINGS_KEY, JSON.stringify(settings));
-      return settings;
-    } catch (error) {
-      throw new CacheException('Failed to save settings to local storage');
+    } catch {
+      // Storage quota exceeded on web — silently ignore
     }
+    return settings;
   }
 
   async updateSettings(partialSettings: Partial<SettingsModel>): Promise<SettingsModel> {

@@ -5,7 +5,6 @@ import {
   Pressable,
   Image,
   ActivityIndicator,
-  Alert,
   TextInput,
   Modal,
   ScrollView,
@@ -14,6 +13,7 @@ import {
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import { useTranslation } from 'react-i18next';
+import { crossPlatformAlert } from '@/core/utils/crossPlatformAlert';
 import { ScreenLayout } from '@/presentation/shared/layouts/ScreenLayout';
 import { AppText } from '@/presentation/shared/components/ui/AppText';
 import { WeeklyPickEntity } from '@/domain/weeklyPicks/entities/weeklyPickEntity';
@@ -113,7 +113,7 @@ export function ManageWeeklyPicksScreen({ onBack }: ManageWeeklyPicksScreenProps
     if (Platform.OS === 'web') {
       setDeleteTarget(pick);
     } else {
-      Alert.alert(
+      crossPlatformAlert(
         t('admin.weeklyPicks.deleteTitle'),
         t('admin.weeklyPicks.deleteMessage', { name: pick.businessName }),
         [

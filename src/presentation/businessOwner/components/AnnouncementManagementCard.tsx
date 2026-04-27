@@ -1,7 +1,8 @@
 import React, { useState, useCallback } from 'react';
-import { View, Pressable, TextInput, Modal, Alert } from 'react-native';
+import { View, Pressable, TextInput, Modal, Platform } from 'react-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useTranslation } from 'react-i18next';
+import { crossPlatformAlert } from '@/core/utils/crossPlatformAlert';
 import { AppText } from '@/presentation/shared/components/ui/AppText';
 import { AppButton } from '@/presentation/shared/components/ui/AppButton';
 import { colors } from '@/core/theme/colors';
@@ -39,7 +40,7 @@ export const AnnouncementManagementCard: React.FC<AnnouncementManagementCardProp
   }, [title, description, onCreate]);
 
   const handleDelete = useCallback((id: string) => {
-    Alert.alert(
+    crossPlatformAlert(
       t('businessOwner.announcements.delete'),
       t('businessOwner.announcements.deleteConfirm'),
       [
@@ -141,7 +142,7 @@ export const AnnouncementManagementCard: React.FC<AnnouncementManagementCardProp
         transparent
         animationType="slide"
         onRequestClose={() => setCreateModalVisible(false)}
-        statusBarTranslucent
+        statusBarTranslucent={Platform.OS !== 'web'}
       >
         <View style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.7)', justifyContent: 'flex-end' }}>
           <View

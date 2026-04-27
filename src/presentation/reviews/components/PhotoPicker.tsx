@@ -1,8 +1,9 @@
 import React, { useCallback } from 'react';
-import { View, Image, Pressable, ScrollView, Alert } from 'react-native';
+import { View, Image, Pressable, ScrollView } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useTranslation } from 'react-i18next';
+import { crossPlatformAlert } from '@/core/utils/crossPlatformAlert';
 import { AppText } from '@/presentation/shared/components/ui/AppText';
 import { colors } from '@/core/theme/colors';
 import { useTheme } from '@/core/theme/useTheme';
@@ -26,13 +27,13 @@ export const PhotoPicker = React.memo(({ photos, onChange }: PhotoPickerProps) =
   const handlePick = useCallback(async () => {
     const remaining = MAX_PHOTOS - photos.length;
     if (remaining <= 0) {
-      Alert.alert(t('writeReview.maxPhotosTitle'), t('writeReview.maxPhotosMessage', { max: MAX_PHOTOS }));
+      crossPlatformAlert(t('writeReview.maxPhotosTitle'), t('writeReview.maxPhotosMessage', { max: MAX_PHOTOS }));
       return;
     }
 
     const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
     if (status !== 'granted') {
-      Alert.alert(t('writeReview.permissionTitle'), t('writeReview.permissionMessage'));
+      crossPlatformAlert(t('writeReview.permissionTitle'), t('writeReview.permissionMessage'));
       return;
     }
 
@@ -79,20 +80,20 @@ export const PhotoPicker = React.memo(({ photos, onChange }: PhotoPickerProps) =
                 onPress={() => handleRemove(index)}
                 accessibilityLabel={t('writeReview.removePhoto')}
                 accessibilityRole="button"
-                hitSlop={4}
                 style={{
                   position: 'absolute',
-                  top: -6,
-                  right: -6,
-                  width: 22,
-                  height: 22,
-                  borderRadius: 11,
-                  backgroundColor: colors.error,
+                  top: -17,
+                  right: -17,
+                  width: 44,
+                  height: 44,
+                  borderRadius: 22,
                   alignItems: 'center',
                   justifyContent: 'center',
                 }}
               >
-                <MaterialCommunityIcons name="close" size={13} color="#FFFFFF" />
+                <View style={{ width: 22, height: 22, borderRadius: 11, backgroundColor: colors.error, alignItems: 'center', justifyContent: 'center' }}>
+                  <MaterialCommunityIcons name="close" size={13} color="#FFFFFF" />
+                </View>
               </Pressable>
             </View>
           ))}

@@ -8,7 +8,7 @@ import {
   Platform,
   ScrollView,
   FlatList,
-  Dimensions,
+  useWindowDimensions,
 } from 'react-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useTranslation } from 'react-i18next';
@@ -45,8 +45,6 @@ function parsePhone(p: string | null): { country: Country; number: string } {
   return { country: defaultCountry, number: full };
 }
 
-const SCREEN_HEIGHT = Dimensions.get('window').height;
-
 export function PhoneVerificationModal({
   visible,
   businessId,
@@ -56,6 +54,7 @@ export function PhoneVerificationModal({
 }: PhoneVerificationModalProps) {
   const { t } = useTranslation();
   const theme = useTheme();
+  const { height: SCREEN_HEIGHT } = useWindowDimensions();
   const [step, setStep] = useState<Step>('phone');
   const [selectedCountry, setSelectedCountry] = useState<Country>(() => parsePhone(initialPhone).country);
   const [phoneNumber, setPhoneNumber] = useState(() => parsePhone(initialPhone).number);
@@ -198,7 +197,7 @@ export function PhoneVerificationModal({
   const isCountryStep = step === 'country';
   const sheetStyle = isCountryStep
     ? {
-        height: SCREEN_HEIGHT * 0.78,
+        ...(Platform.OS === 'web' ? { maxHeight: SCREEN_HEIGHT * 0.78 } : { height: SCREEN_HEIGHT * 0.78 }),
         backgroundColor: theme.card,
         borderTopLeftRadius: 28,
         borderTopRightRadius: 28,
@@ -225,7 +224,7 @@ export function PhoneVerificationModal({
       onRequestClose={() => {
         if (step === 'country') { setStep('phone'); setPickerSearch(''); }
       }}
-      statusBarTranslucent
+      statusBarTranslucent={Platform.OS !== 'web'}
     >
       <KeyboardAvoidingView
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}

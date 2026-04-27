@@ -1,7 +1,8 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { View, ScrollView, Pressable, ActivityIndicator, Alert, Modal } from 'react-native';
+import { View, ScrollView, Pressable, ActivityIndicator, Modal } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useTranslation } from 'react-i18next';
+import { crossPlatformAlert } from '@/core/utils/crossPlatformAlert';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { AppText } from '@/presentation/shared/components/ui/AppText';
 import { ImageCropModal } from '@/presentation/shared/components/ui/ImageCropModal';
@@ -64,17 +65,17 @@ export default function PersonalInfoScreen() {
     });
     setIsUpdating(false);
     if (!error) {
-      Alert.alert(t('personalInfo.success'), t('personalInfo.updateSuccess'), [{ text: t('common.ok') }]);
+      crossPlatformAlert(t('personalInfo.success'), t('personalInfo.updateSuccess'), [{ text: t('common.ok') }]);
     }
   }, [user, displayName, phoneNumber, gender, dateOfBirth, error, updateProfile, t]);
 
   const handleChangeEmail = useCallback(async () => {
     if (!user) return;
     if (email === profile?.email) {
-      Alert.alert(t('personalInfo.error'), t('personalInfo.emailUnchanged'));
+      crossPlatformAlert(t('personalInfo.error'), t('personalInfo.emailUnchanged'));
       return;
     }
-    Alert.alert(
+    crossPlatformAlert(
       t('changeEmail.title'),
       t('personalInfo.changeEmailConfirm'),
       [
@@ -86,7 +87,7 @@ export default function PersonalInfoScreen() {
             await updateEmail(user.id, email);
             setIsUpdating(false);
             if (!error) {
-              Alert.alert(t('personalInfo.success'), t('personalInfo.emailUpdateSuccess'), [{ text: t('common.ok') }]);
+              crossPlatformAlert(t('personalInfo.success'), t('personalInfo.emailUpdateSuccess'), [{ text: t('common.ok') }]);
             }
           },
         },

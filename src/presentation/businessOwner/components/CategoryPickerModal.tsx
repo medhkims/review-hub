@@ -117,6 +117,7 @@ const SearchableSelectField: React.FC<SearchableSelectFieldProps> = ({
             hitSlop={8}
             accessibilityRole="button"
             accessibilityLabel="Clear"
+            style={{ minWidth: 44, minHeight: 44, alignItems: 'center', justifyContent: 'center' }}
           >
             <MaterialCommunityIcons name="close-circle" size={18} color={colors.textSlate500} />
           </Pressable>
