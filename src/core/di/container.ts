@@ -97,6 +97,9 @@ import { GetDeletedCategoryItemsUseCase } from '@/domain/business/usecases/getDe
 import { UpdateRatingCriteriaUseCase } from '@/domain/business/usecases/updateRatingCriteriaUseCase';
 import { SoftDeleteRatingCriterionUseCase } from '@/domain/business/usecases/softDeleteRatingCriterionUseCase';
 import { RecoverRatingCriterionUseCase } from '@/domain/business/usecases/recoverRatingCriterionUseCase';
+import { SyncCriterionAddedUseCase } from '@/domain/business/usecases/syncCriterionAddedUseCase';
+import { SyncCriterionRemovedUseCase } from '@/domain/business/usecases/syncCriterionRemovedUseCase';
+import { MoveSubcategoryUseCase } from '@/domain/business/usecases/moveSubcategoryUseCase';
 import { FuzzySearchBusinessUseCase } from '@/domain/business/usecases/fuzzySearchBusinessUseCase';
 import { SubmitBusinessUseCase } from '@/domain/business/usecases/submitBusinessUseCase';
 import { CheckBusinessDuplicateUseCase } from '@/domain/business/usecases/checkBusinessDuplicateUseCase';
@@ -130,6 +133,7 @@ import { DislikeCommentUseCase } from '@/domain/business/usecases/dislikeComment
 import { UndislikeCommentUseCase } from '@/domain/business/usecases/undislikeCommentUseCase';
 import { DislikeReplyUseCase } from '@/domain/business/usecases/dislikeReplyUseCase';
 import { UndislikeReplyUseCase } from '@/domain/business/usecases/undislikeReplyUseCase';
+import { GetBusinessCategoryStatsUseCase } from '@/domain/business/usecases/getBusinessCategoryStatsUseCase';
 
 // ---- Ticket ----
 import { TicketRemoteDataSourceImpl } from '@/data/ticket/datasources/ticketRemoteDataSource';
@@ -366,6 +370,9 @@ const getDeletedCategoryItemsUseCase = new GetDeletedCategoryItemsUseCase(catego
 const updateRatingCriteriaUseCase = new UpdateRatingCriteriaUseCase(categoryRepository);
 const softDeleteRatingCriterionUseCase = new SoftDeleteRatingCriterionUseCase(categoryRepository);
 const recoverRatingCriterionUseCase = new RecoverRatingCriterionUseCase(categoryRepository);
+const syncCriterionAddedUseCase = new SyncCriterionAddedUseCase(businessRepository);
+const syncCriterionRemovedUseCase = new SyncCriterionRemovedUseCase(businessRepository);
+const moveSubcategoryUseCase = new MoveSubcategoryUseCase(categoryRepository);
 const fuzzySearchBusinessUseCase = new FuzzySearchBusinessUseCase(businessRepository);
 const submitBusinessUseCase = new SubmitBusinessUseCase(businessRepository);
 const checkBusinessDuplicateUseCase = new CheckBusinessDuplicateUseCase(businessRepository);
@@ -383,6 +390,7 @@ const incrementGlobalSearchCountUseCase = new IncrementGlobalSearchCountUseCase(
 const reportBusinessUseCase = new ReportBusinessUseCase(businessRepository);
 const claimBusinessUseCase = new ClaimBusinessUseCase(businessRepository);
 const getHomeStatsUseCase = new GetHomeStatsUseCase(businessRepository);
+const getBusinessCategoryStatsUseCase = new GetBusinessCategoryStatsUseCase(businessRepository);
 const likeReviewUseCase = new LikeReviewUseCase(businessRepository, notificationRepository);
 const unlikeReviewUseCase = new UnlikeReviewUseCase(businessRepository);
 const incrementReviewViewUseCase = new IncrementReviewViewUseCase(businessRepository);
@@ -600,6 +608,9 @@ export const container = {
   updateRatingCriteriaUseCase,
   softDeleteRatingCriterionUseCase,
   recoverRatingCriterionUseCase,
+  syncCriterionAddedUseCase,
+  syncCriterionRemovedUseCase,
+  moveSubcategoryUseCase,
   searchBusinessesUseCase,
   toggleFavoriteUseCase,
   getBusinessesByCategoryUseCase,
@@ -625,6 +636,7 @@ export const container = {
   reportBusinessUseCase,
   claimBusinessUseCase,
   getHomeStatsUseCase,
+  getBusinessCategoryStatsUseCase,
   // Review interaction use cases
   likeReviewUseCase,
   unlikeReviewUseCase,

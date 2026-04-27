@@ -1,5 +1,5 @@
-import React, { useEffect, useState, useCallback } from 'react';
-import { View, FlatList, Pressable, Image, ScrollView, RefreshControl } from 'react-native';
+import React, { useEffect, useState, useCallback, useMemo } from 'react';
+import { View, FlatList, Pressable, Image, ScrollView, RefreshControl, Modal } from 'react-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useTranslation } from 'react-i18next';
 import { router } from 'expo-router';
@@ -11,6 +11,9 @@ import { useTheme } from '@/core/theme/useTheme';
 import { container } from '@/core/di/container';
 import { ReviewEntity } from '@/domain/business/entities/reviewEntity';
 import { StarRating } from '../components/BusinessCoverSection';
+
+type SortOption = 'newest' | 'oldest' | 'mostRelevant';
+type FilterOption = 0 | 1 | 2 | 3 | 4 | 5; // 0 = no filter
 
 interface BusinessReviewsScreenProps {
   businessId: string;
@@ -31,6 +34,12 @@ const formatTimeAgo = (date: Date): string => {
   return date.toLocaleDateString();
 };
 
+const SORT_OPTIONS: { key: SortOption; label: string; icon: string }[] = [
+  { key: 'newest', label: 'Newest first', icon: 'clock-outline' },
+  { key: 'oldest', label: 'Oldest first', icon: 'clock-time-two-outline' },
+  { key: 'mostRelevant', label: 'Most relevant', icon: 'fire' },
+];
+
 interface ReviewItemProps {
   review: ReviewEntity;
   businessName: string;
@@ -38,7 +47,7 @@ interface ReviewItemProps {
 }
 
 const ReviewItem = React.memo<ReviewItemProps>(
-  ({ review, businessName, onPress }) => {
+  ({ review, businessName: _businessName, onPress }) => {
     const theme = useTheme();
     return (
       <Pressable
@@ -140,7 +149,6 @@ const ReviewItem = React.memo<ReviewItemProps>(
             </ScrollView>
           )}
 
-          {/* Stats row */}
           <View style={{ flexDirection: 'row', gap: 16, marginTop: 10 }}>
             <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
               <MaterialCommunityIcons
@@ -176,12 +184,189 @@ const ReviewItem = React.memo<ReviewItemProps>(
   },
 );
 
+// ─── Sort Modal ──────────────────────────────────────────────────────────────
+
+interface SortModalProps {
+  visible: boolean;
+  current: SortOption;
+  onSelect: (opt: SortOption) => void;
+  onClose: () => void;
+}
+
+const SortModal = React.memo<SortModalProps>(({ visible, current, onSelect, onClose }) => {
+  const theme = useTheme();
+  return (
+    <Modal visible={visible} transparent animationType="fade" onRequestClose={onClose}>
+      <Pressable
+        style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.5)', justifyContent: 'flex-end' }}
+        onPress={onClose}
+        accessibilityLabel="Close sort menu"
+        accessibilityRole="button"
+      >
+        <Pressable
+          style={{
+            backgroundColor: theme.card,
+            borderTopLeftRadius: 20,
+            borderTopRightRadius: 20,
+            paddingTop: 8,
+            paddingBottom: 36,
+          }}
+          onPress={() => {}}
+        >
+          {/* Handle */}
+          <View style={{ alignItems: 'center', paddingBottom: 16, paddingTop: 8 }}>
+            <View style={{ width: 36, height: 4, borderRadius: 2, backgroundColor: theme.border }} />
+          </View>
+          <AppText style={{ fontSize: 15, fontWeight: '700', color: theme.text, paddingHorizontal: 20, marginBottom: 12 }}>
+            Sort by
+          </AppText>
+          {SORT_OPTIONS.map((opt) => {
+            const isActive = current === opt.key;
+            return (
+              <Pressable
+                key={opt.key}
+                onPress={() => { onSelect(opt.key); onClose(); }}
+                accessibilityLabel={opt.label}
+                accessibilityRole="radio"
+                style={({ pressed }) => ({
+                  flexDirection: 'row',
+                  alignItems: 'center',
+                  gap: 12,
+                  paddingVertical: 14,
+                  paddingHorizontal: 20,
+                  backgroundColor: pressed ? 'rgba(139,92,246,0.08)' : 'transparent',
+                })}
+              >
+                <MaterialCommunityIcons
+                  name={opt.icon as never}
+                  size={20}
+                  color={isActive ? colors.neonPurple : theme.textMuted}
+                />
+                <AppText style={{ flex: 1, fontSize: 15, color: isActive ? colors.neonPurple : theme.text, fontWeight: isActive ? '600' : '400' }}>
+                  {opt.label}
+                </AppText>
+                {isActive && (
+                  <MaterialCommunityIcons name="check" size={18} color={colors.neonPurple} />
+                )}
+              </Pressable>
+            );
+          })}
+        </Pressable>
+      </Pressable>
+    </Modal>
+  );
+});
+
+// ─── Filter Modal ─────────────────────────────────────────────────────────────
+
+interface FilterModalProps {
+  visible: boolean;
+  current: FilterOption;
+  onSelect: (opt: FilterOption) => void;
+  onClose: () => void;
+}
+
+const STAR_OPTIONS: FilterOption[] = [5, 4, 3, 2, 1];
+
+const FilterModal = React.memo<FilterModalProps>(({ visible, current, onSelect, onClose }) => {
+  const theme = useTheme();
+  return (
+    <Modal visible={visible} transparent animationType="fade" onRequestClose={onClose}>
+      <Pressable
+        style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.5)', justifyContent: 'flex-end' }}
+        onPress={onClose}
+        accessibilityLabel="Close filter menu"
+        accessibilityRole="button"
+      >
+        <Pressable
+          style={{
+            backgroundColor: theme.card,
+            borderTopLeftRadius: 20,
+            borderTopRightRadius: 20,
+            paddingTop: 8,
+            paddingBottom: 36,
+          }}
+          onPress={() => {}}
+        >
+          {/* Handle */}
+          <View style={{ alignItems: 'center', paddingBottom: 16, paddingTop: 8 }}>
+            <View style={{ width: 36, height: 4, borderRadius: 2, backgroundColor: theme.border }} />
+          </View>
+          <AppText style={{ fontSize: 15, fontWeight: '700', color: theme.text, paddingHorizontal: 20, marginBottom: 12 }}>
+            Filter by rating
+          </AppText>
+          {/* All option */}
+          <Pressable
+            onPress={() => { onSelect(0); onClose(); }}
+            accessibilityLabel="All ratings"
+            accessibilityRole="radio"
+            style={({ pressed }) => ({
+              flexDirection: 'row',
+              alignItems: 'center',
+              gap: 12,
+              paddingVertical: 14,
+              paddingHorizontal: 20,
+              backgroundColor: pressed ? 'rgba(139,92,246,0.08)' : 'transparent',
+            })}
+          >
+            <MaterialCommunityIcons name="star-outline" size={20} color={current === 0 ? colors.neonPurple : theme.textMuted} />
+            <AppText style={{ flex: 1, fontSize: 15, color: current === 0 ? colors.neonPurple : theme.text, fontWeight: current === 0 ? '600' : '400' }}>
+              All ratings
+            </AppText>
+            {current === 0 && <MaterialCommunityIcons name="check" size={18} color={colors.neonPurple} />}
+          </Pressable>
+          {STAR_OPTIONS.map((stars) => {
+            const isActive = current === stars;
+            return (
+              <Pressable
+                key={stars}
+                onPress={() => { onSelect(stars); onClose(); }}
+                accessibilityLabel={`${stars} star`}
+                accessibilityRole="radio"
+                style={({ pressed }) => ({
+                  flexDirection: 'row',
+                  alignItems: 'center',
+                  gap: 12,
+                  paddingVertical: 14,
+                  paddingHorizontal: 20,
+                  backgroundColor: pressed ? 'rgba(139,92,246,0.08)' : 'transparent',
+                })}
+              >
+                <View style={{ flexDirection: 'row', gap: 2 }}>
+                  {Array.from({ length: 5 }).map((_, i) => (
+                    <MaterialCommunityIcons
+                      key={i}
+                      name={i < stars ? 'star' : 'star-outline'}
+                      size={18}
+                      color={isActive ? colors.neonPurple : i < stars ? '#f59e0b' : theme.textMuted}
+                    />
+                  ))}
+                </View>
+                <AppText style={{ flex: 1, fontSize: 15, color: isActive ? colors.neonPurple : theme.text, fontWeight: isActive ? '600' : '400' }}>
+                  {stars} {stars === 1 ? 'star' : 'stars'}
+                </AppText>
+                {isActive && <MaterialCommunityIcons name="check" size={18} color={colors.neonPurple} />}
+              </Pressable>
+            );
+          })}
+        </Pressable>
+      </Pressable>
+    </Modal>
+  );
+});
+
+// ─── Main Screen ──────────────────────────────────────────────────────────────
+
 export default function BusinessReviewsScreen({ businessId, businessName, businessLogoUrl }: BusinessReviewsScreenProps) {
   const { t } = useTranslation();
   const theme = useTheme();
   const [reviews, setReviews] = useState<ReviewEntity[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [sortOption, setSortOption] = useState<SortOption>('newest');
+  const [filterOption, setFilterOption] = useState<FilterOption>(0);
+  const [showSortModal, setShowSortModal] = useState(false);
+  const [showFilterModal, setShowFilterModal] = useState(false);
 
   const fetchReviews = useCallback(async () => {
     setIsLoading(true);
@@ -197,6 +382,30 @@ export default function BusinessReviewsScreen({ businessId, businessName, busine
   useEffect(() => {
     fetchReviews();
   }, [fetchReviews]);
+
+  const displayedReviews = useMemo(() => {
+    let result = [...reviews];
+
+    // Filter: Math.floor(rating) must equal the selected star count
+    if (filterOption !== 0) {
+      result = result.filter((r) => Math.floor(r.rating) === filterOption);
+    }
+
+    // Sort
+    switch (sortOption) {
+      case 'newest':
+        result.sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
+        break;
+      case 'oldest':
+        result.sort((a, b) => a.createdAt.getTime() - b.createdAt.getTime());
+        break;
+      case 'mostRelevant':
+        result.sort((a, b) => (b.likeCount + b.commentCount) - (a.likeCount + a.commentCount));
+        break;
+    }
+
+    return result;
+  }, [reviews, sortOption, filterOption]);
 
   const openReview = useCallback((review: ReviewEntity) => {
     router.push({
@@ -226,6 +435,9 @@ export default function BusinessReviewsScreen({ businessId, businessName, busine
       },
     });
   }, [businessName, businessId, businessLogoUrl]);
+
+  const sortLabel = SORT_OPTIONS.find((o) => o.key === sortOption)?.label ?? 'Sort';
+  const isFilterActive = filterOption !== 0;
 
   return (
     <View style={{ flex: 1, backgroundColor: theme.background }}>
@@ -287,6 +499,104 @@ export default function BusinessReviewsScreen({ businessId, businessName, busine
         ) : null}
       </View>
 
+      {/* Sort & Filter bar */}
+      <View
+        style={{
+          flexDirection: 'row',
+          gap: 10,
+          paddingHorizontal: 20,
+          paddingVertical: 12,
+          borderBottomWidth: 1,
+          borderBottomColor: theme.border,
+        }}
+      >
+        {/* Sort button */}
+        <Pressable
+          onPress={() => setShowSortModal(true)}
+          accessibilityLabel={`Sort by: ${sortLabel}`}
+          accessibilityRole="button"
+          style={({ pressed }) => ({
+            flex: 1,
+            flexDirection: 'row',
+            alignItems: 'center',
+            justifyContent: 'center',
+            gap: 6,
+            paddingVertical: 9,
+            paddingHorizontal: 14,
+            borderRadius: 10,
+            backgroundColor: pressed ? 'rgba(139,92,246,0.12)' : theme.card,
+            borderWidth: 1,
+            borderColor: 'rgba(139,92,246,0.3)',
+          })}
+        >
+          <MaterialCommunityIcons name="sort" size={16} color={colors.neonPurple} />
+          <AppText style={{ fontSize: 13, color: colors.neonPurple, fontWeight: '600' }} numberOfLines={1}>
+            Sort
+          </AppText>
+          <MaterialCommunityIcons name="chevron-down" size={14} color={colors.neonPurple} />
+        </Pressable>
+
+        {/* Filter button */}
+        <Pressable
+          onPress={() => setShowFilterModal(true)}
+          accessibilityLabel={isFilterActive ? `Filter: ${filterOption} stars` : 'Filter by rating'}
+          accessibilityRole="button"
+          style={({ pressed }) => ({
+            flex: 1,
+            flexDirection: 'row',
+            alignItems: 'center',
+            justifyContent: 'center',
+            gap: 6,
+            paddingVertical: 9,
+            paddingHorizontal: 14,
+            borderRadius: 10,
+            backgroundColor: isFilterActive
+              ? colors.neonPurple
+              : pressed
+              ? 'rgba(139,92,246,0.12)'
+              : theme.card,
+            borderWidth: 1,
+            borderColor: 'rgba(139,92,246,0.3)',
+          })}
+        >
+          <MaterialCommunityIcons
+            name="filter-outline"
+            size={16}
+            color={isFilterActive ? '#fff' : colors.neonPurple}
+          />
+          <AppText
+            style={{
+              fontSize: 13,
+              color: isFilterActive ? '#fff' : colors.neonPurple,
+              fontWeight: '600',
+            }}
+          >
+            {isFilterActive ? `${filterOption} ★` : 'Filter'}
+          </AppText>
+          {isFilterActive && (
+            <Pressable
+              onPress={(e) => { e.stopPropagation(); setFilterOption(0); }}
+              accessibilityLabel="Clear filter"
+              accessibilityRole="button"
+              hitSlop={8}
+            >
+              <MaterialCommunityIcons name="close-circle" size={14} color="#fff" />
+            </Pressable>
+          )}
+          {!isFilterActive && <MaterialCommunityIcons name="chevron-down" size={14} color={colors.neonPurple} />}
+        </Pressable>
+      </View>
+
+      {/* Results count */}
+      {!isLoading && reviews.length > 0 && (
+        <View style={{ paddingHorizontal: 20, paddingTop: 10, paddingBottom: 2 }}>
+          <AppText style={{ fontSize: 12, color: theme.textMuted }}>
+            {displayedReviews.length} {displayedReviews.length === 1 ? 'review' : 'reviews'}
+            {isFilterActive ? ` with ${filterOption} ★` : ''}
+          </AppText>
+        </View>
+      )}
+
       {isLoading && reviews.length === 0 ? (
         <LoadingIndicator />
       ) : error && reviews.length === 0 ? (
@@ -295,7 +605,7 @@ export default function BusinessReviewsScreen({ businessId, businessName, busine
         </View>
       ) : (
         <FlatList
-          data={reviews}
+          data={displayedReviews}
           keyExtractor={(item) => item.id}
           renderItem={({ item }) => (
             <ReviewItem review={item} businessName={businessName} onPress={() => openReview(item)} />
@@ -313,11 +623,43 @@ export default function BusinessReviewsScreen({ businessId, businessName, busine
           ListEmptyComponent={
             <View style={{ alignItems: 'center', paddingTop: 80, gap: 12 }}>
               <MaterialCommunityIcons name="star-off-outline" size={48} color={theme.textMuted} />
-              <AppText style={{ fontSize: 16, color: theme.textSecondary }}>{t('businessDetail.noReviews')}</AppText>
+              <AppText style={{ fontSize: 16, color: theme.textSecondary }}>
+                {isFilterActive ? `No ${filterOption}-star reviews` : t('businessDetail.noReviews')}
+              </AppText>
+              {isFilterActive && (
+                <Pressable
+                  onPress={() => setFilterOption(0)}
+                  accessibilityLabel="Clear filter"
+                  accessibilityRole="button"
+                  style={{
+                    marginTop: 8,
+                    paddingVertical: 8,
+                    paddingHorizontal: 16,
+                    borderRadius: 8,
+                    borderWidth: 1,
+                    borderColor: colors.neonPurple,
+                  }}
+                >
+                  <AppText style={{ fontSize: 13, color: colors.neonPurple }}>Clear filter</AppText>
+                </Pressable>
+              )}
             </View>
           }
         />
       )}
+
+      <SortModal
+        visible={showSortModal}
+        current={sortOption}
+        onSelect={setSortOption}
+        onClose={() => setShowSortModal(false)}
+      />
+      <FilterModal
+        visible={showFilterModal}
+        current={filterOption}
+        onSelect={setFilterOption}
+        onClose={() => setShowFilterModal(false)}
+      />
     </View>
   );
 }

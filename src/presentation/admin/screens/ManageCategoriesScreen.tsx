@@ -110,11 +110,13 @@ function RecoverCategoryModal({
 function SubcategoryRow({
   sub,
   categoryId,
+  businessCount,
   onDelete,
   onEdit,
 }: {
   sub: SubcategoryEntity;
   categoryId: string;
+  businessCount?: number;
   onDelete: (categoryId: string, sub: SubcategoryEntity) => void;
   onEdit: (categoryId: string, sub: SubcategoryEntity) => void;
 }) {
@@ -123,6 +125,11 @@ function SubcategoryRow({
     <View style={{ flexDirection: 'row', alignItems: 'center', paddingVertical: 10, paddingLeft: 20, paddingRight: 12, borderTopWidth: 1, borderTopColor: 'rgba(51,65,85,0.3)' }}>
       <MaterialCommunityIcons name="circle-small" size={16} color={colors.textSlate400} />
       <AppText style={{ flex: 1, color: colors.textSlate200, marginLeft: 4, fontSize: 14 }}>{sub.name}</AppText>
+      {businessCount !== undefined && (
+        <View style={{ backgroundColor: 'rgba(168,85,247,0.12)', borderRadius: 10, paddingHorizontal: 7, paddingVertical: 2, marginRight: 8 }}>
+          <AppText style={{ color: colors.primary, fontSize: 11, fontWeight: '600' }}>{businessCount} {t('manageCategories.businesses')}</AppText>
+        </View>
+      )}
       <TouchableOpacity onPress={() => onEdit(categoryId, sub)} accessibilityRole="button" accessibilityLabel={t('manageCategories.editSubcategory')} style={{ marginRight: 14, padding: 4 }}>
         <MaterialCommunityIcons name="pencil-outline" size={16} color={colors.primary} />
       </TouchableOpacity>
@@ -137,6 +144,8 @@ function SubcategoryRow({
 function CategoryRow({
   item,
   expanded,
+  categoryStats,
+  statsLoaded,
   onToggle,
   onDeleteCategory,
   onDeleteSubcategory,
@@ -146,6 +155,8 @@ function CategoryRow({
 }: {
   item: CategoryEntity;
   expanded: boolean;
+  categoryStats?: { total: number; bySubcategory: Record<string, number> };
+  statsLoaded: boolean;
   onToggle: (id: string) => void;
   onDeleteCategory: (category: CategoryEntity) => void;
   onDeleteSubcategory: (categoryId: string, sub: SubcategoryEntity) => void;
@@ -154,12 +165,18 @@ function CategoryRow({
   onEditSubcategory: (categoryId: string, sub: SubcategoryEntity) => void;
 }) {
   const { t } = useTranslation();
+  const categoryTotal = statsLoaded ? (categoryStats?.total ?? 0) : undefined;
   return (
     <View style={{ backgroundColor: colors.cardDark, borderRadius: 12, borderWidth: 1, borderColor: colors.borderDark, marginBottom: 10, overflow: 'hidden' }}>
       <View style={{ flexDirection: 'row', alignItems: 'center', padding: 14 }}>
         <TouchableOpacity style={{ flex: 1, flexDirection: 'row', alignItems: 'center' }} onPress={() => onToggle(item.id)} accessibilityRole="button" activeOpacity={0.7}>
           <MaterialCommunityIcons name={item.icon as IconName} size={22} color={colors.primary} style={{ marginRight: 10 }} />
           <AppText style={{ flex: 1, color: colors.textWhite, fontWeight: '600' }}>{item.name}</AppText>
+          {categoryTotal !== undefined && (
+            <View style={{ backgroundColor: 'rgba(20,184,166,0.12)', borderRadius: 10, paddingHorizontal: 7, paddingVertical: 2, marginRight: 6 }}>
+              <AppText style={{ color: '#14b8a6', fontSize: 11, fontWeight: '700' }}>{categoryTotal} {t('manageCategories.businesses')}</AppText>
+            </View>
+          )}
           <AppText style={{ color: colors.textSlate400, fontSize: 12, marginRight: 6 }}>{item.subcategories.length} {t('manageCategories.subcategories')}</AppText>
           <MaterialCommunityIcons name={expanded ? 'chevron-up' : 'chevron-down'} size={20} color={colors.textSlate400} style={{ marginRight: 10 }} />
         </TouchableOpacity>
@@ -173,7 +190,14 @@ function CategoryRow({
       {expanded && (
         <>
           {item.subcategories.map((sub) => (
-            <SubcategoryRow key={sub.id} sub={sub} categoryId={item.id} onDelete={onDeleteSubcategory} onEdit={onEditSubcategory} />
+            <SubcategoryRow
+              key={sub.id}
+              sub={sub}
+              categoryId={item.id}
+              businessCount={statsLoaded ? (categoryStats?.bySubcategory[sub.id] ?? 0) + (categoryStats?.bySubcategory[sub.name] ?? 0) : undefined}
+              onDelete={onDeleteSubcategory}
+              onEdit={onEditSubcategory}
+            />
           ))}
           <TouchableOpacity style={{ flexDirection: 'row', alignItems: 'center', padding: 10, paddingLeft: 20, borderTopWidth: 1, borderTopColor: 'rgba(51,65,85,0.3)' }} onPress={() => onAddSubcategory(item.id)} accessibilityRole="button">
             <MaterialCommunityIcons name="plus" size={16} color={colors.primary} />
@@ -308,21 +332,100 @@ function CategoryFormModal({ visible, title, name, logoUri, isSaving, onChangeNa
   );
 }
 
-function SubcategoryFormModal({ visible, title, name, isSaving, onChangeName, onSave, onCancel }: {
+function SubcategoryFormModal({
+  visible, title, name, isSaving,
+  categories, currentCategoryId, selectedCategoryId,
+  onChangeName, onSelectCategory, onSave, onCancel,
+}: {
   visible: boolean; title: string; name: string; isSaving: boolean;
-  onChangeName: (v: string) => void; onSave: () => void; onCancel: () => void;
+  categories: CategoryEntity[]; currentCategoryId: string; selectedCategoryId: string;
+  onChangeName: (v: string) => void;
+  onSelectCategory: (categoryId: string) => void;
+  onSave: () => void; onCancel: () => void;
 }) {
   const { t } = useTranslation();
+  const [pickerOpen, setPickerOpen] = useState(false);
+  const selectedCat = categories.find((c) => c.id === selectedCategoryId);
+  const currentCat = categories.find((c) => c.id === currentCategoryId);
+
   return (
     <Modal visible={visible} transparent animationType="fade">
       <View style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.6)', justifyContent: 'center', padding: 24 }}>
         <View style={{ backgroundColor: colors.cardDark, borderRadius: 16, padding: 20 }}>
           <AppText style={{ fontSize: 18, fontWeight: '700', color: colors.textWhite, marginBottom: 16 }}>{title}</AppText>
+
+          {/* Subcategory name */}
           <AppText style={{ color: colors.textSlate400, marginBottom: 6, fontSize: 13 }}>{t('manageCategories.subcategoryName')}</AppText>
-          <TextInput value={name} onChangeText={onChangeName} placeholder={t('manageCategories.subcategoryNamePlaceholder')} placeholderTextColor={colors.textSlate400} style={{ backgroundColor: 'rgba(51,65,85,0.4)', borderRadius: 8, paddingHorizontal: 12, paddingVertical: 10, color: colors.textWhite, marginBottom: 16 }} />
-          <View style={{ flexDirection: 'row', gap: 10 }}>
-            <TouchableOpacity style={{ flex: 1, backgroundColor: 'rgba(51,65,85,0.4)', borderRadius: 8, padding: 12, alignItems: 'center' }} onPress={onCancel}><AppText style={{ color: colors.textSlate200 }}>{t('common.cancel')}</AppText></TouchableOpacity>
-            <TouchableOpacity style={{ flex: 1, backgroundColor: colors.primary, borderRadius: 8, padding: 12, alignItems: 'center', opacity: isSaving ? 0.6 : 1 }} onPress={onSave} disabled={isSaving}>{isSaving ? <ActivityIndicator size="small" color={colors.white} /> : <AppText style={{ color: colors.white, fontWeight: '600' }}>{t('common.save')}</AppText>}</TouchableOpacity>
+          <TextInput
+            value={name}
+            onChangeText={onChangeName}
+            placeholder={t('manageCategories.subcategoryNamePlaceholder')}
+            placeholderTextColor={colors.textSlate400}
+            style={{ backgroundColor: 'rgba(51,65,85,0.4)', borderRadius: 8, paddingHorizontal: 12, paddingVertical: 10, color: colors.textWhite, marginBottom: 16 }}
+          />
+
+          {/* Parent category */}
+          <AppText style={{ color: colors.textSlate400, marginBottom: 6, fontSize: 13 }}>{t('manageCategories.parentCategory')}</AppText>
+          <TouchableOpacity
+            onPress={() => setPickerOpen((v) => !v)}
+            accessibilityRole="button"
+            style={{
+              flexDirection: 'row', alignItems: 'center',
+              backgroundColor: 'rgba(51,65,85,0.4)', borderRadius: 8,
+              paddingHorizontal: 12, paddingVertical: 10, marginBottom: 4,
+              borderWidth: selectedCategoryId !== currentCategoryId ? 1 : 0,
+              borderColor: selectedCategoryId !== currentCategoryId ? colors.primary : 'transparent',
+            }}
+          >
+            {selectedCat && (
+              <MaterialCommunityIcons name={selectedCat.icon as React.ComponentProps<typeof MaterialCommunityIcons>['name']} size={16} color={colors.primary} style={{ marginRight: 8 }} />
+            )}
+            <AppText style={{ flex: 1, color: selectedCat ? colors.textWhite : colors.textSlate400 }}>
+              {selectedCat ? selectedCat.name : t('manageCategories.selectCategory')}
+            </AppText>
+            {selectedCategoryId !== currentCategoryId && currentCat && (
+              <AppText style={{ color: colors.primary, fontSize: 11, marginRight: 6 }}>{t('manageCategories.willMove')}</AppText>
+            )}
+            <MaterialCommunityIcons name={pickerOpen ? 'chevron-up' : 'chevron-down'} size={18} color={colors.textSlate400} />
+          </TouchableOpacity>
+
+          {/* Dropdown list */}
+          {pickerOpen && (
+            <View style={{ backgroundColor: 'rgba(30,41,59,0.98)', borderRadius: 8, borderWidth: 1, borderColor: colors.borderDark, marginBottom: 8, maxHeight: 200, overflow: 'hidden' }}>
+              <ScrollView showsVerticalScrollIndicator={false}>
+                {categories.map((cat) => (
+                  <TouchableOpacity
+                    key={cat.id}
+                    onPress={() => { onSelectCategory(cat.id); setPickerOpen(false); }}
+                    accessibilityRole="button"
+                    style={{
+                      flexDirection: 'row', alignItems: 'center',
+                      paddingHorizontal: 12, paddingVertical: 10,
+                      backgroundColor: cat.id === selectedCategoryId ? 'rgba(168,85,247,0.15)' : 'transparent',
+                      borderBottomWidth: 1, borderBottomColor: 'rgba(51,65,85,0.3)',
+                    }}
+                  >
+                    <MaterialCommunityIcons name={cat.icon as React.ComponentProps<typeof MaterialCommunityIcons>['name']} size={16} color={cat.id === selectedCategoryId ? colors.primary : colors.textSlate400} style={{ marginRight: 8 }} />
+                    <AppText style={{ flex: 1, color: cat.id === selectedCategoryId ? colors.primary : colors.textSlate200, fontSize: 14 }}>{cat.name}</AppText>
+                    {cat.id === currentCategoryId && (
+                      <AppText style={{ color: colors.textSlate400, fontSize: 11 }}>{t('manageCategories.currentLabel')}</AppText>
+                    )}
+                    {cat.id === selectedCategoryId && (
+                      <MaterialCommunityIcons name="check" size={16} color={colors.primary} />
+                    )}
+                  </TouchableOpacity>
+                ))}
+              </ScrollView>
+            </View>
+          )}
+
+          <View style={{ flexDirection: 'row', gap: 10, marginTop: 8 }}>
+            <TouchableOpacity style={{ flex: 1, backgroundColor: 'rgba(51,65,85,0.4)', borderRadius: 8, padding: 12, alignItems: 'center' }} onPress={onCancel} accessibilityRole="button">
+              <AppText style={{ color: colors.textSlate200 }}>{t('common.cancel')}</AppText>
+            </TouchableOpacity>
+            <TouchableOpacity style={{ flex: 1, backgroundColor: colors.primary, borderRadius: 8, padding: 12, alignItems: 'center', opacity: isSaving ? 0.6 : 1 }} onPress={onSave} disabled={isSaving} accessibilityRole="button">
+              {isSaving ? <ActivityIndicator size="small" color={colors.white} /> : <AppText style={{ color: colors.white, fontWeight: '600' }}>{t('common.save')}</AppText>}
+            </TouchableOpacity>
           </View>
         </View>
       </View>
@@ -466,6 +569,8 @@ export function ManageCategoriesScreen() {
 
   const [categories, setCategories] = useState<CategoryEntity[]>([]);
   const [isLoadingActive, setIsLoadingActive] = useState(true);
+  const [businessStats, setBusinessStats] = useState<Record<string, { total: number; bySubcategory: Record<string, number> }>>({});
+  const [statsLoaded, setStatsLoaded] = useState(false);
   const [expandedIds, setExpandedIds] = useState<Set<string>>(new Set());
   const [subTab, setSubTab] = useState<null | 'categories' | 'rating'>(null);
   const [criteriaTab, setCriteriaTab] = useState<'active' | 'deleted'>('active');
@@ -491,6 +596,7 @@ export function ManageCategoriesScreen() {
 
   const [editSubVisible, setEditSubVisible] = useState(false);
   const [editingSubCategoryId, setEditingSubCategoryId] = useState('');
+  const [editSubMoveToId, setEditSubMoveToId] = useState('');
   const [editingSub, setEditingSub] = useState<SubcategoryEntity | null>(null);
   const [editSubName, setEditSubName] = useState('');
 
@@ -522,11 +628,34 @@ export function ManageCategoriesScreen() {
     setConfirmTitle(title); setConfirmMessage(message); setConfirmAction(() => onConfirm); setConfirmVisible(true);
   }, []);
 
+  const loadStats = useCallback(async () => {
+    const result = await container.getBusinessCategoryStatsUseCase.execute();
+    result.fold(() => undefined, (data) => setBusinessStats(data));
+    setStatsLoaded(true);
+  }, []);
+
   const loadActive = useCallback(async () => {
     setIsLoadingActive(true);
     const result = await container.getCategoriesForAdminUseCase.execute();
-    result.fold(() => setIsLoadingActive(false), (data) => { setCategories(data); setIsLoadingActive(false); });
-  }, []);
+    result.fold(() => setIsLoadingActive(false), (data) => {
+      // Deduplicate subcategories by id/name in case Firestore has stale duplicate entries
+      const deduped = data.map((cat) => {
+        const seenKeys = new Set<string>();
+        return {
+          ...cat,
+          subcategories: cat.subcategories.filter((sub) => {
+            const key = sub.id ?? sub.name?.toLowerCase().trim();
+            if (!key || seenKeys.has(key)) return false;
+            seenKeys.add(key);
+            return true;
+          }),
+        };
+      });
+      setCategories(deduped);
+      setIsLoadingActive(false);
+    });
+    void loadStats();
+  }, [loadStats]);
 
   const loadDeleted = useCallback(async () => {
     setIsLoadingDeleted(true);
@@ -577,7 +706,7 @@ export function ManageCategoriesScreen() {
 
   const openAddSubcategory = useCallback((categoryId: string) => { setTargetCategoryId(categoryId); setNewSubName(''); setAddSubVisible(true); }, []);
   const openEditCategory = useCallback((category: CategoryEntity) => { setEditingCategory(category); setEditCategoryName(category.name); setEditCategoryLogoUri(category.logoUrl ?? null); setEditCategoryVisible(true); }, []);
-  const openEditSubcategory = useCallback((categoryId: string, sub: SubcategoryEntity) => { setEditingSubCategoryId(categoryId); setEditingSub(sub); setEditSubName(sub.name); setEditSubVisible(true); }, []);
+  const openEditSubcategory = useCallback((categoryId: string, sub: SubcategoryEntity) => { setEditingSubCategoryId(categoryId); setEditSubMoveToId(categoryId); setEditingSub(sub); setEditSubName(sub.name); setEditSubVisible(true); }, []);
 
   const newLogoPicker = useImagePickerWithPreview({
     aspect: [1, 1],
@@ -615,9 +744,40 @@ export function ManageCategoriesScreen() {
   const handleEditSubcategory = useCallback(async () => {
     if (!editSubName.trim() || !editingSub) return;
     setIsSaving(true);
-    const result = await container.updateSubcategoryUseCase.execute(editingSubCategoryId, editingSub.id, editSubName.trim());
-    result.fold(() => setIsSaving(false), (entity) => { setCategories((prev) => prev.map((c) => c.id === editingSubCategoryId ? { ...c, subcategories: c.subcategories.map((s) => (s.id === entity.id ? entity : s)) } : c)); setIsSaving(false); setEditSubVisible(false); setEditingSub(null); });
-  }, [editingSubCategoryId, editingSub, editSubName]);
+
+    const nameChanged = editSubName.trim() !== editingSub.name;
+    const categoryChanged = editSubMoveToId !== editingSubCategoryId;
+
+    if (nameChanged) {
+      const nameResult = await container.updateSubcategoryUseCase.execute(editingSubCategoryId, editingSub.id, editSubName.trim());
+      if (nameResult.isLeft()) { setIsSaving(false); return; }
+    }
+
+    if (categoryChanged) {
+      const moveResult = await container.moveSubcategoryUseCase.execute(editingSubCategoryId, editingSub.id, editSubMoveToId);
+      if (moveResult.isLeft()) { setIsSaving(false); return; }
+      // Update local state: remove from old category, add to new category
+      setCategories((prev) => {
+        const updatedSub: SubcategoryEntity = { id: editingSub.id, name: editSubName.trim(), categoryId: editSubMoveToId };
+        return prev.map((c) => {
+          if (c.id === editingSubCategoryId) return { ...c, subcategories: c.subcategories.filter((s) => s.id !== editingSub.id) };
+          if (c.id === editSubMoveToId) return { ...c, subcategories: [...c.subcategories, updatedSub] };
+          return c;
+        });
+      });
+      // Reload business stats so the counts under both categories update immediately
+      void loadStats();
+    } else if (nameChanged) {
+      setCategories((prev) => prev.map((c) => c.id === editingSubCategoryId
+        ? { ...c, subcategories: c.subcategories.map((s) => s.id === editingSub.id ? { ...s, name: editSubName.trim() } : s) }
+        : c,
+      ));
+    }
+
+    setIsSaving(false);
+    setEditSubVisible(false);
+    setEditingSub(null);
+  }, [editingSubCategoryId, editSubMoveToId, editingSub, editSubName, loadStats]);
 
   const handleRecoverCategoryOnly = useCallback(async () => {
     if (!recoveringCategory) return;
@@ -642,7 +802,7 @@ export function ManageCategoriesScreen() {
 
   const handleRecoverCriterion = useCallback(async (categoryId: string, criterion: RatingCriterionEntity) => {
     const result = await container.recoverRatingCriterionUseCase.execute(categoryId, criterion.key);
-    result.fold(() => undefined, () => {
+    result.fold(() => undefined, async () => {
       setCategories((prev) => prev.map((c) => {
         if (c.id !== categoryId) return c;
         return {
@@ -651,6 +811,8 @@ export function ManageCategoriesScreen() {
           deletedRatingCriteria: (c.deletedRatingCriteria ?? []).filter((cr) => cr.key !== criterion.key),
         };
       }));
+      // Re-add the criterion card (with 0 stars) to all businesses in this category
+      await container.syncCriterionAddedUseCase.execute(categoryId, { name: criterion.label, icon: criterion.icon });
     });
   }, []);
 
@@ -676,15 +838,19 @@ export function ManageCategoriesScreen() {
     if (!newCriterionLabel.trim()) return;
     setIsSaving(true);
     const key = newCriterionKey.trim() || newCriterionLabel.trim().toLowerCase().replace(/[^a-z0-9]+/g, '_').replace(/^_|_$/g, '');
+    const icon = newCriterionIcon.trim() || 'star';
+    const label = newCriterionLabel.trim();
     const cat = categories.find((c) => c.id === criterionCategoryId);
     if (!cat) { setIsSaving(false); return; }
-    const updated: RatingCriterionEntity[] = [...cat.ratingCriteria, { key, label: newCriterionLabel.trim(), icon: newCriterionIcon.trim() || 'star' }];
+    const updated: RatingCriterionEntity[] = [...cat.ratingCriteria, { key, label, icon }];
     const result = await container.updateRatingCriteriaUseCase.execute(criterionCategoryId, updated);
     result.fold(
       () => setIsSaving(false),
-      () => {
+      async () => {
         setCategories((prev) => prev.map((c) => c.id === criterionCategoryId ? { ...c, ratingCriteria: updated } : c));
         setIsSaving(false); setAddCriterionVisible(false);
+        // Propagate new criterion to all businesses in this category
+        await container.syncCriterionAddedUseCase.execute(criterionCategoryId, { name: label, icon });
       },
     );
   }, [newCriterionLabel, newCriterionKey, newCriterionIcon, criterionCategoryId, categories]);
@@ -716,7 +882,7 @@ export function ManageCategoriesScreen() {
       async () => {
         setConfirmVisible(false);
         const result = await container.softDeleteRatingCriterionUseCase.execute(categoryId, criterion.key);
-        result.fold(() => undefined, () => {
+        result.fold(() => undefined, async () => {
           setCategories((prev) => prev.map((c) => {
             if (c.id !== categoryId) return c;
             return {
@@ -725,6 +891,8 @@ export function ManageCategoriesScreen() {
               deletedRatingCriteria: [...(c.deletedRatingCriteria ?? []), criterion],
             };
           }));
+          // Remove the criterion card from all businesses in this category
+          await container.syncCriterionRemovedUseCase.execute(categoryId, criterion.label);
         });
       },
     );
@@ -822,6 +990,8 @@ export function ManageCategoriesScreen() {
                   key={item.id}
                   item={item}
                   expanded={expandedIds.has(item.id)}
+                  categoryStats={businessStats[item.id]}
+                  statsLoaded={statsLoaded}
                   onToggle={toggleExpand}
                   onDeleteCategory={handleDeleteCategory}
                   onDeleteSubcategory={handleDeleteSubcategory}
@@ -928,9 +1098,33 @@ export function ManageCategoriesScreen() {
 
       <CategoryFormModal visible={editCategoryVisible} title={t('manageCategories.editCategory')} name={editCategoryName} logoUri={editCategoryLogoUri} isSaving={isSaving} onChangeName={setEditCategoryName} onPickLogo={editLogoPicker.pickImage} onSave={handleEditCategory} onCancel={() => { setEditCategoryVisible(false); setEditingCategory(null); }} />
 
-      <SubcategoryFormModal visible={addSubVisible} title={t('manageCategories.addSubcategory')} name={newSubName} isSaving={isSaving} onChangeName={setNewSubName} onSave={handleAddSubcategory} onCancel={() => setAddSubVisible(false)} />
+      <SubcategoryFormModal
+        visible={addSubVisible}
+        title={t('manageCategories.addSubcategory')}
+        name={newSubName}
+        isSaving={isSaving}
+        categories={categories}
+        currentCategoryId={targetCategoryId}
+        selectedCategoryId={targetCategoryId}
+        onChangeName={setNewSubName}
+        onSelectCategory={() => undefined}
+        onSave={handleAddSubcategory}
+        onCancel={() => setAddSubVisible(false)}
+      />
 
-      <SubcategoryFormModal visible={editSubVisible} title={t('manageCategories.editSubcategory')} name={editSubName} isSaving={isSaving} onChangeName={setEditSubName} onSave={handleEditSubcategory} onCancel={() => { setEditSubVisible(false); setEditingSub(null); }} />
+      <SubcategoryFormModal
+        visible={editSubVisible}
+        title={t('manageCategories.editSubcategory')}
+        name={editSubName}
+        isSaving={isSaving}
+        categories={categories}
+        currentCategoryId={editingSubCategoryId}
+        selectedCategoryId={editSubMoveToId}
+        onChangeName={setEditSubName}
+        onSelectCategory={setEditSubMoveToId}
+        onSave={handleEditSubcategory}
+        onCancel={() => { setEditSubVisible(false); setEditingSub(null); }}
+      />
 
       <CriterionFormModal
         visible={addCriterionVisible}

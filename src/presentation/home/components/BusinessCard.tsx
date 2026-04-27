@@ -335,12 +335,12 @@ const BusinessCardComponent: React.FC<BusinessCardProps> = ({
                 right: 12,
                 flexDirection: 'row',
                 alignItems: 'center',
-                backgroundColor: 'rgba(15, 23, 42, 0.8)',
+                backgroundColor: theme.isDark ? 'rgba(15, 23, 42, 0.8)' : 'rgba(15, 23, 42, 0.60)',
                 borderRadius: 8,
                 paddingHorizontal: 10,
                 paddingVertical: 4,
                 borderWidth: 1,
-                borderColor: 'rgba(255, 255, 255, 0.1)',
+                borderColor: theme.isDark ? 'rgba(255, 255, 255, 0.1)' : 'rgba(255, 255, 255, 0.25)',
               }}
             >
               <MaterialCommunityIcons

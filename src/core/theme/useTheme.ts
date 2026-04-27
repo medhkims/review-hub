@@ -1,3 +1,4 @@
+import { useColorScheme } from 'react-native';
 import { useSettingsStore } from '@/presentation/settings/store/settingsStore';
 
 export const darkTheme = {
@@ -28,5 +29,11 @@ export type AppTheme = Omit<typeof darkTheme, 'statusBar'> & { statusBar: 'light
 
 export const useTheme = (): AppTheme => {
   const settings = useSettingsStore((state) => state.settings);
-  return settings?.theme === 'light' ? lightTheme : darkTheme;
+  const deviceScheme = useColorScheme();
+
+  if (settings?.theme === 'light') return lightTheme;
+  if (settings?.theme === 'dark') return darkTheme;
+
+  // 'system' or null — follow the device preference
+  return deviceScheme === 'light' ? lightTheme : darkTheme;
 };

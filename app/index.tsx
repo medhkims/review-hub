@@ -1,13 +1,12 @@
 import { Redirect } from 'expo-router';
 import { useAuthStore } from '@/presentation/auth/store/authStore';
-import { useAuth } from '@/presentation/auth/hooks/useAuth';
 import { LoadingIndicator } from '@/presentation/shared/components/ui/LoadingIndicator';
 import { View } from 'react-native';
 import { colors } from '@/core/theme/colors';
 
 export default function Index() {
   const { isAuthenticated, isLoading } = useAuthStore();
-  const {} = useAuth(); // triggers loadCurrentUser on mount
+  // Auth is initialized in app/_layout.tsx — no need to call useAuth() here
 
   if (isLoading) {
     return (

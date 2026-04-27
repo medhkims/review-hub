@@ -6,7 +6,7 @@ const SETTINGS_KEY = '@tchecki:settings';
 
 const DEFAULT_SETTINGS: SettingsModel = {
   language: 'en',
-  theme: 'dark',
+  theme: 'system',
   notifications_enabled: true,
   sound_enabled: true,
 };

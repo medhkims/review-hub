@@ -42,20 +42,12 @@ export const SkeletonBox: React.FC<SkeletonBoxProps> = ({
 }) => {
   const opacity = useSkeletonAnimation();
   const theme = useTheme();
+  const bg = theme.isDark ? 'rgba(51, 65, 85, 0.5)' : 'rgba(148, 163, 184, 0.3)';
 
   return (
-    <Animated.View
-      style={[
-        {
-          width,
-          height,
-          borderRadius,
-          backgroundColor: theme.isDark ? 'rgba(51, 65, 85, 0.5)' : 'rgba(148, 163, 184, 0.3)',
-          opacity,
-        },
-        style,
-      ]}
-    />
+    <View style={[{ width: width as ViewStyle['width'], height, borderRadius }, style]}>
+      <Animated.View style={{ flex: 1, backgroundColor: bg, borderRadius, opacity }} />
+    </View>
   );
 };
 
@@ -67,20 +59,12 @@ interface SkeletonCircleProps {
 export const SkeletonCircle: React.FC<SkeletonCircleProps> = ({ size, style }) => {
   const opacity = useSkeletonAnimation();
   const theme = useTheme();
+  const bg = theme.isDark ? 'rgba(51, 65, 85, 0.5)' : 'rgba(148, 163, 184, 0.3)';
 
   return (
-    <Animated.View
-      style={[
-        {
-          width: size,
-          height: size,
-          borderRadius: size / 2,
-          backgroundColor: theme.isDark ? 'rgba(51, 65, 85, 0.5)' : 'rgba(148, 163, 184, 0.3)',
-          opacity,
-        },
-        style,
-      ]}
-    />
+    <View style={[{ width: size, height: size, borderRadius: size / 2 }, style]}>
+      <Animated.View style={{ flex: 1, backgroundColor: bg, borderRadius: size / 2, opacity }} />
+    </View>
   );
 };
 
@@ -97,20 +81,12 @@ export const SkeletonLine: React.FC<SkeletonLineProps> = ({
 }) => {
   const opacity = useSkeletonAnimation();
   const theme = useTheme();
+  const bg = theme.isDark ? 'rgba(51, 65, 85, 0.5)' : 'rgba(148, 163, 184, 0.3)';
 
   return (
-    <Animated.View
-      style={[
-        {
-          width,
-          height,
-          borderRadius: height / 2,
-          backgroundColor: theme.isDark ? 'rgba(51, 65, 85, 0.5)' : 'rgba(148, 163, 184, 0.3)',
-          opacity,
-        },
-        style,
-      ]}
-    />
+    <View style={[{ width: width as ViewStyle['width'], height, borderRadius: height / 2 }, style]}>
+      <Animated.View style={{ flex: 1, backgroundColor: bg, borderRadius: height / 2, opacity }} />
+    </View>
   );
 };
 

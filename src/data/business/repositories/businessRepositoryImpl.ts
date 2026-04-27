@@ -701,4 +701,34 @@ export class BusinessRepositoryImpl implements BusinessRepository {
       return left(new ServerFailure('Failed to fetch stats'));
     }
   }
+
+  async getBusinessCategoryStats(): Promise<Either<Failure, Record<string, { total: number; bySubcategory: Record<string, number> }>>> {
+    try {
+      const stats = await this.remote.getBusinessCategoryStats();
+      return right(stats);
+    } catch (error) {
+      if (error instanceof ServerException) return left(new ServerFailure(error.message));
+      return left(new ServerFailure('Failed to fetch business category stats'));
+    }
+  }
+
+  async syncCriterionAddedToBusinesses(categoryId: string, criterion: { name: string; icon: string }): Promise<Either<Failure, void>> {
+    try {
+      await this.remote.syncCriterionAddedToBusinesses(categoryId, criterion);
+      return right(undefined);
+    } catch (error) {
+      if (error instanceof ServerException) return left(new ServerFailure(error.message));
+      return left(new ServerFailure('Failed to sync criterion add'));
+    }
+  }
+
+  async syncCriterionRemovedFromBusinesses(categoryId: string, criterionLabel: string): Promise<Either<Failure, void>> {
+    try {
+      await this.remote.syncCriterionRemovedFromBusinesses(categoryId, criterionLabel);
+      return right(undefined);
+    } catch (error) {
+      if (error instanceof ServerException) return left(new ServerFailure(error.message));
+      return left(new ServerFailure('Failed to sync criterion remove'));
+    }
+  }
 }

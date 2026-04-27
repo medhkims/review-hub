@@ -16,7 +16,8 @@ import { AppText } from '@/presentation/shared/components/ui/AppText';
 import { AppButton } from '@/presentation/shared/components/ui/AppButton';
 import { SortBySheet, SortOption } from '@/presentation/shared/components/SortBySheet';
 import { FilterBySheet, FilterState, DEFAULT_FILTER_STATE } from '@/presentation/shared/components/FilterBySheet';
-import { LocationDropdown } from '@/presentation/shared/components/LocationDropdown';
+import { LocationFilterSheet, LocationFilter } from '@/presentation/shared/components/LocationFilterSheet';
+import { getMunicipalitiesForGovernorate } from '@/core/constants/tunisiaLocations';
 import { useWishlist } from '../hooks/useWishlist';
 import { useAuthStore } from '@/presentation/auth/store/authStore';
 import { useAnalyticsScreen } from '@/presentation/shared/hooks/useAnalyticsScreen';
@@ -199,20 +200,14 @@ const EmptyState = () => {
 
 interface LocationSheetProps {
   visible: boolean;
-  selectedLocations: string[];
+  selectedFilter: LocationFilter;
   onClose: () => void;
-  onApply: (locations: string[]) => void;
+  onApply: (filter: LocationFilter) => void;
 }
 
-const LocationSheet: React.FC<LocationSheetProps> = ({ visible, selectedLocations, onClose, onApply }) => {
+const LocationSheet: React.FC<LocationSheetProps> = ({ visible, selectedFilter, onClose, onApply }) => {
   const { t } = useTranslation();
   const theme = useTheme();
-  const [pending, setPending] = useState<string[]>(selectedLocations);
-
-  // Sync when opened
-  React.useEffect(() => {
-    if (visible) setPending(selectedLocations);
-  }, [visible]);
 
   return (
     <Modal visible={visible} transparent animationType="slide" onRequestClose={onClose}>
@@ -229,7 +224,7 @@ const LocationSheet: React.FC<LocationSheetProps> = ({ visible, selectedLocation
             borderTopRightRadius: 24,
             paddingBottom: 40,
             paddingTop: 12,
-            maxHeight: '80%',
+            maxHeight: '85%',
             borderTopWidth: 1,
             borderColor: theme.border,
           }}
@@ -264,30 +259,14 @@ const LocationSheet: React.FC<LocationSheetProps> = ({ visible, selectedLocation
             </Pressable>
           </View>
 
-          {/* City list — reuses LocationDropdown inline */}
-          <LocationDropdown
+          <LocationFilterSheet
             visible
-            initialLocations={pending}
-            onApply={(locs) => {
-              onApply(locs);
+            initialFilter={selectedFilter}
+            onApply={(filter) => {
+              onApply(filter);
               onClose();
             }}
           />
-
-          {/* Apply button */}
-          <View style={{ paddingHorizontal: 24, paddingTop: 12 }}>
-            <AppButton
-              title={t('filterBy.apply')}
-              variant="primary"
-              size="lg"
-              shape="pill"
-              onPress={() => {
-                onApply(pending);
-                onClose();
-              }}
-              accessibilityLabel={t('filterBy.apply')}
-            />
-          </View>
         </Pressable>
       </Pressable>
     </Modal>
@@ -313,24 +292,31 @@ export default function WishlistScreen() {
   // ── Applied filter state ─────────────────────────────────────────────────
   const [sortOption, setSortOption] = useState<SortOption | null>(null);
   const [filterState, setFilterState] = useState<FilterState>(DEFAULT_FILTER_STATE);
-  const [selectedLocations, setSelectedLocations] = useState<string[]>([]);
+  const [selectedLocationFilter, setSelectedLocationFilter] = useState<LocationFilter>({ governorates: [], municipalities: [] });
 
   // ── Active indicators ─────────────────────────────────────────────────────
   const isSortActive = sortOption !== null;
   const isFilterActive = filterState.minRating > 0;
-  const isLocationActive = selectedLocations.length > 0;
+  const isLocationActive = selectedLocationFilter.governorates.length > 0 || selectedLocationFilter.municipalities.length > 0;
 
   // ── Derived list ─────────────────────────────────────────────────────────
   const displayedItems = useMemo(() => {
     let result = [...items];
 
-    // Location filter
-    if (selectedLocations.length > 0) {
-      result = result.filter((item) =>
-        selectedLocations.some((city) =>
-          item.location.toLowerCase().includes(city.toLowerCase()),
-        ),
-      );
+    // Location filter — municipalities take priority over governorates
+    if (selectedLocationFilter.municipalities.length > 0) {
+      result = result.filter((item) => {
+        const loc = item.location.toLowerCase();
+        return selectedLocationFilter.municipalities.some((mun) => loc.includes(mun.toLowerCase()));
+      });
+    } else if (selectedLocationFilter.governorates.length > 0) {
+      result = result.filter((item) => {
+        const loc = item.location.toLowerCase();
+        return selectedLocationFilter.governorates.some((gov) => {
+          if (loc.includes(gov.toLowerCase())) return true;
+          return getMunicipalitiesForGovernorate(gov).some((m) => loc.includes(m.toLowerCase()));
+        });
+      });
     }
 
     // Rating filter
@@ -352,7 +338,7 @@ export default function WishlistScreen() {
     }
 
     return result;
-  }, [items, selectedLocations, filterState, sortOption]);
+  }, [items, selectedLocationFilter, filterState, sortOption]);
 
   // ── Handlers ─────────────────────────────────────────────────────────────
   const handleRemove = useCallback(
@@ -543,9 +529,9 @@ export default function WishlistScreen() {
 
       <LocationSheet
         visible={locationOpen}
-        selectedLocations={selectedLocations}
+        selectedFilter={selectedLocationFilter}
         onClose={() => setLocationOpen(false)}
-        onApply={(locs) => setSelectedLocations(locs)}
+        onApply={(filter) => setSelectedLocationFilter(filter)}
       />
     </ScreenLayout>
   );

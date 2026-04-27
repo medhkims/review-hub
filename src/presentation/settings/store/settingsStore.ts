@@ -13,7 +13,7 @@ interface SettingsState {
 
 const DEFAULT_SETTINGS: SettingsEntity = {
   language: 'en',
-  theme: 'dark',
+  theme: 'system',
   notificationsEnabled: true,
   soundEnabled: true,
 };

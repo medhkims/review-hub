@@ -34,8 +34,8 @@ export class BusinessMapper {
         : undefined,
       openingHoursVisible: model.opening_hours_visible,
       platforms: model.platforms ?? [],
-      createdAt: model.created_at.toDate(),
-      updatedAt: model.updated_at.toDate(),
+      createdAt: model.created_at?.toDate?.() ?? new Date(0),
+      updatedAt: model.updated_at?.toDate?.() ?? new Date(0),
     };
   }
 

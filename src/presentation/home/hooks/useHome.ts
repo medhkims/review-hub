@@ -59,6 +59,7 @@ export const useHome = () => {
     setFuzzySearching,
     setFuzzyMatch,
     setHomeStats,
+    setHomeData,
     setError,
     updateBusinessFavorite,
   } = useHomeStore();
@@ -329,36 +330,58 @@ export const useHome = () => {
 
   // Refresh every time this screen comes into focus so ratings (and other
   // fields updated after review submissions) are always up-to-date.
-  // If the user has an active search query we do NOT overwrite the business
-  // list — that would replace search results with featured businesses while
-  // the search bar still shows the query, causing wrong results to appear.
+  // All critical sections are fetched in parallel and written to the store in
+  // ONE batched call so the page renders all sections simultaneously instead
+  // of section-by-section.
   useFocusEffect(
     useCallback(() => {
-      // Fire all independent data fetches in parallel for faster load
+      // Determine if we have cached data from a previous session
+      const hasCachedData = categories.length > 0 || businesses.length > 0 || newBusinesses.length > 0;
+
+      // Only show skeleton loading state on the very first load (no cache)
+      if (!hasCachedData) {
+        setCategoryLoading(true);
+        setNewBusinessesLoading(true);
+      }
+
+      // Fetch all critical data in parallel, write in one batch
+      // If cached data exists this runs silently in the background
       Promise.all([
-        loadBanners(),
-        loadCategories(),
-        loadNewBusinesses(),
-        loadRecentReviews(),
-        loadDeals(),
-        loadWeeklyPicks(),
-        loadHomeStats(),
-        loadTopRatedBusinesses(),
-        // Always load nearby — uses absolute fallback if location unavailable
-        loadNearbyBusinesses(36.8, 10.18),
-        requestUserLocation(),
-      ]);
-      // Load popular businesses for user's most viewed category
+        container.getBannersUseCase.execute(),
+        container.getActiveCategoriesUseCase.execute(),
+        container.getNewBusinessesUseCase.execute(),
+        container.getRecentReviewsUseCase.execute(8),
+        container.getActiveDealsUseCase.execute(),
+        container.getWeeklyPicksUseCase.execute(),
+        container.getHomeStatsUseCase.execute(),
+        container.getTopRatedBusinessesUseCase.execute(),
+        searchQueryRef.current.trim()
+          ? Promise.resolve(null)
+          : selectedCategoryId
+            ? container.getBusinessesByCategoryUseCase.execute(selectedCategoryId)
+            : container.getFeaturedBusinessesUseCase.execute(),
+      ]).then(([bannersRes, catsRes, newBizRes, reviewsRes, dealsRes, picksRes, statsRes, topRatedRes, featuredRes]) => {
+        const patch: Parameters<typeof setHomeData>[0] = {};
+        bannersRes?.fold(() => {}, (d) => { patch.banners = d; });
+        catsRes?.fold(() => {}, (d) => { patch.categories = d; });
+        newBizRes?.fold(() => {}, (d) => { patch.newBusinesses = d; });
+        reviewsRes?.fold(() => {}, (d) => { patch.recentReviews = d; });
+        dealsRes?.fold(() => {}, (d) => { patch.deals = d; });
+        picksRes?.fold(() => {}, (d) => { patch.weeklyPicks = d; });
+        statsRes?.fold(() => {}, (d) => { patch.homeStats = d; });
+        topRatedRes?.fold(() => {}, (d) => { patch.topRatedBusinesses = d; });
+        if (featuredRes) featuredRes.fold(() => {}, (d) => { patch.businesses = d; });
+        setHomeData(patch);
+      });
+
+      // Nearby businesses fire independently (needs GPS, slower)
+      loadNearbyBusinesses(36.8, 10.18);
+      requestUserLocation();
+
       if (mostViewedCategoryId) {
         loadPopularByCategory(mostViewedCategoryId);
       }
-      if (searchQueryRef.current.trim()) return; // keep existing search results
-      if (selectedCategoryId) {
-        loadBusinessesByCategory(selectedCategoryId);
-      } else {
-        loadFeaturedBusinesses();
-      }
-    }, [loadBanners, loadCategories, loadNewBusinesses, loadRecentReviews, loadDeals, loadWeeklyPicks, loadHomeStats, loadTopRatedBusinesses, loadNearbyBusinesses, requestUserLocation, loadFeaturedBusinesses, loadBusinessesByCategory, loadPopularByCategory, mostViewedCategoryId, selectedCategoryId]),
+    }, [setHomeData, setCategoryLoading, setNewBusinessesLoading, loadNearbyBusinesses, requestUserLocation, loadPopularByCategory, mostViewedCategoryId, selectedCategoryId, categories.length, businesses.length, newBusinesses.length]),
   );
 
   const submitBusiness = useCallback(
@@ -380,17 +403,37 @@ export const useHome = () => {
 
   const refresh = useCallback(async () => {
     if (searchQueryRef.current.trim()) {
-      // Re-run the current search instead of loading featured businesses
       search(searchQueryRef.current);
-    } else if (selectedCategoryId) {
-      await loadBusinessesByCategory(selectedCategoryId);
-    } else {
-      await loadFeaturedBusinesses();
+      return;
     }
-    loadRecentReviews();
-    loadDeals();
-    loadWeeklyPicks();
-  }, [search, selectedCategoryId, loadBusinessesByCategory, loadFeaturedBusinesses, loadRecentReviews, loadDeals, loadWeeklyPicks]);
+    // Batch-refresh the same way as initial load
+    setCategoryLoading(true);
+    setNewBusinessesLoading(true);
+    const [bannersRes, catsRes, newBizRes, reviewsRes, dealsRes, picksRes, statsRes, topRatedRes, featuredRes] = await Promise.all([
+      container.getBannersUseCase.execute(),
+      container.getActiveCategoriesUseCase.execute(),
+      container.getNewBusinessesUseCase.execute(),
+      container.getRecentReviewsUseCase.execute(8),
+      container.getActiveDealsUseCase.execute(),
+      container.getWeeklyPicksUseCase.execute(),
+      container.getHomeStatsUseCase.execute(),
+      container.getTopRatedBusinessesUseCase.execute(),
+      selectedCategoryId
+        ? container.getBusinessesByCategoryUseCase.execute(selectedCategoryId)
+        : container.getFeaturedBusinessesUseCase.execute(),
+    ]);
+    const patch: Parameters<typeof setHomeData>[0] = {};
+    bannersRes.fold(() => {}, (d) => { patch.banners = d; });
+    catsRes.fold(() => {}, (d) => { patch.categories = d; });
+    newBizRes.fold(() => {}, (d) => { patch.newBusinesses = d; });
+    reviewsRes.fold(() => {}, (d) => { patch.recentReviews = d; });
+    dealsRes.fold(() => {}, (d) => { patch.deals = d; });
+    picksRes.fold(() => {}, (d) => { patch.weeklyPicks = d; });
+    statsRes.fold(() => {}, (d) => { patch.homeStats = d; });
+    topRatedRes.fold(() => {}, (d) => { patch.topRatedBusinesses = d; });
+    featuredRes.fold(() => {}, (d) => { patch.businesses = d; });
+    setHomeData(patch);
+  }, [search, selectedCategoryId, setHomeData, setCategoryLoading, setNewBusinessesLoading]);
 
   return {
     businesses,

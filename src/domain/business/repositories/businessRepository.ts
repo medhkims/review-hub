@@ -85,6 +85,9 @@ export interface BusinessRepository {
   undislikeComment(commentId: string): Promise<Either<Failure, void>>;
   dislikeReply(replyId: string): Promise<Either<Failure, void>>;
   undislikeReply(replyId: string): Promise<Either<Failure, void>>;
+  getBusinessCategoryStats(): Promise<Either<Failure, Record<string, { total: number; bySubcategory: Record<string, number> }>>>;
+  syncCriterionAddedToBusinesses(categoryId: string, criterion: { name: string; icon: string }): Promise<Either<Failure, void>>;
+  syncCriterionRemovedFromBusinesses(categoryId: string, criterionLabel: string): Promise<Either<Failure, void>>;
 }
 
 export interface ReportBusinessParams {

@@ -34,4 +34,5 @@ export interface CategoryRepository {
   recoverCategory(categoryId: string, withSubcategories: boolean): Promise<Either<Failure, void>>;
   recoverSubcategory(categoryId: string, subcategoryId: string): Promise<Either<Failure, void>>;
   getDeletedItems(): Promise<Either<Failure, DeletedItemsResult>>;
+  moveSubcategory(fromCategoryId: string, subcategoryId: string, toCategoryId: string): Promise<Either<Failure, void>>;
 }

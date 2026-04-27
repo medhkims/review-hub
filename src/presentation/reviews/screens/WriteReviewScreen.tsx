@@ -11,7 +11,8 @@ import { useAnalyticsScreen } from '@/presentation/shared/hooks/useAnalyticsScre
 import { AnalyticsScreens } from '@/core/analytics/analyticsKeys';
 import { colors } from '@/core/theme/colors';
 import { useTheme } from '@/core/theme/useTheme';
-import { CATEGORY_MAP, RatingCriterionDef } from '@/core/constants/categoriesData';
+import { RatingCriterionDef, CATEGORY_MAP } from '@/core/constants/categoriesData';
+import { container } from '@/core/di/container';
 import { useWriteReview } from '../hooks/useWriteReview';
 import { PhotoPicker, SelectedPhoto } from '../components/PhotoPicker';
 import { GuestGate } from '@/presentation/shared/components/GuestGate';
@@ -75,11 +76,28 @@ export default function WriteReviewScreen() {
   const { isSubmitting, submitSuccess, submittedReviewId, error, submitReview, reset } =
     useWriteReview(resolvedBusinessId, resolvedBusinessName);
 
-  const ratingCriteria = useMemo<RatingCriterionDef[]>(() => {
+  // Start with bundled data so the UI is instant, then overwrite with Firestore
+  // once loaded so admin changes are reflected.
+  const [ratingCriteria, setRatingCriteria] = useState<RatingCriterionDef[]>(() => {
     if (!categoryId) return FALLBACK_CRITERIA;
     const criteria = CATEGORY_MAP[categoryId]?.ratingCriteria;
-    if (criteria === undefined) return FALLBACK_CRITERIA;
-    return criteria; // empty array for 'other' → general rating mode
+    return criteria !== undefined ? criteria : FALLBACK_CRITERIA;
+  });
+
+  useEffect(() => {
+    if (!categoryId) return;
+    container.getCategoriesUseCase.execute().then((result) => {
+      result.fold(
+        () => undefined,
+        (cats) => {
+          const cat = cats.find((c) => c.id === categoryId);
+          if (!cat) return;
+          // cat.ratingCriteria comes from Firestore (admin-editable).
+          // Empty array is intentional for 'other'-style categories → general rating mode.
+          setRatingCriteria(cat.ratingCriteria);
+        },
+      );
+    });
   }, [categoryId]);
 
   // True when the category has no sub-criteria (e.g. 'other')

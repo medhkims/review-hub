@@ -4,6 +4,7 @@ import { useCategoryDefaultStore } from '@/presentation/shared/store/categoryDef
 import { Stack } from 'expo-router';
 import { useTheme } from '@/core/theme/useTheme';
 import { useFonts } from 'expo-font';
+import { useAuth } from '@/presentation/auth/hooks/useAuth';
 
 LogBox.ignoreLogs(['Unknown event handler property']);
 import { SafeAreaProvider } from 'react-native-safe-area-context';
@@ -33,6 +34,7 @@ if (Platform.OS !== 'web') {
 export default function RootLayout() {
   const loadCategoryDefaults = useCategoryDefaultStore((s) => s.load);
   const theme = useTheme();
+  useAuth(); // Initialize auth state on every page load (not just on '/')
   useEffect(() => { loadCategoryDefaults(); }, [loadCategoryDefaults]);
 
   // On web, @expo/vector-icons' TTF import is redirected to null (see metro.config.js)

@@ -57,6 +57,18 @@ interface HomeState {
   setHomeStats: (stats: { totalBusinesses: number; totalReviews: number }) => void;
   setError: (error: string | null) => void;
   updateBusinessFavorite: (businessId: string, isFavorite: boolean) => void;
+  /** Write all home data in one Zustand call → single re-render */
+  setHomeData: (data: {
+    categories?: CategoryEntity[];
+    banners?: BannerEntity[];
+    newBusinesses?: BusinessEntity[];
+    topRatedBusinesses?: BusinessEntity[];
+    recentReviews?: RecentReviewEntity[];
+    deals?: DealEntity[];
+    weeklyPicks?: WeeklyPickEntity[];
+    homeStats?: { totalBusinesses: number; totalReviews: number };
+    businesses?: BusinessEntity[];
+  }) => void;
   reset: () => void;
 }
 
@@ -123,6 +135,7 @@ export const useHomeStore = create<HomeState>()(
       setFuzzyMatch: (fuzzyMatch) => set({ fuzzyMatch }),
       setHomeStats: (homeStats) => set({ homeStats }),
       setError: (error) => set({ error, isLoading: false }),
+      setHomeData: (data) => set({ ...data, isCategoryLoading: false, isNewBusinessesLoading: false }),
       updateBusinessFavorite: (businessId, isFavorite) =>
         set((state) => ({
           businesses: state.businesses.map((b) =>
@@ -160,11 +173,20 @@ export const useHomeStore = create<HomeState>()(
         }),
     }),
     {
-      name: 'home-recent-searches',
+      name: 'home-cache-v2',
       storage: createJSONStorage(() => AsyncStorage),
       partialize: (state) => ({
         recentSearches: state.recentSearches,
         mostViewedCategoryId: state.mostViewedCategoryId,
+        categories: state.categories,
+        banners: state.banners,
+        newBusinesses: state.newBusinesses,
+        topRatedBusinesses: state.topRatedBusinesses,
+        businesses: state.businesses,
+        homeStats: state.homeStats,
+        recentReviews: state.recentReviews,
+        deals: state.deals,
+        weeklyPicks: state.weeklyPicks,
       }),
     },
   ),

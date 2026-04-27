@@ -33,7 +33,7 @@ export default function SettingsScreen() {
   const theme = useTheme();
 
   const notificationsEnabled = settings?.notificationsEnabled ?? true;
-  const darkModeEnabled = settings?.theme === 'dark';
+  const darkModeEnabled = theme.isDark;
   const currentLanguage = settings?.language ?? i18n.language;
 
   const LANGUAGES = [

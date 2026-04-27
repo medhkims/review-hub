@@ -521,6 +521,7 @@
     "deleteSubcategory": "Delete Subcategory",
     "deleteSubcategoryConfirm": "Are you sure you want to delete \"{{name}}\"?",
     "subcategories": "subcategories",
+    "businesses": "businesses",
     "categoryName": "Category Name",
     "categoryNamePlaceholder": "e.g. Photography",
     "categoryIcon": "Icon (Material Community Icons name)",
@@ -563,7 +564,11 @@
     "tabDeletedCriteria": "Deleted",
     "deletedCriteriaEmpty": "No deleted criteria",
     "recoverCriterion": "Recover Criterion",
-    "recoverCriterionMessage": "Recover criterion \"{{label}}\" back to \"{{category}}\"?"
+    "recoverCriterionMessage": "Recover criterion \"{{label}}\" back to \"{{category}}\"?",
+    "parentCategory": "Parent Category",
+    "selectCategory": "Select a category",
+    "currentLabel": "current",
+    "willMove": "will move"
   },
   "support": {
     "helpCenter": "Help Center",
@@ -1252,6 +1257,25 @@
     "filter": "Filter",
     "location": "Location"
   },
+  "locationFilter": {
+    "searchPlaceholder": "Search governorate or city...",
+    "searchGovernorate": "Search governorate...",
+    "searchMunicipality": "Search municipality...",
+    "noResults": "No locations found",
+    "governorates": "Governorates",
+    "municipalities": "Municipalities",
+    "governorateLabel": "Governorate",
+    "municipalityLabel": "Municipality",
+    "selectGovernorate": "Select Governorate(s)",
+    "selectMunicipality": "Select Municipality",
+    "selectMunicipalityAll": "Select Municipality — All Tunisia",
+    "allTunisiaHint": "Showing all municipalities in Tunisia",
+    "moreSelected": "{{count}} selected",
+    "allMunicipalities": "All municipalities in {{governorate}}",
+    "allIn": "All businesses in",
+    "governorate": "Governorate",
+    "municipality": "Municipality"
+  },
   "locationSearch": {
     "title": "Search Location",
     "searchPlaceholder": "Search location...",
@@ -1394,7 +1418,8 @@
     "job_freelancer": "Job / Freelancer",
     "tradesman": "Tradesman",
     "delivery_company": "Delivery Company",
-    "influencer": "Influencer"
+    "influencer": "Influencer",
+    "media_channels": "Media & Channels"
   },
   "subcategories": {
     "tunisian": "Tunisian",
@@ -1457,7 +1482,14 @@
     "engineer": "Engineer",
     "food_delivery": "Food Delivery",
     "parcel_delivery": "Parcel Delivery",
-    "international_shipping": "International Shipping"
+    "international_shipping": "International Shipping",
+    "tv_channel": "TV Channel",
+    "radio_station": "Radio Station",
+    "news_portal": "News Portal",
+    "newspaper_magazine": "Newspaper & Magazine",
+    "youtube_channel": "YouTube Channel",
+    "podcast": "Podcast",
+    "streaming_platform": "Streaming Platform"
   },
   "ratingCriteria": {
     "service": "Service",
@@ -1477,7 +1509,9 @@
     "transparency": "Transparency",
     "competence": "Competence",
     "promptness": "Promptness",
-    "quality": "Quality"
+    "quality": "Quality",
+    "reliability": "Reliability",
+    "audience_reach": "Audience Reach"
   },
   "verification": {
     "otpTitle": "Please Verify your account",

@@ -484,6 +484,7 @@
     "deleteSubcategory": "حذف التصنيف الفرعي",
     "deleteSubcategoryConfirm": "هل أنت متأكد من حذف \"{{name}}\"؟",
     "subcategories": "تصنيفات فرعية",
+    "businesses": "أعمال",
     "categoryName": "اسم التصنيف",
     "categoryNamePlaceholder": "مثال: تصوير",
     "categoryIcon": "الأيقونة (اسم أيقونة Material Community Icons)",
@@ -526,7 +527,11 @@
     "tabDeletedCriteria": "المحذوفة",
     "deletedCriteriaEmpty": "لا توجد معايير محذوفة",
     "recoverCriterion": "استعادة المعيار",
-    "recoverCriterionMessage": "استعادة المعيار \"{{label}}\" إلى \"{{category}}\"؟"
+    "recoverCriterionMessage": "استعادة المعيار \"{{label}}\" إلى \"{{category}}\"؟",
+    "parentCategory": "التصنيف الرئيسي",
+    "selectCategory": "اختر تصنيفاً",
+    "currentLabel": "الحالي",
+    "willMove": "سيُنقل"
   },
   "support": {
     "helpCenter": "مركز المساعدة",
@@ -1122,6 +1127,25 @@
     "filter": "تصفية",
     "location": "الموقع"
   },
+  "locationFilter": {
+    "searchPlaceholder": "ابحث عن ولاية أو مدينة...",
+    "searchGovernorate": "ابحث عن ولاية...",
+    "searchMunicipality": "ابحث عن بلدية...",
+    "noResults": "لا توجد مواقع",
+    "governorates": "الولايات",
+    "municipalities": "البلديات",
+    "governorateLabel": "ولاية",
+    "municipalityLabel": "بلدية",
+    "selectGovernorate": "اختر ولاية (أو أكثر)",
+    "selectMunicipality": "اختر بلدية",
+    "selectMunicipalityAll": "اختر بلدية — كامل تونس",
+    "allTunisiaHint": "عرض جميع بلديات تونس",
+    "moreSelected": "{{count}} محدد",
+    "allMunicipalities": "جميع بلديات {{governorate}}",
+    "allIn": "جميع الأعمال في",
+    "governorate": "الولاية",
+    "municipality": "البلدية"
+  },
   "locationSearch": {
     "title": "البحث عن موقع",
     "searchPlaceholder": "ابحث عن موقع...",
@@ -1264,7 +1288,8 @@
     "job_freelancer": "عمل / مستقل",
     "tradesman": "حِرَفي",
     "delivery_company": "شركة توصيل",
-    "influencer": "مؤثر"
+    "influencer": "مؤثر",
+    "media_channels": "قنوات الإعلام"
   },
   "subcategories": {
     "tunisian": "تونسي",
@@ -1327,7 +1352,14 @@
     "engineer": "مهندس",
     "food_delivery": "توصيل طعام",
     "parcel_delivery": "توصيل طرود",
-    "international_shipping": "شحن دولي"
+    "international_shipping": "شحن دولي",
+    "tv_channel": "قناة تلفزيونية",
+    "radio_station": "محطة إذاعية",
+    "news_portal": "بوابة إخبارية",
+    "newspaper_magazine": "جريدة ومجلة",
+    "youtube_channel": "قناة يوتيوب",
+    "podcast": "بودكاست",
+    "streaming_platform": "منصة بث"
   },
   "ratingCriteria": {
     "service": "الخدمة",
@@ -1347,7 +1379,9 @@
     "transparency": "الشفافية",
     "competence": "الكفاءة",
     "promptness": "السرعة في التوصيل",
-    "quality": "الجودة"
+    "quality": "الجودة",
+    "reliability": "المصداقية",
+    "audience_reach": "الوصول الجماهيري"
   },
   "verification": {
     "otpTitle": "يرجى التحقق من حسابك",

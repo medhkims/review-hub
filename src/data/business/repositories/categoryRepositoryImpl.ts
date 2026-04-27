@@ -348,4 +348,14 @@ export class CategoryRepositoryImpl implements CategoryRepository {
       return left(new ServerFailure('Failed to recover criterion'));
     }
   }
+
+  async moveSubcategory(fromCategoryId: string, subcategoryId: string, toCategoryId: string): Promise<Either<Failure, void>> {
+    try {
+      await this.firestore.moveSubcategory(fromCategoryId, subcategoryId, toCategoryId);
+      return right(undefined);
+    } catch (error) {
+      if (error instanceof ServerException) return left(new ServerFailure(error.message));
+      return left(new ServerFailure('Failed to move subcategory'));
+    }
+  }
 }

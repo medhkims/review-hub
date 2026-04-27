@@ -17,7 +17,8 @@ import { ErrorView } from '@/presentation/shared/components/ui/ErrorView';
 import { SubcategoryPickerModal } from '@/presentation/shared/components/ui/SubcategoryPickerModal';
 import { FilterBySheet, FilterState, DEFAULT_FILTER_STATE } from '@/presentation/shared/components/FilterBySheet';
 import { SortBySheet, SortOption } from '@/presentation/shared/components/SortBySheet';
-import { LocationDropdown } from '@/presentation/shared/components/LocationDropdown';
+import { LocationFilterSheet, LocationFilter } from '@/presentation/shared/components/LocationFilterSheet';
+import { getMunicipalitiesForGovernorate } from '@/core/constants/tunisiaLocations';
 import { useAnalyticsScreen } from '@/presentation/shared/hooks/useAnalyticsScreen';
 import { AnalyticsScreens } from '@/core/analytics/analyticsKeys';
 import { colors } from '@/core/theme/colors';
@@ -104,7 +105,7 @@ export default function SubCategoryBrowserScreen() {
   const [showLocation, setShowLocation] = useState(false);
   const [activeFilters, setActiveFilters] = useState<FilterState>(DEFAULT_FILTER_STATE);
   const [activeSort, setActiveSort] = useState<SortOption | null>(null);
-  const [activeLocations, setActiveLocations] = useState<string[]>([]);
+  const [activeLocationFilter, setActiveLocationFilter] = useState<LocationFilter>({ governorates: [], municipalities: [] });
 
   const loadBusinesses = useCallback(async () => {
     setError(null);
@@ -178,12 +179,19 @@ export default function SubCategoryBrowserScreen() {
       const query = searchQuery.toLowerCase();
       data = data.filter((b) => b.name.toLowerCase().includes(query));
     }
-    if (activeLocations.length > 0) {
-      data = data.filter((b) =>
-        activeLocations.some((loc) =>
-          b.location?.toLowerCase().includes(loc.toLowerCase()),
-        ),
-      );
+    if (activeLocationFilter.municipalities.length > 0) {
+      data = data.filter((b) => {
+        const loc = b.location?.toLowerCase() ?? '';
+        return activeLocationFilter.municipalities.some((mun) => loc.includes(mun.toLowerCase()));
+      });
+    } else if (activeLocationFilter.governorates.length > 0) {
+      data = data.filter((b) => {
+        const loc = b.location?.toLowerCase() ?? '';
+        return activeLocationFilter.governorates.some((gov) => {
+          if (loc.includes(gov.toLowerCase())) return true;
+          return getMunicipalitiesForGovernorate(gov).some((m) => loc.includes(m.toLowerCase()));
+        });
+      });
     }
     if (activeFilters.platforms.length > 0) {
       data = data.filter((b) =>
@@ -207,7 +215,7 @@ export default function SubCategoryBrowserScreen() {
       default:
         return data;
     }
-  }, [businesses, selectedSubCategories, selectedSubNames, searchQuery, activeFilters, activeLocations, activeSort]);
+  }, [businesses, selectedSubCategories, selectedSubNames, searchQuery, activeFilters, activeLocationFilter, activeSort]);
 
   const handleBack = useCallback(() => {
     router.back();
@@ -447,20 +455,20 @@ export default function SubCategoryBrowserScreen() {
             paddingVertical: 8,
             borderRadius: 20,
             borderWidth: 1,
-            borderColor: activeLocations.length > 0 ? colors.neonPurple : colors.borderDark,
-            backgroundColor: activeLocations.length > 0 ? 'rgba(168,85,247,0.15)' : theme.card,
+            borderColor: activeLocationFilter.governorates.length > 0 || activeLocationFilter.municipalities.length > 0 ? colors.neonPurple : colors.borderDark,
+            backgroundColor: activeLocationFilter.governorates.length > 0 || activeLocationFilter.municipalities.length > 0 ? 'rgba(168,85,247,0.15)' : theme.card,
           }}
         >
           <MaterialCommunityIcons
             name="map-marker-outline"
             size={16}
-            color={activeLocations.length > 0 ? colors.neonPurple : theme.textSecondary}
+            color={activeLocationFilter.governorates.length > 0 || activeLocationFilter.municipalities.length > 0 ? colors.neonPurple : theme.textSecondary}
           />
           <AppText
             style={{
               fontSize: 13,
-              fontWeight: activeLocations.length > 0 ? '600' : '500',
-              color: activeLocations.length > 0 ? colors.neonPurple : theme.textSecondary,
+              fontWeight: activeLocationFilter.governorates.length > 0 || activeLocationFilter.municipalities.length > 0 ? '600' : '500',
+              color: activeLocationFilter.governorates.length > 0 || activeLocationFilter.municipalities.length > 0 ? colors.neonPurple : theme.textSecondary,
             }}
           >
             {t('home.location')}
@@ -468,11 +476,11 @@ export default function SubCategoryBrowserScreen() {
         </Pressable>
       </ScrollView>
 
-      <LocationDropdown
+      <LocationFilterSheet
         visible={showLocation}
-        initialLocations={activeLocations}
-        onApply={(locations) => {
-          setActiveLocations(locations);
+        initialFilter={activeLocationFilter}
+        onApply={(filter) => {
+          setActiveLocationFilter(filter);
           setShowLocation(false);
         }}
       />

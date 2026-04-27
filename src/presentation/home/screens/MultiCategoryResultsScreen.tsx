@@ -16,7 +16,8 @@ import { ScreenLayout } from '@/presentation/shared/layouts/ScreenLayout';
 import { AppText } from '@/presentation/shared/components/ui/AppText';
 import { FilterBySheet, FilterState, DEFAULT_FILTER_STATE } from '@/presentation/shared/components/FilterBySheet';
 import { SortBySheet, SortOption } from '@/presentation/shared/components/SortBySheet';
-import { LocationDropdown } from '@/presentation/shared/components/LocationDropdown';
+import { LocationFilterSheet, LocationFilter } from '@/presentation/shared/components/LocationFilterSheet';
+import { getMunicipalitiesForGovernorate } from '@/core/constants/tunisiaLocations';
 import { useAnalyticsScreen } from '@/presentation/shared/hooks/useAnalyticsScreen';
 import { AnalyticsScreens } from '@/core/analytics/analyticsKeys';
 import { colors } from '@/core/theme/colors';
@@ -188,7 +189,7 @@ export default function MultiCategoryResultsScreen() {
   const [showLocation, setShowLocation] = useState(false);
   const [activeFilters, setActiveFilters] = useState<FilterState>(DEFAULT_FILTER_STATE);
   const [activeSort, setActiveSort] = useState<SortOption | null>(null);
-  const [activeLocations, setActiveLocations] = useState<string[]>([]);
+  const [activeLocationFilter, setActiveLocationFilter] = useState<LocationFilter>({ governorates: [], municipalities: [] });
 
   const loadBusinesses = useCallback(async () => {
     if (parsedIds.length === 0) {
@@ -257,12 +258,19 @@ export default function MultiCategoryResultsScreen() {
       data = data.filter((b) => b.name.toLowerCase().includes(query));
     }
 
-    if (activeLocations.length > 0) {
-      data = data.filter((b) =>
-        activeLocations.some((loc) =>
-          b.location?.toLowerCase().includes(loc.toLowerCase()),
-        ),
-      );
+    if (activeLocationFilter.municipalities.length > 0) {
+      data = data.filter((b) => {
+        const loc = b.location?.toLowerCase() ?? '';
+        return activeLocationFilter.municipalities.some((mun) => loc.includes(mun.toLowerCase()));
+      });
+    } else if (activeLocationFilter.governorates.length > 0) {
+      data = data.filter((b) => {
+        const loc = b.location?.toLowerCase() ?? '';
+        return activeLocationFilter.governorates.some((gov) => {
+          if (loc.includes(gov.toLowerCase())) return true;
+          return getMunicipalitiesForGovernorate(gov).some((m) => loc.includes(m.toLowerCase()));
+        });
+      });
     }
 
     if (activeFilters.categories.length > 0) {
@@ -293,13 +301,13 @@ export default function MultiCategoryResultsScreen() {
       default:
         return data;
     }
-  }, [businesses, searchQuery, activeFilters, activeLocations, activeSort]);
+  }, [businesses, searchQuery, activeFilters, activeLocationFilter, activeSort]);
 
   const isFilterActive =
     activeFilters.categories.length > 0 ||
     activeFilters.minRating > 0;
   const isSortActive = activeSort !== null;
-  const isLocationActive = activeLocations.length > 0;
+  const isLocationActive = activeLocationFilter.governorates.length > 0 || activeLocationFilter.municipalities.length > 0;
 
   const handleBack = useCallback(() => {
     router.back();
@@ -515,11 +523,11 @@ export default function MultiCategoryResultsScreen() {
         </Pressable>
       </ScrollView>
 
-      <LocationDropdown
+      <LocationFilterSheet
         visible={showLocation}
-        initialLocations={activeLocations}
-        onApply={(locations) => {
-          setActiveLocations(locations);
+        initialFilter={activeLocationFilter}
+        onApply={(filter) => {
+          setActiveLocationFilter(filter);
           setShowLocation(false);
         }}
       />

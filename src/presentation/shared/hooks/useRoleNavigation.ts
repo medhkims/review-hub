@@ -34,6 +34,12 @@ const TABS_BY_ROLE: Record<UserRole, TabConfig[]> = {
     { name: '(reviews)', title: 'tabs.myReviews', icon: 'star-outline', iconFocused: 'star' },
     { name: '(settings)', title: 'tabs.settings', icon: 'cog-outline', iconFocused: 'cog' },
   ],
+  guest: [
+    { name: '(feed)', title: 'tabs.home', icon: 'home-outline', iconFocused: 'home' },
+    { name: '(notifications)', title: 'tabs.notifications', icon: 'bell-outline', iconFocused: 'bell' },
+    { name: '(reviews)', title: 'tabs.myReviews', icon: 'star-outline', iconFocused: 'star' },
+    { name: '(settings)', title: 'tabs.settings', icon: 'cog-outline', iconFocused: 'cog' },
+  ],
 };
 
 export const useRoleNavigation = () => {

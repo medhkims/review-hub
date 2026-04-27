@@ -348,14 +348,37 @@ export const CATEGORIES_DATA: CategoryDef[] = [
     ],
   },
 
-  // ── 16. Other ──────────────────────────────────────────────────────────────
+  // ── 16. Media & Channels ──────────────────────────────────────────────────
+  {
+    id: 'media_channels',
+    name: 'Media & Channels',
+    icon: 'television-play',
+    sortOrder: 16,
+    subcategories: [
+      { id: 'tv_channel', name: 'TV Channel' },
+      { id: 'radio_station', name: 'Radio Station' },
+      { id: 'news_portal', name: 'News Portal' },
+      { id: 'newspaper_magazine', name: 'Newspaper & Magazine' },
+      { id: 'youtube_channel', name: 'YouTube Channel' },
+      { id: 'podcast', name: 'Podcast' },
+      { id: 'streaming_platform', name: 'Streaming Platform' },
+      { id: 'other', name: 'Other' },
+    ],
+    ratingCriteria: [
+      { key: 'content_quality', label: 'Content Quality', icon: 'video-check' },
+      { key: 'reliability', label: 'Reliability', icon: 'shield-check' },
+      { key: 'audience_reach', label: 'Audience Reach', icon: 'account-group' },
+    ],
+  },
+
+  // ── 17. Other ──────────────────────────────────────────────────────────────
   // Businesses in this category receive a single general 1–5 star rating
   // instead of per-criterion sub-ratings.
   {
     id: 'other',
     name: 'Other',
     icon: 'dots-horizontal-circle-outline',
-    sortOrder: 16,
+    sortOrder: 17,
     subcategories: [],
     ratingCriteria: [], // intentionally empty → triggers general rating mode
   },

@@ -5,13 +5,21 @@ import { RatingCriterionEntity } from '@/domain/business/entities/ratingCriterio
 
 export class CategoryMapper {
   static toEntity(model: CategoryModel, index: number): CategoryEntity {
+    const seenKeys = new Set<string>();
+    const uniqueSubs = (model.subcategories ?? []).filter((s) => {
+      // Deduplicate by id first, then by normalised name as fallback
+      const key = s.id ?? s.name?.toLowerCase().trim();
+      if (!key || seenKeys.has(key)) return false;
+      seenKeys.add(key);
+      return true;
+    });
     return {
       id: model.id,
       name: model.name,
       icon: model.icon,
       logoUrl: model.logo_url,
       sortOrder: model.sort_order ?? index,
-      subcategories: (model.subcategories ?? []).map(CategoryMapper.subcategoryToEntity),
+      subcategories: uniqueSubs.map(CategoryMapper.subcategoryToEntity),
       ratingCriteria: (model.rating_criteria ?? []).map(CategoryMapper.ratingCriterionToEntity),
       deletedRatingCriteria: (model.deleted_rating_criteria ?? []).map(CategoryMapper.ratingCriterionToEntity),
       isDeleted: model.is_deleted,

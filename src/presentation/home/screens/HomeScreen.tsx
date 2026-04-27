@@ -17,31 +17,25 @@ function SkeletonBox({ width, height, borderRadius = 16, isDark, style }: { widt
   );
 }
 
-// Animated counter that counts from 0 → target over ~1.2 s
+// Animated counter that counts from 0 → target over ~2 s
 function AnimatedCounter({ value, style }: { value: number; style?: object }) {
+  const animValue = useRef(new Animated.Value(0)).current;
   const [displayed, setDisplayed] = useState(0);
-  const rafRef = useRef<number | null>(null);
 
   useEffect(() => {
     if (value === 0) { setDisplayed(0); return; }
-    const duration = 2500;
-    const start = performance.now();
-    const tick = (now: number) => {
-      const progress = Math.min((now - start) / duration, 1);
-      // ease-out quad
-      const eased = 1 - (1 - progress) * (1 - progress);
-      setDisplayed(Math.round(eased * value));
-      if (progress < 1) rafRef.current = requestAnimationFrame(tick);
-    };
-    rafRef.current = requestAnimationFrame(tick);
-    return () => { if (rafRef.current) cancelAnimationFrame(rafRef.current); };
+    animValue.setValue(0);
+    const listenerId = animValue.addListener(({ value: v }) => setDisplayed(Math.round(v)));
+    Animated.timing(animValue, {
+      toValue: value,
+      duration: 2000,
+      easing: Easing.out(Easing.cubic),
+      useNativeDriver: false,
+    }).start();
+    return () => animValue.removeListener(listenerId);
   }, [value]);
 
-  return (
-    <AppText style={style}>
-      {displayed.toLocaleString()}
-    </AppText>
-  );
+  return <AppText style={style}>{displayed.toLocaleString()}</AppText>;
 }
 import {
   View,
@@ -54,6 +48,7 @@ import {
   ScrollView,
   useWindowDimensions,
   Animated,
+  Easing,
 } from 'react-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useRouter, useNavigation } from 'expo-router';
@@ -65,7 +60,8 @@ import { SearchBar } from '../components/SearchBar';
 import { SearchSuggestions } from '../components/SearchSuggestions';
 import { FilterBySheet, FilterState, DEFAULT_FILTER_STATE } from '@/presentation/shared/components/FilterBySheet';
 import { SortBySheet, SortOption } from '@/presentation/shared/components/SortBySheet';
-import { LocationDropdown } from '@/presentation/shared/components/LocationDropdown';
+import { LocationFilterSheet, LocationFilter } from '@/presentation/shared/components/LocationFilterSheet';
+import { getMunicipalitiesForGovernorate } from '@/core/constants/tunisiaLocations';
 import { BusinessCard } from '../components/BusinessCard';
 import { NoResultsView } from '@/presentation/shared/components/NoResultsView';
 import { useHome } from '../hooks/useHome';
@@ -303,7 +299,7 @@ export default function HomeScreen() {
                     <View
                       style={{
                         position: 'absolute', bottom: 0, left: 0, right: 0, height: 85,
-                        backgroundColor: 'rgba(15,23,42,0.88)',
+                        backgroundColor: theme.isDark ? 'rgba(15,23,42,0.88)' : 'rgba(15,23,42,0.70)',
                       }}
                     />
 
@@ -609,7 +605,7 @@ export default function HomeScreen() {
                         <View
                           style={{
                             position: 'absolute', bottom: 0, left: 0, right: 0, height: 52,
-                            backgroundColor: 'rgba(15,23,42,0.82)',
+                            backgroundColor: theme.isDark ? 'rgba(15,23,42,0.82)' : 'rgba(15,23,42,0.62)',
                             paddingHorizontal: 10, paddingBottom: 10,
                             justifyContent: 'flex-end',
                           }}
@@ -661,7 +657,7 @@ export default function HomeScreen() {
                       style={{
                         position: 'absolute', top: 8, right: 8,
                         width: 30, height: 30, borderRadius: 15,
-                        backgroundColor: 'rgba(15,23,42,0.65)',
+                        backgroundColor: theme.isDark ? 'rgba(15,23,42,0.65)' : 'rgba(255,255,255,0.85)',
                         alignItems: 'center', justifyContent: 'center',
                         zIndex: 1,
                       }}
@@ -669,7 +665,7 @@ export default function HomeScreen() {
                       <MaterialCommunityIcons
                         name={isWishlisted(item.id) ? 'heart' : 'heart-outline'}
                         size={15}
-                        color={isWishlisted(item.id) ? colors.pink : colors.white}
+                        color={isWishlisted(item.id) ? colors.pink : (theme.isDark ? colors.white : colors.textSlate600)}
                       />
                     </Pressable>
                   </View>
@@ -749,7 +745,7 @@ export default function HomeScreen() {
                       <View
                         style={{
                           position: 'absolute', bottom: 0, left: 0, right: 0, height: 62,
-                          backgroundColor: 'rgba(15,23,42,0.88)',
+                          backgroundColor: theme.isDark ? 'rgba(15,23,42,0.88)' : 'rgba(15,23,42,0.65)',
                           paddingHorizontal: 12, paddingBottom: 10,
                           justifyContent: 'flex-end',
                         }}
@@ -1020,7 +1016,7 @@ export default function HomeScreen() {
                         <View
                           style={{
                             position: 'absolute', bottom: 0, left: 0, right: 0, height: 55,
-                            backgroundColor: 'rgba(15,23,42,0.85)',
+                            backgroundColor: theme.isDark ? 'rgba(15,23,42,0.85)' : 'rgba(15,23,42,0.65)',
                             paddingHorizontal: 10, paddingBottom: 8, justifyContent: 'flex-end',
                           }}
                         >
@@ -1096,7 +1092,7 @@ export default function HomeScreen() {
                         <View
                           style={{
                             position: 'absolute', bottom: 0, left: 0, right: 0, height: 52,
-                            backgroundColor: 'rgba(15,23,42,0.82)',
+                            backgroundColor: theme.isDark ? 'rgba(15,23,42,0.82)' : 'rgba(15,23,42,0.62)',
                             paddingHorizontal: 10, paddingBottom: 10, justifyContent: 'flex-end',
                           }}
                         >
@@ -1174,7 +1170,7 @@ export default function HomeScreen() {
                     <View
                       style={{
                         position: 'absolute', bottom: 0, left: 0, right: 0, height: 70,
-                        backgroundColor: 'rgba(15,23,42,0.88)',
+                        backgroundColor: theme.isDark ? 'rgba(15,23,42,0.88)' : 'rgba(15,23,42,0.68)',
                         paddingHorizontal: 12, paddingBottom: 10, justifyContent: 'flex-end',
                       }}
                     >
@@ -1408,12 +1404,12 @@ export default function HomeScreen() {
   const [showLocation, setShowLocation] = useState(false);
   const [activeFilters, setActiveFilters] = useState<FilterState>(DEFAULT_FILTER_STATE);
   const [activeSort, setActiveSort] = useState<SortOption | null>(null);
-  const [activeLocations, setActiveLocations] = useState<string[]>([]);
+  const [activeLocationFilter, setActiveLocationFilter] = useState<LocationFilter>({ governorates: [], municipalities: [] });
 
   const isSearching = searchQuery.trim().length > 0;
   const isFilterActive = activeFilters.categories.length > 0 || activeFilters.minRating > 0;
   const isSortActive = activeSort !== null;
-  const isLocationActive = activeLocations.length > 0;
+  const isLocationActive = activeLocationFilter.governorates.length > 0 || activeLocationFilter.municipalities.length > 0;
 
   // When searching, search bar stays at top (offset=0); when browsing, it follows scroll
   const stickyOffset = isSearching ? 0 : preSearchHeight;
@@ -1439,10 +1435,19 @@ export default function HomeScreen() {
   const filteredAndSorted = useMemo(() => {
     if (!isSearching) return businesses;
     let data = [...businesses];
-    if (activeLocations.length > 0) {
-      data = data.filter((b) =>
-        activeLocations.some((loc) => b.location?.toLowerCase().includes(loc.toLowerCase())),
-      );
+    if (activeLocationFilter.municipalities.length > 0) {
+      data = data.filter((b) => {
+        const loc = b.location?.toLowerCase() ?? '';
+        return activeLocationFilter.municipalities.some((mun) => loc.includes(mun.toLowerCase()));
+      });
+    } else if (activeLocationFilter.governorates.length > 0) {
+      data = data.filter((b) => {
+        const loc = b.location?.toLowerCase() ?? '';
+        return activeLocationFilter.governorates.some((gov) => {
+          if (loc.includes(gov.toLowerCase())) return true;
+          return getMunicipalitiesForGovernorate(gov).some((m) => loc.includes(m.toLowerCase()));
+        });
+      });
     }
     if (activeFilters.categories.length > 0) {
       data = data.filter((b) => activeFilters.categories.includes(b.categoryId));
@@ -1465,7 +1470,7 @@ export default function HomeScreen() {
       });
       default: return data;
     }
-  }, [isSearching, businesses, activeFilters, activeLocations, activeSort]);
+  }, [isSearching, businesses, activeFilters, activeLocationFilter, activeSort]);
 
   const flatListRef = useRef<FlatList<BusinessEntity>>(null);
 
@@ -1631,11 +1636,11 @@ export default function HomeScreen() {
                 </Pressable>
               </ScrollView>
 
-              <LocationDropdown
+              <LocationFilterSheet
                 visible={showLocation}
-                initialLocations={activeLocations}
-                onApply={(locs) => {
-                  setActiveLocations(locs);
+                initialFilter={activeLocationFilter}
+                onApply={(filter) => {
+                  setActiveLocationFilter(filter);
                   setShowLocation(false);
                 }}
               />

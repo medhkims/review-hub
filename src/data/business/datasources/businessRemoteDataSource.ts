@@ -101,6 +101,9 @@ export interface BusinessRemoteDataSource {
   getRecentReviews(count: number): Promise<(ReviewModel & { business_id: string; business_name: string })[]>;
   claimBusiness(businessId: string, businessName: string, claimantUserId: string, claimantName: string, claimantEmail: string, claimantPhone: string, claimantRole: string, proofDescription: string): Promise<void>;
   getHomeStats(): Promise<{ totalBusinesses: number; totalReviews: number }>;
+  getBusinessCategoryStats(): Promise<Record<string, { total: number; bySubcategory: Record<string, number> }>>;
+  syncCriterionAddedToBusinesses(categoryId: string, criterion: { name: string; icon: string }): Promise<void>;
+  syncCriterionRemovedFromBusinesses(categoryId: string, criterionLabel: string): Promise<void>;
 }
 
 /** Build a BusinessModel from a Firestore doc, deriving `platforms` from `contact` if absent. */
@@ -1386,6 +1389,126 @@ export class BusinessRemoteDataSourceImpl implements BusinessRemoteDataSource {
       };
     } catch (error: unknown) {
       const message = error instanceof Error ? error.message : 'Failed to fetch stats';
+      throw new ServerException(message);
+    }
+  }
+
+  async getBusinessCategoryStats(): Promise<Record<string, { total: number; bySubcategory: Record<string, number> }>> {
+    try {
+      const snapshot = await getDocs(collection(firestore, this.BUSINESSES));
+      const stats: Record<string, { total: number; bySubcategory: Record<string, number> }> = {};
+
+      for (const d of snapshot.docs) {
+        const data = d.data();
+        const catId = data['category_id'] as string | undefined;
+        if (!catId) continue;
+
+        if (!stats[catId]) stats[catId] = { total: 0, bySubcategory: {} };
+        stats[catId].total += 1;
+
+        // Count by sub_categories array (preferred), fall back to sub_category string
+        const subCats = data['sub_categories'] as string[] | undefined;
+        const validSubCats = Array.isArray(subCats) ? subCats.filter((s) => typeof s === 'string' && s.trim()) : [];
+
+        if (validSubCats.length > 0) {
+          for (const s of validSubCats) {
+            const name = (s as string).trim();
+            stats[catId].bySubcategory[name] = (stats[catId].bySubcategory[name] ?? 0) + 1;
+          }
+        } else {
+          // Fallback chain: sub_category string → subcategory_id (old seed format)
+          const subCat = (data['sub_category'] ?? data['subcategory_id']) as string | undefined;
+          if (subCat && subCat.trim()) {
+            const name = subCat.trim();
+            stats[catId].bySubcategory[name] = (stats[catId].bySubcategory[name] ?? 0) + 1;
+          }
+        }
+      }
+
+      return stats;
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : 'Failed to fetch business category stats';
+      throw new ServerException(message);
+    }
+  }
+
+  async syncCriterionAddedToBusinesses(categoryId: string, criterion: { name: string; icon: string }): Promise<void> {
+    try {
+      const snapshot = await getDocs(
+        query(collection(firestore, this.BUSINESSES), where('category_id', '==', categoryId)),
+      );
+      if (snapshot.empty) return;
+      const BATCH_LIMIT = 500;
+      const docs = snapshot.docs;
+      for (let i = 0; i < docs.length; i += BATCH_LIMIT) {
+        const chunk = docs.slice(i, i + BATCH_LIMIT);
+        const batch = writeBatch(firestore);
+        for (const d of chunk) {
+          const data = d.data();
+          const active = (data['category_ratings'] ?? []) as Array<{ name: string; icon: string; rating: number }>;
+          const deleted = (data['deleted_category_ratings'] ?? []) as Array<{ name: string; icon: string; rating: number }>;
+
+          // Already in active — nothing to do
+          if (active.some((c) => c.name.toLowerCase() === criterion.name.toLowerCase())) continue;
+
+          // Check if we have a saved rating from a previous deletion — restore it
+          const savedIdx = deleted.findIndex((c) => c.name.toLowerCase() === criterion.name.toLowerCase());
+          let restoredEntry: { name: string; icon: string; rating: number };
+          let newDeleted: Array<{ name: string; icon: string; rating: number }>;
+
+          if (savedIdx !== -1) {
+            // Restore original rating
+            restoredEntry = { ...deleted[savedIdx], icon: criterion.icon };
+            newDeleted = deleted.filter((_, i) => i !== savedIdx);
+          } else {
+            // Truly new criterion — start at 0
+            restoredEntry = { name: criterion.name, icon: criterion.icon, rating: 0 };
+            newDeleted = deleted;
+          }
+
+          batch.update(d.ref, {
+            category_ratings: [...active, restoredEntry],
+            deleted_category_ratings: newDeleted,
+          });
+        }
+        await batch.commit();
+      }
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : 'Failed to sync criterion add to businesses';
+      throw new ServerException(message);
+    }
+  }
+
+  async syncCriterionRemovedFromBusinesses(categoryId: string, criterionLabel: string): Promise<void> {
+    try {
+      const snapshot = await getDocs(
+        query(collection(firestore, this.BUSINESSES), where('category_id', '==', categoryId)),
+      );
+      if (snapshot.empty) return;
+      const BATCH_LIMIT = 500;
+      const docs = snapshot.docs;
+      for (let i = 0; i < docs.length; i += BATCH_LIMIT) {
+        const chunk = docs.slice(i, i + BATCH_LIMIT);
+        const batch = writeBatch(firestore);
+        for (const d of chunk) {
+          const data = d.data();
+          const active = (data['category_ratings'] ?? []) as Array<{ name: string; icon: string; rating: number }>;
+          const deleted = (data['deleted_category_ratings'] ?? []) as Array<{ name: string; icon: string; rating: number }>;
+
+          const target = active.find((c) => c.name.toLowerCase() === criterionLabel.toLowerCase());
+          if (!target) continue; // not in active, nothing to move
+
+          batch.update(d.ref, {
+            // Remove from active
+            category_ratings: active.filter((c) => c.name.toLowerCase() !== criterionLabel.toLowerCase()),
+            // Save to deleted (preserving the rating for future recovery)
+            deleted_category_ratings: [...deleted, target],
+          });
+        }
+        await batch.commit();
+      }
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : 'Failed to sync criterion remove from businesses';
       throw new ServerException(message);
     }
   }
