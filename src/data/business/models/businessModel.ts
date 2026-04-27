@@ -24,9 +24,16 @@ export interface BusinessModel {
   // Engagement counters
   visit_count?: number;
   search_count?: number;
+  // Trending / weekly review tracking
+  weekly_review_count?: number;
+  // Geo coordinates
+  latitude?: number | null;
+  longitude?: number | null;
   // Opening hours
   opening_hours?: Record<string, { is_open: boolean; open_time: string; close_time: string }>;
   opening_hours_visible?: boolean;
+  // Denormalized from contact info — which social platforms the business is on
+  platforms?: string[];
   created_at: Timestamp;
   updated_at: Timestamp;
 }

@@ -269,6 +269,12 @@ export default function MultiCategoryResultsScreen() {
       data = data.filter((b) => activeFilters.categories.includes(b.categoryId));
     }
 
+    if (activeFilters.platforms.length > 0) {
+      data = data.filter((b) =>
+        activeFilters.platforms.some((p) => b.platforms?.includes(p)),
+      );
+    }
+
     if (activeFilters.minRating > 0) {
       data = data.filter((b) => b.rating >= activeFilters.minRating);
     }

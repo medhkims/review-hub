@@ -1,20 +1,6 @@
 import { useCallback, useEffect } from 'react';
 import { useFeedStore } from '../store/feedStore';
-
-// TODO: Use container use cases when wired in DI container
-import { FeedRemoteDataSourceImpl } from '@/data/feed/datasources/feedRemoteDataSource';
-import { FeedLocalDataSourceImpl } from '@/data/feed/datasources/feedLocalDataSource';
-import { FeedRepositoryImpl } from '@/data/feed/repositories/feedRepositoryImpl';
-import { NetworkInfoImpl } from '@/core/network/networkInfo';
-import { GetPostsUseCase } from '@/domain/feed/usecases/getPostsUseCase';
-import { LikePostUseCase } from '@/domain/feed/usecases/likePostUseCase';
-
-const remote = new FeedRemoteDataSourceImpl();
-const local = new FeedLocalDataSourceImpl();
-const network = new NetworkInfoImpl();
-const repo = new FeedRepositoryImpl(remote, local, network);
-const getPostsUseCase = new GetPostsUseCase(repo);
-const likePostUseCase = new LikePostUseCase(repo);
+import { container } from '@/core/di/container';
 
 export const useFeed = () => {
   const {
@@ -38,7 +24,7 @@ export const useFeed = () => {
     setLoading(true);
     setError(null);
 
-    const result = await getPostsUseCase.execute(1);
+    const result = await container.getPostsUseCase.execute(1);
 
     result.fold(
       (failure) => setError(failure.message),
@@ -56,7 +42,7 @@ export const useFeed = () => {
     const nextPage = currentPage + 1;
     setLoading(true);
 
-    const result = await getPostsUseCase.execute(nextPage);
+    const result = await container.getPostsUseCase.execute(nextPage);
 
     result.fold(
       (failure) => setError(failure.message),
@@ -73,7 +59,7 @@ export const useFeed = () => {
     setRefreshing(true);
     setError(null);
 
-    const result = await getPostsUseCase.execute(1);
+    const result = await container.getPostsUseCase.execute(1);
 
     result.fold(
       (failure) => setError(failure.message),
@@ -86,7 +72,6 @@ export const useFeed = () => {
   }, [setRefreshing, setError, setPosts, setHasMore]);
 
   const toggleLike = useCallback(async (postId: string) => {
-    // Find the current post
     const post = posts.find((p) => p.id === postId);
     if (!post) return;
 
@@ -97,7 +82,7 @@ export const useFeed = () => {
       likesCount: wasLiked ? post.likesCount - 1 : post.likesCount + 1,
     });
 
-    const result = await likePostUseCase.execute(postId);
+    const result = await container.likePostUseCase.execute(postId);
 
     result.fold(
       (_failure) => {

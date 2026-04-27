@@ -14,6 +14,7 @@ import { useTheme } from '@/core/theme/useTheme';
 import { CATEGORY_MAP, RatingCriterionDef } from '@/core/constants/categoriesData';
 import { useWriteReview } from '../hooks/useWriteReview';
 import { PhotoPicker, SelectedPhoto } from '../components/PhotoPicker';
+import { GuestGate } from '@/presentation/shared/components/GuestGate';
 
 const MAX_CHARS = 500;
 
@@ -138,6 +139,7 @@ export default function WriteReviewScreen() {
     (isGeneralRating ? generalRating === 0 : Object.values(ratings).some((r) => r === 0));
 
   return (
+    <GuestGate>
     <ScreenLayout withKeyboardAvoid>
       <ScrollView
         showsVerticalScrollIndicator={false}
@@ -280,6 +282,48 @@ export default function WriteReviewScreen() {
           <PhotoPicker photos={photos} onChange={setPhotos} />
         </View>
 
+        {/* Content Guidelines */}
+        <View style={{ paddingHorizontal: 20, marginBottom: 16 }}>
+          <View style={{
+            backgroundColor: `${colors.neonPurple}10`,
+            borderRadius: 12,
+            padding: 14,
+            borderWidth: 1,
+            borderColor: `${colors.neonPurple}25`,
+          }}>
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 8 }}>
+              <MaterialCommunityIcons name="information-outline" size={18} color={colors.neonPurple} />
+              <AppText style={{ fontSize: 14, fontWeight: '700', color: theme.text }}>
+                {t('writeReview.contentGuidelines')}
+              </AppText>
+            </View>
+            <AppText style={{ fontSize: 12, color: theme.textSecondary, lineHeight: 18 }}>
+              {t('writeReview.contentGuidelinesText')}
+            </AppText>
+          </View>
+        </View>
+
+        {/* Legal Disclaimer */}
+        <View style={{ paddingHorizontal: 20, marginBottom: 20 }}>
+          <View style={{
+            backgroundColor: 'rgba(239,68,68,0.06)',
+            borderRadius: 12,
+            padding: 14,
+            borderWidth: 1,
+            borderColor: 'rgba(239,68,68,0.15)',
+          }}>
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 6 }}>
+              <MaterialCommunityIcons name="shield-alert-outline" size={16} color="#F87171" />
+              <AppText style={{ fontSize: 12, fontWeight: '600', color: '#F87171' }}>
+                {t('common.legalNotice', { defaultValue: 'Legal Notice' })}
+              </AppText>
+            </View>
+            <AppText style={{ fontSize: 11, color: theme.textSecondary, lineHeight: 17 }}>
+              {t('writeReview.legalDisclaimer')}
+            </AppText>
+          </View>
+        </View>
+
         {/* Submit Button */}
         <View style={{ paddingHorizontal: 20 }}>
           <AppButton
@@ -297,5 +341,6 @@ export default function WriteReviewScreen() {
         </View>
       </ScrollView>
     </ScreenLayout>
+    </GuestGate>
   );
 }

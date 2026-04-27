@@ -67,6 +67,7 @@ export default function AllBusinessesScreen() {
 
   const isFilterActive =
     activeFilters.categories.length > 0 ||
+    activeFilters.platforms.length > 0 ||
     activeFilters.minRating > 0;
   const isSortActive = activeSort !== null;
   const isLocationActive = activeLocations.length > 0;
@@ -95,6 +96,12 @@ export default function AllBusinessesScreen() {
 
     if (activeFilters.categories.length > 0) {
       data = data.filter((b) => activeFilters.categories.includes(b.categoryId));
+    }
+
+    if (activeFilters.platforms.length > 0) {
+      data = data.filter((b) =>
+        activeFilters.platforms.some((p) => b.platforms?.includes(p)),
+      );
     }
 
     if (activeFilters.minRating > 0) {

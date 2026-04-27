@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { View, Modal, Pressable, TextInput, Image } from 'react-native';
+import { View, Modal, Pressable, TextInput, Image, Switch, Platform } from 'react-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useTranslation } from 'react-i18next';
 import { AppText } from '@/presentation/shared/components/ui/AppText';
@@ -14,8 +14,11 @@ interface MenuItemModalProps {
   initialDescription?: string;
   initialPrice?: string;
   initialImageUri?: string;
+  initialIsDeal?: boolean;
+  initialDealDiscountPercent?: number;
+  initialDealValidUntil?: Date;
   onClose: () => void;
-  onConfirm: (name: string, description: string, price: string, imageUri?: string) => void;
+  onConfirm: (name: string, description: string, price: string, imageUri?: string, isDeal?: boolean, dealDiscountPercent?: number, dealValidUntil?: Date) => void;
 }
 
 export const MenuItemModal: React.FC<MenuItemModalProps> = ({
@@ -24,6 +27,9 @@ export const MenuItemModal: React.FC<MenuItemModalProps> = ({
   initialDescription,
   initialPrice,
   initialImageUri,
+  initialIsDeal,
+  initialDealDiscountPercent,
+  initialDealValidUntil,
   onClose,
   onConfirm,
 }) => {
@@ -32,6 +38,9 @@ export const MenuItemModal: React.FC<MenuItemModalProps> = ({
   const [description, setDescription] = useState('');
   const [price, setPrice] = useState('');
   const [imageUri, setImageUri] = useState<string | undefined>();
+  const [isDeal, setIsDeal] = useState(false);
+  const [discountPercent, setDiscountPercent] = useState('');
+  const [dealValidUntilStr, setDealValidUntilStr] = useState('');
 
   const isEditMode = initialName !== undefined;
 
@@ -41,8 +50,11 @@ export const MenuItemModal: React.FC<MenuItemModalProps> = ({
       setDescription(initialDescription ?? '');
       setPrice(initialPrice ?? '');
       setImageUri(initialImageUri ?? undefined);
+      setIsDeal(initialIsDeal ?? false);
+      setDiscountPercent(initialDealDiscountPercent ? String(initialDealDiscountPercent) : '');
+      setDealValidUntilStr(initialDealValidUntil ? formatDateForInput(initialDealValidUntil) : '');
     }
-  }, [visible, initialName, initialDescription, initialPrice, initialImageUri]);
+  }, [visible, initialName, initialDescription, initialPrice, initialImageUri, initialIsDeal, initialDealDiscountPercent, initialDealValidUntil]);
 
   const imagePicker = useImagePickerWithPreview({
     aspect: [1, 1],
@@ -50,9 +62,26 @@ export const MenuItemModal: React.FC<MenuItemModalProps> = ({
     onSelected: useCallback((uri: string) => { setImageUri(uri); }, []),
   });
 
+  const formatDateForInput = (date: Date): string => {
+    const y = date.getFullYear();
+    const m = String(date.getMonth() + 1).padStart(2, '0');
+    const d = String(date.getDate()).padStart(2, '0');
+    return `${y}-${m}-${d}`;
+  };
+
+  const parseDateFromInput = (str: string): Date | undefined => {
+    if (!str.trim()) return undefined;
+    const parts = str.split('-');
+    if (parts.length !== 3) return undefined;
+    const date = new Date(Number(parts[0]), Number(parts[1]) - 1, Number(parts[2]));
+    return isNaN(date.getTime()) ? undefined : date;
+  };
+
   const handleConfirm = () => {
     if (!name.trim() || !price.trim()) return;
-    onConfirm(name.trim(), description.trim(), price.trim(), imageUri);
+    const discount = isDeal ? parseFloat(discountPercent) || undefined : undefined;
+    const validUntil = isDeal ? parseDateFromInput(dealValidUntilStr) : undefined;
+    onConfirm(name.trim(), description.trim(), price.trim(), imageUri, isDeal, discount, validUntil);
   };
 
   const canConfirm = name.trim().length > 0 && price.trim().length > 0;
@@ -198,6 +227,77 @@ export const MenuItemModal: React.FC<MenuItemModalProps> = ({
               }}
               accessibilityLabel={t('businessOwner.companyProfile.itemPriceLabel')}
             />
+          </View>
+
+          {/* Deal Toggle */}
+          <View style={{ gap: 12, backgroundColor: isDeal ? `${colors.neonPurple}10` : 'transparent', borderRadius: 14, padding: isDeal ? 14 : 0 }}>
+            <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
+              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+                <MaterialCommunityIcons name="tag-outline" size={20} color={isDeal ? colors.neonPurple : colors.textSlate400} />
+                <AppText style={{ fontSize: 14, fontWeight: '600', color: isDeal ? colors.neonPurple : colors.textSlate400 }}>
+                  {t('businessOwner.companyProfile.markAsDeal')}
+                </AppText>
+              </View>
+              <Switch
+                value={isDeal}
+                onValueChange={setIsDeal}
+                trackColor={{ false: colors.borderDark, true: `${colors.neonPurple}80` }}
+                thumbColor={isDeal ? colors.neonPurple : colors.textSlate400}
+                accessibilityLabel={t('businessOwner.companyProfile.markAsDeal')}
+              />
+            </View>
+
+            {isDeal && (
+              <>
+                {/* Discount Percent */}
+                <View style={{ gap: 6 }}>
+                  <AppText style={{ fontSize: 13, fontWeight: '600', color: colors.textSlate400 }}>
+                    {t('businessOwner.companyProfile.dealDiscount')}
+                  </AppText>
+                  <TextInput
+                    value={discountPercent}
+                    onChangeText={(val) => setDiscountPercent(val.replace(/[^0-9]/g, ''))}
+                    placeholder="e.g. 20"
+                    placeholderTextColor={colors.textSlate500}
+                    keyboardType="number-pad"
+                    style={{
+                      backgroundColor: colors.midnight,
+                      color: colors.white,
+                      borderRadius: 12,
+                      padding: 14,
+                      fontSize: 14,
+                      borderWidth: 1,
+                      borderColor: discountPercent ? colors.neonPurple : colors.borderDark,
+                    }}
+                    accessibilityLabel={t('businessOwner.companyProfile.dealDiscount')}
+                  />
+                </View>
+
+                {/* Valid Until */}
+                <View style={{ gap: 6 }}>
+                  <AppText style={{ fontSize: 13, fontWeight: '600', color: colors.textSlate400 }}>
+                    {t('businessOwner.companyProfile.dealValidUntil')}
+                  </AppText>
+                  <TextInput
+                    value={dealValidUntilStr}
+                    onChangeText={setDealValidUntilStr}
+                    placeholder="YYYY-MM-DD"
+                    placeholderTextColor={colors.textSlate500}
+                    keyboardType={Platform.OS === 'web' ? 'default' : 'numbers-and-punctuation'}
+                    style={{
+                      backgroundColor: colors.midnight,
+                      color: colors.white,
+                      borderRadius: 12,
+                      padding: 14,
+                      fontSize: 14,
+                      borderWidth: 1,
+                      borderColor: dealValidUntilStr ? colors.neonPurple : colors.borderDark,
+                    }}
+                    accessibilityLabel={t('businessOwner.companyProfile.dealValidUntil')}
+                  />
+                </View>
+              </>
+            )}
           </View>
 
           {/* Buttons */}

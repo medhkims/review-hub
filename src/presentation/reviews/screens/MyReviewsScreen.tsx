@@ -12,7 +12,7 @@ import { useAnalyticsScreen } from '@/presentation/shared/hooks/useAnalyticsScre
 import { AnalyticsScreens } from '@/core/analytics/analyticsKeys';
 import { colors } from '@/core/theme/colors';
 import { useTheme } from '@/core/theme/useTheme';
-import { auth } from '@/core/firebase/firebaseConfig';
+import { useAuthStore } from '@/presentation/auth/store/authStore';
 import { UserReviewEntity } from '@/domain/reviews/entities/userReviewEntity';
 import { useMyReviews, ReviewTab } from '../hooks/useMyReviews';
 
@@ -474,6 +474,7 @@ export default function MyReviewsScreen() {
   const { t } = useTranslation();
   const theme = useTheme();
   const { reviews, isLoading, error, stats, tabCounts, activeTab, setActiveTab, deleteReview } = useMyReviews();
+  const { user: authUser } = useAuthStore();
   const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
 
   const handleDeleteConfirm = useCallback(async () => {
@@ -483,12 +484,11 @@ export default function MyReviewsScreen() {
   }, [confirmDeleteId, deleteReview]);
 
   const handleReviewPress = useCallback((review: UserReviewEntity) => {
-    const currentUser = auth.currentUser;
     const serialized = JSON.stringify({
       id: review.id,
       authorId: review.userId,
-      authorName: currentUser?.displayName ?? '',
-      authorAvatarUrl: currentUser?.photoURL ?? null,
+      authorName: authUser?.displayName ?? '',
+      authorAvatarUrl: authUser?.avatarUrl ?? null,
       rating: review.overallRating,
       text: review.reviewText,
       photoUrls: review.photoUrls,

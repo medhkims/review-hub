@@ -4,6 +4,8 @@ import { useBusinessDetailStore } from '../store/businessDetailStore';
 import { useAuthStore } from '@/presentation/auth/store/authStore';
 import { useWishlistStore } from '@/presentation/wishlist/store/wishlistStore';
 import { useRoleStore } from '@/presentation/auth/store/roleStore';
+import { useHomeStore } from '@/presentation/home/store/homeStore';
+import { BusinessEntity } from '@/domain/business/entities/businessEntity';
 import { container } from '@/core/di/container';
 import { AnalyticsHelper } from '@/core/analytics/analyticsHelper';
 import { AnalyticsEvents, AnalyticsParams } from '@/core/analytics/analyticsKeys';
@@ -12,11 +14,13 @@ export const useBusinessDetail = (businessId: string) => {
   const {
     business,
     reviews,
+    announcements,
     isLoading,
     error,
     reviewsError,
     setBusiness,
     setReviews,
+    setAnnouncements,
     setLoading,
     setError,
     setReviewsError,
@@ -27,6 +31,7 @@ export const useBusinessDetail = (businessId: string) => {
   const { user } = useAuthStore();
   const { role } = useRoleStore();
   const { isWishlisted, addItem: addWishlistItem, removeItem: removeWishlistItem } = useWishlistStore();
+  const addRecentlyViewed = useHomeStore((s) => s.addRecentlyViewed);
   const isMountedRef = useRef(true);
 
   const fetchDetail = useCallback(async () => {
@@ -40,6 +45,31 @@ export const useBusinessDetail = (businessId: string) => {
       (failure) => setError(failure.message),
       (detail) => {
         setBusiness(detail);
+        addRecentlyViewed({
+          id: detail.id,
+          name: detail.name,
+          description: detail.description,
+          categoryId: detail.categoryId,
+          categoryName: detail.categoryName,
+          subCategories: detail.subCategories,
+          location: detail.location,
+          latitude: detail.latitude,
+          longitude: detail.longitude,
+          coverImageUrl: detail.coverImageUrl,
+          logoUrl: detail.logoUrl,
+          rating: detail.rating,
+          reviewCount: detail.reviewCount,
+          weeklyReviewCount: 0,
+          isFeatured: false,
+          isFavorite: detail.isFavorite,
+          ownerId: detail.ownerId,
+          status: detail.status,
+          isOwnerVerified: detail.isOwnerVerified,
+          openingHours: detail.openingHours as BusinessEntity['openingHours'],
+          openingHoursVisible: detail.openingHoursVisible,
+          createdAt: detail.createdAt,
+          updatedAt: detail.updatedAt,
+        });
         AnalyticsHelper.sendEvent(AnalyticsEvents.VIEW_BUSINESS, {
           [AnalyticsParams.BUSINESS_ID]: businessId,
           [AnalyticsParams.BUSINESS_NAME]: detail.name,
@@ -55,8 +85,16 @@ export const useBusinessDetail = (businessId: string) => {
       (data) => setReviews(data),
     );
 
+    // Fetch announcements
+    const announcementsResult = await container.getAnnouncementsUseCase.execute(businessId);
+    if (!isMountedRef.current) return;
+    announcementsResult.fold(
+      () => {}, // silently ignore announcement errors
+      (data) => setAnnouncements(data),
+    );
+
     setLoading(false);
-  }, [businessId, role, setBusiness, setReviews, setLoading, setError, setReviewsError]);
+  }, [businessId, role, setBusiness, setReviews, setAnnouncements, setLoading, setError, setReviewsError, addRecentlyViewed]);
 
   const toggleFavorite = useCallback(async () => {
     if (!user || !business) return;
@@ -132,6 +170,7 @@ export const useBusinessDetail = (businessId: string) => {
   return {
     business,
     reviews,
+    announcements,
     isLoading,
     error,
     reviewsError,

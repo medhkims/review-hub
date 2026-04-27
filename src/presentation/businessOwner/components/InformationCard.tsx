@@ -44,6 +44,9 @@ const EMPTY_CONTACT_ITEMS: ContactItem[] = [
   { icon: 'instagram', color: '#E1306C', labelKey: 'instagram' },
   { icon: 'facebook', color: '#1877F2', labelKey: 'facebook' },
   { icon: 'music-note', color: '#FFFFFF', labelKey: 'tiktok' },
+  { icon: 'youtube', color: '#FF0000', labelKey: 'youtube' },
+  { icon: 'twitch', color: '#9146FF', labelKey: 'twitch' },
+  { icon: 'alpha-k-circle', color: '#53FC18', labelKey: 'kick' },
   { icon: 'linkedin', color: '#0A66C2', labelKey: 'linkedin' },
   { icon: 'briefcase-outline', color: '#14A800', labelKey: 'upwork' },
 ];

@@ -163,14 +163,21 @@ export default function ProfileScreen() {
               iconColor="yellow"
               label="Help Center"
               rightElement="external"
-              onPress={() => {/* TODO: Link to help center URL */}}
+              onPress={() => router.push('/(main)/(settings)/help-center')}
             />
             <SettingRow
               iconName="shield-account"
               iconColor="cyan"
               label="Privacy Policy"
               rightElement="external"
-              onPress={() => {/* TODO: Link to privacy policy URL */}}
+              onPress={() => router.push('/(main)/(settings)/privacy-policy')}
+            />
+            <SettingRow
+              iconName="file-document-outline"
+              iconColor="indigo"
+              label="Terms of Service"
+              rightElement="external"
+              onPress={() => router.push('/(main)/(settings)/terms-of-service' as Parameters<typeof router.push>[0])}
             />
             <SettingRow
               iconName="logout"

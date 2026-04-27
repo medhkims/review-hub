@@ -1,13 +1,17 @@
 import React from 'react';
-import { View, Pressable, Linking } from 'react-native';
+import { View, Pressable, Linking, Image, Platform } from 'react-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useTranslation } from 'react-i18next';
+import Constants from 'expo-constants';
 import { AppText } from '@/presentation/shared/components/ui/AppText';
 import { colors } from '@/core/theme/colors';
 import { useTheme } from '@/core/theme/useTheme';
 import { SectionCard } from './SectionCard';
 import { ContactInfo, OpeningHours, DayKey } from '@/domain/business/entities/businessDetailEntity';
 import { trackProfileClick } from '@/core/utils/premiumTracking';
+
+const GMAPS_KEY: string =
+  ((Constants.expoConfig?.extra as Record<string, string> | undefined)?.googleMapsApiKey) ?? '';
 
 const DAY_KEYS: DayKey[] = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'];
 const SHORT_KEYS: Record<DayKey, string> = {
@@ -17,6 +21,8 @@ const SHORT_KEYS: Record<DayKey, string> = {
 
 interface InformationSectionProps {
   location: string;
+  latitude?: number | null;
+  longitude?: number | null;
   contact: ContactInfo;
   isOnline?: boolean;
   businessId?: string;
@@ -33,8 +39,22 @@ interface ContactRowData {
   verified?: boolean;
 }
 
+const openDirections = (lat: number, lng: number) => {
+  const url = Platform.select({
+    ios: `maps://app?daddr=${lat},${lng}`,
+    android: `google.navigation:q=${lat},${lng}`,
+    default: `https://www.google.com/maps/dir/?api=1&destination=${lat},${lng}`,
+  });
+  Linking.openURL(url).catch(() => {
+    // Fallback to web URL
+    Linking.openURL(`https://www.google.com/maps/dir/?api=1&destination=${lat},${lng}`).catch(() => {});
+  });
+};
+
 export const InformationSection: React.FC<InformationSectionProps> = ({
   location,
+  latitude,
+  longitude,
   contact,
   isOnline = false,
   businessId,
@@ -108,6 +128,36 @@ export const InformationSection: React.FC<InformationSectionProps> = ({
     });
   }
 
+  if (contact.youtubeHandle) {
+    contactRows.push({
+      type: 'youtube',
+      icon: 'youtube',
+      label: 'YouTube',
+      value: contact.youtubeHandle,
+      url: `https://youtube.com/@${contact.youtubeHandle}`,
+    });
+  }
+
+  if (contact.twitchHandle) {
+    contactRows.push({
+      type: 'twitch',
+      icon: 'twitch',
+      label: 'Twitch',
+      value: contact.twitchHandle,
+      url: `https://twitch.tv/${contact.twitchHandle}`,
+    });
+  }
+
+  if (contact.kickHandle) {
+    contactRows.push({
+      type: 'kick',
+      icon: 'alpha-k-circle',
+      label: 'Kick',
+      value: contact.kickHandle,
+      url: `https://kick.com/${contact.kickHandle}`,
+    });
+  }
+
   const handlePress = (url: string, type: string) => {
     if (businessId) trackProfileClick(businessId, type);
     Linking.openURL(url).catch(() => {});
@@ -159,24 +209,89 @@ export const InformationSection: React.FC<InformationSectionProps> = ({
           </View>
         </View>
       ) : (
-        <View
-          style={{
-            width: '100%',
-            height: 160,
-            borderRadius: 16,
-            overflow: 'hidden',
-            marginBottom: 24,
-            borderWidth: 1,
-            borderColor: theme.border,
-            backgroundColor: theme.background,
-            alignItems: 'center',
-            justifyContent: 'center',
-          }}
-        >
-          <MaterialCommunityIcons name="map-marker-outline" size={32} color={colors.neonPurple} />
-          <AppText style={{ fontSize: 12, color: theme.textSecondary, marginTop: 8 }}>
-            {location}
-          </AppText>
+        <View style={{ marginBottom: 24 }}>
+          {latitude && longitude && GMAPS_KEY ? (
+            <Pressable
+              onPress={() => {
+                if (businessId) trackProfileClick(businessId, 'map');
+                openDirections(latitude, longitude);
+              }}
+              accessibilityRole="button"
+              accessibilityLabel={t('businessDetail.getDirections')}
+              style={{
+                width: '100%',
+                height: 160,
+                borderRadius: 16,
+                overflow: 'hidden',
+                borderWidth: 1,
+                borderColor: theme.border,
+                backgroundColor: theme.background,
+              }}
+            >
+              <Image
+                source={{
+                  uri: `https://maps.googleapis.com/maps/api/staticmap?center=${latitude},${longitude}&zoom=15&size=600x300&maptype=roadmap&markers=color:purple%7C${latitude},${longitude}&key=${GMAPS_KEY}`,
+                }}
+                style={{ width: '100%', height: '100%' }}
+                resizeMode="cover"
+                accessibilityLabel={`Map showing ${location}`}
+              />
+            </Pressable>
+          ) : (
+            <View
+              style={{
+                width: '100%',
+                height: 160,
+                borderRadius: 16,
+                overflow: 'hidden',
+                borderWidth: 1,
+                borderColor: theme.border,
+                backgroundColor: theme.background,
+                alignItems: 'center',
+                justifyContent: 'center',
+              }}
+            >
+              <MaterialCommunityIcons name="map-marker-outline" size={32} color={colors.neonPurple} />
+              <AppText style={{ fontSize: 12, color: theme.textSecondary, marginTop: 8 }}>
+                {location}
+              </AppText>
+            </View>
+          )}
+
+          {/* Location text + Get Directions */}
+          <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginTop: 10 }}>
+            <View style={{ flex: 1, flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+              <MaterialCommunityIcons name="map-marker" size={14} color={colors.neonPurple} />
+              <AppText style={{ fontSize: 13, color: theme.textSecondary, flex: 1 }} numberOfLines={1}>
+                {location}
+              </AppText>
+            </View>
+            {latitude && longitude && (
+              <Pressable
+                onPress={() => {
+                  if (businessId) trackProfileClick(businessId, 'directions');
+                  openDirections(latitude, longitude);
+                }}
+                accessibilityRole="button"
+                accessibilityLabel={t('businessDetail.getDirections')}
+                style={({ pressed }) => ({
+                  flexDirection: 'row',
+                  alignItems: 'center',
+                  gap: 4,
+                  paddingHorizontal: 12,
+                  paddingVertical: 6,
+                  borderRadius: 20,
+                  backgroundColor: `${colors.neonPurple}15`,
+                  opacity: pressed ? 0.7 : 1,
+                })}
+              >
+                <MaterialCommunityIcons name="directions" size={16} color={colors.neonPurple} />
+                <AppText style={{ fontSize: 12, fontWeight: '600', color: colors.neonPurple }}>
+                  {t('businessDetail.getDirections')}
+                </AppText>
+              </Pressable>
+            )}
+          </View>
         </View>
       )}
 

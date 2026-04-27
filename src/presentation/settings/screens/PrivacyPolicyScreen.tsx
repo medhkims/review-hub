@@ -84,7 +84,7 @@ const POLICY_EN: PolicySection[] = [
       'We do not sell, rent, or trade your personal data to third parties for commercial purposes.',
       'We may share your data in the following limited circumstances:',
       '6.1 Public Information\nYour display name, profile picture, and reviews are visible to all users of the app. Reviews linked to businesses are visible to business owners and the general public.',
-      '6.2 Service Providers (Sub-processors)\nWe use the following trusted third-party services that may process your data on our behalf:\n• Google Firebase (Firestore, Authentication, Cloud Storage, Cloud Functions, Analytics, Crashlytics, FCM) — Cloud infrastructure and analytics. Data may be processed on Google servers outside Tunisia.\n• Google Sign-In — Authentication provider.',
+      '6.2 Service Providers (Sub-processors)\nWe use the following trusted third-party services that may process your data on our behalf:\n• Google Firebase (Firestore, Authentication, Cloud Storage, Cloud Functions, Analytics, Crashlytics, FCM) — Cloud infrastructure and analytics. Our primary database is hosted in the European Union (Belgium). Some ancillary services may process data in other Google data centers.\n• Google Sign-In — Authentication provider.',
       '6.3 Legal Requirements\nWe may disclose your information when required by Tunisian law, court order, or government authority, or to protect the rights, property, or safety of TChecki, our users, or the public.',
       '6.4 Business Transfer\nIf TChecki is involved in a merger, acquisition, or sale of assets, your data may be transferred as part of that transaction. You will be notified in advance.',
     ],
@@ -92,9 +92,11 @@ const POLICY_EN: PolicySection[] = [
   {
     title: '7. International Data Transfers',
     content: [
-      'TChecki uses Google Firebase, which stores and processes data on servers located in the United States and other countries outside Tunisia.',
-      'These transfers are made subject to Google\'s standard data processing agreements and security measures, which are designed to protect your personal data to a level equivalent to Tunisian legal requirements.',
-      'By using the Service, you acknowledge that your data may be transferred to and processed in countries outside Tunisia that may have different data protection laws.',
+      'TChecki uses Google Firebase, with its primary database (Firestore) hosted in the European Union (Belgium, europe-west1). Some Firebase services (Authentication, Cloud Functions, Analytics, Crashlytics) may process data on Google servers in other locations within the EU or internationally.',
+      'We have chosen to host our primary database in the EU to provide a higher level of data protection, as the EU maintains strong data protection standards under the GDPR.',
+      'These transfers are made subject to Google\'s standard data processing agreements and security measures, which are designed to protect your personal data to a level equivalent to or exceeding Tunisian legal requirements under Law 2004-63.',
+      'In accordance with Article 27 of the Tunisian Organic Law No. 2004-63, cross-border data transfers are permitted when the receiving country ensures an adequate level of protection. The European Union is recognized as providing adequate data protection.',
+      'By using the Service, you consent to the transfer and processing of your data on servers located in the European Union and, for certain ancillary services, in other jurisdictions where Google operates.',
     ],
   },
   {
@@ -257,7 +259,7 @@ const POLICY_AR: PolicySection[] = [
       'لا نبيع بياناتك الشخصية ولا نؤجّرها ولا نتاجر بها مع أطراف ثالثة لأغراض تجارية.',
       'قد نشارك بياناتك في الحالات المحدودة التالية:',
       '6.1 المعلومات العامة\nاسمك وصورتك الشخصية ومراجعاتك مرئية لجميع مستخدمي التطبيق. المراجعات المرتبطة بالأعمال مرئية لأصحابها وللعامة.',
-      '6.2 مزوّدو الخدمة\nنستخدم خدمات Google Firebase (Firestore، Authentication، Cloud Storage، Functions، Analytics، Crashlytics، FCM) كبنية تحتية سحابية. قد تُعالَج البيانات على خوادم Google خارج تونس.',
+      '6.2 مزوّدو الخدمة\nنستخدم خدمات Google Firebase (Firestore، Authentication، Cloud Storage، Functions، Analytics، Crashlytics، FCM) كبنية تحتية سحابية. تُستضاف قاعدة بياناتنا الرئيسية في الاتحاد الأوروبي (بلجيكا). قد تعالج بعض الخدمات المساعدة البيانات في مراكز بيانات Google الأخرى.',
       '6.3 المتطلبات القانونية\nقد نكشف عن معلوماتك عند الاقتضاء بموجب القانون التونسي أو أمر قضائي أو سلطة حكومية.',
       '6.4 نقل الأعمال\nإذا انخرطت TChecki في عملية دمج أو استحواذ أو بيع أصول، فقد تُنقل بياناتك. سيتم إخطارك مسبقًا.',
     ],
@@ -265,9 +267,11 @@ const POLICY_AR: PolicySection[] = [
   {
     title: '7. النقل الدولي للبيانات',
     content: [
-      'يستخدم TChecki Google Firebase، الذي يُخزّن البيانات ويعالجها على خوادم في الولايات المتحدة ودول أخرى خارج تونس.',
-      'تتم هذه النقلات وفق اتفاقيات معالجة البيانات القياسية لـ Google وتدابير الأمان المصممة لحماية بياناتك.',
-      'باستخدامك للخدمة، فإنك تُقرّ بأن بياناتك قد تُنقل وتُعالَج في دول خارج تونس.',
+      'يستخدم TChecki خدمة Google Firebase، حيث تُستضاف قاعدة البيانات الرئيسية (Firestore) في الاتحاد الأوروبي (بلجيكا، europe-west1). قد تعالج بعض خدمات Firebase الأخرى (المصادقة، الوظائف السحابية، التحليلات، تقارير الأعطال) البيانات على خوادم Google في مواقع أخرى داخل الاتحاد الأوروبي أو دوليًا.',
+      'اخترنا استضافة قاعدة بياناتنا الرئيسية في الاتحاد الأوروبي لتوفير مستوى أعلى من حماية البيانات، إذ يحافظ الاتحاد الأوروبي على معايير قوية لحماية البيانات بموجب اللائحة العامة لحماية البيانات (GDPR).',
+      'تتم هذه النقلات وفقًا لاتفاقيات معالجة البيانات القياسية لـ Google وتدابير الأمان المصممة لحماية بياناتك بمستوى يعادل أو يفوق المتطلبات القانونية التونسية بموجب القانون عدد 63 لسنة 2004.',
+      'وفقًا للفصل 27 من القانون الأساسي التونسي عدد 63 لسنة 2004، يُسمح بنقل البيانات عبر الحدود عندما يضمن البلد المستقبل مستوى حماية كافيًا. يُعترف بالاتحاد الأوروبي كمنطقة توفر حماية كافية للبيانات.',
+      'باستخدامك للخدمة، فإنك توافق على نقل بياناتك ومعالجتها على خوادم في الاتحاد الأوروبي، ولبعض الخدمات المساعدة، في مواقع أخرى تعمل فيها Google.',
     ],
   },
   {

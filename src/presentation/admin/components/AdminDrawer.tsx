@@ -88,6 +88,13 @@ const MENU_ITEMS: MenuItem[] = [
     pathMatch: '/boost-management',
   },
   {
+    key: 'userFeed',
+    label: 'User Feed',
+    icon: 'view-list-outline',
+    route: '/(main)/(settings)/user-feed',
+    pathMatch: '/user-feed',
+  },
+  {
     key: 'help',
     label: 'Help Center',
     icon: 'help-circle-outline',

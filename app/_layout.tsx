@@ -9,6 +9,7 @@ LogBox.ignoreLogs(['Unknown event handler property']);
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { StatusBar } from 'expo-status-bar';
 import { ErrorBoundary } from '@/presentation/shared/components/ErrorBoundary';
+import { CookieConsentBanner } from '@/presentation/shared/components/CookieConsentBanner';
 import { GoogleSignin } from '@react-native-google-signin/google-signin';
 import Constants from 'expo-constants';
 import '@/core/i18n/i18n';
@@ -52,6 +53,7 @@ export default function RootLayout() {
           <Stack.Screen name="(auth)" />
           <Stack.Screen name="(main)" />
         </Stack>
+        <CookieConsentBanner />
       </ErrorBoundary>
     </SafeAreaProvider>
   );

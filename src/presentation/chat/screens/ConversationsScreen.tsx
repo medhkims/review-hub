@@ -9,6 +9,7 @@ import {
 import { useRouter } from 'expo-router';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { ScreenLayout } from '@/presentation/shared/layouts/ScreenLayout';
+import { GuestGate } from '@/presentation/shared/components/GuestGate';
 import { AppText } from '@/presentation/shared/components/ui/AppText';
 import { LoadingIndicator } from '@/presentation/shared/components/ui/LoadingIndicator';
 import { ErrorView } from '@/presentation/shared/components/ui/ErrorView';
@@ -318,6 +319,7 @@ export default function ConversationsScreen() {
   );
 
   return (
+    <GuestGate>
     <ScreenLayout>
       {/* Header */}
       <View
@@ -376,5 +378,6 @@ export default function ConversationsScreen() {
         />
       )}
     </ScreenLayout>
+    </GuestGate>
   );
 }

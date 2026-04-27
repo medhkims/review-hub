@@ -13,4 +13,6 @@ export interface ReviewEntity {
   isLikedByCurrentUser: boolean;
   dislikeCount: number;
   isDislikedByCurrentUser: boolean;
+  source?: string;
+  googleAuthorName?: string;
 }

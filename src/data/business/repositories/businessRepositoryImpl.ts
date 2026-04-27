@@ -6,6 +6,7 @@ import { RecentReviewEntity } from '@/domain/business/entities/recentReviewEntit
 import { CommentEntity, ReplyEntity } from '@/domain/business/entities/commentEntity';
 import { ActiveCategoryInfoEntity } from '@/domain/business/entities/activeCategoryInfoEntity';
 import { RegisterBusinessParams, SubmitBusinessParams, DuplicateCheckResult } from '@/domain/business/repositories/businessRepository';
+import { ClaimBusinessParams } from '@/domain/business/usecases/claimBusinessUseCase';
 import { BusinessRemoteDataSource } from '../datasources/businessRemoteDataSource';
 import { BusinessLocalDataSource } from '../datasources/businessLocalDataSource';
 import { BusinessMapper } from '../mappers/businessMapper';
@@ -54,6 +55,51 @@ export class BusinessRepositoryImpl implements BusinessRepository {
           return right(cached.map((m) => BusinessMapper.toEntity(m, false)));
         }
         return left(new NetworkFailure(error.message));
+      }
+      return left(new ServerFailure('An unexpected error occurred'));
+    }
+  }
+
+  async getNearbyBusinesses(latitude: number, longitude: number, radiusKm: number): Promise<Either<Failure, BusinessEntity[]>> {
+    try {
+      const models = await this.remote.getNearbyBusinesses(latitude, longitude, radiusKm);
+      const userId = auth.currentUser?.uid;
+      const favoriteIds = userId ? await this.remote.getUserFavoriteIds(userId) : [];
+      const entities = models.map((m) => BusinessMapper.toEntity(m, favoriteIds.includes(m.id)));
+      return right(entities);
+    } catch (error) {
+      if (error instanceof ServerException) {
+        return left(new ServerFailure(error.message));
+      }
+      return left(new ServerFailure('An unexpected error occurred'));
+    }
+  }
+
+  async getTopRatedBusinesses(): Promise<Either<Failure, BusinessEntity[]>> {
+    try {
+      const models = await this.remote.getTopRatedBusinesses();
+      const userId = auth.currentUser?.uid;
+      const favoriteIds = userId ? await this.remote.getUserFavoriteIds(userId) : [];
+      const entities = models.map((m) => BusinessMapper.toEntity(m, favoriteIds.includes(m.id)));
+      return right(entities);
+    } catch (error) {
+      if (error instanceof ServerException) {
+        return left(new ServerFailure(error.message));
+      }
+      return left(new ServerFailure('An unexpected error occurred'));
+    }
+  }
+
+  async getPopularByCategory(categoryId: string): Promise<Either<Failure, BusinessEntity[]>> {
+    try {
+      const models = await this.remote.getPopularByCategory(categoryId);
+      const userId = auth.currentUser?.uid;
+      const favoriteIds = userId ? await this.remote.getUserFavoriteIds(userId) : [];
+      const entities = models.map((m) => BusinessMapper.toEntity(m, favoriteIds.includes(m.id)));
+      return right(entities);
+    } catch (error) {
+      if (error instanceof ServerException) {
+        return left(new ServerFailure(error.message));
       }
       return left(new ServerFailure('An unexpected error occurred'));
     }
@@ -282,7 +328,7 @@ export class BusinessRepositoryImpl implements BusinessRepository {
     }
   }
 
-  async uploadBusinessImage(businessId: string, imageUri: string, type: 'cover' | 'logo' | 'menu'): Promise<Either<Failure, string>> {
+  async uploadBusinessImage(businessId: string, imageUri: string, type: 'cover' | 'logo' | 'menu' | 'gallery'): Promise<Either<Failure, string>> {
     try {
       const downloadUrl = await this.remote.uploadBusinessImage(businessId, imageUri, type);
       return right(downloadUrl);
@@ -624,6 +670,35 @@ export class BusinessRepositoryImpl implements BusinessRepository {
     } catch (error) {
       if (error instanceof ServerException) return left(new ServerFailure(error.message));
       return left(new ServerFailure('Failed to fetch recent reviews'));
+    }
+  }
+
+  async claimBusiness(params: ClaimBusinessParams): Promise<Either<Failure, void>> {
+    try {
+      await this.remote.claimBusiness(
+        params.businessId,
+        params.businessName,
+        params.claimantUserId,
+        params.claimantName,
+        params.claimantEmail,
+        params.claimantPhone,
+        params.claimantRole,
+        params.proofDescription,
+      );
+      return right(undefined);
+    } catch (error) {
+      if (error instanceof ServerException) return left(new ServerFailure(error.message));
+      return left(new ServerFailure('Failed to submit claim'));
+    }
+  }
+
+  async getHomeStats(): Promise<Either<Failure, { totalBusinesses: number; totalReviews: number }>> {
+    try {
+      const stats = await this.remote.getHomeStats();
+      return right(stats);
+    } catch (error) {
+      if (error instanceof ServerException) return left(new ServerFailure(error.message));
+      return left(new ServerFailure('Failed to fetch stats'));
     }
   }
 }

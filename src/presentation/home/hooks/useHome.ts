@@ -1,4 +1,5 @@
 import { useCallback, useRef, useEffect } from 'react';
+import { Platform } from 'react-native';
 import { useFocusEffect } from 'expo-router';
 import { useHomeStore } from '../store/homeStore';
 import { useAuthStore } from '@/presentation/auth/store/authStore';
@@ -15,10 +16,18 @@ import { trackKeywordEvent } from '@/core/utils/premiumTracking';
 export const useHome = () => {
   const {
     businesses,
+    nearbyBusinesses,
+    topRatedBusinesses,
+    popularCategoryBusinesses,
     newBusinesses,
     recentSearches,
     categories,
     banners,
+    recentReviews,
+    deals,
+    weeklyPicks,
+    userLocation,
+    mostViewedCategoryId,
     selectedCategoryId,
     searchQuery,
     isLoading,
@@ -27,12 +36,20 @@ export const useHome = () => {
     isBannersLoading,
     isFuzzySearching,
     fuzzyMatch,
+    homeStats,
     error,
     setBusinesses,
+    setNearbyBusinesses,
+    setTopRatedBusinesses,
+    setPopularCategoryBusinesses,
     setNewBusinesses,
     addRecentlyViewed,
     setCategories,
     setBanners,
+    setRecentReviews,
+    setDeals,
+    setWeeklyPicks,
+    setUserLocation,
     setSelectedCategoryId,
     setSearchQuery,
     setLoading,
@@ -41,6 +58,7 @@ export const useHome = () => {
     setBannersLoading,
     setFuzzySearching,
     setFuzzyMatch,
+    setHomeStats,
     setError,
     updateBusinessFavorite,
   } = useHomeStore();
@@ -105,6 +123,78 @@ export const useHome = () => {
     );
     setLoading(false);
   }, [setLoading, setError, setBusinesses]);
+
+  const loadRecentReviews = useCallback(async () => {
+    const result = await container.getRecentReviewsUseCase.execute(8);
+    result.fold(
+      () => {},
+      (data) => setRecentReviews(data),
+    );
+  }, [setRecentReviews]);
+
+  const loadDeals = useCallback(async () => {
+    const result = await container.getActiveDealsUseCase.execute();
+    result.fold(
+      () => {},
+      (data) => setDeals(data),
+    );
+  }, [setDeals]);
+
+  const loadWeeklyPicks = useCallback(async () => {
+    const result = await container.getWeeklyPicksUseCase.execute();
+    result.fold(
+      () => {},
+      (data) => setWeeklyPicks(data),
+    );
+  }, [setWeeklyPicks]);
+
+  const loadHomeStats = useCallback(async () => {
+    const result = await container.getHomeStatsUseCase.execute();
+    result.fold(
+      () => {},
+      (data) => setHomeStats(data),
+    );
+  }, [setHomeStats]);
+
+  const loadTopRatedBusinesses = useCallback(async () => {
+    const result = await container.getTopRatedBusinessesUseCase.execute();
+    result.fold(
+      () => {},
+      (data) => setTopRatedBusinesses(data),
+    );
+  }, [setTopRatedBusinesses]);
+
+  const loadPopularByCategory = useCallback(async (categoryId: string) => {
+    const result = await container.getPopularByCategoryUseCase.execute(categoryId);
+    result.fold(
+      () => {},
+      (data) => setPopularCategoryBusinesses(data),
+    );
+  }, [setPopularCategoryBusinesses]);
+
+  const loadNearbyBusinesses = useCallback(async (lat: number, lng: number) => {
+    const result = await container.getNearbyBusinessesUseCase.execute(lat, lng, 10);
+    result.fold(
+      () => {},
+      (data) => setNearbyBusinesses(data),
+    );
+  }, [setNearbyBusinesses]);
+
+  const requestUserLocation = useCallback(async () => {
+    try {
+      const Location = await import('expo-location');
+      const { status } = await Location.requestForegroundPermissionsAsync();
+      if (status !== 'granted') return;
+      const loc = await Location.getCurrentPositionAsync({
+        accuracy: Location.Accuracy.Balanced,
+      });
+      const coords = { latitude: loc.coords.latitude, longitude: loc.coords.longitude };
+      setUserLocation(coords);
+      loadNearbyBusinesses(coords.latitude, coords.longitude);
+    } catch {
+      // Location not available — silently skip
+    }
+  }, [setUserLocation, loadNearbyBusinesses]);
 
   const selectCategory = useCallback(async (categoryId: string | null) => {
     setSelectedCategoryId(categoryId);
@@ -244,16 +334,31 @@ export const useHome = () => {
   // the search bar still shows the query, causing wrong results to appear.
   useFocusEffect(
     useCallback(() => {
-      loadBanners();
-      loadCategories();
-      loadNewBusinesses();
+      // Fire all independent data fetches in parallel for faster load
+      Promise.all([
+        loadBanners(),
+        loadCategories(),
+        loadNewBusinesses(),
+        loadRecentReviews(),
+        loadDeals(),
+        loadWeeklyPicks(),
+        loadHomeStats(),
+        loadTopRatedBusinesses(),
+        // Always load nearby — uses absolute fallback if location unavailable
+        loadNearbyBusinesses(36.8, 10.18),
+        requestUserLocation(),
+      ]);
+      // Load popular businesses for user's most viewed category
+      if (mostViewedCategoryId) {
+        loadPopularByCategory(mostViewedCategoryId);
+      }
       if (searchQueryRef.current.trim()) return; // keep existing search results
       if (selectedCategoryId) {
         loadBusinessesByCategory(selectedCategoryId);
       } else {
         loadFeaturedBusinesses();
       }
-    }, [loadBanners, loadCategories, loadNewBusinesses, loadFeaturedBusinesses, loadBusinessesByCategory, selectedCategoryId]),
+    }, [loadBanners, loadCategories, loadNewBusinesses, loadRecentReviews, loadDeals, loadWeeklyPicks, loadHomeStats, loadTopRatedBusinesses, loadNearbyBusinesses, requestUserLocation, loadFeaturedBusinesses, loadBusinessesByCategory, loadPopularByCategory, mostViewedCategoryId, selectedCategoryId]),
   );
 
   const submitBusiness = useCallback(
@@ -282,14 +387,25 @@ export const useHome = () => {
     } else {
       await loadFeaturedBusinesses();
     }
-  }, [search, selectedCategoryId, loadBusinessesByCategory, loadFeaturedBusinesses]);
+    loadRecentReviews();
+    loadDeals();
+    loadWeeklyPicks();
+  }, [search, selectedCategoryId, loadBusinessesByCategory, loadFeaturedBusinesses, loadRecentReviews, loadDeals, loadWeeklyPicks]);
 
   return {
     businesses,
+    nearbyBusinesses,
+    topRatedBusinesses,
+    popularCategoryBusinesses,
     newBusinesses,
     recentSearches,
     categories,
     banners,
+    recentReviews,
+    deals,
+    weeklyPicks,
+    userLocation,
+    mostViewedCategoryId,
     selectedCategoryId,
     searchQuery,
     isLoading,
@@ -298,6 +414,7 @@ export const useHome = () => {
     isBannersLoading,
     isFuzzySearching,
     fuzzyMatch,
+    homeStats,
     error,
     isWishlisted,
     selectCategory,

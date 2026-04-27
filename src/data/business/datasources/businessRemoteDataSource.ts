@@ -15,6 +15,7 @@ import {
   serverTimestamp,
   increment,
   Timestamp,
+  getCountFromServer,
 } from 'firebase/firestore';
 import { ref, uploadBytesResumable, getDownloadURL } from 'firebase/storage';
 import { Platform } from 'react-native';
@@ -50,6 +51,9 @@ export interface ActiveCategoryInfo {
 
 export interface BusinessRemoteDataSource {
   getFeaturedBusinesses(): Promise<BusinessModel[]>;
+  getNearbyBusinesses(latitude: number, longitude: number, radiusKm: number): Promise<BusinessModel[]>;
+  getTopRatedBusinesses(): Promise<BusinessModel[]>;
+  getPopularByCategory(categoryId: string): Promise<BusinessModel[]>;
   getNewBusinesses(): Promise<BusinessModel[]>;
   getBusinessesByCategory(categoryId: string): Promise<BusinessModel[]>;
   searchBusinesses(queryStr: string, categoryId?: string | null): Promise<BusinessModel[]>;
@@ -66,7 +70,7 @@ export interface BusinessRemoteDataSource {
   getActiveCategoryInfo(): Promise<ActiveCategoryInfo>;
   submitBusiness(params: SubmitBusinessParams): Promise<string>;
   checkBusinessDuplicate(name: string, categoryId: string): Promise<DuplicateCheckResult>;
-  uploadBusinessImage(businessId: string, imageUri: string, type: 'cover' | 'logo' | 'menu'): Promise<string>;
+  uploadBusinessImage(businessId: string, imageUri: string, type: 'cover' | 'logo' | 'menu' | 'gallery'): Promise<string>;
   getPendingBusinesses(): Promise<BusinessDetailModel[]>;
   getApprovedBusinesses(): Promise<BusinessDetailModel[]>;
   getRejectedBusinesses(): Promise<BusinessDetailModel[]>;
@@ -95,12 +99,36 @@ export interface BusinessRemoteDataSource {
   dislikeReply(replyId: string, userId: string): Promise<void>;
   undislikeReply(replyId: string, userId: string): Promise<void>;
   getRecentReviews(count: number): Promise<(ReviewModel & { business_id: string; business_name: string })[]>;
+  claimBusiness(businessId: string, businessName: string, claimantUserId: string, claimantName: string, claimantEmail: string, claimantPhone: string, claimantRole: string, proofDescription: string): Promise<void>;
+  getHomeStats(): Promise<{ totalBusinesses: number; totalReviews: number }>;
+}
+
+/** Build a BusinessModel from a Firestore doc, deriving `platforms` from `contact` if absent. */
+function docToBusinessModel(id: string, data: Record<string, unknown>): BusinessModel {
+  const model = { id, ...data } as BusinessModel;
+  if (!model.platforms || model.platforms.length === 0) {
+    const c = data.contact as Record<string, unknown> | undefined;
+    if (c) {
+      const p: string[] = [];
+      if (c.instagram_handle) p.push('instagram');
+      if (c.facebook_name) p.push('facebook');
+      if (c.tiktok_handle) p.push('tiktok');
+      if (c.youtube_handle) p.push('youtube');
+      if (c.twitch_handle || c.kick_handle) p.push('other');
+      model.platforms = p;
+    }
+  }
+  return model;
 }
 
 export class BusinessRemoteDataSourceImpl implements BusinessRemoteDataSource {
   private readonly BUSINESSES = 'businesses';
   private readonly FAVORITES = 'favorites';
   private readonly REVIEWS = 'reviews';
+
+  private categoryInfoCache: ActiveCategoryInfo | null = null;
+  private categoryInfoCacheTime = 0;
+  private static CATEGORY_CACHE_TTL = 5 * 60 * 1000; // 5 minutes
 
   async getFeaturedBusinesses(): Promise<BusinessModel[]> {
     try {
@@ -111,8 +139,19 @@ export class BusinessRemoteDataSourceImpl implements BusinessRemoteDataSource {
         limit(20)
       );
       const snapshot = await getDocs(q);
-      return snapshot.docs
-        .map((d) => ({ id: d.id, ...d.data() } as BusinessModel))
+      const featured = snapshot.docs
+        .map((d) => docToBusinessModel(d.id, d.data() as Record<string, unknown>))
+        .filter((m) => !m.status || m.status === 'active' || m.status === 'blocked');
+      if (featured.length > 0) return featured;
+      // Fallback: no featured businesses — return newest businesses instead
+      const fallbackQ = query(
+        collection(firestore, this.BUSINESSES),
+        orderBy('created_at', 'desc'),
+        limit(20)
+      );
+      const fallbackSnap = await getDocs(fallbackQ);
+      return fallbackSnap.docs
+        .map((d) => docToBusinessModel(d.id, d.data() as Record<string, unknown>))
         .filter((m) => !m.status || m.status === 'active' || m.status === 'blocked');
     } catch (error: unknown) {
       const message = error instanceof Error ? error.message : 'Failed to fetch featured businesses';
@@ -120,43 +159,132 @@ export class BusinessRemoteDataSourceImpl implements BusinessRemoteDataSource {
     }
   }
 
-  async getNewBusinesses(): Promise<BusinessModel[]> {
+  async getNearbyBusinesses(latitude: number, longitude: number, radiusKm: number): Promise<BusinessModel[]> {
+    try {
+      // Try progressively larger bounding boxes.
+      const radii = [radiusKm, 50, 500, 2000];
+      for (const r of radii) {
+        const latDelta = Math.min(r / 111, 89);
+        const cosLat = Math.cos((latitude * Math.PI) / 180) || 0.01;
+        const lngDelta = Math.min(r / (111 * cosLat), 180);
+        const minLat = Math.max(latitude - latDelta, -90);
+        const maxLat = Math.min(latitude + latDelta, 90);
+        const minLng = longitude - lngDelta;
+        const maxLng = longitude + lngDelta;
+
+        const q = query(
+          collection(firestore, this.BUSINESSES),
+          where('latitude', '>=', minLat),
+          where('latitude', '<=', maxLat),
+          limit(200),
+        );
+        const snapshot = await getDocs(q);
+        const results = snapshot.docs
+          .map((d) => docToBusinessModel(d.id, d.data() as Record<string, unknown>))
+          .filter((m) => {
+            const lng = m.longitude;
+            if (lng == null) return false;
+            if (lng < minLng || lng > maxLng) return false;
+            return !m.status || m.status === 'active';
+          });
+        if (results.length > 0) return results;
+      }
+
+      // Absolute fallback: fetch any active businesses that have coordinates at all.
+      // This handles the case where the user is far from all businesses (e.g. Germany
+      // while all businesses are in Tunisia). We use latitude >= -90 which matches
+      // every document where latitude is stored as a real number.
+      const fallbackQ = query(
+        collection(firestore, this.BUSINESSES),
+        where('latitude', '>=', -90),
+        orderBy('latitude'),
+        limit(50),
+      );
+      const fallbackSnap = await getDocs(fallbackQ);
+      return fallbackSnap.docs
+        .map((d) => docToBusinessModel(d.id, d.data() as Record<string, unknown>))
+        .filter((m) => m.longitude != null && (!m.status || m.status === 'active'));
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : 'Failed to fetch nearby businesses';
+      throw new ServerException(message);
+    }
+  }
+
+  async getTopRatedBusinesses(): Promise<BusinessModel[]> {
     try {
       const q = query(
         collection(firestore, this.BUSINESSES),
-        orderBy('created_at', 'desc'),
+        orderBy('rating', 'desc'),
+        limit(20),
+      );
+      const snapshot = await getDocs(q);
+      return snapshot.docs
+        .map((d) => docToBusinessModel(d.id, d.data() as Record<string, unknown>))
+        .filter((m) => !m.status || m.status === 'active')
+        .slice(0, 10);
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : 'Failed to fetch top rated businesses';
+      throw new ServerException(message);
+    }
+  }
+
+  async getPopularByCategory(categoryId: string): Promise<BusinessModel[]> {
+    try {
+      const q = query(
+        collection(firestore, this.BUSINESSES),
+        where('category_id', '==', categoryId),
+        orderBy('rating', 'desc'),
+        limit(10),
+      );
+      const snapshot = await getDocs(q);
+      return snapshot.docs
+        .map((d) => docToBusinessModel(d.id, d.data() as Record<string, unknown>))
+        .filter((m) => !m.status || m.status === 'active');
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : 'Failed to fetch popular businesses';
+      throw new ServerException(message);
+    }
+  }
+
+  async getNewBusinesses(): Promise<BusinessModel[]> {
+    try {
+      // Trending: businesses with the most reviews this week
+      const q = query(
+        collection(firestore, this.BUSINESSES),
+        orderBy('weekly_review_count', 'desc'),
         limit(20)
       );
       const snapshot = await getDocs(q);
       if (!snapshot.empty) {
-        return snapshot.docs
-          .map((d) => ({ id: d.id, ...d.data() } as BusinessModel))
+        const results = snapshot.docs
+          .map((d) => docToBusinessModel(d.id, d.data() as Record<string, unknown>))
           .filter((m) => !m.status || m.status === 'active' || m.status === 'blocked');
+        if (results.length > 0) return results;
       }
-      // Fallback: some businesses may not have created_at — fetch by rating
+      // Fallback: if no businesses have weekly_review_count, use review_count
       const fallbackQ = query(
         collection(firestore, this.BUSINESSES),
-        orderBy('rating', 'desc'),
+        orderBy('review_count', 'desc'),
         limit(20)
       );
       const fallbackSnap = await getDocs(fallbackQ);
       return fallbackSnap.docs
-        .map((d) => ({ id: d.id, ...d.data() } as BusinessModel))
+        .map((d) => docToBusinessModel(d.id, d.data() as Record<string, unknown>))
         .filter((m) => !m.status || m.status === 'active' || m.status === 'blocked');
     } catch {
-      // created_at index may not exist yet — fall back to rating order
+      // weekly_review_count index may not exist yet — fall back to review_count
       try {
         const fallbackQ = query(
           collection(firestore, this.BUSINESSES),
-          orderBy('rating', 'desc'),
+          orderBy('review_count', 'desc'),
           limit(20)
         );
         const fallbackSnap = await getDocs(fallbackQ);
         return fallbackSnap.docs
-          .map((d) => ({ id: d.id, ...d.data() } as BusinessModel))
+          .map((d) => docToBusinessModel(d.id, d.data() as Record<string, unknown>))
           .filter((m) => !m.status || m.status === 'active' || m.status === 'blocked');
       } catch (fallbackError: unknown) {
-        const message = fallbackError instanceof Error ? fallbackError.message : 'Failed to fetch new businesses';
+        const message = fallbackError instanceof Error ? fallbackError.message : 'Failed to fetch trending businesses';
         throw new ServerException(message);
       }
     }
@@ -168,11 +296,10 @@ export class BusinessRemoteDataSourceImpl implements BusinessRemoteDataSource {
         collection(firestore, this.BUSINESSES),
         where('category_id', '==', categoryId),
         orderBy('rating', 'desc'),
-        limit(20)
       );
       const snapshot = await getDocs(q);
       return snapshot.docs
-        .map((d) => ({ id: d.id, ...d.data() } as BusinessModel))
+        .map((d) => docToBusinessModel(d.id, d.data() as Record<string, unknown>))
         .filter((m) => !m.status || m.status === 'active' || m.status === 'blocked');
     } catch (error: unknown) {
       const message = error instanceof Error ? error.message : 'Failed to fetch businesses';
@@ -208,7 +335,7 @@ export class BusinessRemoteDataSourceImpl implements BusinessRemoteDataSource {
 
       for (const d of snapshot.docs) {
         const data = d.data();
-        const model = { id: d.id, ...data } as BusinessModel;
+        const model = docToBusinessModel(d.id, data as Record<string, unknown>);
 
         const nameMatch =
           typeof data['name'] === 'string' &&
@@ -821,6 +948,10 @@ export class BusinessRemoteDataSourceImpl implements BusinessRemoteDataSource {
           facebook_name: data.facebook || null,
           tiktok_handle: null,
         },
+        platforms: [
+          ...(data.instagram ? ['instagram'] : []),
+          ...(data.facebook ? ['facebook'] : []),
+        ],
         category_ratings: [],
         rating_distribution: [],
         menu_categories: [],
@@ -866,7 +997,7 @@ export class BusinessRemoteDataSourceImpl implements BusinessRemoteDataSource {
           );
       const snapshot = await getDocs(q);
       const models = snapshot.docs
-        .map((d) => ({ id: d.id, ...d.data() } as BusinessModel))
+        .map((d) => docToBusinessModel(d.id, d.data() as Record<string, unknown>))
         .filter((m) => !m.status || m.status === 'active' || m.status === 'blocked');
       return findBestFuzzyMatch(queryStr, models, (m) => m.name);
     } catch {
@@ -932,7 +1063,7 @@ export class BusinessRemoteDataSourceImpl implements BusinessRemoteDataSource {
         limit(100),
       );
       const snapshot = await getDocs(q);
-      const models = snapshot.docs.map((d) => ({ id: d.id, ...d.data() } as BusinessModel));
+      const models = snapshot.docs.map((d) => docToBusinessModel(d.id, d.data() as Record<string, unknown>));
 
       // Exact match: same name (case-insensitive)
       const exactModel = models.find(
@@ -954,7 +1085,7 @@ export class BusinessRemoteDataSourceImpl implements BusinessRemoteDataSource {
     }
   }
 
-  async uploadBusinessImage(businessId: string, imageUri: string, type: 'cover' | 'logo' | 'menu'): Promise<string> {
+  async uploadBusinessImage(businessId: string, imageUri: string, type: 'cover' | 'logo' | 'menu' | 'gallery'): Promise<string> {
     try {
       let uploadData: Uint8Array | Blob;
       if (Platform.OS === 'web') {
@@ -1132,11 +1263,14 @@ export class BusinessRemoteDataSourceImpl implements BusinessRemoteDataSource {
   }
 
   async getActiveCategoryInfo(): Promise<ActiveCategoryInfo> {
+    // Return cached result if still fresh to avoid full collection scan
+    if (this.categoryInfoCache && Date.now() - this.categoryInfoCacheTime < BusinessRemoteDataSourceImpl.CATEGORY_CACHE_TTL) {
+      return this.categoryInfoCache;
+    }
+
     try {
       const q = query(
         collection(firestore, this.BUSINESSES),
-        orderBy('rating', 'desc'),
-        limit(500),
       );
       const snapshot = await getDocs(q);
 
@@ -1160,6 +1294,16 @@ export class BusinessRemoteDataSourceImpl implements BusinessRemoteDataSource {
           subsByCatId[catId].add(subCat.trim());
         }
 
+        // Also collect from sub_categories array field
+        const subCats = data['sub_categories'] as string[] | undefined;
+        if (Array.isArray(subCats)) {
+          for (const s of subCats) {
+            if (typeof s === 'string' && s.trim()) {
+              subsByCatId[catId].add(s.trim());
+            }
+          }
+        }
+
         // Also collect from category_name (used by SubCategoryBrowserScreen filter)
         const catName = data['category_name'] as string | undefined;
         if (catName && catName.trim() && catName.trim() !== catId) {
@@ -1167,12 +1311,15 @@ export class BusinessRemoteDataSourceImpl implements BusinessRemoteDataSource {
         }
       }
 
-      return {
+      const result: ActiveCategoryInfo = {
         categoryIds: Array.from(categoryIdSet),
         subcategoryNamesByCategoryId: Object.fromEntries(
           Object.entries(subsByCatId).map(([k, v]) => [k, Array.from(v)]),
         ),
       };
+      this.categoryInfoCache = result;
+      this.categoryInfoCacheTime = Date.now();
+      return result;
     } catch (error: unknown) {
       const message = error instanceof Error ? error.message : 'Failed to fetch active category info';
       throw new ServerException(message);
@@ -1193,6 +1340,52 @@ export class BusinessRemoteDataSourceImpl implements BusinessRemoteDataSource {
       });
     } catch (error: unknown) {
       const message = error instanceof Error ? error.message : 'Failed to submit report';
+      throw new ServerException(message);
+    }
+  }
+
+  async claimBusiness(
+    businessId: string,
+    businessName: string,
+    claimantUserId: string,
+    claimantName: string,
+    claimantEmail: string,
+    claimantPhone: string,
+    claimantRole: string,
+    proofDescription: string,
+  ): Promise<void> {
+    try {
+      await addDoc(collection(firestore, 'business_claims'), {
+        business_id: businessId,
+        business_name: businessName,
+        claimant_user_id: claimantUserId,
+        claimant_name: claimantName,
+        claimant_email: claimantEmail,
+        claimant_phone: claimantPhone,
+        claimant_role: claimantRole,
+        proof_description: proofDescription,
+        status: 'pending',
+        created_at: serverTimestamp(),
+        updated_at: serverTimestamp(),
+      });
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : 'Failed to submit claim';
+      throw new ServerException(message);
+    }
+  }
+
+  async getHomeStats(): Promise<{ totalBusinesses: number; totalReviews: number }> {
+    try {
+      const [bizSnap, revSnap] = await Promise.all([
+        getCountFromServer(collection(firestore, this.BUSINESSES)),
+        getCountFromServer(collection(firestore, this.REVIEWS)),
+      ]);
+      return {
+        totalBusinesses: bizSnap.data().count,
+        totalReviews: revSnap.data().count,
+      };
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : 'Failed to fetch stats';
       throw new ServerException(message);
     }
   }

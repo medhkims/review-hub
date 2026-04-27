@@ -3,17 +3,7 @@ import { useReviewStore } from '../store/reviewStore';
 import { useAuthStore } from '@/presentation/auth/store/authStore';
 import { CreateReviewInput } from '@/domain/reviews/entities/createReviewInput';
 import { SelectedPhoto } from '../components/PhotoPicker';
-
-// TODO: Use container use cases when wired in DI container
-import { ReviewRemoteDataSourceImpl } from '@/data/reviews/datasources/reviewRemoteDataSource';
-import { ReviewRepositoryImpl } from '@/data/reviews/repositories/reviewRepositoryImpl';
-import { CreateReviewUseCase } from '@/domain/reviews/usecases/createReviewUseCase';
-import { ReviewImageRemoteDataSourceImpl } from '@/data/reviews/datasources/reviewImageRemoteDataSource';
-
-const reviewRemote = new ReviewRemoteDataSourceImpl();
-const reviewRepo = new ReviewRepositoryImpl(reviewRemote);
-const createReviewUseCase = new CreateReviewUseCase(reviewRepo);
-const reviewImageDataSource = new ReviewImageRemoteDataSourceImpl();
+import { container } from '@/core/di/container';
 
 export const useWriteReview = (businessId: string, businessName: string) => {
   const { isSubmitting, submitSuccess, submittedReviewId, error, setSubmitting, setSubmitSuccess, setError, reset } =
@@ -41,7 +31,7 @@ export const useWriteReview = (businessId: string, businessName: string) => {
         try {
           photoUrls = await Promise.all(
             photos.map((photo) =>
-              reviewImageDataSource.uploadReviewImage(user.id, photo.uri, photo.mimeType),
+              container.reviewImageDataSource.uploadReviewImage(user.id, photo.uri, photo.mimeType),
             ),
           );
         } catch {
@@ -67,7 +57,7 @@ export const useWriteReview = (businessId: string, businessName: string) => {
         photoUrls,
       };
 
-      const result = await createReviewUseCase.execute(user.id, input);
+      const result = await container.createReviewUseCase.execute(user.id, input);
 
       result.fold(
         (failure) => {

@@ -560,10 +560,63 @@ service cloud.firestore {
     // VERIFICATION OTPs (short-lived, user-scoped)
     // ========================================
     match /verification_otps/{phoneKey} {
-      // Authenticated users can write (create/overwrite) their own OTP doc
-      allow create, update: if isAuthenticated();
-      // Authenticated users can read and delete (to verify the code)
-      allow read, delete: if isAuthenticated();
+      // Only the user who created the OTP can read/verify it
+      allow create, update: if isAuthenticated()
+        && request.resource.data.user_id == request.auth.uid;
+      allow read, delete: if isAuthenticated()
+        && resource.data.user_id == request.auth.uid;
+    }
+
+    // ========================================
+    // WEEKLY PICKS (Admin-managed, public read)
+    // ========================================
+    match /weeklyPicks/{pickId} {
+      allow read: if isAuthenticated();
+      allow create, update, delete: if isAuthenticated() && isAdmin();
+    }
+
+    // ========================================
+    // DISPUTES
+    // ========================================
+    match /disputes/{disputeId} {
+      allow read: if isAuthenticated()
+        && (resource.data.user_id == request.auth.uid || isAdminOrModerator());
+      allow create: if isAuthenticated()
+        && request.resource.data.user_id == request.auth.uid;
+      allow update: if isAuthenticated() && isAdminOrModerator();
+    }
+
+    // ========================================
+    // REVIEW DISLIKES
+    // ========================================
+    match /review_dislikes/{dislikeId} {
+      allow read: if isAuthenticated();
+      allow create: if isAuthenticated()
+        && request.resource.data.user_id == request.auth.uid;
+      allow delete: if isAuthenticated()
+        && resource.data.user_id == request.auth.uid;
+    }
+
+    // ========================================
+    // COMMENT DISLIKES
+    // ========================================
+    match /comment_dislikes/{dislikeId} {
+      allow read: if isAuthenticated();
+      allow create: if isAuthenticated()
+        && request.resource.data.user_id == request.auth.uid;
+      allow delete: if isAuthenticated()
+        && resource.data.user_id == request.auth.uid;
+    }
+
+    // ========================================
+    // REPLY DISLIKES
+    // ========================================
+    match /reply_dislikes/{dislikeId} {
+      allow read: if isAuthenticated();
+      allow create: if isAuthenticated()
+        && request.resource.data.user_id == request.auth.uid;
+      allow delete: if isAuthenticated()
+        && resource.data.user_id == request.auth.uid;
     }
 
     // Deny all other access by default

@@ -14,6 +14,12 @@ import { DescriptionCard } from '../components/DescriptionCard';
 import { InformationCard } from '../components/InformationCard';
 import { DeliveryCard } from '../components/DeliveryCard';
 import { PriceListCard } from '../components/PriceListCard';
+import { GalleryManagementCard } from '../components/GalleryManagementCard';
+import { ProfileCompletionCard } from '../components/ProfileCompletionCard';
+import { AnnouncementManagementCard } from '../components/AnnouncementManagementCard';
+import { BookingSettingsCard } from '../components/BookingSettingsCard';
+import { AnnouncementEntity } from '@/domain/announcement/entities/announcementEntity';
+import { BookingConfigEntity } from '@/domain/booking/entities/bookingConfigEntity';
 import { MenuCategoryModal } from '../components/MenuCategoryModal';
 import { MenuItemModal } from '../components/MenuItemModal';
 import { OpeningHoursModal } from '../components/OpeningHoursModal';
@@ -36,6 +42,9 @@ const CONTACT_FIELD_MAP: Record<string, { entityKey: keyof BusinessDetailEntity[
   instagram: { entityKey: 'instagramHandle', firestoreKey: 'instagram_handle' },
   facebook: { entityKey: 'facebookName', firestoreKey: 'facebook_name' },
   tiktok: { entityKey: 'tiktokHandle', firestoreKey: 'tiktok_handle' },
+  youtube: { entityKey: 'youtubeHandle', firestoreKey: 'youtube_handle' },
+  twitch: { entityKey: 'twitchHandle', firestoreKey: 'twitch_handle' },
+  kick: { entityKey: 'kickHandle', firestoreKey: 'kick_handle' },
 };
 
 export default function CompanyProfileFullScreen({ business, onRefresh }: CompanyProfileFullScreenProps) {
@@ -57,6 +66,9 @@ export default function CompanyProfileFullScreen({ business, onRefresh }: Compan
   const [targetCategoryId, setTargetCategoryId] = useState<string | null>(null);
   const [editingCategoryId, setEditingCategoryId] = useState<string | null>(null);
   const [editingItemData, setEditingItemData] = useState<{ categoryId: string; itemId: string } | null>(null);
+  const [isUploadingGallery, setIsUploadingGallery] = useState(false);
+  const [announcements, setAnnouncements] = useState<AnnouncementEntity[]>([]);
+  const [bookingConfig, setBookingConfig] = useState<BookingConfigEntity | null>(null);
 
   // Deferred-save state: accumulates all changes made during edit mode
   const originalBusinessRef = useRef<BusinessDetailEntity | null>(null);
@@ -190,6 +202,87 @@ export default function CompanyProfileFullScreen({ business, onRefresh }: Compan
       );
     }, [business, setBusiness, stagePendingChange]),
   });
+
+  const galleryPicker = useImagePickerWithPreview({
+    aspect: [4, 3],
+    quality: 0.8,
+    onSelected: useCallback(async (uri: string) => {
+      if (!business) return;
+      setIsUploadingGallery(true);
+      const uploadResult = await container.uploadBusinessImageUseCase.execute(business.id, uri, 'gallery');
+      setIsUploadingGallery(false);
+      uploadResult.fold(
+        () => { /* upload failed — no-op */ },
+        (downloadUrl) => {
+          const updated = [...(business.galleryImages || []), downloadUrl];
+          stagePendingChange(
+            { gallery_images: updated },
+            (b) => ({ ...b, galleryImages: updated }),
+          );
+        },
+      );
+    }, [business, stagePendingChange]),
+  });
+
+  const handleRemoveGalleryPhoto = useCallback((index: number) => {
+    if (!business) return;
+    const updated = business.galleryImages.filter((_, i) => i !== index);
+    stagePendingChange(
+      { gallery_images: updated },
+      (b) => ({ ...b, galleryImages: updated }),
+    );
+  }, [business, stagePendingChange]);
+
+  // ---- Announcements ----
+  const fetchAnnouncements = useCallback(async () => {
+    if (!business) return;
+    const result = await container.getAnnouncementsUseCase.execute(business.id);
+    result.fold(() => {}, (data) => setAnnouncements(data));
+  }, [business]);
+
+  // Fetch announcements when business loads
+  React.useEffect(() => {
+    if (business) fetchAnnouncements();
+  }, [business?.id]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  const handleCreateAnnouncement = useCallback(async (title: string, description: string) => {
+    if (!business) return;
+    const result = await container.createAnnouncementUseCase.execute(business.id, { title, description });
+    result.fold(() => {}, (newAnn) => setAnnouncements((prev) => [newAnn, ...prev]));
+  }, [business]);
+
+  const handleDeleteAnnouncement = useCallback(async (announcementId: string) => {
+    if (!business) return;
+    const result = await container.deleteAnnouncementUseCase.execute(business.id, announcementId);
+    result.fold(() => {}, () => setAnnouncements((prev) => prev.filter((a) => a.id !== announcementId)));
+  }, [business]);
+
+  // ---- Booking Config (doctor only) ----
+  const isDoctor = business?.categoryId?.toLowerCase() === 'doctor';
+
+  const fetchBookingConfig = useCallback(async () => {
+    if (!business || !isDoctor) return;
+    const result = await container.getBookingConfigUseCase.execute(business.id);
+    result.fold(() => {}, (cfg) => setBookingConfig(cfg));
+  }, [business, isDoctor]);
+
+  React.useEffect(() => {
+    if (business && isDoctor) fetchBookingConfig();
+  }, [business?.id, isDoctor]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  const handleSaveBookingConfig = useCallback(async (cfg: BookingConfigEntity) => {
+    if (!business) return;
+    const result = await container.updateBookingConfigUseCase.execute(business.id, cfg);
+    result.fold(() => {}, () => setBookingConfig(cfg));
+  }, [business]);
+
+  const handleViewBookingRequests = useCallback(() => {
+    if (!business) return;
+    router.push({
+      pathname: '/(main)/(feed)/booking-requests' as const,
+      params: { businessId: business.id },
+    } as never);
+  }, [business, router]);
 
   const handleNamePress = useCallback(() => {
     if (!business) return;
@@ -349,6 +442,9 @@ export default function CompanyProfileFullScreen({ business, onRefresh }: Compan
         image_url: item.imageUrl ?? null,
         price: item.price,
         currency: item.currency,
+        is_deal: item.isDeal ?? false,
+        deal_discount_percent: item.dealDiscountPercent ?? null,
+        deal_valid_until: item.dealValidUntil ?? null,
       })),
     }));
 
@@ -390,6 +486,9 @@ export default function CompanyProfileFullScreen({ business, onRefresh }: Compan
     description: string,
     priceStr: string,
     imageUri?: string,
+    isDeal?: boolean,
+    dealDiscountPercent?: number,
+    dealValidUntil?: Date,
   ) => {
     if (!business) return;
     const existing = business.menuCategories ?? [];
@@ -414,7 +513,7 @@ export default function CompanyProfileFullScreen({ business, onRefresh }: Compan
               ...cat,
               items: cat.items.map((item) =>
                 item.id === editingItemData.itemId
-                  ? { ...item, name, description, price, imageUrl }
+                  ? { ...item, name, description, price, imageUrl, isDeal: isDeal ?? false, dealDiscountPercent, dealValidUntil }
                   : item,
               ),
             }
@@ -423,7 +522,7 @@ export default function CompanyProfileFullScreen({ business, onRefresh }: Compan
     } else {
       // Add new item
       const catId = targetCategoryId!;
-      const newItem = { id: `item_${Date.now()}`, name, description, imageUrl, price, currency: 'TND ' };
+      const newItem = { id: `item_${Date.now()}`, name, description, imageUrl, price, currency: 'TND ', isDeal: isDeal ?? false, dealDiscountPercent, dealValidUntil };
       updated = existing.map((cat) =>
         cat.id === catId ? { ...cat, items: [...cat.items, newItem] } : cat,
       );
@@ -449,6 +548,11 @@ export default function CompanyProfileFullScreen({ business, onRefresh }: Compan
           description: item.description,
           price: `${item.currency}${item.price.toFixed(2)}`,
           imageUri: item.imageUrl || undefined,
+          isDeal: item.isDeal ?? false,
+          dealDiscountPercent: item.dealDiscountPercent,
+          dealValidUntil: item.dealValidUntil,
+          originalPrice: item.price,
+          currency: item.currency,
         })),
       }))
     : undefined;
@@ -843,8 +947,17 @@ export default function CompanyProfileFullScreen({ business, onRefresh }: Compan
         initialImageUri={editingItemData
           ? (business?.menuCategories?.find((c) => c.id === editingItemData.categoryId)?.items.find((i) => i.id === editingItemData.itemId)?.imageUrl ?? undefined)
           : undefined}
+        initialIsDeal={editingItemData
+          ? business?.menuCategories?.find((c) => c.id === editingItemData.categoryId)?.items.find((i) => i.id === editingItemData.itemId)?.isDeal
+          : undefined}
+        initialDealDiscountPercent={editingItemData
+          ? business?.menuCategories?.find((c) => c.id === editingItemData.categoryId)?.items.find((i) => i.id === editingItemData.itemId)?.dealDiscountPercent
+          : undefined}
+        initialDealValidUntil={editingItemData
+          ? business?.menuCategories?.find((c) => c.id === editingItemData.categoryId)?.items.find((i) => i.id === editingItemData.itemId)?.dealValidUntil
+          : undefined}
         onClose={() => { setMenuItemModalVisible(false); setTargetCategoryId(null); setEditingItemData(null); }}
-        onConfirm={(name, description, price, imageUri) => { void handleMenuItemConfirm(name, description, price, imageUri); }}
+        onConfirm={(name, description, price, imageUri, isDeal, dealDiscountPercent, dealValidUntil) => { void handleMenuItemConfirm(name, description, price, imageUri, isDeal, dealDiscountPercent, dealValidUntil); }}
       />
 
       <ScrollView
@@ -873,6 +986,13 @@ export default function CompanyProfileFullScreen({ business, onRefresh }: Compan
           onCancelPress={isEditMode ? handleCancel : undefined}
         />
 
+        {/* Profile Completion — only in view mode */}
+        {!isEditMode && business && (
+          <View style={{ paddingHorizontal: 20, marginTop: 24 }}>
+            <ProfileCompletionCard business={business} />
+          </View>
+        )}
+
         {/* Cards */}
         <View style={{ paddingHorizontal: 20, gap: 32, marginTop: 32 }}>
           {(isEditMode || hasDescription) && (
@@ -880,6 +1000,35 @@ export default function CompanyProfileFullScreen({ business, onRefresh }: Compan
               populated={hasDescription}
               description={business?.description}
               onPress={isEditMode ? handleDescriptionPress : undefined}
+            />
+          )}
+
+          {(isEditMode || (business?.galleryImages && business.galleryImages.length > 0)) && (
+            <GalleryManagementCard
+              galleryImages={business?.galleryImages || []}
+              isEditMode={isEditMode}
+              isUploading={isUploadingGallery}
+              onAddPhoto={isEditMode ? galleryPicker.pickImage : undefined}
+              onRemovePhoto={isEditMode ? handleRemoveGalleryPhoto : undefined}
+            />
+          )}
+
+          {(isEditMode || announcements.length > 0) && (
+            <AnnouncementManagementCard
+              announcements={announcements}
+              isEditMode={isEditMode}
+              onCreate={handleCreateAnnouncement}
+              onDelete={handleDeleteAnnouncement}
+            />
+          )}
+
+          {/* Booking Settings — doctor only */}
+          {isDoctor && (
+            <BookingSettingsCard
+              config={bookingConfig}
+              isEditMode={isEditMode}
+              onSaveConfig={handleSaveBookingConfig}
+              onViewRequests={handleViewBookingRequests}
             />
           )}
 
@@ -1002,6 +1151,17 @@ export default function CompanyProfileFullScreen({ business, onRefresh }: Compan
         originalHeight={logoPicker.pendingHeight}
         aspect={logoPicker.aspect}
       />
+      <ImageCropModal
+        visible={galleryPicker.isPreviewVisible}
+        imageUri={galleryPicker.pendingUri}
+        onConfirm={galleryPicker.confirmImage}
+        onRetake={galleryPicker.retakeImage}
+        onCancel={galleryPicker.cancelPreview}
+        isLoading={galleryPicker.isConfirming}
+        originalWidth={galleryPicker.pendingWidth}
+        originalHeight={galleryPicker.pendingHeight}
+        aspect={galleryPicker.aspect}
+      />
     </View>
   );
 }
@@ -1014,6 +1174,9 @@ function buildContactsList(business: BusinessDetailEntity) {
     { icon: 'instagram', color: '#E1306C', labelKey: 'instagram', value: business.contact.instagramHandle || undefined },
     { icon: 'facebook', color: '#1877F2', labelKey: 'facebook', value: business.contact.facebookName || undefined },
     { icon: 'music-note', color: '#FFFFFF', labelKey: 'tiktok', value: business.contact.tiktokHandle || undefined },
+    { icon: 'youtube', color: '#FF0000', labelKey: 'youtube', value: business.contact.youtubeHandle || undefined },
+    { icon: 'twitch', color: '#9146FF', labelKey: 'twitch', value: business.contact.twitchHandle || undefined },
+    { icon: 'alpha-k-circle', color: '#53FC18', labelKey: 'kick', value: business.contact.kickHandle || undefined },
   ];
 }
 
@@ -1025,5 +1188,8 @@ function buildContactFirestore(business: BusinessDetailEntity) {
     instagram_handle: business.contact.instagramHandle || null,
     facebook_name: business.contact.facebookName || null,
     tiktok_handle: business.contact.tiktokHandle || null,
+    youtube_handle: business.contact.youtubeHandle || null,
+    twitch_handle: business.contact.twitchHandle || null,
+    kick_handle: business.contact.kickHandle || null,
   };
 }

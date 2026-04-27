@@ -17,4 +17,6 @@ export interface AuthRepository {
   sendPhoneOtp(phone: string): Promise<Either<Failure, void>>;
   verifyPhoneOtp(businessId: string, code: string): Promise<Either<Failure, void>>;
   sendPasswordResetEmail(email: string): Promise<Either<Failure, void>>;
+  deleteAccount(): Promise<Either<Failure, void>>;
+  continueAsGuest(): Promise<Either<Failure, UserEntity>>;
 }

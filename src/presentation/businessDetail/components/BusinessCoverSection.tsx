@@ -5,7 +5,6 @@ import { useTranslation } from 'react-i18next';
 import { AppText } from '@/presentation/shared/components/ui/AppText';
 import { colors } from '@/core/theme/colors';
 import { useTheme } from '@/core/theme/useTheme';
-import { getCategoryDefaultCover, getCategoryDefaultLogo } from '@/core/utils/categoryDefaultImages';
 import { ImageSourcePropType } from 'react-native';
 import { useCategoryDefaultStore } from '@/presentation/shared/store/categoryDefaultStore';
 
@@ -15,14 +14,19 @@ interface BusinessCoverSectionProps {
   categoryId: string;
   name: string;
   categoryName: string;
+  subcategoryNames?: string[];
   /** null = no badge; true/false = open/closed badge */
   openStatus: boolean | null;
   rating: number;
   reviewCount: number;
+  isOwnerVerified?: boolean;
+  isImported?: boolean;
+  isClaimed?: boolean;
   onBackPress: () => void;
   onRatingPress?: () => void;
   onSharePress?: () => void;
   onReportPress?: () => void;
+  onClaimPress?: () => void;
 }
 
 const StarRating: React.FC<{ rating: number; size?: number; color?: string }> = ({
@@ -51,13 +55,18 @@ export const BusinessCoverSection: React.FC<BusinessCoverSectionProps> = ({
   categoryId,
   name,
   categoryName,
+  subcategoryNames = [],
   openStatus,
   rating,
   reviewCount,
+  isOwnerVerified = false,
+  isImported = false,
+  isClaimed = false,
   onBackPress,
   onRatingPress,
   onSharePress,
   onReportPress,
+  onClaimPress,
 }) => {
   const { t } = useTranslation();
   const theme = useTheme();
@@ -72,13 +81,13 @@ export const BusinessCoverSection: React.FC<BusinessCoverSectionProps> = ({
     ? { uri: coverImageUrl! }
     : remoteDefaults?.coverImageUrl
       ? { uri: remoteDefaults.coverImageUrl }
-      : getCategoryDefaultCover(categoryId);
+      : null;
 
   const logoSource: ImageSourcePropType | null = isValidUrl(logoUrl)
     ? { uri: logoUrl! }
     : remoteDefaults?.profileImageUrl
       ? { uri: remoteDefaults.profileImageUrl }
-      : getCategoryDefaultLogo(categoryId);
+      : null;
 
   return (
     <View style={{ alignItems: 'center' }}>
@@ -215,24 +224,37 @@ export const BusinessCoverSection: React.FC<BusinessCoverSectionProps> = ({
       </View>
 
       {/* Business Name */}
-      <AppText
-        style={{
-          marginTop: 16,
-          fontSize: 24,
-          fontWeight: '700',
-          color: theme.text,
-          textAlign: 'center',
-          letterSpacing: -0.3,
-        }}
-      >
-        {name}
-      </AppText>
+      <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: 16, gap: 6, paddingHorizontal: 20 }}>
+        <AppText
+          style={{
+            fontSize: 24,
+            fontWeight: '700',
+            color: theme.text,
+            textAlign: 'center',
+            letterSpacing: -0.3,
+            flexShrink: 1,
+          }}
+        >
+          {name}
+        </AppText>
+        {isOwnerVerified && (
+          <MaterialCommunityIcons name="check-decagram" size={22} color={colors.blue} />
+        )}
+      </View>
 
       {/* Category & Open Status */}
       <View style={{ marginTop: 8, flexDirection: 'row', alignItems: 'center', gap: 8 }}>
         <AppText style={{ fontSize: 14, fontWeight: '300', color: theme.textSecondary }}>
           {categoryName}
         </AppText>
+        {subcategoryNames.length > 0 && (
+          <>
+            <View style={{ width: 4, height: 4, borderRadius: 2, backgroundColor: colors.textSlate600 }} />
+            <AppText style={{ fontSize: 14, fontWeight: '400', color: colors.neonPurple }}>
+              {subcategoryNames.join(', ')}
+            </AppText>
+          </>
+        )}
         {openStatus !== null && (
           <>
             <View style={{ width: 4, height: 4, borderRadius: 2, backgroundColor: colors.textSlate600 }} />
@@ -242,6 +264,21 @@ export const BusinessCoverSection: React.FC<BusinessCoverSectionProps> = ({
           </>
         )}
       </View>
+
+      {/* Claim Business — subtle link under name, for owners */}
+      {isImported && !isClaimed && onClaimPress && (
+        <Pressable
+          accessibilityRole="link"
+          accessibilityLabel={t('businessDetail.claimBusiness')}
+          onPress={onClaimPress}
+          style={{ marginTop: 6, flexDirection: 'row', alignItems: 'center', gap: 4 }}
+        >
+          <AppText style={{ fontSize: 12, color: theme.textMuted, textDecorationLine: 'underline' }}>
+            {t('businessDetail.claimBusiness')}
+          </AppText>
+          <MaterialCommunityIcons name="store-check-outline" size={12} color={theme.textMuted} />
+        </Pressable>
+      )}
 
       {/* Rating */}
       <Pressable

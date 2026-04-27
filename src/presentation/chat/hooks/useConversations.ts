@@ -1,20 +1,8 @@
-// TODO: Use container.getConversationsUseCase when wired in DI container
-
 import { useCallback, useEffect } from 'react';
 import { useChatStore } from '../store/chatStore';
 import { useAnalyticsScreen } from '@/presentation/shared/hooks/useAnalyticsScreen';
 import { AnalyticsScreens } from '@/core/analytics/analyticsKeys';
-import { ChatRemoteDataSourceImpl } from '@/data/chat/datasources/chatRemoteDataSource';
-import { ChatLocalDataSourceImpl } from '@/data/chat/datasources/chatLocalDataSource';
-import { ChatRepositoryImpl } from '@/data/chat/repositories/chatRepositoryImpl';
-import { NetworkInfoImpl } from '@/core/network/networkInfo';
-import { GetConversationsUseCase } from '@/domain/chat/usecases/getConversationsUseCase';
-
-const remote = new ChatRemoteDataSourceImpl();
-const local = new ChatLocalDataSourceImpl();
-const network = new NetworkInfoImpl();
-const repo = new ChatRepositoryImpl(remote, local, network);
-const getConversationsUseCase = new GetConversationsUseCase(repo);
+import { container } from '@/core/di/container';
 
 export const useConversations = () => {
   useAnalyticsScreen(AnalyticsScreens.CONVERSATIONS);
@@ -26,7 +14,7 @@ export const useConversations = () => {
     setLoading(true);
     setError(null);
 
-    const result = await getConversationsUseCase.execute();
+    const result = await container.getConversationsUseCase.execute();
 
     result.fold(
       (failure) => {

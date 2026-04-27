@@ -1,11 +1,11 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useMemo } from 'react';
 import { ScrollView, View, RefreshControl, Modal, Pressable, Share, Platform, TextInput } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { colors } from '@/core/theme/colors';
 import { useTheme } from '@/core/theme/useTheme';
-import { LoadingIndicator } from '@/presentation/shared/components/ui/LoadingIndicator';
+import { BusinessDetailSkeleton } from '../components/BusinessDetailSkeleton';
 import { ErrorView } from '@/presentation/shared/components/ui/ErrorView';
 import { AppText } from '@/presentation/shared/components/ui/AppText';
 import { AppButton } from '@/presentation/shared/components/ui/AppButton';
@@ -16,12 +16,15 @@ import { InformationSection } from '../components/InformationSection';
 import { DeliverySection } from '../components/DeliverySection';
 import { MenuSection } from '../components/MenuSection';
 import { DescriptionSection } from '../components/DescriptionSection';
+import { PhotoGallerySection } from '../components/PhotoGallerySection';
+import { AnnouncementsSection } from '../components/AnnouncementsSection';
 import { useBusinessDetail } from '../hooks/useBusinessDetail';
 import { useAnalyticsScreen } from '@/presentation/shared/hooks/useAnalyticsScreen';
 import { AnalyticsScreens } from '@/core/analytics/analyticsKeys';
 import { OpeningHours, DayKey } from '@/domain/business/entities/businessDetailEntity';
 import { container } from '@/core/di/container';
-import { auth } from '@/core/firebase/firebaseConfig';
+import { useAuthStore } from '@/presentation/auth/store/authStore';
+import { useHomeStore } from '@/presentation/home/store/homeStore';
 
 const DAY_INDEX: DayKey[] = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
 
@@ -44,7 +47,20 @@ export default function BusinessDetailScreen({ businessId }: BusinessDetailScree
   const router = useRouter();
   const theme = useTheme();
   const { t } = useTranslation();
-  const { business, reviews, isLoading, error, toggleWishlist, isWishlisted, checkHasReviewed, refresh } = useBusinessDetail(businessId);
+  const { business, reviews, announcements, isLoading, error, toggleWishlist, isWishlisted, checkHasReviewed, refresh } = useBusinessDetail(businessId);
+  const { user: authUser } = useAuthStore();
+  const storeCategories = useHomeStore((s) => s.categories);
+
+  // Resolve subcategory IDs to display names
+  const subcategoryNames = useMemo(() => {
+    if (!business?.subCategories?.length) return [];
+    const cat = storeCategories.find((c) => c.id === business.categoryId);
+    if (!cat) return business.subCategories;
+    return business.subCategories.map((id) => {
+      const sub = cat.subcategories.find((s) => s.id === id);
+      return sub?.name ?? id;
+    });
+  }, [business?.subCategories, business?.categoryId, storeCategories]);
   const [alreadyReviewedVisible, setAlreadyReviewedVisible] = useState(false);
   const [reportVisible, setReportVisible] = useState(false);
   const [selectedReason, setSelectedReason] = useState<string | null>(null);
@@ -62,12 +78,19 @@ export default function BusinessDetailScreen({ businessId }: BusinessDetailScree
 
   const handleShare = useCallback(async () => {
     if (!business) return;
+    const ratingStr = business.rating > 0 ? `${'⭐'.repeat(Math.round(business.rating))} ${business.rating.toFixed(1)}` : '';
+    const parts = [
+      business.name,
+      business.categoryName,
+      ratingStr,
+      business.location,
+      `https://tchecki.app/business/${business.id}`,
+    ].filter(Boolean);
+    const richMessage = parts.join('\n');
     try {
       await Share.share({
         title: business.name,
-        message: Platform.OS === 'ios'
-          ? business.name
-          : `${business.name} — ${business.categoryName}`,
+        message: Platform.OS === 'ios' ? business.name : richMessage,
         url: Platform.OS === 'ios' ? `https://tchecki.app/business/${business.id}` : undefined,
       });
     } catch {
@@ -78,15 +101,14 @@ export default function BusinessDetailScreen({ businessId }: BusinessDetailScree
   const handleSubmitReport = useCallback(async () => {
     if (!business || !selectedReason) return;
     if (selectedReason === 'other' && !otherText.trim()) return;
-    const userId = auth.currentUser?.uid;
+    const userId = authUser?.id;
     if (!userId) return;
     setIsSubmittingReport(true);
     const finalReason = selectedReason === 'other'
       ? `other: ${otherText.trim()}`
       : selectedReason;
-    const currentUser = auth.currentUser;
-    const displayName = currentUser?.displayName
-      || currentUser?.email?.split('@')[0]
+    const displayName = authUser?.displayName
+      || authUser?.email?.split('@')[0]
       || 'Anonymous';
     await container.reportBusinessUseCase.execute({
       businessId: business.id,
@@ -100,11 +122,7 @@ export default function BusinessDetailScreen({ businessId }: BusinessDetailScree
   }, [business, selectedReason, otherText]);
 
   if (isLoading && !business) {
-    return (
-      <View style={{ flex: 1, backgroundColor: theme.background }}>
-        <LoadingIndicator />
-      </View>
-    );
+    return <BusinessDetailSkeleton />;
   }
 
   if (error && !business) {
@@ -438,13 +456,23 @@ export default function BusinessDetailScreen({ businessId }: BusinessDetailScree
           categoryId={business.categoryId}
           name={business.name}
           categoryName={business.categoryName}
+          subcategoryNames={subcategoryNames}
           openStatus={openStatus}
           rating={business.rating}
           reviewCount={business.reviewCount}
+          isOwnerVerified={business.isOwnerVerified}
+          isImported={business.isImported}
+          isClaimed={business.isClaimed}
           onBackPress={() => router.back()}
           onRatingPress={handleViewAllReviews}
           onSharePress={handleShare}
           onReportPress={() => { setSelectedReason(null); setOtherText(''); setReportDone(false); setReportVisible(true); }}
+          onClaimPress={() => {
+            router.push({
+              pathname: '/(main)/(feed)/claim-business' as const,
+              params: { businessId: business.id, businessName: business.name },
+            } as never);
+          }}
         />
 
         {/* Action Buttons */}
@@ -454,10 +482,54 @@ export default function BusinessDetailScreen({ businessId }: BusinessDetailScree
           onToggleWishlist={toggleWishlist}
         />
 
+        {/* Book Appointment (doctor category only) */}
+        {business.categoryId.toLowerCase() === 'doctor' && (
+          <View style={{ paddingHorizontal: 20, marginTop: 16 }}>
+            <Pressable
+              accessibilityRole="button"
+              accessibilityLabel={t('booking.bookAppointment')}
+              onPress={() => {
+                router.push({
+                  pathname: '/(main)/(feed)/book-appointment' as const,
+                  params: { businessId: business.id, businessName: business.name },
+                } as never);
+              }}
+              style={{
+                flexDirection: 'row',
+                alignItems: 'center',
+                justifyContent: 'center',
+                backgroundColor: `${colors.emerald}18`,
+                borderRadius: 9999,
+                paddingVertical: 10,
+                paddingHorizontal: 20,
+                borderWidth: 1.5,
+                borderColor: colors.emerald,
+              }}
+            >
+              <MaterialCommunityIcons name="calendar-clock" size={18} color={colors.emerald} />
+              <AppText style={{ fontSize: 14, fontWeight: '700', color: colors.emerald, marginLeft: 8 }}>
+                {t('booking.bookAppointment')}
+              </AppText>
+            </Pressable>
+          </View>
+        )}
+
+        {/* Gallery */}
+        {business.galleryImages.length > 0 && (
+          <View style={{ paddingHorizontal: 20, marginTop: 24 }}>
+            <PhotoGallerySection galleryImages={business.galleryImages} />
+          </View>
+        )}
+
         {/* Sections */}
         <View style={{ paddingHorizontal: 20, gap: 32 }}>
           {/* Description Section */}
           <DescriptionSection description={business.description} />
+
+          {/* Announcements Section */}
+          {announcements.length > 0 && (
+            <AnnouncementsSection announcements={announcements} />
+          )}
 
           {/* Reviews Section */}
           <ReviewsSection
@@ -471,6 +543,8 @@ export default function BusinessDetailScreen({ businessId }: BusinessDetailScree
           {/* Information Section */}
           <InformationSection
             location={business.location}
+            latitude={business.latitude}
+            longitude={business.longitude}
             contact={business.contact}
             isOnline={business.isOnline}
             businessId={business.id}

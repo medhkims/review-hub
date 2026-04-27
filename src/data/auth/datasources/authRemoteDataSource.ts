@@ -13,6 +13,7 @@ import {
   onAuthStateChanged,
   sendEmailVerification,
   sendPasswordResetEmail as firebaseSendPasswordResetEmail,
+  signInAnonymously,
 } from 'firebase/auth';
 import { User as FirebaseUser } from 'firebase/auth';
 import { GoogleSignin, isSuccessResponse, isErrorWithCode, statusCodes } from '@react-native-google-signin/google-signin';
@@ -38,6 +39,8 @@ export interface AuthRemoteDataSource {
   sendPhoneOtp(phone: string): Promise<void>;
   verifyPhoneOtp(businessId: string, code: string): Promise<void>;
   sendPasswordResetEmail(email: string): Promise<void>;
+  deleteAccount(): Promise<void>;
+  signInAsGuest(): Promise<UserModel>;
 }
 
 function friendlyAuthError(code: string | undefined): string {
@@ -68,7 +71,7 @@ function friendlyAuthError(code: string | undefined): string {
     case 'auth/operation-not-allowed':
       return 'Google sign-in is not enabled. Please contact support.';
     default:
-      return `Sign-in failed (${code ?? 'unknown'}). Please try again.`;
+      return 'Sign-in failed. Please try again.';
   }
 }
 
@@ -435,6 +438,42 @@ export class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
         throw new AuthException('Too many attempts. Please try again later.');
       }
       throw new ServerException('Failed to send reset email. Please try again.');
+    }
+  }
+
+  async signInAsGuest(): Promise<UserModel> {
+    try {
+      const userCredential = await signInAnonymously(auth);
+      return UserMapper.fromFirebaseUser(userCredential.user);
+    } catch (error: unknown) {
+      const firebaseError = error as { message?: string; code?: string };
+      throw new AuthException(friendlyAuthError(firebaseError.code), firebaseError.code);
+    }
+  }
+
+  async deleteAccount(): Promise<void> {
+    const user = auth.currentUser;
+    if (!user) throw new AuthException('No user signed in.');
+
+    try {
+      // Delete user profile from Firestore
+      const { deleteDoc } = await import('firebase/firestore');
+      const profileRef = doc(firestore, 'profiles', user.uid);
+      await deleteDoc(profileRef);
+
+      // Delete user settings
+      const settingsRef = doc(firestore, 'user_settings', user.uid);
+      await deleteDoc(settingsRef).catch(() => {});
+
+      // Delete Firebase Auth account
+      const { deleteUser } = await import('firebase/auth');
+      await deleteUser(user);
+    } catch (error: unknown) {
+      const err = error as { code?: string; message?: string };
+      if (err.code === 'auth/requires-recent-login') {
+        throw new AuthException('For security, please log out and log back in before deleting your account.');
+      }
+      throw new ServerException(err.message ?? 'Failed to delete account.');
     }
   }
 }

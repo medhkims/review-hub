@@ -18,6 +18,8 @@ export class ReviewMapper {
       isLikedByCurrentUser: model.is_liked_by_current_user ?? false,
       dislikeCount: model.dislike_count ?? 0,
       isDislikedByCurrentUser: model.is_disliked_by_current_user ?? false,
+      source: model.source,
+      googleAuthorName: model.google_author_name,
     };
   }
 }

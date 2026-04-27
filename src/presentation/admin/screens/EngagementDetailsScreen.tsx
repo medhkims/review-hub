@@ -1,8 +1,7 @@
 import React, { useState, useCallback, useEffect, useMemo, useRef } from 'react';
 import { View, ScrollView, Pressable, ActivityIndicator, Modal } from 'react-native';
 import { router } from 'expo-router';
-import { collection, getDocs, query, where, Timestamp, QuerySnapshot, DocumentData } from 'firebase/firestore';
-import { firestore } from '@/core/firebase/firebaseConfig';
+import { container } from '@/core/di/container';
 import { ScreenLayout } from '@/presentation/shared/layouts/ScreenLayout';
 import { AppText } from '@/presentation/shared/components/ui/AppText';
 import { colors } from '@/core/theme/colors';
@@ -55,85 +54,8 @@ function getGranularity(range: DateRange): Granularity {
 }
 
 // ── Data loading ──────────────────────────────────────────────────────────────
-function extractDates(snap: QuerySnapshot<DocumentData>): Date[] {
-  const dates: Date[] = [];
-  snap.forEach((d) => {
-    const ts = d.data()['created_at'] as Timestamp | undefined;
-    if (ts?.toDate) dates.push(startOfDay(ts.toDate()));
-  });
-  return dates;
-}
-
-function countByKey(dates: Date[], keyFn: (d: Date) => string): Map<string, number> {
-  const map = new Map<string, number>();
-  dates.forEach((d) => { const k = keyFn(d); map.set(k, (map.get(k) ?? 0) + 1); });
-  return map;
-}
-
 async function fetchEngagement(range: DateRange): Promise<DataPoint[]> {
-  const startTs = Timestamp.fromDate(range.start);
-  const endTs = Timestamp.fromDate(new Date(range.end.getTime() + 86400000));
-
-  const [reviewsSnap, visitsSnap, searchesSnap] = await Promise.all([
-    getDocs(query(collection(firestore, 'reviews'), where('created_at', '>=', startTs), where('created_at', '<', endTs))),
-    getDocs(query(collection(firestore, 'visit_events'), where('created_at', '>=', startTs), where('created_at', '<', endTs))),
-    getDocs(query(collection(firestore, 'search_events'), where('created_at', '>=', startTs), where('created_at', '<', endTs))),
-  ]);
-
-  const reviewDates = extractDates(reviewsSnap);
-  const visitDates = extractDates(visitsSnap);
-  const searchDates = extractDates(searchesSnap);
-
-  const gran = getGranularity(range);
-
-  if (gran === 'summary') {
-    return [{ label: isoDay(range.start), reviews: reviewDates.length, visits: visitDates.length, searches: searchDates.length }];
-  }
-
-  if (gran === 'day') {
-    const days = daysBetween(range.start, range.end) + 1;
-    const rMap = countByKey(reviewDates, isoDay);
-    const vMap = countByKey(visitDates, isoDay);
-    const sMap = countByKey(searchDates, isoDay);
-    return Array.from({ length: days }, (_, i) => {
-      const d = new Date(range.start.getTime() + i * 86400000);
-      const k = isoDay(d);
-      return { label: `${d.getDate()}/${d.getMonth() + 1}`, reviews: rMap.get(k) ?? 0, visits: vMap.get(k) ?? 0, searches: sMap.get(k) ?? 0 };
-    });
-  }
-
-  if (gran === 'month') {
-    const months: { yr: number; mo: number }[] = [];
-    let cur = new Date(range.start.getFullYear(), range.start.getMonth(), 1);
-    while (cur <= range.end) {
-      months.push({ yr: cur.getFullYear(), mo: cur.getMonth() });
-      cur = new Date(cur.getFullYear(), cur.getMonth() + 1, 1);
-    }
-    const keyFn = (d: Date) => `${d.getFullYear()}-${d.getMonth()}`;
-    const rMap = countByKey(reviewDates, keyFn);
-    const vMap = countByKey(visitDates, keyFn);
-    const sMap = countByKey(searchDates, keyFn);
-    return months.map(({ yr, mo }) => ({
-      label: months.length > 13 ? `${MON_SHORT[mo]}'${String(yr).slice(2)}` : MON_SHORT[mo],
-      reviews: rMap.get(`${yr}-${mo}`) ?? 0,
-      visits: vMap.get(`${yr}-${mo}`) ?? 0,
-      searches: sMap.get(`${yr}-${mo}`) ?? 0,
-    }));
-  }
-
-  // year granularity
-  const years: number[] = [];
-  for (let yr = range.start.getFullYear(); yr <= range.end.getFullYear(); yr++) years.push(yr);
-  const keyFn = (d: Date) => String(d.getFullYear());
-  const rMap = countByKey(reviewDates, keyFn);
-  const vMap = countByKey(visitDates, keyFn);
-  const sMap = countByKey(searchDates, keyFn);
-  return years.map((yr) => ({
-    label: String(yr),
-    reviews: rMap.get(String(yr)) ?? 0,
-    visits: vMap.get(String(yr)) ?? 0,
-    searches: sMap.get(String(yr)) ?? 0,
-  }));
+  return container.boInsightsDataSource.fetchGlobalEngagement(range);
 }
 
 // ── Range Calendar ────────────────────────────────────────────────────────────

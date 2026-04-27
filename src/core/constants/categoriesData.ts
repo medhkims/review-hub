@@ -204,13 +204,19 @@ export const CATEGORIES_DATA: CategoryDef[] = [
     ],
   },
 
-  // ── 9. Car Rental ──────────────────────────────────────────────────────────
+  // ── 9. Car Services ─────────────────────────────────────────────────────────
   {
-    id: 'car_rental',
-    name: 'Car Rental',
-    icon: 'car-key',
+    id: 'car_services',
+    name: 'Car Services',
+    icon: 'car-cog',
     sortOrder: 9,
-    subcategories: [],
+    subcategories: [
+      { id: 'car_rental', name: 'Car Rental' },
+      { id: 'car_repair', name: 'Car Repair' },
+      { id: 'car_wash', name: 'Car Wash' },
+      { id: 'fuel', name: 'Fuel Station' },
+      { id: 'other', name: 'Other' },
+    ],
     ratingCriteria: [
       { key: 'service', label: 'Service', icon: 'shield-account' },
       { key: 'vehicle_condition', label: 'Vehicle Condition', icon: 'car-cog' },
@@ -218,12 +224,31 @@ export const CATEGORIES_DATA: CategoryDef[] = [
     ],
   },
 
-  // ── 10. Bank ───────────────────────────────────────────────────────────────
+  // ── 10. Beauty ────────────────────────────────────────────────────────────
+  {
+    id: 'beauty',
+    name: 'Beauty',
+    icon: 'content-cut',
+    sortOrder: 10,
+    subcategories: [
+      { id: 'hairdresser', name: 'Hairdresser' },
+      { id: 'beauty_salon', name: 'Beauty Salon' },
+      { id: 'spa', name: 'Spa' },
+      { id: 'other', name: 'Other' },
+    ],
+    ratingCriteria: [
+      { key: 'service', label: 'Service', icon: 'shield-account' },
+      { key: 'cleanliness', label: 'Cleanliness', icon: 'broom' },
+      { key: 'result_quality', label: 'Result Quality', icon: 'star-check' },
+    ],
+  },
+
+  // ── 11. Bank ───────────────────────────────────────────────────────────────
   {
     id: 'bank',
     name: 'Bank',
     icon: 'bank',
-    sortOrder: 10,
+    sortOrder: 11,
     subcategories: [],
     ratingCriteria: [
       { key: 'service', label: 'Service', icon: 'shield-account' },
@@ -232,12 +257,12 @@ export const CATEGORIES_DATA: CategoryDef[] = [
     ],
   },
 
-  // ── 11. Job / Freelancer ───────────────────────────────────────────────────
+  // ── 12. Job / Freelancer ───────────────────────────────────────────────────
   {
     id: 'job_freelancer',
     name: 'Job / Freelancer',
     icon: 'briefcase-account',
-    sortOrder: 11,
+    sortOrder: 12,
     subcategories: [
       { id: 'developer', name: 'Developer' },
       { id: 'social_media_manager', name: 'Social Media Manager' },
@@ -252,12 +277,12 @@ export const CATEGORIES_DATA: CategoryDef[] = [
     ],
   },
 
-  // ── 12. Tradesman ──────────────────────────────────────────────────────────
+  // ── 13. Tradesman ──────────────────────────────────────────────────────────
   {
     id: 'tradesman',
     name: 'Tradesman',
     icon: 'hammer-wrench',
-    sortOrder: 12,
+    sortOrder: 13,
     subcategories: [
       { id: 'plumber', name: 'Plumber' },
       { id: 'electrician', name: 'Electrician' },
@@ -273,12 +298,12 @@ export const CATEGORIES_DATA: CategoryDef[] = [
     ],
   },
 
-  // ── 13. Delivery Company ───────────────────────────────────────────────────
+  // ── 14. Delivery Company ───────────────────────────────────────────────────
   {
     id: 'delivery_company',
     name: 'Delivery Company',
     icon: 'truck-delivery',
-    sortOrder: 13,
+    sortOrder: 14,
     subcategories: [
       { id: 'food_delivery', name: 'Food Delivery' },
       { id: 'parcel_delivery', name: 'Parcel Delivery' },
@@ -291,12 +316,12 @@ export const CATEGORIES_DATA: CategoryDef[] = [
     ],
   },
 
-  // ── 14. Influencer ─────────────────────────────────────────────────────────
+  // ── 15. Influencer ─────────────────────────────────────────────────────────
   {
     id: 'influencer',
     name: 'Influencer',
     icon: 'account-star',
-    sortOrder: 14,
+    sortOrder: 15,
     subcategories: [
       { id: 'fashion_beauty', name: 'Fashion & Beauty' },
       { id: 'food_lifestyle', name: 'Food & Lifestyle' },
@@ -306,6 +331,14 @@ export const CATEGORIES_DATA: CategoryDef[] = [
       { id: 'comedy_entertainment', name: 'Comedy & Entertainment' },
       { id: 'education', name: 'Education & Tips' },
       { id: 'business_finance', name: 'Business & Finance' },
+      { id: 'music_art', name: 'Music & Art' },
+      { id: 'sports', name: 'Sports' },
+      { id: 'family_parenting', name: 'Family & Parenting' },
+      { id: 'news_politics', name: 'News & Politics' },
+      { id: 'content_creator', name: 'Content Creator' },
+      { id: 'filmmaker', name: 'Filmmaker' },
+      { id: 'podcast_host', name: 'Podcast Host' },
+      { id: 'coach_mentor', name: 'Coach / Mentor' },
       { id: 'other', name: 'Other' },
     ],
     ratingCriteria: [
@@ -315,14 +348,14 @@ export const CATEGORIES_DATA: CategoryDef[] = [
     ],
   },
 
-  // ── 15. Other ──────────────────────────────────────────────────────────────
+  // ── 16. Other ──────────────────────────────────────────────────────────────
   // Businesses in this category receive a single general 1–5 star rating
   // instead of per-criterion sub-ratings.
   {
     id: 'other',
     name: 'Other',
     icon: 'dots-horizontal-circle-outline',
-    sortOrder: 15,
+    sortOrder: 16,
     subcategories: [],
     ratingCriteria: [], // intentionally empty → triggers general rating mode
   },

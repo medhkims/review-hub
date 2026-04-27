@@ -1,6 +1,72 @@
 {
   "hosting": [
     {
+      "site": "reviewhub-91cfb",
+      "public": "dist",
+      "ignore": [
+        "firebase.json",
+        "**/.*"
+      ],
+      "rewrites": [
+        {
+          "source": "/fonts/**",
+          "destination": "/fonts/MaterialCommunityIcons.ttf"
+        },
+        {
+          "source": "**",
+          "destination": "/index.html"
+        }
+      ],
+      "headers": [
+        {
+          "source": "/fonts/**",
+          "headers": [
+            {
+              "key": "Content-Type",
+              "value": "font/ttf"
+            },
+            {
+              "key": "Cache-Control",
+              "value": "public, max-age=31536000, immutable"
+            },
+            {
+              "key": "Access-Control-Allow-Origin",
+              "value": "*"
+            }
+          ]
+        },
+        {
+          "source": "**",
+          "headers": [
+            {
+              "key": "Cross-Origin-Opener-Policy",
+              "value": "same-origin-allow-popups"
+            },
+            {
+              "key": "Strict-Transport-Security",
+              "value": "max-age=31536000; includeSubDomains"
+            },
+            {
+              "key": "X-Content-Type-Options",
+              "value": "nosniff"
+            },
+            {
+              "key": "X-Frame-Options",
+              "value": "DENY"
+            },
+            {
+              "key": "Referrer-Policy",
+              "value": "strict-origin-when-cross-origin"
+            },
+            {
+              "key": "Permissions-Policy",
+              "value": "geolocation=(self), microphone=(), camera=(self), payment=()"
+            }
+          ]
+        }
+      ]
+    },
+    {
       "target": "tchecki-com",
       "public": "dist",
       "ignore": [
@@ -9,17 +75,58 @@
       ],
       "rewrites": [
         {
+          "source": "/fonts/**",
+          "destination": "/fonts/MaterialCommunityIcons.ttf"
+        },
+        {
           "source": "**",
           "destination": "/index.html"
         }
       ],
       "headers": [
         {
+          "source": "/fonts/**",
+          "headers": [
+            {
+              "key": "Content-Type",
+              "value": "font/ttf"
+            },
+            {
+              "key": "Cache-Control",
+              "value": "public, max-age=31536000, immutable"
+            },
+            {
+              "key": "Access-Control-Allow-Origin",
+              "value": "*"
+            }
+          ]
+        },
+        {
           "source": "**",
           "headers": [
             {
               "key": "Cross-Origin-Opener-Policy",
               "value": "same-origin-allow-popups"
+            },
+            {
+              "key": "Strict-Transport-Security",
+              "value": "max-age=31536000; includeSubDomains"
+            },
+            {
+              "key": "X-Content-Type-Options",
+              "value": "nosniff"
+            },
+            {
+              "key": "X-Frame-Options",
+              "value": "DENY"
+            },
+            {
+              "key": "Referrer-Policy",
+              "value": "strict-origin-when-cross-origin"
+            },
+            {
+              "key": "Permissions-Policy",
+              "value": "geolocation=(self), microphone=(), camera=(self), payment=()"
             }
           ]
         }
@@ -34,17 +141,58 @@
       ],
       "rewrites": [
         {
+          "source": "/fonts/**",
+          "destination": "/fonts/MaterialCommunityIcons.ttf"
+        },
+        {
           "source": "**",
           "destination": "/index.html"
         }
       ],
       "headers": [
         {
+          "source": "/fonts/**",
+          "headers": [
+            {
+              "key": "Content-Type",
+              "value": "font/ttf"
+            },
+            {
+              "key": "Cache-Control",
+              "value": "public, max-age=31536000, immutable"
+            },
+            {
+              "key": "Access-Control-Allow-Origin",
+              "value": "*"
+            }
+          ]
+        },
+        {
           "source": "**",
           "headers": [
             {
               "key": "Cross-Origin-Opener-Policy",
               "value": "same-origin-allow-popups"
+            },
+            {
+              "key": "Strict-Transport-Security",
+              "value": "max-age=31536000; includeSubDomains"
+            },
+            {
+              "key": "X-Content-Type-Options",
+              "value": "nosniff"
+            },
+            {
+              "key": "X-Frame-Options",
+              "value": "DENY"
+            },
+            {
+              "key": "Referrer-Policy",
+              "value": "strict-origin-when-cross-origin"
+            },
+            {
+              "key": "Permissions-Policy",
+              "value": "geolocation=(self), microphone=(), camera=(self), payment=()"
             }
           ]
         }
@@ -53,7 +201,7 @@
   ],
   "firestore": {
     "database": "(default)",
-    "location": "nam5",
+    "location": "europe-west1",
     "rules": "firestore.rules",
     "indexes": "firestore.indexes.json"
   },
@@ -92,7 +240,8 @@
       "googleSignIn": {
         "oAuthBrandDisplayName": "ReviewHub",
         "supportEmail": "mohamed33hakim96@gmail.com"
-      }
+      },
+      "anonymous": true
     }
   }
 }

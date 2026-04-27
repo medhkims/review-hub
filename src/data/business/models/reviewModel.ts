@@ -18,4 +18,7 @@ export interface ReviewModel {
   is_liked_by_current_user?: boolean;
   dislike_count?: number;
   is_disliked_by_current_user?: boolean;
+  // Import metadata
+  source?: string;
+  google_author_name?: string;
 }

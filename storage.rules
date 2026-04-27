@@ -2,6 +2,11 @@ rules_version = '2';
 
 service firebase.storage {
   match /b/{bucket}/o {
+    // Helper: check admin custom claim on auth token
+    function isAdmin() {
+      return request.auth != null && request.auth.token.admin == true;
+    }
+
     // Authenticated users can read and write their own files
     match /users/{userId}/{allPaths=**} {
       allow read, write: if request.auth != null && request.auth.uid == userId;
@@ -10,59 +15,71 @@ service firebase.storage {
     // Public read access for profile pictures
     match /profile_pictures/{userId}/{allPaths=**} {
       allow read: if true;
-      allow write: if request.auth != null && request.auth.uid == userId;
+      allow write: if request.auth != null && request.auth.uid == userId
+        && request.resource.size < 5 * 1024 * 1024
+        && request.resource.contentType.matches('image/.*');
     }
 
-    // Post images - authenticated users can read, only owner can write
+    // Post images - authenticated users can read, only uploader can write
     match /posts/{postId}/{allPaths=**} {
       allow read: if request.auth != null;
-      allow write: if request.auth != null;
+      allow write: if request.auth != null
+        && request.resource.size < 10 * 1024 * 1024
+        && request.resource.contentType.matches('image/.*');
     }
 
-    // Chat attachments - only conversation participants can access
+    // Chat attachments - authenticated users can access
     match /chat/{conversationId}/{allPaths=**} {
-      allow read, write: if request.auth != null;
+      allow read: if request.auth != null;
+      allow write: if request.auth != null
+        && request.resource.size < 10 * 1024 * 1024;
     }
 
-    // Business images - any authenticated user can read, owner can write
+    // Business images - public read, only business owner or admin can write
     match /business_images/{businessId}/{allPaths=**} {
       allow read: if true;
-      allow write: if request.auth != null;
+      allow write: if request.auth != null
+        && (request.auth.token.admin == true
+            || firestore.get(/databases/(default)/documents/businesses/$(businessId)).data.owner_id == request.auth.uid);
     }
 
-    // Banner images - public read, admin write (enforced at app level)
+    // Banner images - public read, admin only write
     match /banner_images/{allPaths=**} {
       allow read: if true;
-      allow write: if request.auth != null;
+      allow write: if isAdmin();
     }
 
-    // Banners storage path (used by BannerRemoteDataSource)
+    // Banners storage path - public read, admin only write
     match /banners/{allPaths=**} {
       allow read: if true;
-      allow write: if request.auth != null;
+      allow write: if isAdmin();
     }
 
-    // Category default images - public read, admin write (enforced at app level)
+    // Category default images - public read, admin only write
     match /category_defaults/{allPaths=**} {
       allow read: if true;
-      allow write: if request.auth != null;
+      allow write: if isAdmin();
     }
 
-    // Category logo images - public read, admin write (enforced at app level)
+    // Category logo images - public read, admin only write
     match /category_images/{allPaths=**} {
       allow read: if true;
-      allow write: if request.auth != null;
+      allow write: if isAdmin();
     }
 
     // Review images - public read, authenticated owner can write
     match /review_images/{userId}/{allPaths=**} {
       allow read: if true;
-      allow write: if request.auth != null && request.auth.uid == userId;
+      allow write: if request.auth != null && request.auth.uid == userId
+        && request.resource.size < 10 * 1024 * 1024
+        && request.resource.contentType.matches('image/.*');
     }
 
     // ID card uploads for account verification - owner can read/write
     match /id_cards/{userId}/{allPaths=**} {
-      allow read, write: if request.auth != null && request.auth.uid == userId;
+      allow read, write: if request.auth != null && request.auth.uid == userId
+        && request.resource.size < 10 * 1024 * 1024
+        && request.resource.contentType.matches('image/.*');
     }
   }
 }

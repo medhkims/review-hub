@@ -1,37 +1,55 @@
-import { useCallback, useEffect } from 'react';
+import { useCallback, useEffect, useState } from 'react';
+import { container } from '@/core/di/container';
 import { useModeratorStore } from '../store/moderatorStore';
 
-// Mock data until backend queries are implemented
-const MOCK_DATA = {
-  pendingReviews: 12,
-  flaggedContent: 3,
-  recentActivity: [
-    { id: '1', action: 'Review approved', target: 'Cafe Tunis', time: '30 min ago' },
-    { id: '2', action: 'Content flagged', target: 'Spam review on Hotel Sousse', time: '2 hours ago' },
-    { id: '3', action: 'Review rejected', target: 'Fake listing report', time: '5 hours ago' },
-    { id: '4', action: 'User warning sent', target: 'user123@email.com', time: '1 day ago' },
-  ],
-};
+function timeAgo(date: Date): string {
+  const diff = Date.now() - date.getTime();
+  const mins = Math.floor(diff / 60000);
+  if (mins < 60) return `${mins} min ago`;
+  const hrs = Math.floor(mins / 60);
+  if (hrs < 24) return `${hrs} hour${hrs > 1 ? 's' : ''} ago`;
+  const days = Math.floor(hrs / 24);
+  return `${days} day${days > 1 ? 's' : ''} ago`;
+}
 
 export const useModeratorDashboard = () => {
-  const { isLoading, error, setLoading, setPendingCount, setFlaggedCount } = useModeratorStore();
+  const { isLoading, error, setLoading, setPendingCount, setFlaggedCount, setError } = useModeratorStore();
+  const [recentActivity, setRecentActivity] = useState<{ id: string; action: string; target: string; time: string }[]>([]);
+  const [pendingReviews, setPendingReviews] = useState(0);
+  const [flaggedContent, setFlaggedContent] = useState(0);
 
   const loadDashboard = useCallback(async () => {
     setLoading(true);
-    // TODO: Replace with real Firestore queries
-    setPendingCount(MOCK_DATA.pendingReviews);
-    setFlaggedCount(MOCK_DATA.flaggedContent);
-    setLoading(false);
-  }, []);
+    setError(null);
+    try {
+      const data = await container.adminInsightsDataSource.fetchModeratorDashboard();
+      setPendingReviews(data.pendingReviews);
+      setFlaggedContent(data.flaggedContent);
+      setPendingCount(data.pendingReviews);
+      setFlaggedCount(data.flaggedContent);
+      setRecentActivity(
+        data.recentActivity.map(a => ({
+          id: a.id,
+          action: a.action,
+          target: a.target,
+          time: timeAgo(a.time),
+        })),
+      );
+    } catch (e) {
+      setError(e instanceof Error ? e.message : 'Failed to load dashboard');
+    } finally {
+      setLoading(false);
+    }
+  }, [setLoading, setError, setPendingCount, setFlaggedCount]);
 
   useEffect(() => {
     loadDashboard();
   }, [loadDashboard]);
 
   return {
-    pendingReviews: MOCK_DATA.pendingReviews,
-    flaggedContent: MOCK_DATA.flaggedContent,
-    recentActivity: MOCK_DATA.recentActivity,
+    pendingReviews,
+    flaggedContent,
+    recentActivity,
     isLoading,
     error,
     refresh: loadDashboard,

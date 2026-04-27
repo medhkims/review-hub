@@ -14,6 +14,15 @@ export default function Root({ children }: PropsWithChildren) {
         <meta charSet="utf-8" />
         <meta httpEquiv="X-UA-Compatible" content="IE=edge" />
         <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
+
+        {/* Open Graph meta tags for rich share previews */}
+        <meta property="og:site_name" content="Tchecki" />
+        <meta property="og:type" content="website" />
+        <meta property="og:title" content="Tchecki — Discover & Review Businesses" />
+        <meta property="og:description" content="Find the best businesses in Tunisia. Read reviews, compare ratings, and discover new places." />
+        <meta name="description" content="Find the best businesses in Tunisia. Read reviews, compare ratings, and discover new places." />
+        <meta name="twitter:card" content="summary_large_image" />
+        <meta name="twitter:title" content="Tchecki — Discover & Review Businesses" />
         <link rel="preload" href={FONT_PATH} as="font" type="font/ttf" crossOrigin="anonymous" />
         <style dangerouslySetInnerHTML={{
           __html: `

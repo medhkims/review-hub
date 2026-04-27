@@ -4,7 +4,6 @@ import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useTranslation } from 'react-i18next';
 import { AppText } from '@/presentation/shared/components/ui/AppText';
 import { colors } from '@/core/theme/colors';
-import { getCategoryDefaultCover, getCategoryDefaultLogo } from '@/core/utils/categoryDefaultImages';
 import { useCategoryDefaultStore } from '@/presentation/shared/store/categoryDefaultStore';
 
 interface CoverPhotoSectionProps {
@@ -58,13 +57,13 @@ export const CoverPhotoSection: React.FC<CoverPhotoSectionProps> = ({
     ? { uri: coverImageUri! }
     : remoteDefaults?.coverImageUrl
       ? { uri: remoteDefaults.coverImageUrl }
-      : (categoryId ? getCategoryDefaultCover(categoryId) : null);
+      : null;
 
   const logoSource: ImageSourcePropType | null = isValidUrl(logoImageUri)
     ? { uri: logoImageUri! }
     : remoteDefaults?.profileImageUrl
       ? { uri: remoteDefaults.profileImageUrl }
-      : (categoryId ? getCategoryDefaultLogo(categoryId) : null);
+      : null;
 
   if (populated) {
     return (

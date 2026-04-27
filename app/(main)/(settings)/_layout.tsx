@@ -16,6 +16,8 @@ export default function SettingsLayout() {
       <Stack.Screen name="manage-faq" />
       <Stack.Screen name="privacy-policy" />
       <Stack.Screen name="admin-verifications" />
+      <Stack.Screen name="terms-of-service" />
+      <Stack.Screen name="user-feed" />
     </Stack>
   );
 }

@@ -4,13 +4,24 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { BusinessEntity } from '@/domain/business/entities/businessEntity';
 import { CategoryEntity } from '@/domain/business/entities/categoryEntity';
 import { BannerEntity } from '@/domain/banner/entities/bannerEntity';
+import { RecentReviewEntity } from '@/domain/business/entities/recentReviewEntity';
+import { DealEntity } from '@/domain/deals/entities/dealEntity';
+import { WeeklyPickEntity } from '@/domain/weeklyPicks/entities/weeklyPickEntity';
 
 interface HomeState {
   businesses: BusinessEntity[];
+  nearbyBusinesses: BusinessEntity[];
+  topRatedBusinesses: BusinessEntity[];
+  popularCategoryBusinesses: BusinessEntity[];
   newBusinesses: BusinessEntity[];
   recentSearches: BusinessEntity[];
   categories: CategoryEntity[];
   banners: BannerEntity[];
+  recentReviews: RecentReviewEntity[];
+  deals: DealEntity[];
+  weeklyPicks: WeeklyPickEntity[];
+  userLocation: { latitude: number; longitude: number } | null;
+  mostViewedCategoryId: string | null;
   selectedCategoryId: string | null;
   searchQuery: string;
   isLoading: boolean;
@@ -19,13 +30,22 @@ interface HomeState {
   isBannersLoading: boolean;
   isFuzzySearching: boolean;
   fuzzyMatch: BusinessEntity | null;
+  homeStats: { totalBusinesses: number; totalReviews: number } | null;
   error: string | null;
   setBusinesses: (businesses: BusinessEntity[]) => void;
+  setNearbyBusinesses: (businesses: BusinessEntity[]) => void;
+  setTopRatedBusinesses: (businesses: BusinessEntity[]) => void;
+  setPopularCategoryBusinesses: (businesses: BusinessEntity[]) => void;
   setNewBusinesses: (businesses: BusinessEntity[]) => void;
   setRecentSearches: (businesses: BusinessEntity[]) => void;
   addRecentlyViewed: (business: BusinessEntity) => void;
   setCategories: (categories: CategoryEntity[]) => void;
   setBanners: (banners: BannerEntity[]) => void;
+  setRecentReviews: (reviews: RecentReviewEntity[]) => void;
+  setDeals: (deals: DealEntity[]) => void;
+  setWeeklyPicks: (picks: WeeklyPickEntity[]) => void;
+  setUserLocation: (location: { latitude: number; longitude: number } | null) => void;
+  setMostViewedCategoryId: (id: string | null) => void;
   setSelectedCategoryId: (id: string | null) => void;
   setSearchQuery: (query: string) => void;
   setLoading: (loading: boolean) => void;
@@ -34,6 +54,7 @@ interface HomeState {
   setBannersLoading: (loading: boolean) => void;
   setFuzzySearching: (loading: boolean) => void;
   setFuzzyMatch: (match: BusinessEntity | null) => void;
+  setHomeStats: (stats: { totalBusinesses: number; totalReviews: number }) => void;
   setError: (error: string | null) => void;
   updateBusinessFavorite: (businessId: string, isFavorite: boolean) => void;
   reset: () => void;
@@ -43,10 +64,18 @@ export const useHomeStore = create<HomeState>()(
   persist(
     (set) => ({
       businesses: [],
+      nearbyBusinesses: [],
+      topRatedBusinesses: [],
+      popularCategoryBusinesses: [],
       newBusinesses: [],
       recentSearches: [],
       categories: [],
       banners: [],
+      recentReviews: [],
+      deals: [],
+      weeklyPicks: [],
+      userLocation: null,
+      mostViewedCategoryId: null,
       selectedCategoryId: null,
       searchQuery: '',
       isLoading: false,
@@ -55,17 +84,35 @@ export const useHomeStore = create<HomeState>()(
       isBannersLoading: false,
       isFuzzySearching: false,
       fuzzyMatch: null,
+      homeStats: null,
       error: null,
       setBusinesses: (businesses) => set({ businesses, error: null }),
+      setNearbyBusinesses: (nearbyBusinesses) => set({ nearbyBusinesses }),
+      setTopRatedBusinesses: (topRatedBusinesses) => set({ topRatedBusinesses }),
+      setPopularCategoryBusinesses: (popularCategoryBusinesses) => set({ popularCategoryBusinesses }),
       setNewBusinesses: (newBusinesses) => set({ newBusinesses }),
       setRecentSearches: (recentSearches) => set({ recentSearches }),
       addRecentlyViewed: (business) =>
         set((state) => {
           const filtered = state.recentSearches.filter((b) => b.id !== business.id);
-          return { recentSearches: [business, ...filtered].slice(0, 5) };
+          // Track which category the user views most
+          const categoryCount: Record<string, number> = {};
+          [business, ...filtered].forEach((b) => {
+            categoryCount[b.categoryId] = (categoryCount[b.categoryId] || 0) + 1;
+          });
+          const topCategoryId = Object.entries(categoryCount).sort((a, b) => b[1] - a[1])[0]?.[0] ?? null;
+          return {
+            recentSearches: [business, ...filtered].slice(0, 10),
+            mostViewedCategoryId: topCategoryId,
+          };
         }),
       setCategories: (categories) => set({ categories }),
       setBanners: (banners) => set({ banners }),
+      setRecentReviews: (recentReviews) => set({ recentReviews }),
+      setDeals: (deals) => set({ deals }),
+      setWeeklyPicks: (weeklyPicks) => set({ weeklyPicks }),
+      setUserLocation: (userLocation) => set({ userLocation }),
+      setMostViewedCategoryId: (mostViewedCategoryId) => set({ mostViewedCategoryId }),
       setSelectedCategoryId: (selectedCategoryId) => set({ selectedCategoryId }),
       setSearchQuery: (searchQuery) => set({ searchQuery }),
       setLoading: (isLoading) => set({ isLoading }),
@@ -74,6 +121,7 @@ export const useHomeStore = create<HomeState>()(
       setBannersLoading: (isBannersLoading) => set({ isBannersLoading }),
       setFuzzySearching: (isFuzzySearching) => set({ isFuzzySearching }),
       setFuzzyMatch: (fuzzyMatch) => set({ fuzzyMatch }),
+      setHomeStats: (homeStats) => set({ homeStats }),
       setError: (error) => set({ error, isLoading: false }),
       updateBusinessFavorite: (businessId, isFavorite) =>
         set((state) => ({
@@ -87,10 +135,18 @@ export const useHomeStore = create<HomeState>()(
       reset: () =>
         set({
           businesses: [],
+          nearbyBusinesses: [],
+          topRatedBusinesses: [],
+          popularCategoryBusinesses: [],
           newBusinesses: [],
           recentSearches: [],
           categories: [],
           banners: [],
+          recentReviews: [],
+          deals: [],
+          weeklyPicks: [],
+          userLocation: null,
+          mostViewedCategoryId: null,
           selectedCategoryId: null,
           searchQuery: '',
           isLoading: false,
@@ -99,13 +155,17 @@ export const useHomeStore = create<HomeState>()(
           isBannersLoading: false,
           isFuzzySearching: false,
           fuzzyMatch: null,
+          homeStats: null,
           error: null,
         }),
     }),
     {
       name: 'home-recent-searches',
       storage: createJSONStorage(() => AsyncStorage),
-      partialize: (state) => ({ recentSearches: state.recentSearches }),
+      partialize: (state) => ({
+        recentSearches: state.recentSearches,
+        mostViewedCategoryId: state.mostViewedCategoryId,
+      }),
     },
   ),
 );

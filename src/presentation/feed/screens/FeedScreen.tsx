@@ -1,5 +1,6 @@
 import React, { useCallback } from 'react';
 import { View, FlatList, ActivityIndicator, ListRenderItemInfo } from 'react-native';
+import { router } from 'expo-router';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { AppText } from '@/presentation/shared/components/ui/AppText';
 import { ScreenLayout } from '@/presentation/shared/layouts/ScreenLayout';
@@ -99,11 +100,15 @@ export default function FeedScreen() {
     toggleLike,
   } = useFeed();
 
+  const handlePostPress = useCallback((postId: string) => {
+    router.push(`/(main)/(feed)/${postId}`);
+  }, []);
+
   const renderItem = useCallback(
     ({ item }: ListRenderItemInfo<PostEntity>) => (
-      <PostCard post={item} onLike={toggleLike} />
+      <PostCard post={item} onLike={toggleLike} onPress={handlePostPress} />
     ),
-    [toggleLike],
+    [toggleLike, handlePostPress],
   );
 
   const keyExtractor = useCallback((item: PostEntity) => item.id, []);

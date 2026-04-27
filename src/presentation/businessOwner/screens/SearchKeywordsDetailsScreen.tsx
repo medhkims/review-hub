@@ -1,8 +1,8 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { View, ScrollView, Pressable, ActivityIndicator } from 'react-native';
 import { router } from 'expo-router';
-import { collection, getDocs, query, where, Timestamp, limit } from 'firebase/firestore';
-import { firestore } from '@/core/firebase/firebaseConfig';
+import { container } from '@/core/di/container';
+import { useTranslation } from 'react-i18next';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { AppText } from '@/presentation/shared/components/ui/AppText';
 import { ScreenLayout } from '@/presentation/shared/layouts/ScreenLayout';
@@ -45,6 +45,7 @@ function rateColor(pct: number): string {
 interface KeywordRow { keyword: string; findCount: number; openCount: number }
 
 export default function SearchKeywordsDetailsScreen() {
+  const { t } = useTranslation();
   const business = useBusinessOwnerStore(s => s.business);
   const today = useMemo(() => sod(new Date()), []);
 
@@ -61,30 +62,7 @@ export default function SearchKeywordsDetailsScreen() {
     if (!business?.id) return;
     setLoading(true);
     try {
-      const snap = await getDocs(
-        query(collection(firestore, 'keyword_events'), where('business_id', '==', business.id), limit(1000)),
-      );
-      const rangeStart = range.start.getTime();
-      const rangeEnd   = range.end.getTime() + 86400000;
-      const kwMap = new Map<string, { find: number; open: number }>();
-      snap.forEach(d => {
-        const kw = d.data()['keyword'] as string | undefined;
-        if (!kw) return;
-        if (mode !== 'ALL') {
-          const ts = d.data()['created_at'] as Timestamp | undefined;
-          const t  = ts?.toDate?.().getTime();
-          if (!t || t < rangeStart || t >= rangeEnd) return;
-        }
-        const key  = kw.toLowerCase().trim();
-        const prev = kwMap.get(key) ?? { find: 0, open: 0 };
-        const opened = !!d.data()['opened'];
-        kwMap.set(key, { find: prev.find + (opened ? 0 : 1), open: prev.open + (opened ? 1 : 0) });
-      });
-      setKeywords(
-        Array.from(kwMap.entries())
-          .map(([keyword, s]) => ({ keyword, findCount: s.find, openCount: s.open }))
-          .sort((a, b) => b.findCount - a.findCount),
-      );
+      setKeywords(await container.boInsightsDataSource.fetchKeywordsInRange(business.id, range, mode));
     } catch {
       setKeywords([]);
     } finally {
@@ -124,7 +102,7 @@ export default function SearchKeywordsDetailsScreen() {
           <MaterialCommunityIcons name="arrow-left" size={18} color={colors.white} />
         </Pressable>
         <View>
-          <AppText style={{ fontSize:17, fontWeight:'700', color:colors.white }}>Search Keywords</AppText>
+          <AppText style={{ fontSize:17, fontWeight:'700', color:colors.white }}>{t('businessOwner.searchKeywords.title')}</AppText>
           {business && <AppText style={{ fontSize:12, color:colors.textSlate400 }}>{business.name}</AppText>}
         </View>
       </View>
@@ -151,9 +129,9 @@ export default function SearchKeywordsDetailsScreen() {
       {!loading && keywords.length === 0 && (
         <View style={{ flex:1, alignItems:'center', justifyContent:'center', gap:12 }}>
           <MaterialCommunityIcons name="magnify-close" size={48} color={colors.textSlate600} />
-          <AppText style={{ fontSize:15, color:colors.textSlate400 }}>No keywords in this period</AppText>
+          <AppText style={{ fontSize:15, color:colors.textSlate400 }}>{t('businessOwner.searchKeywords.noKeywords')}</AppText>
           <AppText style={{ fontSize:13, color:colors.textSlate500, textAlign:'center', paddingHorizontal:40 }}>
-            Try selecting a different time range.
+            {t('businessOwner.searchKeywords.noKeywordsHint')}
           </AppText>
         </View>
       )}
@@ -166,23 +144,23 @@ export default function SearchKeywordsDetailsScreen() {
             <View style={{ flex:1, backgroundColor:colors.cardDark, borderRadius:10, padding:12, alignItems:'center', borderWidth:1, borderColor:colors.borderDark }}>
               <MaterialCommunityIcons name="magnify" size={16} color={colors.cyan} />
               <AppText style={{ fontSize:16, fontWeight:'800', color:colors.white, marginTop:2 }}>{totalFound}</AppText>
-              <AppText style={{ fontSize:10, color:colors.textSlate500 }}>Total Found</AppText>
+              <AppText style={{ fontSize:10, color:colors.textSlate500 }}>{t('businessOwner.searchKeywords.totalFound')}</AppText>
             </View>
             <View style={{ flex:1, backgroundColor:colors.cardDark, borderRadius:10, padding:12, alignItems:'center', borderWidth:1, borderColor:colors.borderDark }}>
               <MaterialCommunityIcons name="store-outline" size={16} color={colors.orange} />
               <AppText style={{ fontSize:16, fontWeight:'800', color:colors.white, marginTop:2 }}>{totalOpened}</AppText>
-              <AppText style={{ fontSize:10, color:colors.textSlate500 }}>Total Opened</AppText>
+              <AppText style={{ fontSize:10, color:colors.textSlate500 }}>{t('businessOwner.searchKeywords.totalOpened')}</AppText>
             </View>
             <View style={{ flex:1, backgroundColor:colors.cardDark, borderRadius:10, padding:12, alignItems:'center', borderWidth:1, borderColor:`${rateColor(overallRate)}44` }}>
               <MaterialCommunityIcons name="percent" size={16} color={rateColor(overallRate)} />
               <AppText style={{ fontSize:16, fontWeight:'800', color:rateColor(overallRate), marginTop:2 }}>{overallRate}%</AppText>
-              <AppText style={{ fontSize:10, color:colors.textSlate500 }}>Avg Conv.</AppText>
+              <AppText style={{ fontSize:10, color:colors.textSlate500 }}>{t('businessOwner.searchKeywords.avgConv')}</AppText>
             </View>
           </View>
 
           {/* Sort pills */}
           <View style={{ flexDirection:'row', gap:6, marginBottom:12, alignItems:'center' }}>
-            <AppText style={{ fontSize:11, color:colors.textSlate500 }}>Sort:</AppText>
+            <AppText style={{ fontSize:11, color:colors.textSlate500 }}>{t('businessOwner.searchKeywords.sort')}</AppText>
             {SORTS.map(s => (
               <Pressable key={s.key} onPress={() => setSortKey(s.key)} accessibilityRole="button" accessibilityLabel={s.label}
                 style={{ flexDirection:'row', alignItems:'center', gap:4, paddingHorizontal:10, paddingVertical:5, borderRadius:9999, backgroundColor:sortKey===s.key?colors.neonPurple:colors.cardDark, borderWidth:1, borderColor:sortKey===s.key?colors.neonPurple:colors.borderDark }}>

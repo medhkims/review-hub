@@ -10,13 +10,27 @@ import { useTheme } from '@/core/theme/useTheme';
 
 export interface FilterState {
   categories: string[];
+  subcategories: string[];
+  platforms: string[];
   minRating: number;
 }
 
 export const DEFAULT_FILTER_STATE: FilterState = {
   categories: [],
+  subcategories: [],
+  platforms: [],
   minRating: 0,
 };
+
+const INFLUENCER_CATEGORY_ID = 'influencer';
+
+const PLATFORM_OPTIONS = [
+  { id: 'instagram', icon: 'instagram', labelKey: 'filterBy.platformInstagram' },
+  { id: 'facebook', icon: 'facebook', labelKey: 'filterBy.platformFacebook' },
+  { id: 'tiktok', icon: 'music-note', labelKey: 'filterBy.platformTiktok' },
+  { id: 'youtube', icon: 'youtube', labelKey: 'filterBy.platformYoutube' },
+  { id: 'other', icon: 'dots-horizontal', labelKey: 'filterBy.platformOther' },
+] as const;
 
 interface FilterBySheetProps {
   visible: boolean;
@@ -25,6 +39,10 @@ interface FilterBySheetProps {
   initialFilters?: FilterState;
   showCategories?: boolean;
   availableCategories?: { id: string; name: string }[];
+  showSubcategories?: boolean;
+  availableSubcategories?: { id: string; name: string }[];
+  /** Force-show the platforms dropdown (e.g. when already on the influencer category page) */
+  showPlatforms?: boolean;
 }
 
 const RATING_OPTIONS = [
@@ -108,7 +126,7 @@ const Dropdown: React.FC<DropdownProps> = ({
             borderBottomLeftRadius: 14,
             borderBottomRightRadius: 14,
             overflow: 'hidden',
-            maxHeight: 260,
+            maxHeight: 350,
           }}
         >
           <ScrollView nestedScrollEnabled showsVerticalScrollIndicator={false}>
@@ -198,18 +216,33 @@ export const FilterBySheet: React.FC<FilterBySheetProps> = ({
   initialFilters,
   showCategories = false,
   availableCategories = [],
+  showSubcategories = false,
+  availableSubcategories = [],
+  showPlatforms = false,
 }) => {
   const { t } = useTranslation();
   const theme = useTheme();
   const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
+  const [selectedSubcategories, setSelectedSubcategories] = useState<string[]>([]);
+  const [selectedPlatforms, setSelectedPlatforms] = useState<string[]>([]);
   const [minRating, setMinRating] = useState(0);
   const [categoryOpen, setCategoryOpen] = useState(false);
+  const [subcategoryOpen, setSubcategoryOpen] = useState(false);
+  const [platformOpen, setPlatformOpen] = useState(false);
+
+  const showPlatformFilter =
+    showPlatforms ||
+    (selectedCategories.length === 1 && selectedCategories[0] === INFLUENCER_CATEGORY_ID);
 
   useEffect(() => {
     if (visible) {
       setSelectedCategories(initialFilters?.categories ?? []);
+      setSelectedSubcategories(initialFilters?.subcategories ?? []);
+      setSelectedPlatforms(initialFilters?.platforms ?? []);
       setMinRating(initialFilters?.minRating ?? 0);
       setCategoryOpen(false);
+      setSubcategoryOpen(false);
+      setPlatformOpen(false);
     }
   }, [visible]);
 
@@ -219,10 +252,26 @@ export const FilterBySheet: React.FC<FilterBySheetProps> = ({
     );
   };
 
+  const toggleSubcategory = (subId: string) => {
+    setSelectedSubcategories((prev) =>
+      prev.includes(subId) ? prev.filter((s) => s !== subId) : [...prev, subId],
+    );
+  };
+
+  const togglePlatform = (platformId: string) => {
+    setSelectedPlatforms((prev) =>
+      prev.includes(platformId) ? prev.filter((p) => p !== platformId) : [...prev, platformId],
+    );
+  };
+
   const handleReset = () => {
     setSelectedCategories([]);
+    setSelectedSubcategories([]);
+    setSelectedPlatforms([]);
     setMinRating(0);
     setCategoryOpen(false);
+    setSubcategoryOpen(false);
+    setPlatformOpen(false);
   };
 
   const categoryLabel =
@@ -231,6 +280,20 @@ export const FilterBySheet: React.FC<FilterBySheetProps> = ({
       : selectedCategories.length === 1
         ? (availableCategories.find((c) => c.id === selectedCategories[0])?.name ?? '')
         : t('filterBy.categoriesSelected', { count: selectedCategories.length });
+
+  const subcategoryLabel =
+    selectedSubcategories.length === 0
+      ? t('filterBy.allSubcategories')
+      : selectedSubcategories.length === 1
+        ? (availableSubcategories.find((s) => s.id === selectedSubcategories[0])?.name ?? '')
+        : t('filterBy.subcategoriesSelected', { count: selectedSubcategories.length });
+
+  const platformLabel =
+    selectedPlatforms.length === 0
+      ? t('filterBy.allPlatforms')
+      : selectedPlatforms.length === 1
+        ? t(PLATFORM_OPTIONS.find((p) => p.id === selectedPlatforms[0])?.labelKey ?? '')
+        : t('filterBy.platformsSelected', { count: selectedPlatforms.length });
 
   return (
     <Modal visible={visible} transparent animationType="slide" onRequestClose={onClose}>
@@ -330,6 +393,62 @@ export const FilterBySheet: React.FC<FilterBySheetProps> = ({
               </View>
             )}
 
+            {/* Subcategories Dropdown */}
+            {showSubcategories && availableSubcategories.length > 0 && (
+              <View style={{ marginBottom: 24 }}>
+                <SectionHeader title={t('filterBy.subcategories')} />
+                <Dropdown
+                  icon="tag-outline"
+                  placeholder={t('filterBy.allSubcategories')}
+                  valueLabel={subcategoryLabel}
+                  hasSelection={selectedSubcategories.length > 0}
+                  isOpen={subcategoryOpen}
+                  onToggle={() => setSubcategoryOpen((prev) => !prev)}
+                  onConfirm={() => setSubcategoryOpen(false)}
+                  confirmLabel={t('common.confirm')}
+                >
+                  {availableSubcategories.map((sub, index) => (
+                    <CheckRow
+                      key={sub.id}
+                      label={sub.name}
+                      isSelected={selectedSubcategories.includes(sub.id)}
+                      onPress={() => toggleSubcategory(sub.id)}
+                      isLast={index === availableSubcategories.length - 1}
+                      altBg={index % 2 === 0}
+                    />
+                  ))}
+                </Dropdown>
+              </View>
+            )}
+
+            {/* Platforms Dropdown (only when Influencer category is selected) */}
+            {showPlatformFilter && (
+              <View style={{ marginBottom: 24 }}>
+                <SectionHeader title={t('filterBy.platforms')} />
+                <Dropdown
+                  icon="cellphone-link"
+                  placeholder={t('filterBy.allPlatforms')}
+                  valueLabel={platformLabel}
+                  hasSelection={selectedPlatforms.length > 0}
+                  isOpen={platformOpen}
+                  onToggle={() => setPlatformOpen((prev) => !prev)}
+                  onConfirm={() => setPlatformOpen(false)}
+                  confirmLabel={t('common.confirm')}
+                >
+                  {PLATFORM_OPTIONS.map((platform, index) => (
+                    <CheckRow
+                      key={platform.id}
+                      label={t(platform.labelKey)}
+                      isSelected={selectedPlatforms.includes(platform.id)}
+                      onPress={() => togglePlatform(platform.id)}
+                      isLast={index === PLATFORM_OPTIONS.length - 1}
+                      altBg={index % 2 === 0}
+                    />
+                  ))}
+                </Dropdown>
+              </View>
+            )}
+
             {/* Minimum Rating */}
             <View style={{ marginBottom: 8 }}>
               <SectionHeader title={t('filterBy.minRating')} />
@@ -383,7 +502,7 @@ export const FilterBySheet: React.FC<FilterBySheetProps> = ({
               variant="primary"
               size="lg"
               shape="pill"
-              onPress={() => onApply({ categories: selectedCategories, minRating })}
+              onPress={() => onApply({ categories: selectedCategories, subcategories: selectedSubcategories, platforms: selectedPlatforms, minRating })}
               accessibilityLabel={t('filterBy.apply')}
             />
           </View>

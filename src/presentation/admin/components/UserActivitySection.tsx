@@ -139,9 +139,3 @@ const ActivityBox: React.FC<ActivityBoxProps> = ({ metric }) => (
 );
 
 // ── Mock Data ────────────────────────────────────────────────────────────────
-export const MOCK_USER_ACTIVITY_METRICS: ActivityMetric[] = [
-  { label: 'DAILY (MAU)', value: '84.5K', accent: colors.neonPurple },
-  { label: 'WEEKLY (MAU)', value: '312K', accent: colors.blue },
-  { label: 'MONTHLY (MAU)', value: '1.1M', accent: colors.green },
-  { label: 'YEARLY (YAU)', value: '8.4M', accent: colors.orange },
-];

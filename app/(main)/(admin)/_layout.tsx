@@ -7,6 +7,8 @@ export default function AdminLayout() {
       <Stack.Screen name="index" />
       <Stack.Screen name="boost-management" />
       <Stack.Screen name="global-insights" />
+      <Stack.Screen name="tickets" />
+      <Stack.Screen name="disputes" />
     </Stack>
   );
 }

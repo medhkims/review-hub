@@ -748,6 +748,35 @@
       "titleRequired": "العنوان مطلوب",
       "imageRequired": "يرجى اختيار صورة"
     },
+    "userFeed": {
+      "title": "خلاصة المستخدم",
+      "trendingTitle": "الأكثر رواجاً",
+      "trendingDesc": "إدارة الأعمال المعروضة في قسم الأكثر رواجاً على الشاشة الرئيسية.",
+      "weeklyPicksTitle": "اختيارات الأسبوع",
+      "weeklyPicksDesc": "اختيار الأعمال المميزة أسبوعياً من قبل الفريق.",
+      "manage": "إدارة"
+    },
+    "trending": {
+      "title": "الأكثر رواجاً",
+      "add": "إضافة إلى الأكثر رواجاً",
+      "empty": "لا توجد أعمال رائجة حالياً. أضف أعمالاً لعرضها في قسم الأكثر رواجاً.",
+      "deleteTitle": "إزالة من الأكثر رواجاً",
+      "deleteMessage": "إزالة \"{{name}}\" من الأكثر رواجاً؟",
+      "selectBusiness": "اختر نشاطاً تجارياً",
+      "searchPlaceholder": "ابحث عن نشاط تجاري...",
+      "weeklyReviews": "{{count}} تقييمات هذا الأسبوع"
+    },
+    "weeklyPicks": {
+      "title": "اختيارات الأسبوع",
+      "add": "إضافة اختيار أسبوعي",
+      "empty": "لا توجد اختيارات أسبوعية. أضف واحداً لعرضه على الشاشة الرئيسية.",
+      "deleteTitle": "إزالة الاختيار الأسبوعي",
+      "deleteMessage": "إزالة \"{{name}}\" من اختيارات الأسبوع؟",
+      "selectBusiness": "اختر نشاطاً تجارياً",
+      "searchPlaceholder": "ابحث عن نشاط تجاري...",
+      "pickReason": "سبب الاختيار",
+      "pickReasonPlaceholder": "لماذا هذا اختيار أسبوعي؟ مثال: أفضل قهوة في المدينة"
+    },
     "media": {
       "title": "التحكم بالوسائط",
       "subtitle": "إدارة صور الأعمال الافتراضية وبانرات الصفحة الرئيسية.",
@@ -873,6 +902,9 @@
       "instagram": "إنستغرام",
       "facebook": "فيسبوك",
       "tiktok": "تيك توك",
+      "youtube": "يوتيوب",
+      "twitch": "تويتش",
+      "kick": "كيك",
       "linkedin": "لينكد إن",
       "upwork": "أب وورك",
       "add": "إضافة +",
@@ -1153,7 +1185,18 @@
     "categories": "الفئات",
     "allCategories": "جميع الفئات",
     "categoriesSelected": "{{count}} فئات مختارة",
+    "subcategories": "الفئات الفرعية",
+    "allSubcategories": "جميع الفئات الفرعية",
+    "subcategoriesSelected": "{{count}} مختارة",
     "minRating": "الحد الأدنى للتقييم",
+    "platforms": "المنصات",
+    "allPlatforms": "جميع المنصات",
+    "platformsSelected": "{{count}} منصات مختارة",
+    "platformInstagram": "انستغرام",
+    "platformFacebook": "فيسبوك",
+    "platformTiktok": "تيك توك",
+    "platformYoutube": "يوتيوب",
+    "platformOther": "أخرى",
     "apply": "تطبيق الفلاتر"
   },
   "noResults": {
@@ -1215,11 +1258,13 @@
     "hebergement": "إيواء",
     "education": "تعليم",
     "shopping": "تسوق",
-    "car_rental": "تأجير سيارات",
+    "car_services": "خدمات سيارات",
+    "beauty": "تجميل",
     "bank": "بنك",
     "job_freelancer": "عمل / مستقل",
     "tradesman": "حِرَفي",
-    "delivery_company": "شركة توصيل"
+    "delivery_company": "شركة توصيل",
+    "influencer": "مؤثر"
   },
   "subcategories": {
     "tunisian": "تونسي",

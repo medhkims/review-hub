@@ -11,6 +11,11 @@ interface MenuItem {
   description: string;
   price: string;
   imageUri?: string;
+  isDeal?: boolean;
+  dealDiscountPercent?: number;
+  dealValidUntil?: Date;
+  originalPrice?: number;
+  currency?: string;
 }
 
 interface MenuCategory {
@@ -139,9 +144,27 @@ export const PriceListCard: React.FC<PriceListCardProps> = ({
               </View>
 
               {/* Price */}
-              <AppText style={{ fontSize: 22, fontWeight: '800', color: colors.neonPurple }}>
-                {detailItem.price}
-              </AppText>
+              {detailItem.isDeal && detailItem.dealDiscountPercent ? (
+                <View style={{ gap: 4 }}>
+                  <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
+                    <AppText style={{ fontSize: 16, color: colors.textSlate500, textDecorationLine: 'line-through' }}>
+                      {detailItem.price}
+                    </AppText>
+                    <View style={{ backgroundColor: colors.pink, paddingHorizontal: 8, paddingVertical: 3, borderRadius: 8 }}>
+                      <AppText style={{ fontSize: 12, fontWeight: '800', color: colors.white }}>
+                        -{detailItem.dealDiscountPercent}%
+                      </AppText>
+                    </View>
+                  </View>
+                  <AppText style={{ fontSize: 22, fontWeight: '800', color: colors.emerald }}>
+                    {detailItem.currency}{((detailItem.originalPrice ?? 0) * (1 - detailItem.dealDiscountPercent / 100)).toFixed(2)}
+                  </AppText>
+                </View>
+              ) : (
+                <AppText style={{ fontSize: 22, fontWeight: '800', color: colors.neonPurple }}>
+                  {detailItem.price}
+                </AppText>
+              )}
 
               {/* Description */}
               {!!detailItem.description && (
@@ -300,9 +323,27 @@ export const PriceListCard: React.FC<PriceListCardProps> = ({
                           </AppText>
                         </View>
                         <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
-                          <AppText style={{ fontSize: 14, fontWeight: '700', color: colors.neonPurple }}>
-                            {item.price}
-                          </AppText>
+                          {item.isDeal && item.dealDiscountPercent ? (
+                            <View style={{ alignItems: 'flex-end', gap: 2 }}>
+                              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+                                <AppText style={{ fontSize: 11, color: colors.textSlate500, textDecorationLine: 'line-through' }}>
+                                  {item.price}
+                                </AppText>
+                                <View style={{ backgroundColor: colors.pink, paddingHorizontal: 6, paddingVertical: 1, borderRadius: 6 }}>
+                                  <AppText style={{ fontSize: 9, fontWeight: '800', color: colors.white }}>
+                                    -{item.dealDiscountPercent}%
+                                  </AppText>
+                                </View>
+                              </View>
+                              <AppText style={{ fontSize: 14, fontWeight: '700', color: colors.emerald }}>
+                                {item.currency}{((item.originalPrice ?? 0) * (1 - item.dealDiscountPercent / 100)).toFixed(2)}
+                              </AppText>
+                            </View>
+                          ) : (
+                            <AppText style={{ fontSize: 14, fontWeight: '700', color: colors.neonPurple }}>
+                              {item.price}
+                            </AppText>
+                          )}
                           {isEditMode && (
                             <MaterialCommunityIcons name="pencil" size={14} color={colors.textSlate500} />
                           )}

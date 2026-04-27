@@ -131,10 +131,3 @@ export const Top5CompaniesSection: React.FC<Top5CompaniesSectionProps> = ({
 );
 
 // ── Mock Data ────────────────────────────────────────────────────────────────
-export const MOCK_TOP_COMPANIES: CompanyItem[] = [
-  { id: '1', rank: 1, name: 'Bella Pizza', category: 'Food & Dining', views: '12.5k' },
-  { id: '2', rank: 2, name: 'Tunis Dental', category: 'Healthcare', views: '9.2k' },
-  { id: '3', rank: 3, name: 'Gym Master', category: 'Fitness', views: '8.8k' },
-  { id: '4', rank: 4, name: 'Tech Solutions', category: 'IT Services', views: '6.4k' },
-  { id: '5', rank: 5, name: 'Cafe Culture', category: 'Food & Dining', views: '5.8k' },
-];

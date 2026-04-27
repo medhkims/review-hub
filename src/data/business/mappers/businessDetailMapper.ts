@@ -18,6 +18,7 @@ export class BusinessDetailMapper {
       longitude: model.longitude,
       coverImageUrl: model.cover_image_url,
       logoUrl: model.logo_url,
+      galleryImages: Array.isArray(model.gallery_images) ? model.gallery_images : [],
       isOpen: model.is_open,
       isOnline: model.is_online ?? false,
       rating: model.rating,
@@ -32,6 +33,9 @@ export class BusinessDetailMapper {
         instagramHandle: model.contact?.instagram_handle ?? null,
         facebookName: model.contact?.facebook_name ?? null,
         tiktokHandle: model.contact?.tiktok_handle ?? null,
+        youtubeHandle: model.contact?.youtube_handle ?? null,
+        twitchHandle: model.contact?.twitch_handle ?? null,
+        kickHandle: model.contact?.kick_handle ?? null,
       },
       categoryRatings: Array.isArray(model.category_ratings)
         ? model.category_ratings.map((cr) => ({
@@ -61,6 +65,9 @@ export class BusinessDetailMapper {
                     imageUrl: item.image_url,
                     price: item.price,
                     currency: item.currency,
+                    isDeal: item.is_deal ?? false,
+                    dealDiscountPercent: item.deal_discount_percent ?? undefined,
+                    dealValidUntil: item.deal_valid_until?.toDate?.() ?? undefined,
                   }))
                 : [],
             }))
@@ -89,6 +96,9 @@ export class BusinessDetailMapper {
       suspensionCount: model.suspension_count ?? 0,
       status: model.status ?? 'active',
       isOwnerVerified: model.is_verified === true || (model.is_verified === undefined && !!model.owner_id),
+      isClaimed: model.is_claimed ?? true,
+      isImported: model.is_imported ?? false,
+      source: model.source,
       createdAt: model.created_at?.toDate?.() ?? new Date(),
       updatedAt: model.updated_at?.toDate?.() ?? new Date(),
     };

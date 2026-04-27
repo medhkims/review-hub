@@ -41,30 +41,14 @@ export class GetActiveCategoriesUseCase {
         activeInfoResult.fold(
           () => { filtered = categories; },
           (activeInfo) => {
-            // No businesses registered yet — show all categories unfiltered.
-            if (activeInfo.categoryIds.length === 0) {
-              filtered = categories;
-              return;
-            }
-            const matching = categories
-              .filter((cat) => activeInfo.categoryIds.includes(cat.id));
-
-            // If no categories matched the active business data (e.g. a
-            // category_id mismatch between businesses and the categories
-            // collection), fall back to showing ALL categories so the home
-            // screen is never left with an empty category strip.
-            if (matching.length === 0) {
-              filtered = categories;
-              return;
-            }
-
-            filtered = matching
+            // Only show categories that have at least one business.
+            // If no businesses exist at all, no categories are shown.
+            filtered = categories
+              .filter((cat) => activeInfo.categoryIds.includes(cat.id))
               .map((cat) => {
                 const activeSubs = activeInfo.subcategoryNamesByCategoryId[cat.id] ?? [];
 
-                // No sub-category data recorded yet — keep all subcategory tabs visible.
-                if (activeSubs.length === 0) return cat;
-
+                // Only keep subcategories that have at least one business.
                 return {
                   ...cat,
                   subcategories: cat.subcategories.filter((sub) =>

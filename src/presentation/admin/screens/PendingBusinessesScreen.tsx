@@ -10,7 +10,6 @@ import { ProfileEntity } from '@/domain/profile/entities/profileEntity';
 import { VerificationEntity, VerificationStatus } from '@/domain/verification/entities/verificationEntity';
 import { colors } from '@/core/theme/colors';
 import { container } from '@/core/di/container';
-import { getCategoryDefaultCover } from '@/core/utils/categoryDefaultImages';
 import { useCategoryDefaultStore } from '@/presentation/shared/store/categoryDefaultStore';
 import { useAuthStore } from '@/presentation/auth/store/authStore';
 import { AdminMenuButton } from '../components/AdminMenuButton';
@@ -702,7 +701,7 @@ export function PendingBusinessesScreen() {
       ? { uri: item.coverImageUrl! }
       : remote?.coverImageUrl
         ? { uri: remote.coverImageUrl }
-        : (item.categoryId ? getCategoryDefaultCover(item.categoryId) : null);
+        : null;
 
     return (
       <Pressable
@@ -1882,6 +1881,9 @@ export function PendingBusinessesScreen() {
                         { icon: 'instagram' as const, value: biz.contact.instagramHandle ? `@${biz.contact.instagramHandle}` : null },
                         { icon: 'facebook' as const, value: biz.contact.facebookName },
                         { icon: 'music-note' as const, value: biz.contact.tiktokHandle ? `@${biz.contact.tiktokHandle}` : null },
+                        { icon: 'youtube' as const, value: biz.contact.youtubeHandle },
+                        { icon: 'twitch' as const, value: biz.contact.twitchHandle },
+                        { icon: 'alpha-k-circle' as const, value: biz.contact.kickHandle },
                       ].filter((row) => !!row.value).map((row) => (
                         <View key={row.icon} style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
                           <MaterialCommunityIcons name={row.icon} size={16} color={colors.textSlate400} />

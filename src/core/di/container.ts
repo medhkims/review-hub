@@ -1,6 +1,13 @@
 // ---- Core ----
 import { NetworkInfoImpl } from '@/core/network/networkInfo';
 
+// ---- Announcements ----
+import { AnnouncementRemoteDataSourceImpl } from '@/data/announcement/datasources/announcementRemoteDataSource';
+import { AnnouncementRepositoryImpl } from '@/data/announcement/repositories/announcementRepositoryImpl';
+import { GetAnnouncementsUseCase } from '@/domain/announcement/usecases/getAnnouncementsUseCase';
+import { CreateAnnouncementUseCase } from '@/domain/announcement/usecases/createAnnouncementUseCase';
+import { DeleteAnnouncementUseCase } from '@/domain/announcement/usecases/deleteAnnouncementUseCase';
+
 // ---- Auth ----
 import { AuthRemoteDataSourceImpl } from '@/data/auth/datasources/authRemoteDataSource';
 import { AuthLocalDataSourceImpl } from '@/data/auth/datasources/authLocalDataSource';
@@ -18,6 +25,8 @@ import { SendEmailOtpUseCase } from '@/domain/auth/usecases/sendEmailOtpUseCase'
 import { VerifyEmailOtpUseCase } from '@/domain/auth/usecases/verifyEmailOtpUseCase';
 import { VerifyCurrentPasswordUseCase } from '@/domain/auth/usecases/verifyCurrentPasswordUseCase';
 import { SendPasswordResetEmailUseCase } from '@/domain/auth/usecases/sendPasswordResetEmailUseCase';
+import { DeleteAccountUseCase } from '@/domain/auth/usecases/deleteAccountUseCase';
+import { ContinueAsGuestUseCase } from '@/domain/auth/usecases/continueAsGuestUseCase';
 
 // ---- Settings ----
 import { SettingsLocalDataSourceImpl } from '@/data/settings/datasources/settingsLocalDataSource';
@@ -59,6 +68,9 @@ import { CategoryFirestoreDataSourceImpl } from '@/data/business/datasources/cat
 import { BusinessRepositoryImpl } from '@/data/business/repositories/businessRepositoryImpl';
 import { CategoryRepositoryImpl } from '@/data/business/repositories/categoryRepositoryImpl';
 import { GetFeaturedBusinessesUseCase } from '@/domain/business/usecases/getFeaturedBusinessesUseCase';
+import { GetNearbyBusinessesUseCase } from '@/domain/business/usecases/getNearbyBusinessesUseCase';
+import { GetTopRatedBusinessesUseCase } from '@/domain/business/usecases/getTopRatedBusinessesUseCase';
+import { GetPopularByCategoryUseCase } from '@/domain/business/usecases/getPopularByCategoryUseCase';
 import { GetNewBusinessesUseCase } from '@/domain/business/usecases/getNewBusinessesUseCase';
 import { GetCategoriesUseCase } from '@/domain/business/usecases/getCategoriesUseCase';
 import { SearchBusinessesUseCase } from '@/domain/business/usecases/searchBusinessesUseCase';
@@ -100,6 +112,8 @@ import { GetSuspendedBusinessesUseCase } from '@/domain/business/usecases/getSus
 import { IncrementSearchCountUseCase } from '@/domain/business/usecases/incrementSearchCountUseCase';
 import { IncrementGlobalSearchCountUseCase } from '@/domain/business/usecases/incrementGlobalSearchCountUseCase';
 import { ReportBusinessUseCase } from '@/domain/business/usecases/reportBusinessUseCase';
+import { ClaimBusinessUseCase } from '@/domain/business/usecases/claimBusinessUseCase';
+import { GetHomeStatsUseCase } from '@/domain/business/usecases/getHomeStatsUseCase';
 import { LikeReviewUseCase } from '@/domain/business/usecases/likeReviewUseCase';
 import { UnlikeReviewUseCase } from '@/domain/business/usecases/unlikeReviewUseCase';
 import { IncrementReviewViewUseCase } from '@/domain/business/usecases/incrementReviewViewUseCase';
@@ -139,8 +153,12 @@ import { GetPostsUseCase } from '@/domain/feed/usecases/getPostsUseCase';
 import { CreatePostUseCase } from '@/domain/feed/usecases/createPostUseCase';
 import { LikePostUseCase } from '@/domain/feed/usecases/likePostUseCase';
 
+// ---- Business Owner Insights ----
+import { BOInsightsRemoteDataSourceImpl } from '@/data/businessOwnerInsights/datasources/boInsightsRemoteDataSource';
+
 // ---- Reviews ----
 import { ReviewRemoteDataSourceImpl } from '@/data/reviews/datasources/reviewRemoteDataSource';
+import { ReviewImageRemoteDataSourceImpl } from '@/data/reviews/datasources/reviewImageRemoteDataSource';
 import { ReviewRepositoryImpl } from '@/data/reviews/repositories/reviewRepositoryImpl';
 import { CreateReviewUseCase } from '@/domain/reviews/usecases/createReviewUseCase';
 import { GetUserReviewsUseCase } from '@/domain/reviews/usecases/getUserReviewsUseCase';
@@ -188,6 +206,22 @@ import { GetVerificationsByStatusUseCase } from '@/domain/verification/usecases/
 import { ValidateIdCardUseCase } from '@/domain/verification/usecases/validateIdCardUseCase';
 import { ExtractAndSaveCinUseCase } from '@/domain/verification/usecases/extractAndSaveCinUseCase';
 
+// ---- Deals ----
+import { DealRemoteDataSourceImpl } from '@/data/deals/datasources/dealRemoteDataSource';
+import { DealRepositoryImpl } from '@/data/deals/repositories/dealRepositoryImpl';
+import { GetActiveDealsUseCase } from '@/domain/deals/usecases/getActiveDealsUseCase';
+
+// ---- Weekly Picks ----
+import { WeeklyPickRemoteDataSourceImpl } from '@/data/weeklyPicks/datasources/weeklyPickRemoteDataSource';
+import { WeeklyPickRepositoryImpl } from '@/data/weeklyPicks/repositories/weeklyPickRepositoryImpl';
+import { GetWeeklyPicksUseCase } from '@/domain/weeklyPicks/usecases/getWeeklyPicksUseCase';
+import { GetAllWeeklyPicksUseCase } from '@/domain/weeklyPicks/usecases/getAllWeeklyPicksUseCase';
+import { CreateWeeklyPickUseCase } from '@/domain/weeklyPicks/usecases/createWeeklyPickUseCase';
+import { DeleteWeeklyPickUseCase } from '@/domain/weeklyPicks/usecases/deleteWeeklyPickUseCase';
+
+// ---- Recent Reviews ----
+import { GetRecentReviewsUseCase } from '@/domain/business/usecases/getRecentReviewsUseCase';
+
 // ---- FAQ ----
 import { FaqRemoteDataSourceImpl } from '@/data/faq/datasources/faqRemoteDataSource';
 import { FaqRepositoryImpl } from '@/data/faq/repositories/faqRepositoryImpl';
@@ -197,8 +231,25 @@ import { CreateFaqUseCase } from '@/domain/faq/usecases/createFaqUseCase';
 import { UpdateFaqUseCase } from '@/domain/faq/usecases/updateFaqUseCase';
 import { DeleteFaqUseCase } from '@/domain/faq/usecases/deleteFaqUseCase';
 
+// ---- Booking ----
+import { BookingRemoteDataSourceImpl } from '@/data/booking/datasources/bookingRemoteDataSource';
+import { BookingRepositoryImpl } from '@/data/booking/repositories/bookingRepositoryImpl';
+import { GetBookingConfigUseCase } from '@/domain/booking/usecases/getBookingConfigUseCase';
+import { UpdateBookingConfigUseCase } from '@/domain/booking/usecases/updateBookingConfigUseCase';
+import { CreateBookingRequestUseCase } from '@/domain/booking/usecases/createBookingRequestUseCase';
+import { GetBusinessBookingRequestsUseCase } from '@/domain/booking/usecases/getBusinessBookingRequestsUseCase';
+import { UpdateBookingRequestStatusUseCase } from '@/domain/booking/usecases/updateBookingRequestStatusUseCase';
+
+// ---- Dispute ----
+import { DisputeRemoteDataSourceImpl } from '@/data/dispute/datasources/disputeRemoteDataSource';
+import { DisputeRepositoryImpl } from '@/data/dispute/repositories/disputeRepositoryImpl';
+import { SubmitDisputeUseCase } from '@/domain/dispute/usecases/submitDisputeUseCase';
+import { GetDisputesUseCase } from '@/domain/dispute/usecases/getDisputesUseCase';
+import { ResolveDisputeUseCase } from '@/domain/dispute/usecases/resolveDisputeUseCase';
+
 // ---- Admin ----
 import { AdminRemoteDataSourceImpl } from '@/data/admin/datasources/adminRemoteDataSource';
+import { AdminInsightsRemoteDataSourceImpl } from '@/data/admin/datasources/adminInsightsRemoteDataSource';
 import { AdminRepositoryImpl } from '@/data/admin/repositories/adminRepositoryImpl';
 import { GetAdminDashboardStatsUseCase } from '@/domain/admin/usecases/getAdminDashboardStatsUseCase';
 import { GetAdminCompanyListUseCase } from '@/domain/admin/usecases/getAdminCompanyListUseCase';
@@ -236,6 +287,8 @@ const sendEmailOtpUseCase = new SendEmailOtpUseCase(authRepository);
 const verifyEmailOtpUseCase = new VerifyEmailOtpUseCase(authRepository);
 const verifyCurrentPasswordUseCase = new VerifyCurrentPasswordUseCase(authRepository);
 const sendPasswordResetEmailUseCase = new SendPasswordResetEmailUseCase(authRepository);
+const deleteAccountUseCase = new DeleteAccountUseCase(authRepository);
+const continueAsGuestUseCase = new ContinueAsGuestUseCase(authRepository);
 
 // ---- Settings ----
 const settingsLocalDataSource = new SettingsLocalDataSourceImpl();
@@ -284,6 +337,9 @@ const businessRepository = new BusinessRepositoryImpl(businessRemoteDataSource, 
 const categoryRepository = new CategoryRepositoryImpl(categoryRemoteDataSource, categoryFirestoreDataSource);
 
 const getFeaturedBusinessesUseCase = new GetFeaturedBusinessesUseCase(businessRepository);
+const getNearbyBusinessesUseCase = new GetNearbyBusinessesUseCase(businessRepository);
+const getTopRatedBusinessesUseCase = new GetTopRatedBusinessesUseCase(businessRepository);
+const getPopularByCategoryUseCase = new GetPopularByCategoryUseCase(businessRepository);
 const getNewBusinessesUseCase = new GetNewBusinessesUseCase(businessRepository);
 const getCategoriesUseCase = new GetCategoriesUseCase(categoryRepository);
 const searchBusinessesUseCase = new SearchBusinessesUseCase(businessRepository);
@@ -325,6 +381,8 @@ const getSuspendedBusinessesUseCase = new GetSuspendedBusinessesUseCase(business
 const incrementSearchCountUseCase = new IncrementSearchCountUseCase(businessRepository);
 const incrementGlobalSearchCountUseCase = new IncrementGlobalSearchCountUseCase(businessRepository);
 const reportBusinessUseCase = new ReportBusinessUseCase(businessRepository);
+const claimBusinessUseCase = new ClaimBusinessUseCase(businessRepository);
+const getHomeStatsUseCase = new GetHomeStatsUseCase(businessRepository);
 const likeReviewUseCase = new LikeReviewUseCase(businessRepository, notificationRepository);
 const unlikeReviewUseCase = new UnlikeReviewUseCase(businessRepository);
 const incrementReviewViewUseCase = new IncrementReviewViewUseCase(businessRepository);
@@ -366,7 +424,11 @@ const createPostUseCase = new CreatePostUseCase(feedRepository);
 const likePostUseCase = new LikePostUseCase(feedRepository);
 
 // ---- Reviews ----
+// --- Business Owner Insights ---
+const boInsightsDataSource = new BOInsightsRemoteDataSourceImpl();
+
 const reviewRemoteDataSource = new ReviewRemoteDataSourceImpl();
+const reviewImageDataSource = new ReviewImageRemoteDataSourceImpl();
 const reviewRepository = new ReviewRepositoryImpl(reviewRemoteDataSource);
 
 const createReviewUseCase = new CreateReviewUseCase(reviewRepository);
@@ -417,8 +479,16 @@ const getVerificationsByStatusUseCase = new GetVerificationsByStatusUseCase(veri
 const validateIdCardUseCase = new ValidateIdCardUseCase(verificationRepository);
 const extractAndSaveCinUseCase = new ExtractAndSaveCinUseCase(verificationRepository);
 
+// ---- Dispute ----
+const disputeRemoteDataSource = new DisputeRemoteDataSourceImpl();
+const disputeRepository = new DisputeRepositoryImpl(disputeRemoteDataSource);
+const submitDisputeUseCase = new SubmitDisputeUseCase(disputeRepository);
+const getDisputesUseCase = new GetDisputesUseCase(disputeRepository);
+const resolveDisputeUseCase = new ResolveDisputeUseCase(disputeRepository);
+
 // ---- Admin ----
 const adminRemoteDataSource = new AdminRemoteDataSourceImpl();
+const adminInsightsDataSource = new AdminInsightsRemoteDataSourceImpl();
 const adminRepository = new AdminRepositoryImpl(adminRemoteDataSource);
 const getAdminDashboardStatsUseCase = new GetAdminDashboardStatsUseCase(adminRepository);
 const getAdminCompanyListUseCase = new GetAdminCompanyListUseCase(adminRepository);
@@ -439,9 +509,41 @@ const createFaqUseCase = new CreateFaqUseCase(faqRepository);
 const updateFaqUseCase = new UpdateFaqUseCase(faqRepository);
 const deleteFaqUseCase = new DeleteFaqUseCase(faqRepository);
 
+// ---- Deals ----
+const dealRemoteDataSource = new DealRemoteDataSourceImpl();
+const dealRepository = new DealRepositoryImpl(dealRemoteDataSource);
+const getActiveDealsUseCase = new GetActiveDealsUseCase(dealRepository);
+
+// ---- Weekly Picks ----
+const weeklyPickRemoteDataSource = new WeeklyPickRemoteDataSourceImpl();
+const weeklyPickRepository = new WeeklyPickRepositoryImpl(weeklyPickRemoteDataSource);
+const getWeeklyPicksUseCase = new GetWeeklyPicksUseCase(weeklyPickRepository);
+const getAllWeeklyPicksUseCase = new GetAllWeeklyPicksUseCase(weeklyPickRepository);
+const createWeeklyPickUseCase = new CreateWeeklyPickUseCase(weeklyPickRepository);
+const deleteWeeklyPickUseCase = new DeleteWeeklyPickUseCase(weeklyPickRepository);
+
+// ---- Recent Reviews ----
+const getRecentReviewsUseCase = new GetRecentReviewsUseCase(businessRepository);
+
 // ---- Notifications (use cases) ----
 const getNotificationsUseCase = new GetNotificationsUseCase(notificationRepository);
 const markNotificationReadUseCase = new MarkNotificationReadUseCase(notificationRepository);
+
+// ---- Booking ----
+const bookingRemoteDataSource = new BookingRemoteDataSourceImpl();
+const bookingRepository = new BookingRepositoryImpl(bookingRemoteDataSource);
+const getBookingConfigUseCase = new GetBookingConfigUseCase(bookingRepository);
+const updateBookingConfigUseCase = new UpdateBookingConfigUseCase(bookingRepository);
+const createBookingRequestUseCase = new CreateBookingRequestUseCase(bookingRepository);
+const getBusinessBookingRequestsUseCase = new GetBusinessBookingRequestsUseCase(bookingRepository);
+const updateBookingRequestStatusUseCase = new UpdateBookingRequestStatusUseCase(bookingRepository);
+
+// ---- Announcements ----
+const announcementRemote = new AnnouncementRemoteDataSourceImpl();
+const announcementRepository = new AnnouncementRepositoryImpl(announcementRemote);
+const getAnnouncementsUseCase = new GetAnnouncementsUseCase(announcementRepository);
+const createAnnouncementUseCase = new CreateAnnouncementUseCase(announcementRepository);
+const deleteAnnouncementUseCase = new DeleteAnnouncementUseCase(announcementRepository);
 
 export const container = {
   networkInfo,
@@ -459,6 +561,8 @@ export const container = {
   verifyEmailOtpUseCase,
   verifyCurrentPasswordUseCase,
   sendPasswordResetEmailUseCase,
+  deleteAccountUseCase,
+  continueAsGuestUseCase,
   // Settings use cases
   getSettingsUseCase,
   updateSettingsUseCase,
@@ -475,6 +579,9 @@ export const container = {
   removeFromWishlistUseCase,
   // Business use cases
   getFeaturedBusinessesUseCase,
+  getNearbyBusinessesUseCase,
+  getTopRatedBusinessesUseCase,
+  getPopularByCategoryUseCase,
   getNewBusinessesUseCase,
   getCategoriesUseCase,
   getActiveCategoriesUseCase,
@@ -516,6 +623,8 @@ export const container = {
   incrementSearchCountUseCase,
   incrementGlobalSearchCountUseCase,
   reportBusinessUseCase,
+  claimBusinessUseCase,
+  getHomeStatsUseCase,
   // Review interaction use cases
   likeReviewUseCase,
   unlikeReviewUseCase,
@@ -545,6 +654,7 @@ export const container = {
   createPostUseCase,
   likePostUseCase,
   // Review use cases
+  reviewImageDataSource,
   createReviewUseCase,
   getUserReviewsUseCase,
   deleteReviewUseCase,
@@ -561,6 +671,7 @@ export const container = {
   // Notification use cases
   getNotificationsUseCase,
   markNotificationReadUseCase,
+  notificationRepository,
   // Banner use cases
   getBannersUseCase,
   getAllBannersUseCase,
@@ -570,6 +681,7 @@ export const container = {
   // Admin use cases
   getAdminDashboardStatsUseCase,
   getAdminCompanyListUseCase,
+  adminInsightsDataSource,
   getAdminInfoUseCase,
   updateAdminInfoUseCase,
   uploadAdminPictureUseCase,
@@ -586,10 +698,35 @@ export const container = {
   getVerificationsByStatusUseCase,
   validateIdCardUseCase,
   extractAndSaveCinUseCase,
+  // Business Owner Insights data source
+  boInsightsDataSource,
   // FAQ use cases
   getFaqsUseCase,
   getAdminFaqsUseCase,
   createFaqUseCase,
   updateFaqUseCase,
   deleteFaqUseCase,
+  // Deals use cases
+  getActiveDealsUseCase,
+  // Weekly Picks use cases
+  getWeeklyPicksUseCase,
+  getAllWeeklyPicksUseCase,
+  createWeeklyPickUseCase,
+  deleteWeeklyPickUseCase,
+  // Recent Reviews use case
+  getRecentReviewsUseCase,
+  // Dispute use cases
+  submitDisputeUseCase,
+  getDisputesUseCase,
+  resolveDisputeUseCase,
+  // Announcement use cases
+  getAnnouncementsUseCase,
+  createAnnouncementUseCase,
+  deleteAnnouncementUseCase,
+  // Booking use cases
+  getBookingConfigUseCase,
+  updateBookingConfigUseCase,
+  createBookingRequestUseCase,
+  getBusinessBookingRequestsUseCase,
+  updateBookingRequestStatusUseCase,
 };

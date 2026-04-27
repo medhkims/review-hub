@@ -47,6 +47,7 @@ export default function SettingsScreen() {
     await signOut();
   };
 
+
   const getInitials = (name: string) => {
     return name
       .split(' ')
@@ -94,7 +95,7 @@ export default function SettingsScreen() {
         }}
       >
         <AppText style={{ fontSize: 17, fontWeight: '600', color: theme.text }}>
-          {t('settings.profile')}
+          {t('settings.settingsSection')}
         </AppText>
       </View>
 
@@ -266,10 +267,15 @@ export default function SettingsScreen() {
             <SettingRow iconName="shield-outline" iconColor="cyan" label={t('settings.privacyPolicy')} onPress={() => router.push('/(main)/(settings)/privacy-policy')} isLast />
           </SettingCard>
           <SettingCard>
+            <SettingRow iconName="file-document-outline" iconColor="indigo" label={t('settings.termsOfService')} onPress={() => router.push('/(main)/(settings)/terms-of-service' as Parameters<typeof router.push>[0])} isLast />
+          </SettingCard>
+          <SettingCard>
             <SettingRow iconName="logout-variant" iconColor="red" label={t('settings.logout')} onPress={handleLogout} variant="danger" isLast />
           </SettingCard>
+
         </View>
       </ScrollView>
+
     </ScreenLayout>
   );
 }

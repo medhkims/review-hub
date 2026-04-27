@@ -4,6 +4,7 @@ import { ReviewEntity } from '../entities/reviewEntity';
 import { RecentReviewEntity } from '../entities/recentReviewEntity';
 import { CommentEntity, ReplyEntity } from '../entities/commentEntity';
 import { ActiveCategoryInfoEntity } from '../entities/activeCategoryInfoEntity';
+import { ClaimBusinessParams } from '../usecases/claimBusinessUseCase';
 import { Either } from '@/core/types/either';
 import { Failure } from '@/core/error/failures';
 
@@ -37,6 +38,9 @@ export interface DuplicateCheckResult {
 
 export interface BusinessRepository {
   getFeaturedBusinesses(): Promise<Either<Failure, BusinessEntity[]>>;
+  getNearbyBusinesses(latitude: number, longitude: number, radiusKm: number): Promise<Either<Failure, BusinessEntity[]>>;
+  getTopRatedBusinesses(): Promise<Either<Failure, BusinessEntity[]>>;
+  getPopularByCategory(categoryId: string): Promise<Either<Failure, BusinessEntity[]>>;
   getNewBusinesses(): Promise<Either<Failure, BusinessEntity[]>>;
   getBusinessesByCategory(categoryId: string): Promise<Either<Failure, BusinessEntity[]>>;
   searchBusinesses(query: string, categoryId?: string | null): Promise<Either<Failure, BusinessEntity[]>>;
@@ -51,7 +55,7 @@ export interface BusinessRepository {
   getActiveCategoryInfo(): Promise<Either<Failure, ActiveCategoryInfoEntity>>;
   submitBusiness(params: SubmitBusinessParams): Promise<Either<Failure, string>>;
   checkBusinessDuplicate(name: string, categoryId: string): Promise<Either<Failure, DuplicateCheckResult>>;
-  uploadBusinessImage(businessId: string, imageUri: string, type: 'cover' | 'logo' | 'menu'): Promise<Either<Failure, string>>;
+  uploadBusinessImage(businessId: string, imageUri: string, type: 'cover' | 'logo' | 'menu' | 'gallery'): Promise<Either<Failure, string>>;
   getPendingBusinesses(): Promise<Either<Failure, BusinessDetailEntity[]>>;
   getApprovedBusinesses(): Promise<Either<Failure, BusinessDetailEntity[]>>;
   getRejectedBusinesses(): Promise<Either<Failure, BusinessDetailEntity[]>>;
@@ -63,6 +67,8 @@ export interface BusinessRepository {
   incrementSearchCount(businessId: string): Promise<Either<Failure, void>>;
   incrementGlobalSearchCount(): Promise<Either<Failure, void>>;
   reportBusiness(params: ReportBusinessParams): Promise<Either<Failure, void>>;
+  getHomeStats(): Promise<Either<Failure, { totalBusinesses: number; totalReviews: number }>>;
+  claimBusiness(params: ClaimBusinessParams): Promise<Either<Failure, void>>;
   likeReview(reviewId: string): Promise<Either<Failure, void>>;
   unlikeReview(reviewId: string): Promise<Either<Failure, void>>;
   incrementReviewView(reviewId: string): Promise<Either<Failure, void>>;

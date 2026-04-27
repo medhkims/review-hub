@@ -64,9 +64,27 @@ const MenuItemRow: React.FC<{ item: MenuItem; onPress: (item: MenuItem) => void 
             {item.name}
           </AppText>
         </View>
-        <AppText style={{ fontSize: 14, fontWeight: '700', color: colors.neonPurple }}>
-          {item.currency}{item.price.toFixed(2)}
-        </AppText>
+        {item.isDeal && item.dealDiscountPercent ? (
+          <View style={{ alignItems: 'flex-end', gap: 2 }}>
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+              <AppText style={{ fontSize: 11, color: colors.textSlate400, textDecorationLine: 'line-through' }}>
+                {item.currency}{item.price.toFixed(2)}
+              </AppText>
+              <View style={{ backgroundColor: colors.pink, paddingHorizontal: 6, paddingVertical: 1, borderRadius: 6 }}>
+                <AppText style={{ fontSize: 9, fontWeight: '800', color: colors.white }}>
+                  -{item.dealDiscountPercent}%
+                </AppText>
+              </View>
+            </View>
+            <AppText style={{ fontSize: 14, fontWeight: '700', color: colors.emerald }}>
+              {item.currency}{(item.price * (1 - item.dealDiscountPercent / 100)).toFixed(2)}
+            </AppText>
+          </View>
+        ) : (
+          <AppText style={{ fontSize: 14, fontWeight: '700', color: colors.neonPurple }}>
+            {item.currency}{item.price.toFixed(2)}
+          </AppText>
+        )}
       </Pressable>
     );
   },
@@ -138,9 +156,27 @@ export const MenuSection: React.FC<MenuSectionProps> = ({ menuCategories, busine
                     <MaterialCommunityIcons name="close" size={20} color={theme.textSecondary} />
                   </Pressable>
                 </View>
-                <AppText style={{ fontSize: 22, fontWeight: '800', color: colors.neonPurple }}>
-                  {detailItem.currency}{detailItem.price.toFixed(2)}
-                </AppText>
+                {detailItem.isDeal && detailItem.dealDiscountPercent ? (
+                  <View style={{ gap: 4 }}>
+                    <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
+                      <AppText style={{ fontSize: 16, color: colors.textSlate400, textDecorationLine: 'line-through' }}>
+                        {detailItem.currency}{detailItem.price.toFixed(2)}
+                      </AppText>
+                      <View style={{ backgroundColor: colors.pink, paddingHorizontal: 8, paddingVertical: 3, borderRadius: 8 }}>
+                        <AppText style={{ fontSize: 12, fontWeight: '800', color: colors.white }}>
+                          -{detailItem.dealDiscountPercent}%
+                        </AppText>
+                      </View>
+                    </View>
+                    <AppText style={{ fontSize: 22, fontWeight: '800', color: colors.emerald }}>
+                      {detailItem.currency}{(detailItem.price * (1 - detailItem.dealDiscountPercent / 100)).toFixed(2)}
+                    </AppText>
+                  </View>
+                ) : (
+                  <AppText style={{ fontSize: 22, fontWeight: '800', color: colors.neonPurple }}>
+                    {detailItem.currency}{detailItem.price.toFixed(2)}
+                  </AppText>
+                )}
                 {!!detailItem.description && (
                   <>
                     <View style={{ height: 1, backgroundColor: 'rgba(255,255,255,0.07)' }} />

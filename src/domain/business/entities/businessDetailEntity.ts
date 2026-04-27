@@ -15,6 +15,9 @@ export interface MenuItem {
   imageUrl: string | null;
   price: number;
   currency: string;
+  isDeal?: boolean;
+  dealDiscountPercent?: number;
+  dealValidUntil?: Date;
 }
 
 export interface MenuCategory {
@@ -52,6 +55,9 @@ export interface ContactInfo {
   instagramHandle: string | null;
   facebookName: string | null;
   tiktokHandle: string | null;
+  youtubeHandle: string | null;
+  twitchHandle: string | null;
+  kickHandle: string | null;
 }
 
 import type { BusinessStatus } from './businessEntity';
@@ -68,6 +74,7 @@ export interface BusinessDetailEntity {
   longitude: number | null;
   coverImageUrl: string | null;
   logoUrl: string | null;
+  galleryImages: string[];
   isOpen: boolean;
   isOnline: boolean;
   rating: number;
@@ -84,6 +91,9 @@ export interface BusinessDetailEntity {
   openingHours?: OpeningHours;
   openingHoursVisible?: boolean;
   suspensionCount?: number;
+  isClaimed: boolean;
+  isImported: boolean;
+  source?: string;
   createdAt: Date;
   updatedAt: Date;
 }

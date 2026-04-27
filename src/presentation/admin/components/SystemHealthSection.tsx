@@ -85,8 +85,3 @@ export const SystemHealthSection: React.FC<SystemHealthSectionProps> = ({
 );
 
 // ── Mock Data ────────────────────────────────────────────────────────────────
-export const MOCK_SYSTEM_HEALTH: HealthItem[] = [
-  { label: 'Pending Approvals', value: 45, icon: 'clock-check-outline', accent: colors.orange },
-  { label: 'Moderation Backlog', value: 128, icon: 'shield-alert-outline', accent: colors.red },
-  { label: 'Reported Issues', value: 23, icon: 'alert-circle-outline', accent: colors.yellow },
-];

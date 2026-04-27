@@ -97,13 +97,19 @@ admin.initializeApp();
 export const createUserProfile = functions.auth.user().onCreate(async (user) => {
   const { uid, email, displayName, photoURL, phoneNumber } = user;
 
+  // Skip profile creation for anonymous (guest) users — no data collected
+  if (!email && !displayName && !phoneNumber) {
+    console.log('Anonymous user created, skipping profile');
+    return null;
+  }
+
   try {
     const profileRef = admin.firestore().collection('profiles').doc(uid);
 
     // Check if profile already exists (shouldn't happen, but just in case)
     const existingProfile = await profileRef.get();
     if (existingProfile.exists) {
-      console.log(`Profile already exists for user ${uid}`);
+      console.log('Profile already exists, skipping creation');
       return null;
     }
 
@@ -123,10 +129,10 @@ export const createUserProfile = functions.auth.user().onCreate(async (user) => 
       updated_at: admin.firestore.FieldValue.serverTimestamp(),
     });
 
-    console.log(`Successfully created profile for user ${uid}`);
+    console.log('Successfully created user profile');
     return null;
   } catch (error) {
-    console.error(`Error creating profile for user ${uid}:`, error);
+    console.error('Error creating user profile:', error);
     throw error;
   }
 });
@@ -158,10 +164,10 @@ export const deleteUserData = functions.auth.user().onDelete(async (user) => {
 
     await batch.commit();
 
-    console.log(`Successfully deleted data for user ${uid}`);
+    console.log('Successfully deleted user data');
     return null;
   } catch (error) {
-    console.error(`Error deleting data for user ${uid}:`, error);
+    console.error('Error deleting user data:', error);
     throw error;
   }
 });
@@ -184,7 +190,7 @@ export const updateDenormalizedProfileData = functions.firestore
     const avatarChanged = beforeData.avatar_url !== afterData.avatar_url;
 
     if (!displayNameChanged && !avatarChanged) {
-      console.log(`No relevant changes for user ${userId}`);
+      console.log('No relevant profile changes, skipping denormalization');
       return null;
     }
 
@@ -212,10 +218,10 @@ export const updateDenormalizedProfileData = functions.firestore
 
       await batch.commit();
 
-      console.log(`Successfully updated denormalized data for user ${userId}`);
+      console.log('Successfully updated denormalized profile data');
       return null;
     } catch (error) {
-      console.error(`Error updating denormalized data for user ${userId}:`, error);
+      console.error('Error updating denormalized profile data:', error);
       throw error;
     }
   });
@@ -371,7 +377,7 @@ export const registerBusinessOwner = functions.https.onCall(async (data, context
       updated_at: admin.firestore.FieldValue.serverTimestamp(),
     });
 
-    console.log(`Business registered for user ${uid}, business ID: ${businessRef.id}`);
+    console.log('Business registered successfully');
 
     return { success: true, businessId: businessRef.id };
   } catch (error: unknown) {
@@ -379,7 +385,7 @@ export const registerBusinessOwner = functions.https.onCall(async (data, context
       throw error;
     }
     const message = error instanceof Error ? error.message : 'Failed to register business';
-    console.error(`Error registering business for user ${uid}:`, error);
+    console.error('Error registering business:', error);
     throw new functions.https.HttpsError('internal', message);
   }
 });
@@ -539,6 +545,117 @@ export const updateUserRole = functions.https.onCall(async (data, context) => {
   }
 });
 
+// ─── Trending: Track Weekly Review Count ──────────────────────────────────────
+/**
+ * Firestore trigger: when a new review is created, increment
+ * `weekly_review_count` on the associated business document.
+ * This powers the "Trending Now" section on the home screen.
+ */
+export const onReviewCreated = functions.firestore
+  .document('reviews/{reviewId}')
+  .onCreate(async (snap) => {
+    const data = snap.data();
+    const businessId: string | undefined = data?.business_id;
+    if (!businessId) return null;
+
+    // Only count reviews that are visible (posted), not pending moderation
+    const status: string | undefined = data?.status;
+    if (status && status !== 'posted') return null;
+
+    try {
+      await admin.firestore().collection('businesses').doc(businessId).update({
+        weekly_review_count: admin.firestore.FieldValue.increment(1),
+      });
+    } catch (error) {
+      console.error('onReviewCreated: failed to increment weekly_review_count', error);
+    }
+    return null;
+  });
+
+/**
+ * Scheduled function: runs every Monday at 00:00 UTC.
+ *
+ * Three cases:
+ *   1. Reviews came in this week (some business has weekly_review_count > 0)
+ *      → Reset all weekly_review_count to 0 so the new week starts fresh.
+ *
+ *   2. No new reviews this week, but reviews exist in the app (some business
+ *      has review_count > 0)
+ *      → Do nothing. The previous week's trending list stays as-is.
+ *
+ *   3. No reviews at all in the entire app (every business has review_count 0)
+ *      → Pick 8 random businesses and set their weekly_review_count to 1
+ *        so the "Trending Now" section has content.
+ */
+export const resetWeeklyReviewCounts = functions.pubsub
+  .schedule('every monday 00:00')
+  .timeZone('UTC')
+  .onRun(async () => {
+    const db = admin.firestore();
+    const snapshot = await db.collection('businesses').get();
+    if (snapshot.empty) return null;
+
+    const docs = snapshot.docs;
+
+    // Check if any business received reviews this week
+    const hadReviewsThisWeek = docs.some(
+      (d) => (d.data().weekly_review_count ?? 0) > 0,
+    );
+
+    if (hadReviewsThisWeek) {
+      // Case 1: reset all counts to 0 for the new week
+      const chunks: FirebaseFirestore.WriteBatch[] = [];
+      let batch = db.batch();
+      let count = 0;
+      for (const docSnap of docs) {
+        batch.update(docSnap.ref, { weekly_review_count: 0 });
+        count++;
+        if (count % 500 === 0) {
+          chunks.push(batch);
+          batch = db.batch();
+        }
+      }
+      if (count % 500 !== 0) chunks.push(batch);
+      await Promise.all(chunks.map((b) => b.commit()));
+      console.log(`resetWeeklyReviewCounts: reset ${count} businesses (new week)`);
+      return null;
+    }
+
+    // No reviews this week — check if reviews exist in the app at all
+    const hasAnyReviews = docs.some(
+      (d) => (d.data().review_count ?? 0) > 0,
+    );
+
+    if (hasAnyReviews) {
+      // Case 2: reviews exist but none this week — keep previous trending intact
+      console.log('resetWeeklyReviewCounts: no new reviews this week, keeping previous trending');
+      return null;
+    }
+
+    // Case 3: zero reviews in entire app — pick 8 random businesses
+    // First reset all to 0, then set 8 random ones to 1
+    const pickedIds = new Set(
+      [...docs].sort(() => Math.random() - 0.5).slice(0, 8).map((d) => d.id),
+    );
+
+    const chunks: FirebaseFirestore.WriteBatch[] = [];
+    let batch = db.batch();
+    let count = 0;
+    for (const docSnap of docs) {
+      const value = pickedIds.has(docSnap.id) ? 1 : 0;
+      batch.update(docSnap.ref, { weekly_review_count: value });
+      count++;
+      if (count % 500 === 0) {
+        chunks.push(batch);
+        batch = db.batch();
+      }
+    }
+    if (count % 500 !== 0) chunks.push(batch);
+    await Promise.all(chunks.map((b) => b.commit()));
+    console.log(`resetWeeklyReviewCounts: no reviews in app, randomly picked ${pickedIds.size} businesses`);
+    return null;
+  });
+
 // ─── Budget Alert Handler ──────────────────────────────────────────────────────
 /**
  * Triggered by Google Cloud Billing budget alerts via Pub/Sub.
@@ -665,8 +782,8 @@ export const extractAndSaveCin = functions.https.onCall(async (data, context) =>
     // Try exact 8-digit match first (standard Tunisian CIN), then 7-9 digit fallback
     const cinMatch = detectedText.match(/\b\d{8}\b/) ?? detectedText.match(/\b\d{7,9}\b/);
     const cinNumber: string | null = cinMatch ? cinMatch[0] : null;
-    console.log('extractAndSaveCin OCR text:', detectedText.substring(0, 300));
-    console.log('extractAndSaveCin CIN match:', cinNumber);
+    // CIN data is sensitive PII — never log it
+    console.log('extractAndSaveCin: OCR completed, CIN', cinNumber ? 'found' : 'not found');
 
     // Save back to Firestore
     await admin.firestore().collection('verification_requests').doc(verificationId).update({
@@ -726,6 +843,75 @@ export const getSpendingStats = functions.https.onCall(async (_data, context) =>
  * Allows admins to update spending limits and toggle emergency shutdown.
  * Use this to re-enable the app after a shutdown.
  */
+/**
+ * Callable Function: Set Admin Custom Claims
+ *
+ * Sets the 'admin' custom claim on a user's auth token.
+ * Only callable by existing admins (verified via Firestore profile).
+ * This is needed because Storage security rules check request.auth.token.admin,
+ * which requires custom claims to be set on the Firebase Auth token.
+ */
+export const setAdminClaim = functions.https.onCall(async (data, context) => {
+  if (!context.auth) {
+    throw new functions.https.HttpsError('unauthenticated', 'Authentication required');
+  }
+
+  const db = admin.firestore();
+
+  // Verify caller is admin
+  const callerProfile = await db.collection('profiles').doc(context.auth.uid).get();
+  if (!callerProfile.exists || callerProfile.data()?.role !== 'admin') {
+    throw new functions.https.HttpsError('permission-denied', 'Admins only');
+  }
+
+  const { targetUserId } = data as { targetUserId?: string };
+  const uid = targetUserId || context.auth.uid;
+
+  // Verify target user's profile role
+  const targetProfile = await db.collection('profiles').doc(uid).get();
+  if (!targetProfile.exists) {
+    throw new functions.https.HttpsError('not-found', 'User profile not found');
+  }
+
+  const role = targetProfile.data()?.role;
+  const isAdmin = role === 'admin';
+  const isModerator = role === 'moderator';
+
+  // Set custom claims matching the profile role
+  await admin.auth().setCustomUserClaims(uid, {
+    admin: isAdmin,
+    moderator: isModerator,
+  });
+
+  console.log(`Custom claims set for ${uid}: admin=${isAdmin}, moderator=${isModerator}`);
+  return { success: true, uid, admin: isAdmin, moderator: isModerator };
+});
+
+/**
+ * Sync custom claims when profile role changes.
+ * Automatically keeps auth token claims in sync with Firestore profile role.
+ */
+export const syncRoleClaims = functions.firestore
+  .document('profiles/{userId}')
+  .onUpdate(async (change, context) => {
+    const before = change.before.data();
+    const after = change.after.data();
+
+    if (before.role === after.role) return null;
+
+    const uid = context.params.userId;
+    const isAdmin = after.role === 'admin';
+    const isModerator = after.role === 'moderator';
+
+    await admin.auth().setCustomUserClaims(uid, {
+      admin: isAdmin,
+      moderator: isModerator,
+    });
+
+    console.log(`syncRoleClaims: ${uid} role changed ${before.role} → ${after.role}`);
+    return null;
+  });
+
 export const updateSpendingLimits = functions.https.onCall(async (data, context) => {
   if (!context.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'Authentication required');

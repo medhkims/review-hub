@@ -1,5 +1,5 @@
 import React, { useCallback, useState } from 'react';
-import { View, Pressable, ScrollView } from 'react-native';
+import { View, Pressable, ScrollView, Modal } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
@@ -121,7 +121,7 @@ export default function SignUpScreen() {
   const router = useRouter();
   const { t } = useTranslation();
   const theme = useTheme();
-  const { signUp, signUpAsBusinessOwner, signInWithGoogle, isLoading, error } = useAuth();
+  const { signUp, signUpAsBusinessOwner, signInWithGoogle, continueAsGuest, isLoading, error } = useAuth();
 
   const [userType, setUserType] = useState<UserType>('simple');
   const [companyStep, setCompanyStep] = useState(1);
@@ -147,6 +147,7 @@ export default function SignUpScreen() {
   const [birthday, setBirthday] = useState<Date | null>(null);
   const [agreedToTerms, setAgreedToTerms] = useState(false);
   const [confirmError, setConfirmError] = useState<string | null>(null);
+  const [showAgeGate, setShowAgeGate] = useState(false);
 
   const handleSignUp = () => {
     setConfirmError(null);
@@ -154,6 +155,16 @@ export default function SignUpScreen() {
     if (password.length < 6) {
       setConfirmError(t('auth.passwordMinLength'));
       return;
+    }
+    if (birthday) {
+      const today = new Date();
+      const age = today.getFullYear() - birthday.getFullYear();
+      const monthDiff = today.getMonth() - birthday.getMonth();
+      const isUnder13 = age < 13 || (age === 13 && (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthday.getDate())));
+      if (isUnder13) {
+        setShowAgeGate(true);
+        return;
+      }
     }
     signUp(email.trim(), password, displayName.trim(), gender || undefined, birthday ?? undefined);
   };
@@ -606,6 +617,64 @@ export default function SignUpScreen() {
           </>
         )}
       </ScrollView>
+
+      {/* Age Gate Modal — under 13 */}
+      <Modal visible={showAgeGate} transparent animationType="fade">
+        <View style={{
+          flex: 1, backgroundColor: 'rgba(0,0,0,0.6)',
+          justifyContent: 'center', alignItems: 'center', padding: 24,
+        }}>
+          <View style={{
+            backgroundColor: theme.card, borderRadius: 20, padding: 24,
+            width: '100%', maxWidth: 380, alignItems: 'center',
+          }}>
+            <View style={{
+              width: 64, height: 64, borderRadius: 32,
+              backgroundColor: `${colors.neonPurple}15`,
+              alignItems: 'center', justifyContent: 'center', marginBottom: 16,
+            }}>
+              <MaterialCommunityIcons name="account-child" size={32} color={colors.neonPurple} />
+            </View>
+
+            <AppText style={{
+              fontSize: 18, fontWeight: '700', color: theme.text,
+              textAlign: 'center', marginBottom: 8,
+            }}>
+              {t('auth.ageGate.title')}
+            </AppText>
+
+            <AppText style={{
+              fontSize: 14, color: theme.textSecondary,
+              textAlign: 'center', lineHeight: 20, marginBottom: 24,
+            }}>
+              {t('auth.ageGate.message')}
+            </AppText>
+
+            <AppButton
+              title={t('auth.ageGate.continueAsGuest')}
+              variant="primary"
+              size="lg"
+              shape="pill"
+              onPress={() => { setShowAgeGate(false); continueAsGuest(); }}
+              isLoading={isLoading}
+              accessibilityLabel={t('auth.ageGate.continueAsGuest')}
+              accessibilityRole="button"
+              style={{ width: '100%', marginBottom: 12 }}
+            />
+
+            <Pressable
+              onPress={() => setShowAgeGate(false)}
+              accessibilityRole="button"
+              accessibilityLabel={t('common.cancel')}
+              style={{ paddingVertical: 10 }}
+            >
+              <AppText style={{ fontSize: 14, color: theme.textSecondary, fontWeight: '600' }}>
+                {t('common.cancel')}
+              </AppText>
+            </Pressable>
+          </View>
+        </View>
+      </Modal>
     </ScreenLayout>
   );
 }

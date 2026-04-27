@@ -7,9 +7,9 @@ import { Card } from '@/presentation/shared/components/ui/Card';
 import { colors } from '@/core/theme/colors';
 import { useTheme } from '@/core/theme/useTheme';
 import { BusinessEntity, BusinessStatus, BusinessOpeningHours } from '@/domain/business/entities/businessEntity';
-import { getCategoryDefaultCover, getCategoryDefaultLogo } from '@/core/utils/categoryDefaultImages';
 import { ImageSourcePropType } from 'react-native';
 import { useCategoryDefaultStore } from '@/presentation/shared/store/categoryDefaultStore';
+import { useHomeStore } from '../store/homeStore';
 
 const DAY_INDEX = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
 
@@ -64,6 +64,19 @@ const BusinessCardComponent: React.FC<BusinessCardProps> = ({
   const [coverError, setCoverError] = useState(false);
   const [logoError, setLogoError] = useState(false);
   const remoteDefaults = useCategoryDefaultStore((s) => s.defaults[business.categoryId]);
+  const storeCategories = useHomeStore((s) => s.categories);
+
+  // Resolve subcategory IDs to display names
+  const subcategoryNames = React.useMemo(() => {
+    const ids = business.subCategories ?? (business.subCategory ? [business.subCategory] : []);
+    if (ids.length === 0) return [];
+    const cat = storeCategories.find((c) => c.id === business.categoryId);
+    if (!cat) return ids; // fallback to raw values
+    return ids.map((id) => {
+      const sub = cat.subcategories.find((s) => s.id === id);
+      return sub?.name ?? id;
+    });
+  }, [business.subCategories, business.subCategory, business.categoryId, storeCategories]);
 
   const { openStatus, timeRange } = business.openingHours
     ? getTodayInfo(business.openingHours, business.openingHoursVisible)
@@ -125,14 +138,14 @@ const BusinessCardComponent: React.FC<BusinessCardProps> = ({
     ? { uri: business.coverImageUrl }
     : remoteDefaults?.coverImageUrl
       ? { uri: remoteDefaults.coverImageUrl }
-      : getCategoryDefaultCover(business.categoryId) ?? getCategoryDefaultLogo(business.categoryId);
+      : null;
   const logoSource: ImageSourcePropType | null = business.logoUrl
     ? { uri: business.logoUrl }
     : business.coverImageUrl
       ? { uri: business.coverImageUrl }
       : remoteDefaults?.profileImageUrl
         ? { uri: remoteDefaults.profileImageUrl }
-        : getCategoryDefaultLogo(business.categoryId) ?? getCategoryDefaultCover(business.categoryId);
+        : null;
 
   if (variant === 'compact') {
     return (
@@ -219,6 +232,14 @@ const BusinessCardComponent: React.FC<BusinessCardProps> = ({
             >
               {business.location}{business.categoryName ? ` • ${business.categoryName}` : ''}
             </AppText>
+            {subcategoryNames.length > 0 && (
+              <AppText
+                style={{ fontSize: 11, color: colors.neonPurple, fontWeight: '500' }}
+                numberOfLines={1}
+              >
+                {subcategoryNames.join(', ')}
+              </AppText>
+            )}
             <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4, marginTop: 2 }}>
               <MaterialCommunityIcons name="star" size={13} color={colors.ratingGold} />
               <AppText style={{ fontSize: 12, fontWeight: '700', color: theme.text }}>
@@ -358,6 +379,14 @@ const BusinessCardComponent: React.FC<BusinessCardProps> = ({
                 <AppText style={{ fontSize: 12, color: theme.textSecondary }}>
                   {business.location} • {business.categoryName}
                 </AppText>
+                {subcategoryNames.length > 0 && (
+                  <>
+                    <View style={{ width: 3, height: 3, borderRadius: 2, backgroundColor: colors.textSlate600 }} />
+                    <AppText style={{ fontSize: 12, color: colors.neonPurple, fontWeight: '500' }}>
+                      {subcategoryNames.join(', ')}
+                    </AppText>
+                  </>
+                )}
                 {openStatus !== null && (
                   <>
                     <View style={{ width: 3, height: 3, borderRadius: 2, backgroundColor: colors.textSlate600 }} />

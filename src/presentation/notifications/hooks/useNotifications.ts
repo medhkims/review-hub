@@ -1,19 +1,7 @@
 import { useCallback, useEffect } from 'react';
 import { useNotificationStore } from '../store/notificationStore';
-import { auth } from '@/core/firebase/firebaseConfig';
-
-// TODO: Use container use cases when wired in DI container
-import { NotificationRemoteDataSourceImpl } from '@/data/notifications/datasources/notificationRemoteDataSource';
-import { NotificationRepositoryImpl } from '@/data/notifications/repositories/notificationRepositoryImpl';
-import { NetworkInfoImpl } from '@/core/network/networkInfo';
-import { GetNotificationsUseCase } from '@/domain/notifications/usecases/getNotificationsUseCase';
-import { MarkNotificationReadUseCase } from '@/domain/notifications/usecases/markNotificationReadUseCase';
-
-const remote = new NotificationRemoteDataSourceImpl();
-const network = new NetworkInfoImpl();
-const repo = new NotificationRepositoryImpl(remote, network);
-const getNotificationsUseCase = new GetNotificationsUseCase(repo);
-const markNotificationReadUseCase = new MarkNotificationReadUseCase(repo);
+import { useAuthStore } from '@/presentation/auth/store/authStore';
+import { container } from '@/core/di/container';
 
 export const useNotifications = () => {
   const {
@@ -28,14 +16,15 @@ export const useNotifications = () => {
     setError,
   } = useNotificationStore();
 
+  const { user } = useAuthStore();
+
   const loadNotifications = useCallback(async () => {
-    const userId = auth.currentUser?.uid;
-    if (!userId) return;
+    if (!user?.id) return;
 
     setLoading(true);
     setError(null);
 
-    const result = await getNotificationsUseCase.execute(userId);
+    const result = await container.getNotificationsUseCase.execute(user.id);
 
     result.fold(
       (failure) => {
@@ -47,14 +36,14 @@ export const useNotifications = () => {
         setLoading(false);
       },
     );
-  }, [setLoading, setError, setNotifications]);
+  }, [user?.id, setLoading, setError, setNotifications]);
 
   const markAsRead = useCallback(
     async (notificationId: string) => {
       // Optimistic update
       markRead(notificationId);
 
-      const result = await markNotificationReadUseCase.execute(notificationId);
+      const result = await container.markNotificationReadUseCase.execute(notificationId);
 
       result.fold(
         (failure) => {
@@ -71,13 +60,12 @@ export const useNotifications = () => {
   );
 
   const markAllAsRead = useCallback(async () => {
-    const userId = auth.currentUser?.uid;
-    if (!userId) return;
+    if (!user?.id) return;
 
     // Optimistic update
     markAllReadInStore();
 
-    const result = await repo.markAllAsRead(userId);
+    const result = await container.notificationRepository.markAllAsRead(user.id);
 
     result.fold(
       (failure) => {
@@ -89,7 +77,7 @@ export const useNotifications = () => {
         // Success — store is already updated optimistically
       },
     );
-  }, [markAllReadInStore, setError, loadNotifications]);
+  }, [user?.id, markAllReadInStore, setError, loadNotifications]);
 
   const refresh = useCallback(() => {
     return loadNotifications();

@@ -13,10 +13,13 @@ export interface BusinessEntity {
   subCategory?: string;
   subCategories?: string[];
   location: string;
+  latitude: number | null;
+  longitude: number | null;
   coverImageUrl: string | null;
   logoUrl: string | null;
   rating: number;
   reviewCount: number;
+  weeklyReviewCount: number;
   isFeatured: boolean;
   isFavorite: boolean;
   ownerId: string;
@@ -24,6 +27,7 @@ export interface BusinessEntity {
   isOwnerVerified: boolean;
   openingHours?: BusinessOpeningHours;
   openingHoursVisible?: boolean;
+  platforms?: string[];
   createdAt: Date;
   updatedAt: Date;
 }

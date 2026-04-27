@@ -102,7 +102,3 @@ export const ConversionMetricsSection: React.FC<ConversionMetricsSectionProps> =
 );
 
 // ── Mock Data ────────────────────────────────────────────────────────────────
-export const MOCK_CONVERSION_METRICS: ConversionMetric[] = [
-  { label: 'Profile to Contact', value: '12%', change: '+12%', positive: true },
-  { label: 'Free to Premium', value: '5.4%', change: '+0.8%', positive: true },
-];

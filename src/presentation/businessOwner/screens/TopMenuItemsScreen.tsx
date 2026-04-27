@@ -1,8 +1,8 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { View, ScrollView, Pressable, ActivityIndicator } from 'react-native';
 import { router } from 'expo-router';
-import { collection, getDocs, query, where, limit, Timestamp } from 'firebase/firestore';
-import { firestore } from '@/core/firebase/firebaseConfig';
+import { container } from '@/core/di/container';
+import { useTranslation } from 'react-i18next';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { AppText } from '@/presentation/shared/components/ui/AppText';
 import { ScreenLayout } from '@/presentation/shared/layouts/ScreenLayout';
@@ -20,6 +20,7 @@ const FILTERS: { key: InsightFilterMode; label: string }[] = [
 ];
 
 export default function TopMenuItemsScreen() {
+  const { t } = useTranslation();
   const business = useBusinessOwnerStore(s => s.business);
   const [mode,   setMode]   = useState<InsightFilterMode>('ALL');
   const [cRange, setCRange] = useState<InsightDateRange>({ start: new Date(), end: new Date() });
@@ -34,24 +35,7 @@ export default function TopMenuItemsScreen() {
     if (!business?.id) return;
     setLoading(true);
     try {
-      const startTs = Timestamp.fromDate(activeRange.start);
-      const endTs   = Timestamp.fromDate(new Date(activeRange.end.getTime() + 86400000));
-
-      const q = mode === 'ALL'
-        ? query(collection(firestore,'menu_item_click_events'), where('business_id','==',business.id), limit(500))
-        : query(collection(firestore,'menu_item_click_events'), where('business_id','==',business.id), where('created_at','>=',startTs), where('created_at','<',endTs));
-
-      const snap = await getDocs(q);
-      const itemMap = new Map<string,{name:string;cat:string;count:number}>();
-      snap.forEach(d => {
-        const id   = d.data()['item_id']       as string|undefined;
-        const name = d.data()['item_name']     as string|undefined;
-        const cat  = d.data()['category_name'] as string|undefined;
-        if (!id || !name) return;
-        const p = itemMap.get(id) ?? { name, cat: cat??'', count:0 };
-        itemMap.set(id, { ...p, count: p.count+1 });
-      });
-      setItems(Array.from(itemMap.entries()).map(([itemId,s])=>({itemId,itemName:s.name,categoryName:s.cat,clicks:s.count})));
+      setItems(await container.boInsightsDataSource.fetchMenuItemsInRange(business.id, activeRange, mode));
     } catch { /* silently fail */ }
     finally { setLoading(false); }
   }, [business?.id, activeRange, mode]);
@@ -67,9 +51,9 @@ export default function TopMenuItemsScreen() {
   const maxClicks = Math.max(...sorted.map(i => i.clicks), 1);
 
   const SORTS: { key: SortKey; label: string }[] = [
-    { key:'clicks',   label:'Most Clicked' },
-    { key:'name',     label:'Name' },
-    { key:'category', label:'Category' },
+    { key:'clicks',   label: t('businessOwner.topServices.mostClicked') },
+    { key:'name',     label: t('businessOwner.topServices.name') },
+    { key:'category', label: t('businessOwner.topServices.category') },
   ];
 
   return (
@@ -85,7 +69,7 @@ export default function TopMenuItemsScreen() {
           <MaterialCommunityIcons name="arrow-left" size={18} color={colors.white} />
         </Pressable>
         <View>
-          <AppText style={{ fontSize:17,fontWeight:'700',color:colors.white }}>Top Services</AppText>
+          <AppText style={{ fontSize:17,fontWeight:'700',color:colors.white }}>{t('businessOwner.topServices.title')}</AppText>
           {business && <AppText style={{ fontSize:12,color:colors.textSlate400 }}>{business.name}</AppText>}
         </View>
       </View>
@@ -111,7 +95,7 @@ export default function TopMenuItemsScreen() {
 
       {/* Sort pills */}
       <View style={{ flexDirection:'row', paddingHorizontal:16, gap:8, marginBottom:12, alignItems:'center' }}>
-        <AppText style={{ fontSize:12,color:colors.textSlate500 }}>Sort:</AppText>
+        <AppText style={{ fontSize:12,color:colors.textSlate500 }}>{t('businessOwner.topServices.sortLabel')}</AppText>
         {SORTS.map(s => (
           <Pressable key={s.key} onPress={() => setSortKey(s.key)} accessibilityRole="button" accessibilityLabel={s.label}
             style={{ paddingHorizontal:12,paddingVertical:6,borderRadius:9999,backgroundColor:sortKey===s.key?colors.emerald:colors.cardDark,borderWidth:1,borderColor:sortKey===s.key?colors.emerald:colors.borderDark }}>
@@ -125,9 +109,9 @@ export default function TopMenuItemsScreen() {
       {!loading && sorted.length === 0 && (
         <View style={{ flex:1, alignItems:'center', justifyContent:'center', gap:12 }}>
           <MaterialCommunityIcons name="food-off" size={48} color={colors.textSlate600} />
-          <AppText style={{ fontSize:15,color:colors.textSlate400 }}>No service interaction data yet</AppText>
+          <AppText style={{ fontSize:15,color:colors.textSlate400 }}>{t('businessOwner.topServices.noData')}</AppText>
           <AppText style={{ fontSize:13,color:colors.textSlate500,textAlign:'center',paddingHorizontal:40 }}>
-            Clicks on your menu items will appear here.
+            {t('businessOwner.topServices.noDataHint')}
           </AppText>
         </View>
       )}

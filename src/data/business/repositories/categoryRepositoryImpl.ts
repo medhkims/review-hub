@@ -48,8 +48,8 @@ export class CategoryRepositoryImpl implements CategoryRepository {
 
   async getCategories(): Promise<Either<Failure, CategoryEntity[]>> {
     try {
-      // Try Firestore first (reflects admin changes)
-      const firestoreModels = await this.firestore.getCategories();
+      // Seed any missing bundled categories into Firestore, then return all
+      const firestoreModels = await this.firestore.seedIfEmpty();
       if (firestoreModels.length > 0) {
         const active = firestoreModels.filter((m) => !m.is_deleted);
         const entities = active.map((model, index) => ({

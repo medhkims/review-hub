@@ -161,16 +161,3 @@ export const GeographicalInsightsSection: React.FC<GeographicalInsightsSectionPr
 );
 
 // ── Mock Data ────────────────────────────────────────────────────────────────
-export const MOCK_REGIONS: Region[] = [
-  { name: 'Tunis', percentage: 45, color: colors.neonPurple },
-  { name: 'Sousse', percentage: 22, color: colors.blue },
-  { name: 'Sfax', percentage: 18, color: colors.green },
-  { name: 'Monastir', percentage: 10, color: colors.orange },
-];
-
-export const MOCK_DISTRIBUTIONS: Distribution[] = [
-  { name: 'North East', percentage: 52, color: colors.neonPurple },
-  { name: 'Ouest', percentage: 28, color: colors.blue },
-  { name: 'Central', percentage: 12, color: colors.green },
-  { name: 'South', percentage: 8, color: colors.orange },
-];

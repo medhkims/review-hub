@@ -15,6 +15,9 @@ export interface MenuItemModel {
   image_url: string | null;
   price: number;
   currency: string;
+  is_deal?: boolean;
+  deal_discount_percent?: number;
+  deal_valid_until?: import('firebase/firestore').Timestamp;
 }
 
 export interface MenuCategoryModel {
@@ -52,6 +55,9 @@ export interface ContactInfoModel {
   instagram_handle: string | null;
   facebook_name: string | null;
   tiktok_handle: string | null;
+  youtube_handle: string | null;
+  twitch_handle: string | null;
+  kick_handle: string | null;
 }
 
 export interface BusinessDetailModel {
@@ -66,6 +72,7 @@ export interface BusinessDetailModel {
   longitude: number | null;
   cover_image_url: string | null;
   logo_url: string | null;
+  gallery_images?: string[];
   is_open: boolean;
   is_online?: boolean;
   rating: number;
@@ -81,6 +88,9 @@ export interface BusinessDetailModel {
   delivery_services: DeliveryServiceModel[];
   opening_hours?: OpeningHoursModel;
   opening_hours_visible?: boolean;
+  is_claimed?: boolean;
+  is_imported?: boolean;
+  source?: string;
   created_at: Timestamp;
   updated_at: Timestamp;
 }

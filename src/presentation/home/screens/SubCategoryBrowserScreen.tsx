@@ -26,7 +26,6 @@ import { container } from '@/core/di/container';
 import { useAuthStore } from '@/presentation/auth/store/authStore';
 import { useHomeStore } from '../store/homeStore';
 import { BusinessEntity } from '@/domain/business/entities/businessEntity';
-import { CATEGORY_MAP } from '@/core/constants/categoriesData';
 import { BusinessCard } from '../components/BusinessCard';
 import { trackSubcategoryEvent } from '@/core/utils/premiumTracking';
 
@@ -131,20 +130,37 @@ export default function SubCategoryBrowserScreen() {
     loadBusinesses();
   }, [loadBusinesses]);
 
-  // Use subcategories from the store when it has entries, otherwise fall back
-  // to the bundled CATEGORY_MAP (store may filter them all out when no business
-  // has a matching sub_category field yet).
+  // Show subcategories from the store (active ones with businesses).
+  // If the store has none, extract unique subcategory values directly from
+  // the loaded businesses so the filter still works.
   const subCategories = useMemo(() => {
     const storeCat = storeCategories.find((c) => c.id === resolvedCategoryId);
-    if (storeCat && storeCat.subcategories.length > 0) return storeCat.subcategories;
-    const fallback = CATEGORY_MAP[resolvedCategoryId];
-    if (!fallback) return [];
-    return fallback.subcategories.map((sub) => ({
-      id: sub.id,
-      name: sub.name,
-      categoryId: resolvedCategoryId,
-    }));
-  }, [storeCategories, resolvedCategoryId]);
+    const storeSubs = storeCat?.subcategories ?? [];
+    if (storeSubs.length > 0) return storeSubs;
+
+    // Derive from loaded businesses as fallback
+    const seen = new Set<string>();
+    const derived: { id: string; name: string; categoryId: string }[] = [];
+    for (const b of businesses) {
+      const subs = b.subCategories ?? (b.subCategory ? [b.subCategory] : []);
+      for (const s of subs) {
+        if (s && !seen.has(s)) {
+          seen.add(s);
+          derived.push({ id: s, name: s, categoryId: resolvedCategoryId });
+        }
+      }
+    }
+    return derived;
+  }, [storeCategories, resolvedCategoryId, businesses]);
+
+  // Build a list of selected subcategory names so we can match businesses
+  // that store the subcategory name instead of the id in their sub_category field.
+  const selectedSubNames = useMemo(() => {
+    return selectedSubCategories.map((id) => {
+      const sub = subCategories.find((s) => s.id === id);
+      return sub?.name ?? id;
+    });
+  }, [selectedSubCategories, subCategories]);
 
   const filteredData = useMemo(() => {
     let data = businesses;
@@ -152,6 +168,9 @@ export default function SubCategoryBrowserScreen() {
       data = data.filter((b) =>
         selectedSubCategories.some(
           (subId) => b.subCategory === subId || b.subCategories?.includes(subId),
+        ) ||
+        selectedSubNames.some(
+          (name) => b.subCategory === name || b.subCategories?.includes(name),
         ),
       );
     }
@@ -164,6 +183,11 @@ export default function SubCategoryBrowserScreen() {
         activeLocations.some((loc) =>
           b.location?.toLowerCase().includes(loc.toLowerCase()),
         ),
+      );
+    }
+    if (activeFilters.platforms.length > 0) {
+      data = data.filter((b) =>
+        activeFilters.platforms.some((p) => b.platforms?.includes(p)),
       );
     }
     if (activeFilters.minRating > 0) {
@@ -183,7 +207,7 @@ export default function SubCategoryBrowserScreen() {
       default:
         return data;
     }
-  }, [businesses, selectedSubCategories, searchQuery, activeFilters, activeLocations, activeSort]);
+  }, [businesses, selectedSubCategories, selectedSubNames, searchQuery, activeFilters, activeLocations, activeSort]);
 
   const handleBack = useCallback(() => {
     router.back();
@@ -391,20 +415,20 @@ export default function SubCategoryBrowserScreen() {
             paddingVertical: 8,
             borderRadius: 20,
             borderWidth: 1,
-            borderColor: activeFilters.minRating > 0 ? colors.neonPurple : colors.borderDark,
-            backgroundColor: activeFilters.minRating > 0 ? 'rgba(168,85,247,0.15)' : theme.card,
+            borderColor: (activeFilters.minRating > 0 || selectedSubCategories.length > 0) ? colors.neonPurple : colors.borderDark,
+            backgroundColor: (activeFilters.minRating > 0 || selectedSubCategories.length > 0) ? 'rgba(168,85,247,0.15)' : theme.card,
           }}
         >
           <MaterialCommunityIcons
             name="tune-variant"
             size={16}
-            color={activeFilters.minRating > 0 ? colors.neonPurple : theme.textSecondary}
+            color={(activeFilters.minRating > 0 || selectedSubCategories.length > 0) ? colors.neonPurple : theme.textSecondary}
           />
           <AppText
             style={{
               fontSize: 13,
-              fontWeight: activeFilters.minRating > 0 ? '600' : '500',
-              color: activeFilters.minRating > 0 ? colors.neonPurple : theme.textSecondary,
+              fontWeight: (activeFilters.minRating > 0 || selectedSubCategories.length > 0) ? '600' : '500',
+              color: (activeFilters.minRating > 0 || selectedSubCategories.length > 0) ? colors.neonPurple : theme.textSecondary,
             }}
           >
             {t('home.filter')}
@@ -576,10 +600,14 @@ export default function SubCategoryBrowserScreen() {
         onClose={() => setShowFilter(false)}
         onApply={(filters) => {
           setActiveFilters(filters);
+          setSelectedSubCategories(filters.subcategories);
           setShowFilter(false);
         }}
-        initialFilters={activeFilters}
+        initialFilters={{ ...activeFilters, subcategories: selectedSubCategories }}
         showCategories={false}
+        showSubcategories={subCategories.length > 0}
+        availableSubcategories={subCategories.map((s) => ({ id: s.id, name: s.name }))}
+        showPlatforms={resolvedCategoryId === 'influencer'}
       />
 
       <SortBySheet

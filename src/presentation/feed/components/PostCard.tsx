@@ -10,6 +10,7 @@ import { PostEntity } from '@/domain/feed/entities/postEntity';
 interface PostCardProps {
   post: PostEntity;
   onLike: (postId: string) => void;
+  onPress?: (postId: string) => void;
 }
 
 const formatTimeAgo = (date: Date): string => {
@@ -26,7 +27,7 @@ const formatTimeAgo = (date: Date): string => {
   return date.toLocaleDateString();
 };
 
-export const PostCard = React.memo(({ post, onLike }: PostCardProps) => {
+export const PostCard = React.memo(({ post, onLike, onPress }: PostCardProps) => {
   const theme = useTheme();
   const initials = post.authorName
     .split(' ')
@@ -36,6 +37,7 @@ export const PostCard = React.memo(({ post, onLike }: PostCardProps) => {
     .slice(0, 2);
 
   return (
+    <Pressable onPress={() => onPress?.(post.id)} accessibilityRole="button" accessibilityLabel={`View post by ${post.authorName}`}>
     <Card style={{ padding: 16, marginBottom: 12 }}>
       {/* Author Row */}
       <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 12 }}>
@@ -166,6 +168,7 @@ export const PostCard = React.memo(({ post, onLike }: PostCardProps) => {
         </View>
       </View>
     </Card>
+    </Pressable>
   );
 });
 

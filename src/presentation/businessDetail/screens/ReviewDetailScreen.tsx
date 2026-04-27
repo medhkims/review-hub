@@ -21,7 +21,8 @@ import { useTheme } from '@/core/theme/useTheme';
 import { container } from '@/core/di/container';
 import { CommentEntity, ReplyEntity } from '@/domain/business/entities/commentEntity';
 import { StarRating } from '../components/BusinessCoverSection';
-import { auth } from '@/core/firebase/firebaseConfig';
+import { useAuthStore } from '@/presentation/auth/store/authStore';
+import { ReportReviewModal } from '@/presentation/dispute/components/ReportReviewModal';
 
 export interface SerializedReview {
   id: string;
@@ -109,10 +110,11 @@ interface ReplyItemProps {
   onDislike: (replyId: string, isDisliked: boolean) => void;
   onReplyToReply: (reply: ReplyEntity, commentId: string) => void;
   commentId: string;
+  currentUserId: string | undefined;
 }
 
 const ReplyItem = React.memo<ReplyItemProps>(
-  ({ reply, parentAuthorName, likeState, dislikeState, onLike, onDislike, onReplyToReply, commentId }) => {
+  ({ reply, parentAuthorName, likeState, dislikeState, onLike, onDislike, onReplyToReply, commentId, currentUserId }) => {
     const { t } = useTranslation();
     const theme = useTheme();
     const replyingTo = reply.replyingToName ?? parentAuthorName;
@@ -180,7 +182,7 @@ const ReplyItem = React.memo<ReplyItemProps>(
                   </AppText>
                 )}
               </Pressable>
-              {reply.authorId !== auth.currentUser?.uid && (
+              {reply.authorId !== currentUserId && (
                 <Pressable
                   onPress={() => onReplyToReply(reply, commentId)}
                   accessibilityLabel={t('review.replyToReply')}
@@ -211,6 +213,7 @@ interface CommentItemProps {
   onDislikeReply: (replyId: string, isDisliked: boolean) => void;
   onReplyToReply: (reply: ReplyEntity, commentId: string) => void;
   forceExpanded?: boolean;
+  currentUserId: string | undefined;
 }
 
 const CommentItem = React.memo<CommentItemProps>(({
@@ -226,6 +229,7 @@ const CommentItem = React.memo<CommentItemProps>(({
   onDislikeReply,
   onReplyToReply,
   forceExpanded = false,
+  currentUserId,
 }) => {
   const { t } = useTranslation();
   const theme = useTheme();
@@ -298,7 +302,7 @@ const CommentItem = React.memo<CommentItemProps>(({
                 </AppText>
               )}
             </Pressable>
-            {comment.authorId !== auth.currentUser?.uid && (
+            {comment.authorId !== currentUserId && (
               <Pressable
                 onPress={() => onReply(comment)}
                 accessibilityLabel="Reply to comment"
@@ -357,6 +361,7 @@ const CommentItem = React.memo<CommentItemProps>(({
               onDislike={onDislikeReply}
               onReplyToReply={onReplyToReply}
               commentId={comment.id}
+              currentUserId={currentUserId}
             />
           ))}
           {/* Collapse button */}
@@ -391,6 +396,7 @@ interface ReplyTarget {
 export default function ReviewDetailScreen({ reviewId, businessName, businessId: businessIdProp, initialReview, backHref }: ReviewDetailScreenProps) {
   const { t } = useTranslation();
   const theme = useTheme();
+  const { user: authUser } = useAuthStore();
   const [comments, setComments] = useState<CommentEntity[]>([]);
   const [isCommentsLoading, setIsCommentsLoading] = useState(true);
   const [isLiked, setIsLiked] = useState(initialReview?.isLikedByCurrentUser ?? false);
@@ -401,8 +407,9 @@ export default function ReviewDetailScreen({ reviewId, businessName, businessId:
   const [replyTarget, setReplyTarget] = useState<ReplyTarget | null>(null);
   const [isSending, setIsSending] = useState(false);
   const [sendError, setSendError] = useState<string | null>(null);
-  const isOwnReview = !!initialReview?.authorId && auth.currentUser?.uid === initialReview.authorId;
+  const isOwnReview = !!initialReview?.authorId && authUser?.id === initialReview.authorId;
   const canComment = !isOwnReview || replyTarget !== null;
+  const [reportModalVisible, setReportModalVisible] = useState(false);
   const inputRef = useRef<TextInput>(null);
 
   const [photoUrls, setPhotoUrls] = useState<string[]>(initialReview?.photoUrls ?? []);
@@ -451,7 +458,7 @@ export default function ReviewDetailScreen({ reviewId, businessName, businessId:
 
   useEffect(() => {
     loadComments();
-    const currentUid = auth.currentUser?.uid;
+    const currentUid = authUser?.id;
     if (currentUid && initialReview?.authorId && currentUid !== initialReview.authorId) {
       container.incrementReviewViewUseCase.execute(reviewId).catch(() => {});
     }
@@ -500,8 +507,8 @@ export default function ReviewDetailScreen({ reviewId, businessName, businessId:
       }
       await container.likeReviewUseCase.execute(reviewId, {
         reviewAuthorId: initialReview?.authorId ?? '',
-        actorId: auth.currentUser?.uid ?? '',
-        actorName: auth.currentUser?.displayName ?? 'Someone',
+        actorId: authUser?.id ?? '',
+        actorName: authUser?.displayName ?? 'Someone',
         businessName,
       });
     }
@@ -522,8 +529,8 @@ export default function ReviewDetailScreen({ reviewId, businessName, businessId:
       }
       await container.dislikeReviewUseCase.execute(reviewId, {
         reviewAuthorId: initialReview?.authorId ?? '',
-        actorId: auth.currentUser?.uid ?? '',
-        actorName: auth.currentUser?.displayName ?? 'Someone',
+        actorId: authUser?.id ?? '',
+        actorName: authUser?.displayName ?? 'Someone',
         businessName,
       });
     }
@@ -549,11 +556,11 @@ export default function ReviewDetailScreen({ reviewId, businessName, businessId:
         return prev;
       });
       const targetAuthorId = comments.find((c) => c.id === commentId)?.authorId ?? '';
-      const actorId = auth.currentUser?.uid ?? '';
+      const actorId = authUser?.id ?? '';
       await container.likeCommentUseCase.execute(commentId, {
         commentAuthorId: targetAuthorId,
         actorId,
-        actorName: auth.currentUser?.displayName ?? 'Someone',
+        actorName: authUser?.displayName ?? 'Someone',
         reviewId,
       });
     }
@@ -579,11 +586,11 @@ export default function ReviewDetailScreen({ reviewId, businessName, businessId:
         return prev;
       });
       const targetAuthorId = comments.find((c) => c.id === commentId)?.authorId ?? '';
-      const actorId = auth.currentUser?.uid ?? '';
+      const actorId = authUser?.id ?? '';
       await container.dislikeCommentUseCase.execute(commentId, {
         commentAuthorId: targetAuthorId,
         actorId,
-        actorName: auth.currentUser?.displayName ?? 'Someone',
+        actorName: authUser?.displayName ?? 'Someone',
         reviewId,
       });
     }
@@ -613,11 +620,11 @@ export default function ReviewDetailScreen({ reviewId, businessName, businessId:
         const r = c.replies.find((rep) => rep.id === replyId);
         if (r) { targetAuthorId = r.authorId; break; }
       }
-      const actorId = auth.currentUser?.uid ?? '';
+      const actorId = authUser?.id ?? '';
       await container.likeReplyUseCase.execute(replyId, {
         replyAuthorId: targetAuthorId,
         actorId,
-        actorName: auth.currentUser?.displayName ?? 'Someone',
+        actorName: authUser?.displayName ?? 'Someone',
         reviewId,
       });
     }
@@ -647,11 +654,11 @@ export default function ReviewDetailScreen({ reviewId, businessName, businessId:
         const r = c.replies.find((rep) => rep.id === replyId);
         if (r) { targetAuthorId = r.authorId; break; }
       }
-      const actorId = auth.currentUser?.uid ?? '';
+      const actorId = authUser?.id ?? '';
       await container.dislikeReplyUseCase.execute(replyId, {
         replyAuthorId: targetAuthorId,
         actorId,
-        actorName: auth.currentUser?.displayName ?? 'Someone',
+        actorName: authUser?.displayName ?? 'Someone',
         reviewId,
       });
     }
@@ -680,9 +687,9 @@ export default function ReviewDetailScreen({ reviewId, businessName, businessId:
     setCommentText('');
     inputRef.current?.blur();
 
-    const currentUserId = auth.currentUser?.uid ?? '';
-    const currentUserName = auth.currentUser?.displayName ?? 'You';
-    const currentUserAvatar = auth.currentUser?.photoURL ?? null;
+    const currentUserId = authUser?.id ?? '';
+    const currentUserName = authUser?.displayName ?? 'You';
+    const currentUserAvatar = authUser?.avatarUrl ?? null;
 
     if (replyTarget) {
       const { commentId, authorName: replyingToName } = replyTarget;
@@ -901,6 +908,16 @@ export default function ReviewDetailScreen({ reviewId, businessName, businessId:
               <MaterialCommunityIcons name="comment-outline" size={20} color={theme.textMuted} />
               <AppText style={{ fontSize: 14, color: theme.textMuted }}>{comments.length}</AppText>
             </Pressable>
+            {!isOwnReview && (
+              <Pressable
+                onPress={() => setReportModalVisible(true)}
+                accessibilityLabel={t('dispute.reportReview')}
+                accessibilityRole="button"
+                style={{ flexDirection: 'row', alignItems: 'center', gap: 6, marginLeft: 'auto' }}
+              >
+                <MaterialCommunityIcons name="flag-outline" size={20} color={theme.textMuted} />
+              </Pressable>
+            )}
           </View>
         </View>
       )}
@@ -1002,6 +1019,7 @@ export default function ReviewDetailScreen({ reviewId, businessName, businessId:
             onDislikeReply={handleDislikeReply}
             onReplyToReply={handleReplyToReply}
             forceExpanded={expandedCommentIds.has(item.id)}
+            currentUserId={authUser?.id}
           />
         )}
         ListHeaderComponent={ListHeader}
@@ -1084,8 +1102,8 @@ export default function ReviewDetailScreen({ reviewId, businessName, businessId:
         }}
       >
         <Avatar
-          name={auth.currentUser?.displayName ?? 'U'}
-          avatarUrl={auth.currentUser?.photoURL ?? null}
+          name={authUser?.displayName ?? 'U'}
+          avatarUrl={authUser?.avatarUrl ?? null}
           size={32}
         />
         {canComment ? (
@@ -1152,6 +1170,19 @@ export default function ReviewDetailScreen({ reviewId, businessName, businessId:
           )}
         </Pressable>
       </View>
+      {initialReview && (
+        <ReportReviewModal
+          visible={reportModalVisible}
+          onClose={() => setReportModalVisible(false)}
+          reviewId={reviewId}
+          businessId={resolvedBusinessId}
+          businessName={businessName}
+          reviewAuthorId={initialReview.authorId}
+          reviewAuthorName={initialReview.authorName}
+          reviewText={initialReview.text}
+          reviewRating={initialReview.rating}
+        />
+      )}
     </KeyboardAvoidingView>
   );
 }

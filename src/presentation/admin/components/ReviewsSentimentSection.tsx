@@ -129,8 +129,3 @@ export const ReviewsSentimentSection: React.FC<ReviewsSentimentSectionProps> = (
 );
 
 // ── Mock Data ────────────────────────────────────────────────────────────────
-export const MOCK_SENTIMENT_BARS: SentimentBar[] = [
-  { label: 'Positive', percentage: 68, color: colors.green },
-  { label: 'Neutral', percentage: 24, color: colors.yellow },
-  { label: 'Negative', percentage: 8, color: colors.red },
-];

@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { View, ScrollView, Pressable, ActivityIndicator, Alert } from 'react-native';
+import { View, ScrollView, Pressable, ActivityIndicator, Alert, Modal } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
@@ -18,6 +18,8 @@ import { useAnalyticsScreen } from '@/presentation/shared/hooks/useAnalyticsScre
 import { AnalyticsScreens } from '@/core/analytics/analyticsKeys';
 import { colors } from '@/core/theme/colors';
 import { useTheme } from '@/core/theme/useTheme';
+import { container } from '@/core/di/container';
+import { router as expoRouter } from 'expo-router';
 
 export default function PersonalInfoScreen() {
   useAnalyticsScreen(AnalyticsScreens.PERSONAL_INFO);
@@ -34,6 +36,9 @@ export default function PersonalInfoScreen() {
   const [dateOfBirth, setDateOfBirth] = useState<Date | null>(null);
   const [genderDropdownOpen, setGenderDropdownOpen] = useState(false);
   const [isUpdating, setIsUpdating] = useState(false);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
+  const [deleteError, setDeleteError] = useState<string | null>(null);
 
   useEffect(() => {
     if (profile) {
@@ -105,6 +110,23 @@ export default function PersonalInfoScreen() {
     if (!user) return;
     await avatarPicker.pickImage();
   }, [user, avatarPicker]);
+
+  const handleDeleteAccount = useCallback(async () => {
+    setIsDeleting(true);
+    setDeleteError(null);
+    const result = await container.deleteAccountUseCase.execute();
+    result.fold(
+      (failure) => {
+        setDeleteError(failure.message);
+        setIsDeleting(false);
+      },
+      () => {
+        setIsDeleting(false);
+        setShowDeleteConfirm(false);
+        expoRouter.replace('/(auth)/sign-in');
+      },
+    );
+  }, []);
 
   const getInitials = (name: string) =>
     name.split(' ').map((n) => n[0]).join('').toUpperCase().slice(0, 2);
@@ -460,7 +482,89 @@ export default function PersonalInfoScreen() {
             <AppText style={{ color: '#F87171', fontSize: 14 }}>{error}</AppText>
           </View>
         )}
+
+        {/* Delete Account — subtle link */}
+        <Pressable
+          onPress={() => setShowDeleteConfirm(true)}
+          style={{ alignItems: 'center', marginTop: 24, marginBottom: 16 }}
+          accessibilityRole="button"
+          accessibilityLabel={t('settings.deleteAccount')}
+        >
+          <AppText style={{ fontSize: 13, color: theme.textSecondary }}>
+            {t('settings.deleteAccount')}
+          </AppText>
+        </Pressable>
       </ScrollView>
+
+      {/* Delete Account Confirmation Modal */}
+      <Modal
+        visible={showDeleteConfirm}
+        transparent
+        animationType="fade"
+        onRequestClose={() => !isDeleting && setShowDeleteConfirm(false)}
+      >
+        <Pressable
+          style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.6)', justifyContent: 'center', alignItems: 'center' }}
+          onPress={() => !isDeleting && setShowDeleteConfirm(false)}
+        >
+          <Pressable
+            style={{
+              backgroundColor: theme.card,
+              borderRadius: 20,
+              width: 320,
+              overflow: 'hidden',
+              borderWidth: 1,
+              borderColor: theme.border,
+            }}
+            onPress={() => {}}
+          >
+            <View style={{ alignItems: 'center', paddingTop: 24, paddingBottom: 16, paddingHorizontal: 20 }}>
+              <View style={{
+                width: 56, height: 56, borderRadius: 28,
+                backgroundColor: 'rgba(239,68,68,0.15)',
+                alignItems: 'center', justifyContent: 'center', marginBottom: 16,
+              }}>
+                <MaterialCommunityIcons name="alert-circle" size={32} color="#EF4444" />
+              </View>
+              <AppText style={{ fontSize: 18, fontWeight: '700', color: theme.text, textAlign: 'center', marginBottom: 8 }}>
+                {t('settings.deleteAccountTitle')}
+              </AppText>
+              <AppText style={{ fontSize: 14, color: theme.textSecondary, textAlign: 'center', lineHeight: 20 }}>
+                {t('settings.deleteAccountMessage')}
+              </AppText>
+              {deleteError && (
+                <AppText style={{ fontSize: 13, color: '#EF4444', textAlign: 'center', marginTop: 12 }}>
+                  {deleteError}
+                </AppText>
+              )}
+            </View>
+            <View style={{ flexDirection: 'row', borderTopWidth: 1, borderTopColor: theme.border }}>
+              <Pressable
+                onPress={() => { setShowDeleteConfirm(false); setDeleteError(null); }}
+                disabled={isDeleting}
+                style={{ flex: 1, paddingVertical: 16, alignItems: 'center', borderRightWidth: 1, borderRightColor: theme.border }}
+                accessibilityRole="button"
+                accessibilityLabel={t('common.cancel')}
+              >
+                <AppText style={{ fontSize: 15, fontWeight: '600', color: theme.text }}>{t('common.cancel')}</AppText>
+              </Pressable>
+              <Pressable
+                onPress={handleDeleteAccount}
+                disabled={isDeleting}
+                style={{ flex: 1, paddingVertical: 16, alignItems: 'center' }}
+                accessibilityRole="button"
+                accessibilityLabel={t('settings.deleteAccountConfirm')}
+              >
+                {isDeleting ? (
+                  <ActivityIndicator size="small" color="#EF4444" />
+                ) : (
+                  <AppText style={{ fontSize: 15, fontWeight: '700', color: '#EF4444' }}>{t('settings.deleteAccountConfirm')}</AppText>
+                )}
+              </Pressable>
+            </View>
+          </Pressable>
+        </Pressable>
+      </Modal>
     </ScreenLayout>
   );
 }

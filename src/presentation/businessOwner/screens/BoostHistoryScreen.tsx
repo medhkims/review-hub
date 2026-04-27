@@ -1,8 +1,8 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { View, ScrollView, Pressable, ActivityIndicator } from 'react-native';
 import { router } from 'expo-router';
-import { collection, getDocs, query, where, orderBy, limit, Timestamp } from 'firebase/firestore';
-import { firestore } from '@/core/firebase/firebaseConfig';
+import { container } from '@/core/di/container';
+import { useTranslation } from 'react-i18next';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { AppText } from '@/presentation/shared/components/ui/AppText';
 import { ScreenLayout } from '@/presentation/shared/layouts/ScreenLayout';
@@ -16,6 +16,7 @@ type SortKey = 'date' | 'impressions' | 'clicks';
 function fmt(d: Date): string { return `${d.getDate()} ${MON[d.getMonth()]} ${d.getFullYear()}`; }
 
 export default function BoostHistoryScreen() {
+  const { t } = useTranslation();
   const business = useBusinessOwnerStore(s => s.business);
   const [boosts, setBoosts]     = useState<BoostRecord[]>([]);
   const [loading, setLoading]   = useState(false);
@@ -25,25 +26,7 @@ export default function BoostHistoryScreen() {
     if (!business?.id) return;
     setLoading(true);
     try {
-      const snap = await getDocs(query(
-        collection(firestore, 'boosts'),
-        where('business_id', '==', business.id),
-        orderBy('created_at', 'desc'),
-        limit(200),
-      ));
-      const now = new Date();
-      setBoosts(snap.docs.map(d => {
-        const data = d.data();
-        const createdAt  = (data['created_at'] as Timestamp)?.toDate() ?? new Date();
-        const expiresAt  = (data['expires_at'] as Timestamp)?.toDate() ?? new Date();
-        return {
-          id: d.id, createdAt, expiresAt,
-          status:      expiresAt > now ? 'active' : 'expired',
-          impressions: (data['impression_count'] as number) ?? 0,
-          clicks:      (data['click_count']      as number) ?? 0,
-          label:       (data['label']            as string) ?? `Boost #${d.id.slice(-4)}`,
-        };
-      }));
+      setBoosts(await container.boInsightsDataSource.fetchBoostHistory(business.id));
     } catch { /* silently fail */ }
     finally { setLoading(false); }
   }, [business?.id]);
@@ -57,9 +40,9 @@ export default function BoostHistoryScreen() {
   });
 
   const SORTS: { key: SortKey; label: string }[] = [
-    { key: 'date',        label: 'Date' },
-    { key: 'impressions', label: 'Shown in Search' },
-    { key: 'clicks',      label: 'Boost Clicks' },
+    { key: 'date',        label: t('businessOwner.boostHistory.date') },
+    { key: 'impressions', label: t('businessOwner.boostHistory.shownInSearch') },
+    { key: 'clicks',      label: t('businessOwner.boostHistory.boostClicks') },
   ];
 
   return (
@@ -71,14 +54,14 @@ export default function BoostHistoryScreen() {
           <MaterialCommunityIcons name="arrow-left" size={18} color={colors.white} />
         </Pressable>
         <View>
-          <AppText style={{ fontSize:17,fontWeight:'700',color:colors.white }}>Boost History</AppText>
+          <AppText style={{ fontSize:17,fontWeight:'700',color:colors.white }}>{t('businessOwner.boostHistory.title')}</AppText>
           {business && <AppText style={{ fontSize:12,color:colors.textSlate400 }}>{business.name}</AppText>}
         </View>
       </View>
 
       {/* Sort pills */}
       <View style={{ flexDirection:'row', paddingHorizontal:16, gap:8, marginBottom:12 }}>
-        <AppText style={{ fontSize:12,color:colors.textSlate500,alignSelf:'center' }}>Sort by:</AppText>
+        <AppText style={{ fontSize:12,color:colors.textSlate500,alignSelf:'center' }}>{t('businessOwner.boostHistory.sortBy')}</AppText>
         {SORTS.map(s => (
           <Pressable key={s.key} onPress={() => setSortKey(s.key)} accessibilityRole="button" accessibilityLabel={s.label}
             style={{ paddingHorizontal:12,paddingVertical:6,borderRadius:9999,backgroundColor:sortKey===s.key?colors.yellow:colors.cardDark,borderWidth:1,borderColor:sortKey===s.key?colors.yellow:colors.borderDark }}>
@@ -92,9 +75,9 @@ export default function BoostHistoryScreen() {
       {!loading && sorted.length === 0 && (
         <View style={{ flex:1, alignItems:'center', justifyContent:'center', gap:12 }}>
           <MaterialCommunityIcons name="rocket-launch-outline" size={48} color={colors.textSlate600} />
-          <AppText style={{ fontSize:15,color:colors.textSlate400 }}>No boosts yet</AppText>
+          <AppText style={{ fontSize:15,color:colors.textSlate400 }}>{t('businessOwner.boostHistory.noBoosts')}</AppText>
           <AppText style={{ fontSize:13,color:colors.textSlate500,textAlign:'center',paddingHorizontal:40 }}>
-            Boost your business to appear at the top of search results.
+            {t('businessOwner.boostHistory.noBoostsHint')}
           </AppText>
         </View>
       )}
@@ -121,12 +104,12 @@ export default function BoostHistoryScreen() {
               <View style={{ flex:1,backgroundColor:colors.midnight,borderRadius:10,padding:12,alignItems:'center',gap:2,borderWidth:1,borderColor:`${colors.cyan}22` }}>
                 <MaterialCommunityIcons name="eye-outline" size={18} color={colors.cyan} />
                 <AppText style={{ fontSize:18,fontWeight:'800',color:colors.white }}>{boost.impressions.toLocaleString()}</AppText>
-                <AppText style={{ fontSize:10,color:colors.textSlate500 }}>Shown in Search</AppText>
+                <AppText style={{ fontSize:10,color:colors.textSlate500 }}>{t('businessOwner.boostHistory.shownInSearch')}</AppText>
               </View>
               <View style={{ flex:1,backgroundColor:colors.midnight,borderRadius:10,padding:12,alignItems:'center',gap:2,borderWidth:1,borderColor:`${colors.orange}22` }}>
                 <MaterialCommunityIcons name="cursor-default-click-outline" size={18} color={colors.orange} />
                 <AppText style={{ fontSize:18,fontWeight:'800',color:colors.white }}>{boost.clicks.toLocaleString()}</AppText>
-                <AppText style={{ fontSize:10,color:colors.textSlate500 }}>Boost Clicks</AppText>
+                <AppText style={{ fontSize:10,color:colors.textSlate500 }}>{t('businessOwner.boostHistory.boostClicks')}</AppText>
               </View>
               {boost.impressions > 0 && (
                 <View style={{ flex:1,backgroundColor:colors.midnight,borderRadius:10,padding:12,alignItems:'center',gap:2,borderWidth:1,borderColor:`${colors.emerald}22` }}>
@@ -134,7 +117,7 @@ export default function BoostHistoryScreen() {
                   <AppText style={{ fontSize:18,fontWeight:'800',color:colors.white }}>
                     {Math.round((boost.clicks/boost.impressions)*100)}%
                   </AppText>
-                  <AppText style={{ fontSize:10,color:colors.textSlate500 }}>CTR</AppText>
+                  <AppText style={{ fontSize:10,color:colors.textSlate500 }}>{t('businessOwner.boostHistory.ctr')}</AppText>
                 </View>
               )}
             </View>

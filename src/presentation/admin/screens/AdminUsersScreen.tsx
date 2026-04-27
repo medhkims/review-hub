@@ -1,5 +1,5 @@
-import React, { useCallback, useState } from 'react';
-import { View, FlatList, RefreshControl, Pressable, Alert } from 'react-native';
+import React, { useCallback, useState, useEffect } from 'react';
+import { View, FlatList, RefreshControl, Pressable, Alert, ActivityIndicator } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import { ScreenLayout } from '@/presentation/shared/layouts/ScreenLayout';
 import { AppText } from '@/presentation/shared/components/ui/AppText';
@@ -7,26 +7,12 @@ import { useAnalyticsScreen } from '@/presentation/shared/hooks/useAnalyticsScre
 import { AnalyticsScreens } from '@/core/analytics/analyticsKeys';
 import { colors } from '@/core/theme/colors';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
-import { UserRole, USER_ROLES } from '@/domain/profile/entities/userRole';
+import { USER_ROLES } from '@/domain/profile/entities/userRole';
+import { container } from '@/core/di/container';
 import { AdminMenuButton } from '../components/AdminMenuButton';
+import type { UserItem } from '@/data/admin/datasources/adminInsightsRemoteDataSource';
 
-interface UserItem {
-  id: string;
-  name: string;
-  email: string;
-  role: UserRole;
-}
-
-// Mock data until backend is wired
-const MOCK_USERS: UserItem[] = [
-  { id: '1', name: 'Ahmed Ben Ali', email: 'ahmed@example.com', role: 'simple_user' },
-  { id: '2', name: 'Fatma Trabelsi', email: 'fatma@example.com', role: 'simple_user' },
-  { id: '3', name: 'Mohamed Souissi', email: 'mohamed@example.com', role: 'business_owner' },
-  { id: '4', name: 'Salma Gharbi', email: 'salma@example.com', role: 'moderator' },
-  { id: '5', name: 'Youssef Hamdi', email: 'youssef@example.com', role: 'simple_user' },
-];
-
-const ROLE_COLORS: Record<UserRole, string> = {
+const ROLE_COLORS: Record<string, string> = {
   admin: '#EF4444',
   moderator: '#F59E0B',
   simple_user: '#22C55E',
@@ -36,8 +22,18 @@ const ROLE_COLORS: Record<UserRole, string> = {
 export default function AdminUsersScreen() {
   useAnalyticsScreen(AnalyticsScreens.ADMIN_USERS);
   const { t } = useTranslation();
-  const [users] = useState<UserItem[]>(MOCK_USERS);
-  const [isLoading, setIsLoading] = useState(false);
+  const [users, setUsers] = useState<UserItem[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+
+  const loadUsers = useCallback(async () => {
+    setIsLoading(true);
+    try {
+      setUsers(await container.adminInsightsDataSource.fetchUsers());
+    } catch { /* silently fail */ }
+    finally { setIsLoading(false); }
+  }, []);
+
+  useEffect(() => { loadUsers(); }, [loadUsers]);
 
   const handleChangeRole = useCallback((user: UserItem) => {
     const roleOptions = USER_ROLES.filter((r) => r !== user.role);
@@ -57,77 +53,43 @@ export default function AdminUsersScreen() {
     );
   }, [t]);
 
-  const renderUser = useCallback(({ item }: { item: UserItem }) => (
-    <View
-      style={{
-        backgroundColor: colors.cardDark,
-        borderRadius: 14,
-        padding: 16,
-        marginBottom: 10,
-        borderWidth: 1,
-        borderColor: colors.textSlate800,
-        flexDirection: 'row',
-        alignItems: 'center',
-      }}
-    >
-      {/* Avatar placeholder */}
+  const renderUser = useCallback(({ item }: { item: UserItem }) => {
+    const roleColor = ROLE_COLORS[item.role] ?? ROLE_COLORS.simple_user;
+    return (
       <View
         style={{
-          width: 44,
-          height: 44,
-          borderRadius: 22,
-          backgroundColor: `${ROLE_COLORS[item.role]}20`,
-          justifyContent: 'center',
-          alignItems: 'center',
-          marginRight: 12,
+          backgroundColor: colors.cardDark, borderRadius: 14, padding: 16, marginBottom: 10,
+          borderWidth: 1, borderColor: colors.textSlate800, flexDirection: 'row', alignItems: 'center',
         }}
       >
-        <AppText style={{ fontSize: 16, fontWeight: '700', color: ROLE_COLORS[item.role] }}>
-          {item.name.charAt(0)}
-        </AppText>
-      </View>
-
-      {/* Info */}
-      <View style={{ flex: 1 }}>
-        <AppText style={{ fontSize: 15, fontWeight: '600', color: colors.white }}>
-          {item.name}
-        </AppText>
-        <AppText style={{ fontSize: 12, color: colors.textSlate400, marginTop: 2 }}>
-          {item.email}
-        </AppText>
         <View
           style={{
-            backgroundColor: `${ROLE_COLORS[item.role]}20`,
-            paddingHorizontal: 8,
-            paddingVertical: 2,
-            borderRadius: 6,
-            alignSelf: 'flex-start',
-            marginTop: 6,
+            width: 44, height: 44, borderRadius: 22, backgroundColor: `${roleColor}20`,
+            justifyContent: 'center', alignItems: 'center', marginRight: 12,
           }}
         >
-          <AppText style={{ fontSize: 11, fontWeight: '600', color: ROLE_COLORS[item.role] }}>
-            {t(`roles.${item.role}`)}
+          <AppText style={{ fontSize: 16, fontWeight: '700', color: roleColor }}>
+            {item.name.charAt(0)}
           </AppText>
         </View>
+        <View style={{ flex: 1 }}>
+          <AppText style={{ fontSize: 15, fontWeight: '600', color: colors.white }}>{item.name}</AppText>
+          <AppText style={{ fontSize: 12, color: colors.textSlate400, marginTop: 2 }}>{item.email}</AppText>
+          <View style={{ backgroundColor: `${roleColor}20`, paddingHorizontal: 8, paddingVertical: 2, borderRadius: 6, alignSelf: 'flex-start', marginTop: 6 }}>
+            <AppText style={{ fontSize: 11, fontWeight: '600', color: roleColor }}>{t(`roles.${item.role}`)}</AppText>
+          </View>
+        </View>
+        <Pressable onPress={() => handleChangeRole(item)} style={{ padding: 8 }} accessibilityRole="button" accessibilityLabel={`${t('admin.users.changeRole')} ${item.name}`}>
+          <MaterialCommunityIcons name="account-edit" size={22} color={colors.textSlate400} />
+        </Pressable>
       </View>
-
-      {/* Action */}
-      <Pressable
-        onPress={() => handleChangeRole(item)}
-        style={{ padding: 8 }}
-        accessibilityRole="button"
-        accessibilityLabel={`${t('admin.users.changeRole')} ${item.name}`}
-      >
-        <MaterialCommunityIcons name="account-edit" size={22} color={colors.textSlate400} />
-      </Pressable>
-    </View>
-  ), [handleChangeRole, t]);
+    );
+  }, [handleChangeRole, t]);
 
   const keyExtractor = useCallback((item: UserItem) => item.id, []);
 
   return (
     <ScreenLayout>
-      {/* Header */}
       <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12, paddingHorizontal: 24, paddingTop: 8, paddingBottom: 16 }}>
         <AdminMenuButton />
         <AppText style={{ fontSize: 28, fontWeight: '700', color: colors.white, letterSpacing: -0.5 }}>
@@ -135,21 +97,25 @@ export default function AdminUsersScreen() {
         </AppText>
       </View>
 
-      <FlatList
-        data={users}
-        renderItem={renderUser}
-        keyExtractor={keyExtractor}
-        contentContainerStyle={{ paddingHorizontal: 24, paddingBottom: 100 }}
-        showsVerticalScrollIndicator={false}
-        refreshControl={
-          <RefreshControl
-            refreshing={isLoading}
-            onRefresh={() => { setIsLoading(true); setTimeout(() => setIsLoading(false), 1000); }}
-            tintColor={colors.neonPurple}
-            colors={[colors.neonPurple]}
-          />
-        }
-      />
+      {isLoading && users.length === 0 ? (
+        <ActivityIndicator size="large" color={colors.neonPurple} style={{ marginTop: 60 }} />
+      ) : (
+        <FlatList
+          data={users}
+          renderItem={renderUser}
+          keyExtractor={keyExtractor}
+          contentContainerStyle={{ paddingHorizontal: 24, paddingBottom: 100 }}
+          showsVerticalScrollIndicator={false}
+          refreshControl={
+            <RefreshControl
+              refreshing={isLoading}
+              onRefresh={loadUsers}
+              tintColor={colors.neonPurple}
+              colors={[colors.neonPurple]}
+            />
+          }
+        />
+      )}
     </ScreenLayout>
   );
 }

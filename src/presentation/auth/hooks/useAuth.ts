@@ -35,6 +35,7 @@ export const useAuth = () => {
   const getUserRoleUseCase = container.getUserRoleUseCase;
   const signInWithGoogleUseCase = container.signInWithGoogleUseCase;
   const registerBusinessUseCase = container.registerBusinessUseCase;
+  const continueAsGuestUseCase = container.continueAsGuestUseCase;
 
   const loadRole = useCallback(async (userId: string) => {
     const roleResult = await getUserRoleUseCase.execute(userId);
@@ -240,6 +241,26 @@ export const useAuth = () => {
     );
   }, [signInWithGoogleUseCase, setLoading, setError, setUser, setProvider, loadRole, persistAccount]);
 
+  const continueAsGuest = useCallback(async () => {
+    setLoading(true);
+    setError(null);
+
+    const result = await continueAsGuestUseCase.execute();
+
+    result.fold(
+      (failure) => {
+        setError(failure.message);
+        setLoading(false);
+      },
+      (guestUser) => {
+        setUser(guestUser);
+        setRole('guest');
+        setLoading(false);
+        router.replace('/(main)/(feed)');
+      }
+    );
+  }, [continueAsGuestUseCase, setLoading, setError, setUser, setRole]);
+
   return {
     user,
     isLoading,
@@ -251,5 +272,6 @@ export const useAuth = () => {
     signUpAsBusinessOwner,
     signOut,
     signInWithGoogle,
+    continueAsGuest,
   };
 };

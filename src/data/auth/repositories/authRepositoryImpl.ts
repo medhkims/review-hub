@@ -224,4 +224,32 @@ export class AuthRepositoryImpl implements AuthRepository {
       return left(new NetworkFailure('Failed to send reset email'));
     }
   }
+
+  async continueAsGuest(): Promise<Either<Failure, UserEntity>> {
+    try {
+      const model = await this.remoteDataSource.signInAsGuest();
+      const entity = UserMapper.toEntity(model);
+      return right(entity);
+    } catch (error) {
+      if (error instanceof AuthException) {
+        return left(new AuthFailure(error.message));
+      }
+      return left(new NetworkFailure('Failed to continue as guest'));
+    }
+  }
+
+  async deleteAccount(): Promise<Either<Failure, void>> {
+    try {
+      await this.remoteDataSource.deleteAccount();
+      return right(undefined);
+    } catch (error) {
+      if (error instanceof AuthException) {
+        return left(new AuthFailure(error.message));
+      }
+      if (error instanceof ServerException) {
+        return left(new ServerFailure(error.message));
+      }
+      return left(new ServerFailure('Failed to delete account'));
+    }
+  }
 }

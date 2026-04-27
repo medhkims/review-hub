@@ -1,5 +1,6 @@
 import { getAnalytics, logEvent, isSupported } from 'firebase/analytics';
 import { Platform } from 'react-native';
+import { getAnalyticsConsent } from '@/presentation/shared/components/CookieConsentBanner';
 
 export class AnalyticsHelper {
   private static analyticsInstance: ReturnType<typeof getAnalytics> | null = null;
@@ -8,6 +9,11 @@ export class AnalyticsHelper {
   private static async getInstance() {
     if (Platform.OS !== 'web') return null;
     if (this.supported === false) return null;
+
+    // Check user consent before initializing analytics
+    const consent = await getAnalyticsConsent();
+    if (consent !== 'accepted') return null;
+
     if (this.analyticsInstance) return this.analyticsInstance;
 
     try {

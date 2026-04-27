@@ -20,6 +20,8 @@ export default function FeedLayout() {
       <Stack.Screen name="banner/[bannerId]" />
       <Stack.Screen name="business-pending" />
       <Stack.Screen name="engagement-details" />
+      <Stack.Screen name="book-appointment" />
+      <Stack.Screen name="booking-requests" />
     </Stack>
   );
 }
